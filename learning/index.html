@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Learn</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #4ECDC4 0%, #45B7D1 100%); }
+    .cards-row { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    .activity-card { width: 140px; height: 140px; }
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <div class="title">📚 Learn</div>
+    <div class="cards-row">
+      <div class="activity-card" onclick="go('hello-colors.html')">
+        <div class="icon">🌈</div>
+        <div class="label">Hello Colors</div>
+      </div>
+      <div class="activity-card" onclick="go('animal-sounds.html')">
+        <div class="icon">🐘</div>
+        <div class="label">Animal Sounds</div>
+      </div>
+      <div class="activity-card" onclick="go('count-along.html')">
+        <div class="icon">🔢</div>
+        <div class="label">Count Along</div>
+      </div>
+    </div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    if (!getActiveProfile()) goProfiles();
+    renderBackBtn('../home.html');
+    function go(page) { playChime(); goTo(page); }
+  </script>
+</body>
+</html>
