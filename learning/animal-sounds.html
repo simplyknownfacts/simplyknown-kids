@@ -31,8 +31,14 @@
       25%     { transform:translate(-50%,-50%) rotate(-10deg) scale(1.1); }
       75%     { transform:translate(-50%,-50%) rotate(10deg) scale(1.1); }
     }
+    @keyframes fadeOut {
+      0%   { transform:translate(-50%,-50%) scale(1);   opacity:1; }
+      100% { transform:translate(-50%,-50%) scale(0.5); opacity:0; }
+    }
     .animal-float.popping  { animation:animalPop 0.4s ease forwards; }
     .animal-float.jiggling { animation:jiggle 0.45s ease; }
+    .animal-float.fading   { animation:fadeOut 0.4s ease forwards;
+                             pointer-events:none; }
 
     /* Quiz mode (tier 5+) */
     #quizArea { display:none; }
@@ -115,8 +121,16 @@
         };
       }
 
+      function removeAnimal(record) {
+        const i = gardenAnimals.indexOf(record);
+        if (i >= 0) gardenAnimals.splice(i, 1);
+        record.el.classList.remove('jiggling');
+        record.el.classList.add('fading');
+        setTimeout(() => record.el.remove(), 400);
+      }
+
       function spawnGardenAnimal() {
-        if (gardenAnimals.length >= 6) return;
+        if (gardenAnimals.length >= 4) return;
         const a = pickAnimal(lastIdx);
         const { x, y } = findSpot();
         const el = document.createElement('div');
@@ -124,16 +138,21 @@
         el.style.left = x + 'px';
         el.style.top  = y + 'px';
         el.innerHTML  = `<span class="af-emoji">${a.emoji}</span><span class="af-name">${a.name}</span>`;
-        el.addEventListener('click', () => {
+        const record = { x, y, el, a };
+        const onTap = (ev) => {
+          ev.preventDefault();
+          if (el.classList.contains('fading')) return;
           el.classList.remove('jiggling');
-          void el.offsetWidth; // restart animation
+          void el.offsetWidth;
           el.classList.add('jiggling');
           speakAnimal(a);
           playChime();
-          setTimeout(spawnGardenAnimal, 900);
-        });
+          setTimeout(() => removeAnimal(record), 500);
+          setTimeout(spawnGardenAnimal, 700);
+        };
+        el.addEventListener('pointerdown', onTap);
         garden.appendChild(el);
-        gardenAnimals.push({ x, y, el });
+        gardenAnimals.push(record);
 
         // For tier ≤ 2: auto-speak on first spawn
         if (tier <= 2) setTimeout(() => speakAnimal(a), 400);
@@ -141,7 +160,8 @@
 
       // Seed garden with initial animals
       spawnGardenAnimal();
-      setTimeout(spawnGardenAnimal, 700);
+      setTimeout(spawnGardenAnimal, 600);
+      setTimeout(spawnGardenAnimal, 1200);
       return;
     }
 

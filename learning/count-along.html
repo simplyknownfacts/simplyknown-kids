@@ -91,7 +91,7 @@
       const count = Math.floor(Math.random() * maxCount) + 1;
 
       if (tier <= 2) {
-        instruction.textContent = '';
+        instruction.textContent = '👆 Tap to count!';
         const numEl = document.createElement('div');
         numEl.className = 'number-big'; numEl.textContent = count;
         stage.appendChild(numEl);
@@ -100,25 +100,29 @@
         thingEl.textContent = count === 1 ? thing.s : thing.p;
         stage.appendChild(thingEl);
 
-        let shown = 0;
-        function showDot() {
-          if (shown >= count) {
-            speak(countWord(count, thing));
-            autoTimer = setTimeout(nextRound, 2000);
-            return;
-          }
-          shown++;
-          const row = stage.querySelector('.row') || (() => {
-            const r = document.createElement('div'); r.className = 'row';
-            stage.appendChild(r); return r;
-          })();
+        const row = document.createElement('div'); row.className = 'row';
+        stage.appendChild(row);
+        let tapped = 0;
+        // Show empty dots — child taps each one to count
+        for (let i = 0; i < count; i++) {
           const d = document.createElement('div');
-          d.className = 'dot counted pop-in'; d.textContent = thing.e;
+          d.className = 'dot'; d.textContent = thing.e;
+          d.addEventListener('click', () => {
+            if (d.classList.contains('counted')) return;
+            d.classList.add('counted');
+            tapped++;
+            speak(countWord(tapped, thing));
+            if (tapped === count) {
+              playSuccess();
+              autoTimer = setTimeout(nextRound, 1800);
+            }
+          });
           row.appendChild(d);
-          speak(countWord(shown, thing));
-          autoTimer = setTimeout(showDot, 900);
         }
-        setTimeout(showDot, 500);
+        // Tap the big number to skip to next round
+        numEl.style.cursor = 'pointer';
+        numEl.addEventListener('click', () => { clearAuto(); nextRound(); });
+        speak(countWord(count, thing));
 
       } else if (tier <= 4) {
         instruction.textContent = `Tap each ${thing.s} to count!`;

@@ -52,9 +52,10 @@
     let painting = false, lastX = 0, lastY = 0;
     let hue = 0, brushSize = 18, erasing = false;
     let activeColorIdx = 0;
+    const showPalette = tier >= 3 || getProfileFeature(profile, 'finger-paint', 'colorPalette');
 
     function getColor() {
-      if (tier <= 4) {
+      if (!showPalette) {
         hue = (hue + 1) % 360;
         return `hsl(${hue},90%,60%)`;
       }
@@ -73,7 +74,7 @@
       lastX = x; lastY = y;
     }
 
-    if (tier >= 3 || getProfileFeature(profile, 'finger-paint', 'colorPalette')) {
+    if (showPalette) {
       const toolbar = document.getElementById('toolbar');
       toolbar.style.display = 'flex';
 
