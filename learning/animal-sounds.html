@@ -82,18 +82,16 @@
 
     const quizOn = tier >= 5 || getProfileFeature(profile, 'animal-sounds', 'quizMode');
 
-    const ANIMALS = [
-      { emoji:'🐮', name:'Cow',      sound:'Moo' },
-      { emoji:'🐶', name:'Dog',      sound:'Woof' },
-      { emoji:'🐱', name:'Cat',      sound:'Meow' },
-      { emoji:'🐸', name:'Frog',     sound:'Ribbit' },
-      { emoji:'🦁', name:'Lion',     sound:'Roar' },
-      { emoji:'🐘', name:'Elephant', sound:'Pawoo' },
-      { emoji:'🐑', name:'Sheep',    sound:'Baa' },
-      { emoji:'🐓', name:'Rooster',  sound:'Cock-a-doodle-doo' },
-      { emoji:'🦆', name:'Duck',     sound:'Quack' },
-      { emoji:'🐴', name:'Horse',    sound:'Neigh' },
-    ];
+    // Merge manifest animals (id, name, sound) with display emojis
+    const ANIMAL_EMOJI = {
+      cow:'🐮', dog:'🐶', cat:'🐱', frog:'🐸', lion:'🦁', elephant:'🐘',
+      sheep:'🐑', rooster:'🐓', duck:'🦆', horse:'🐴', pig:'🐷', bear:'🐻',
+      owl:'🦉', snake:'🐍', bee:'🐝', monkey:'🐵', chicken:'🐔', goat:'🐐',
+      donkey:'🫏', mouse:'🐭', tiger:'🐯', wolf:'🐺', whale:'🐳', dolphin:'🐬',
+      seal:'🦭', bird:'🐦', crow:'🐦‍⬛', turkey:'🦃', rabbit:'🐰', fox:'🦊',
+    };
+    const ANIMALS = (typeof VOICE_MANIFEST !== 'undefined' ? VOICE_MANIFEST.animals : [])
+      .map(a => ({ ...a, emoji: ANIMAL_EMOJI[a.id] || '🐾' }));
 
     let lastIdx = -1;
     function pickAnimal(exclude) {
@@ -104,7 +102,16 @@
     function pickGroup(n) {
       return [...ANIMALS].sort(() => Math.random() - 0.5).slice(0, n);
     }
-    function speakAnimal(a) { speak(`${a.sound}! ${a.sound}! I am the ${a.name}!`); }
+    // Speak "The Dog says Bark!" — then play the actual SFX after the voice finishes.
+    function speakAnimal(a) {
+      speak(`The ${a.name} says ${a.sound}!`);
+      // Best-effort SFX: queued after voice clip via Audio element.
+      // If voice is 'browser' (Web Speech), play SFX immediately so it's not delayed.
+      setTimeout(() => {
+        const sfx = new Audio(`${rootPath()}audio/sounds/${a.id}.mp3`);
+        sfx.play().catch(() => {});
+      }, 1400);
+    }
 
     // ── GARDEN MODE (tier ≤ 4) ───────────────────────────────────────────────
     if (!quizOn) {

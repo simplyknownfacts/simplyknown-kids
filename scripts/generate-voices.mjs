@@ -50,8 +50,9 @@ const onlyVoice = args.includes('--voice') ? args[args.indexOf('--voice') + 1] :
 const voicesToRun = onlyVoice ? [onlyVoice] : Object.keys(VOICES);
 
 const clips = VOICE_MANIFEST.allClips;
+const animals = VOICE_MANIFEST.animals || [];
 
-// Cost estimate
+// TTS pass
 let charsToGenerate = 0;
 let toGenerate = [];
 for (const voice of voicesToRun) {
@@ -61,15 +62,30 @@ for (const voice of voicesToRun) {
     const filename = VOICE_MANIFEST.hash(text) + '.mp3';
     const filepath = path.join(voiceDir, filename);
     if (fs.existsSync(filepath) && fs.statSync(filepath).size > 100) continue;
-    toGenerate.push({ voice, text, filepath });
+    toGenerate.push({ kind: 'tts', voice, text, filepath });
     charsToGenerate += text.length;
   }
 }
 
-const estCost = (charsToGenerate / 1000) * USD_PER_1K_CHARS;
+// SFX pass — one clip per animal id, voice-agnostic
+const SFX_DIR = path.join(PROJECT_ROOT, 'audio', 'sounds');
+fs.mkdirSync(SFX_DIR, { recursive: true });
+let sfxToGenerate = 0;
+for (const a of animals) {
+  const filepath = path.join(SFX_DIR, `${a.id}.mp3`);
+  if (fs.existsSync(filepath) && fs.statSync(filepath).size > 100) continue;
+  toGenerate.push({ kind: 'sfx', animal: a, filepath });
+  sfxToGenerate++;
+}
+
+const USD_PER_SFX = 0.08; // approximate per-generation cost
+const ttsCost = (charsToGenerate / 1000) * USD_PER_1K_CHARS;
+const sfxCost = sfxToGenerate * USD_PER_SFX;
+const estCost = ttsCost + sfxCost;
 console.log(`Manifest: ${clips.length} clips × ${voicesToRun.length} voices = ${clips.length * voicesToRun.length} total`);
-console.log(`To generate: ${toGenerate.length} new clips, ${charsToGenerate} characters`);
-console.log(`Estimated cost: $${estCost.toFixed(2)} USD`);
+console.log(`To generate: ${toGenerate.length - sfxToGenerate} TTS clips (${charsToGenerate} chars, $${ttsCost.toFixed(2)})`);
+console.log(`             ${sfxToGenerate} SFX clips ($${sfxCost.toFixed(2)})`);
+console.log(`Estimated total cost: $${estCost.toFixed(2)} USD`);
 
 if (isDry) {
   console.log('\nDry run — no API calls made.');
@@ -88,34 +104,47 @@ if (toGenerate.length === 0) {
 
 // Generate
 let done = 0, failed = 0;
-for (const { voice, text, filepath } of toGenerate) {
-  const voiceId = VOICES[voice];
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+for (const item of toGenerate) {
+  let res, body, url, label;
   try {
-    const res = await fetch(url, {
+    if (item.kind === 'tts') {
+      const voiceId = VOICES[item.voice];
+      url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+      body = {
+        text: item.text,
+        model_id: MODEL_ID,
+        voice_settings: { stability: 0.55, similarity_boost: 0.75, style: 0.30 },
+      };
+      label = `[${item.voice}] "${item.text}"`;
+    } else { // sfx
+      url = 'https://api.elevenlabs.io/v1/sound-generation';
+      body = {
+        text: `a single short ${item.animal.name.toLowerCase()} ${item.animal.sound.toLowerCase()} sound, clear and isolated, no music`,
+        duration_seconds: 2,
+        prompt_influence: 0.5,
+      };
+      label = `[sfx] ${item.animal.id}`;
+    }
+    res = await fetch(url, {
       method: 'POST',
       headers: {
         'xi-api-key': API_KEY,
         'Content-Type': 'application/json',
         'Accept': 'audio/mpeg',
       },
-      body: JSON.stringify({
-        text,
-        model_id: MODEL_ID,
-        voice_settings: { stability: 0.55, similarity_boost: 0.75, style: 0.30 },
-      }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
-      console.error(`  ✗ [${voice}] "${text}" — HTTP ${res.status}: ${await res.text()}`);
+      console.error(`  ✗ ${label} — HTTP ${res.status}: ${await res.text()}`);
       failed++;
       continue;
     }
     const buf = Buffer.from(await res.arrayBuffer());
-    fs.writeFileSync(filepath, buf);
+    fs.writeFileSync(item.filepath, buf);
     done++;
     if (done % 10 === 0) console.log(`  ${done}/${toGenerate.length} done...`);
   } catch (err) {
-    console.error(`  ✗ [${voice}] "${text}" — ${err.message}`);
+    console.error(`  ✗ ${label || 'item'} — ${err.message}`);
     failed++;
   }
 }

@@ -17,18 +17,41 @@ const COLOR_THINGS = {
   Pink:   ['Pig', 'Blossom', 'Flamingo', 'Pink Heart'],
 };
 const SHAPE_NAMES = ['Circle', 'Square', 'Triangle', 'Star', 'Heart', 'Diamond'];
-const ANIMAL_PHRASES = [
-  'Moo! Moo! I am the Cow!',
-  'Woof! Woof! I am the Dog!',
-  'Meow! Meow! I am the Cat!',
-  'Ribbit! Ribbit! I am the Frog!',
-  'Roar! Roar! I am the Lion!',
-  'Pawoo! Pawoo! I am the Elephant!',
-  'Baa! Baa! I am the Sheep!',
-  'Cock-a-doodle-doo! Cock-a-doodle-doo! I am the Rooster!',
-  'Quack! Quack! I am the Duck!',
-  'Neigh! Neigh! I am the Horse!',
+// "The X says Y" — kid-friendly noun-sound pairing.
+// id matches the SFX filename: audio/sounds/<id>.mp3
+const ANIMALS = [
+  { id:'cow',      name:'Cow',      sound:'Moo' },
+  { id:'dog',      name:'Dog',      sound:'Bark' },
+  { id:'cat',      name:'Cat',      sound:'Meow' },
+  { id:'frog',     name:'Frog',     sound:'Ribbit' },
+  { id:'lion',     name:'Lion',     sound:'Roar' },
+  { id:'elephant', name:'Elephant', sound:'Trumpet' },
+  { id:'sheep',    name:'Sheep',    sound:'Baa' },
+  { id:'rooster',  name:'Rooster',  sound:'Cock-a-doodle-doo' },
+  { id:'duck',     name:'Duck',     sound:'Quack' },
+  { id:'horse',    name:'Horse',    sound:'Neigh' },
+  { id:'pig',      name:'Pig',      sound:'Oink' },
+  { id:'bear',     name:'Bear',     sound:'Growl' },
+  { id:'owl',      name:'Owl',      sound:'Hoot' },
+  { id:'snake',    name:'Snake',    sound:'Hiss' },
+  { id:'bee',      name:'Bee',      sound:'Buzz' },
+  { id:'monkey',   name:'Monkey',   sound:'Chatter' },
+  { id:'chicken',  name:'Chicken',  sound:'Cluck' },
+  { id:'goat',     name:'Goat',     sound:'Bleat' },
+  { id:'donkey',   name:'Donkey',   sound:'Hee-haw' },
+  { id:'mouse',    name:'Mouse',    sound:'Squeak' },
+  { id:'tiger',    name:'Tiger',    sound:'Snarl' },
+  { id:'wolf',     name:'Wolf',     sound:'Howl' },
+  { id:'whale',    name:'Whale',    sound:'Sing' },
+  { id:'dolphin',  name:'Dolphin',  sound:'Click' },
+  { id:'seal',     name:'Seal',     sound:'Honk' },
+  { id:'bird',     name:'Bird',     sound:'Tweet' },
+  { id:'crow',     name:'Crow',     sound:'Caw' },
+  { id:'turkey',   name:'Turkey',   sound:'Gobble' },
+  { id:'rabbit',   name:'Rabbit',   sound:'Squeak' },
+  { id:'fox',      name:'Fox',      sound:'Yip' },
 ];
+const ANIMAL_PHRASES = ANIMALS.map(a => `The ${a.name} says ${a.sound}!`);
 
 // Count-along nouns (singular + plural)
 const COUNT_NOUNS = [
@@ -85,6 +108,7 @@ const VOICE_MANIFEST = {
   numbers: _numbers,
   nouns: COUNT_NOUNS,
   prefixes: _prefixes,
+  animals: ANIMALS,
   hash: _hash,
 };
 
