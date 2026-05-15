@@ -47,7 +47,9 @@
       const r = tier <= 2 ? 80 : tier <= 4 ? 70 : 55;
       bubbles.push({
         x: r + Math.random() * (canvas.width - r * 2),
-        y: canvas.height + r,
+        y: tier >= 5
+          ? canvas.height + r
+          : r + Math.random() * (canvas.height - r * 2),
         r,
         color: randColor(),
         vy: tier >= 5 ? -(1 + Math.random() * 1.5) : 0,
