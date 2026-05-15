@@ -6,14 +6,36 @@
   <title>Animal Sounds</title>
   <link rel="stylesheet" href="../css/style.css">
   <style>
-    body { background: linear-gradient(160deg, #2d5016, #1a3a0a); }
-    .animal-big {
-      font-size: clamp(80px, 22vw, 160px);
-      cursor: pointer; line-height: 1;
-      filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4));
-      transition: transform 0.1s;
+    body { background: linear-gradient(160deg, #2d5016, #1a3a0a); position:relative; overflow:hidden; }
+    #garden { position:fixed; inset:0; }
+    .animal-float {
+      position:absolute;
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      cursor:pointer;
+      transform: translate(-50%, -50%);
     }
-    .animal-big:active { transform: scale(0.9); }
+    .animal-float .af-emoji { font-size:clamp(60px,16vw,110px); line-height:1; }
+    .animal-float .af-name  {
+      font-size:16px; font-weight:800; color:white;
+      text-shadow:0 2px 10px rgba(0,0,0,0.9);
+      background:rgba(0,0,0,0.35); border-radius:20px;
+      padding:3px 10px;
+    }
+    @keyframes animalPop {
+      0%   { transform:translate(-50%,-50%) scale(0); opacity:0; }
+      70%  { transform:translate(-50%,-50%) scale(1.15); opacity:1; }
+      100% { transform:translate(-50%,-50%) scale(1); opacity:1; }
+    }
+    @keyframes jiggle {
+      0%,100% { transform:translate(-50%,-50%) rotate(0deg) scale(1); }
+      25%     { transform:translate(-50%,-50%) rotate(-10deg) scale(1.1); }
+      75%     { transform:translate(-50%,-50%) rotate(10deg) scale(1.1); }
+    }
+    .animal-float.popping  { animation:animalPop 0.4s ease forwards; }
+    .animal-float.jiggling { animation:jiggle 0.45s ease; }
+
+    /* Quiz mode (tier 5+) */
+    #quizArea { display:none; }
     .choice-btn {
       min-width: var(--tap); min-height: var(--tap);
       border-radius: var(--radius);
@@ -30,10 +52,11 @@
   </style>
 </head>
 <body>
-  <div class="screen">
+  <div id="garden"></div>
+  <div id="quizArea" class="screen">
     <div class="title">🐘 Animal Sounds</div>
     <div class="subtitle" id="instruction"></div>
-    <div id="stage" class="col"></div>
+    <div id="quizStage" class="col"></div>
   </div>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
@@ -45,8 +68,7 @@
     const tier = getActivityTier(profile, 'animal-sounds');
     renderBackBtn('index.html');
 
-    let roundTimer = null;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    const quizOn = tier >= 5 || getProfileFeature(profile, 'animal-sounds', 'quizMode');
 
     const ANIMALS = [
       { emoji:'🐮', name:'Cow',      sound:'Moo' },
@@ -57,86 +79,117 @@
       { emoji:'🐘', name:'Elephant', sound:'Pawoo' },
       { emoji:'🐑', name:'Sheep',    sound:'Baa' },
       { emoji:'🐓', name:'Rooster',  sound:'Cock-a-doodle-doo' },
+      { emoji:'🦆', name:'Duck',     sound:'Quack' },
+      { emoji:'🐴', name:'Horse',    sound:'Neigh' },
     ];
 
     let lastIdx = -1;
-    function pickAnimal(exclude = -1) {
+    function pickAnimal(exclude) {
       let i;
       do { i = Math.floor(Math.random() * ANIMALS.length); } while (i === exclude);
       lastIdx = i; return ANIMALS[i];
     }
-
     function pickGroup(n) {
       return [...ANIMALS].sort(() => Math.random() - 0.5).slice(0, n);
     }
-
-    const stage = document.getElementById('stage');
-    const instruction = document.getElementById('instruction');
-
     function speakAnimal(a) { speak(`${a.sound}! ${a.sound}! I am the ${a.name}!`); }
 
-    function nextRound() {
-      stage.innerHTML = '';
+    // ── GARDEN MODE (tier ≤ 4) ───────────────────────────────────────────────
+    if (!quizOn) {
+      const garden = document.getElementById('garden');
+      const gardenAnimals = [];
 
-      if (tier <= 2) {
-        const a = pickAnimal(lastIdx);
-        const div = document.createElement('div');
-        div.className = 'animal-big pop-in';
-        div.textContent = a.emoji;
-        stage.appendChild(div);
-        instruction.textContent = a.name;
-        speakAnimal(a);
-        roundTimer = setTimeout(nextRound, 3000);
-
-      } else if (tier <= 4) {
-        instruction.textContent = 'Tap the animal!';
-        const a = pickAnimal(lastIdx);
-        const div = document.createElement('div');
-        div.className = 'animal-big pop-in pulse';
-        div.textContent = a.emoji;
-        div.addEventListener('click', () => {
-          playChime(); speakAnimal(a);
-          div.classList.remove('pulse');
-          setTimeout(nextRound, 2000);
-        });
-        stage.appendChild(div);
-
-      } else {
-        const count = tier <= 6 ? (tier === 5 ? 2 : 3) : 4;
-        const group = pickGroup(count);
-        const answerIdx = Math.floor(Math.random() * count);
-        const target = group[answerIdx];
-        instruction.textContent = '';
-        setTimeout(() => speakAnimal(target), 400);
-
-        const row = document.createElement('div');
-        row.className = 'row';
-        group.forEach((a, i) => {
-          const btn = document.createElement('div');
-          btn.className = 'choice-btn';
-          btn.innerHTML = `<span>${a.emoji}</span>${tier >= 7 ? `<span class="cname">${a.name}</span>` : ''}`;
-          btn.addEventListener('click', () => {
-            if (i === answerIdx) {
-              playSuccess(); speakAnimal(a);
-              btn.style.background = 'rgba(168,230,207,0.4)';
-              setTimeout(nextRound, 1800);
-            } else {
-              playBoop();
-              btn.style.background = 'rgba(255,107,107,0.3)';
-              setTimeout(() => btn.style.background = '', 500);
-            }
-          });
-          row.appendChild(btn);
-        });
-        stage.appendChild(row);
-
-        const replayBtn = document.createElement('button');
-        replayBtn.className = 'back-btn';
-        replayBtn.style.cssText = 'position:static;font-size:20px;width:56px;height:56px;';
-        replayBtn.textContent = '🔊';
-        replayBtn.addEventListener('click', () => speakAnimal(target));
-        stage.appendChild(replayBtn);
+      function findSpot() {
+        const margin = 90;
+        const W = window.innerWidth, H = window.innerHeight;
+        for (let attempt = 0; attempt < 25; attempt++) {
+          const x = margin + Math.random() * (W - margin * 2);
+          const y = margin + Math.random() * (H - margin * 2);
+          if (!gardenAnimals.some(a => Math.hypot(a.x - x, a.y - y) < 140)) {
+            return { x, y };
+          }
+        }
+        return {
+          x: margin + Math.random() * (window.innerWidth  - margin * 2),
+          y: margin + Math.random() * (window.innerHeight - margin * 2),
+        };
       }
+
+      function spawnGardenAnimal() {
+        if (gardenAnimals.length >= 6) return;
+        const a = pickAnimal(lastIdx);
+        const { x, y } = findSpot();
+        const el = document.createElement('div');
+        el.className = 'animal-float popping';
+        el.style.left = x + 'px';
+        el.style.top  = y + 'px';
+        el.innerHTML  = `<span class="af-emoji">${a.emoji}</span><span class="af-name">${a.name}</span>`;
+        el.addEventListener('click', () => {
+          el.classList.remove('jiggling');
+          void el.offsetWidth; // restart animation
+          el.classList.add('jiggling');
+          speakAnimal(a);
+          playChime();
+          setTimeout(spawnGardenAnimal, 900);
+        });
+        garden.appendChild(el);
+        gardenAnimals.push({ x, y, el });
+
+        // For tier ≤ 2: auto-speak on first spawn
+        if (tier <= 2) setTimeout(() => speakAnimal(a), 400);
+      }
+
+      // Seed garden with initial animals
+      spawnGardenAnimal();
+      setTimeout(spawnGardenAnimal, 700);
+      return;
+    }
+
+    // ── QUIZ MODE (tier 5+) ──────────────────────────────────────────────────
+    document.getElementById('quizArea').style.display = 'flex';
+
+    let roundTimer = null;
+    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+
+    const instruction = document.getElementById('instruction');
+    const quizStage   = document.getElementById('quizStage');
+
+    function nextRound() {
+      quizStage.innerHTML = '';
+      const count = tier <= 6 ? (tier === 5 ? 2 : 3) : 4;
+      const group = pickGroup(count);
+      const answerIdx = Math.floor(Math.random() * count);
+      const target = group[answerIdx];
+      instruction.textContent = '';
+      setTimeout(() => speakAnimal(target), 400);
+
+      const row = document.createElement('div');
+      row.className = 'row';
+      group.forEach((a, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'choice-btn';
+        btn.innerHTML = `<span>${a.emoji}</span><span class="cname">${a.name}</span>`;
+        btn.addEventListener('click', () => {
+          if (i === answerIdx) {
+            playSuccess(); speakAnimal(a);
+            btn.style.background = 'rgba(168,230,207,0.4)';
+            roundTimer = setTimeout(nextRound, 1800);
+          } else {
+            playBoop();
+            btn.style.background = 'rgba(255,107,107,0.3)';
+            setTimeout(() => btn.style.background = '', 500);
+          }
+        });
+        row.appendChild(btn);
+      });
+      quizStage.appendChild(row);
+
+      const replayBtn = document.createElement('button');
+      replayBtn.className = 'back-btn';
+      replayBtn.style.cssText = 'position:static;font-size:20px;width:56px;height:56px;';
+      replayBtn.textContent = '🔊';
+      replayBtn.addEventListener('click', () => speakAnimal(target));
+      quizStage.appendChild(replayBtn);
     }
 
     nextRound();
