@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Count Along</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #1a1a4e, #2d1b5e); }
+    .dot {
+      width: 70px; height: 70px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 4px solid rgba(255,255,255,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .dot.counted { background: #FFD93D; border-color: #FFD93D; }
+    .dot:active { transform: scale(0.88); }
+    .number-big { font-size: clamp(80px, 22vw, 140px); font-weight: 900; color: white; line-height: 1; }
+    .num-btn {
+      min-width: 70px; min-height: 70px; border-radius: 20px;
+      background: rgba(255,255,255,0.15);
+      border: 3px solid rgba(255,255,255,0.25);
+      font-size: 28px; font-weight: 900; color: white;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.12s;
+    }
+    .num-btn:active { transform: scale(0.9); }
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <div class="title">🔢 Count Along</div>
+    <div class="subtitle" id="instruction"></div>
+    <div id="stage" class="col" style="gap:20px;"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    const profile = getActiveProfile();
+    if (!profile) goProfiles();
+    const tier = getActivityTier(profile, 'count-along');
+    renderBackBtn('index.html');
+
+    const stage = document.getElementById('stage');
+    const instruction = document.getElementById('instruction');
+
+    let autoTimer;
+    function clearAuto() { clearTimeout(autoTimer); }
+
+    function nextRound() {
+      stage.innerHTML = ''; clearAuto();
+      const maxCount = tier <= 4 ? 3 : tier <= 6 ? 5 : 10;
+      const count = Math.floor(Math.random() * maxCount) + 1;
+
+      if (tier <= 2) {
+        instruction.textContent = '';
+        let shown = 0;
+        function showDot() {
+          if (shown >= count) {
+            speak(`${count}!`);
+            autoTimer = setTimeout(nextRound, 2000);
+            return;
+          }
+          shown++;
+          const row = stage.querySelector('.row') || (() => {
+            const r = document.createElement('div'); r.className = 'row';
+            stage.appendChild(r); return r;
+          })();
+          const d = document.createElement('div');
+          d.className = 'dot counted pop-in'; d.textContent = '⭐';
+          row.appendChild(d);
+          speak(String(shown));
+          autoTimer = setTimeout(showDot, 900);
+        }
+        const numEl = document.createElement('div');
+        numEl.className = 'number-big'; numEl.textContent = count;
+        stage.appendChild(numEl);
+        setTimeout(showDot, 500);
+
+      } else if (tier <= 4) {
+        instruction.textContent = 'Tap each star to count!';
+        const row = document.createElement('div'); row.className = 'row';
+        let tapped = 0;
+        for (let i = 0; i < count; i++) {
+          const d = document.createElement('div');
+          d.className = 'dot'; d.textContent = '⭐';
+          d.addEventListener('click', () => {
+            if (d.classList.contains('counted')) return;
+            d.classList.add('counted');
+            tapped++;
+            speak(String(tapped));
+            if (tapped === count) {
+              playSuccess();
+              setTimeout(nextRound, 1500);
+            }
+          });
+          row.appendChild(d);
+        }
+        stage.appendChild(row);
+
+      } else if (tier <= 6) {
+        instruction.textContent = 'How many stars?';
+        const row = document.createElement('div'); row.className = 'row';
+        for (let i = 0; i < count; i++) {
+          const d = document.createElement('div');
+          d.className = 'dot counted'; d.textContent = '⭐';
+          row.appendChild(d);
+        }
+        stage.appendChild(row);
+
+        const numMax = tier === 5 ? 5 : 10;
+        const choices = new Set([count]);
+        while (choices.size < Math.min(3, numMax)) choices.add(Math.floor(Math.random() * numMax) + 1);
+        const numRow = document.createElement('div'); numRow.className = 'row';
+        [...choices].sort((a,b) => a-b).forEach(n => {
+          const btn = document.createElement('div');
+          btn.className = 'num-btn'; btn.textContent = n;
+          btn.addEventListener('click', () => {
+            if (n === count) {
+              playSuccess(); speak(`Yes! ${count}!`);
+              btn.style.background = 'rgba(168,230,207,0.5)';
+              setTimeout(nextRound, 1500);
+            } else {
+              playBoop();
+              btn.style.background = 'rgba(255,107,107,0.4)';
+              setTimeout(() => btn.style.background = '', 500);
+            }
+          });
+          numRow.appendChild(btn);
+        });
+        stage.appendChild(numRow);
+
+      } else {
+        const a = Math.floor(Math.random() * 5) + 1;
+        const b = Math.floor(Math.random() * 5) + 1;
+        const ans = a + b;
+        instruction.textContent = `${a} + ${b} = ?`;
+        speak(`${a} plus ${b} equals?`);
+        const choices = new Set([ans]);
+        while (choices.size < 3) choices.add(Math.floor(Math.random() * 10) + 1);
+        const numRow = document.createElement('div'); numRow.className = 'row';
+        [...choices].sort((a,b) => a-b).forEach(n => {
+          const btn = document.createElement('div');
+          btn.className = 'num-btn'; btn.textContent = n;
+          btn.addEventListener('click', () => {
+            if (n === ans) {
+              playSuccess(); speak(`${a} plus ${b} equals ${ans}. Correct!`);
+              setTimeout(nextRound, 2000);
+            } else {
+              playBoop();
+              btn.style.background = 'rgba(255,107,107,0.4)';
+              setTimeout(() => btn.style.background = '', 500);
+            }
+          });
+          numRow.appendChild(btn);
+        });
+        stage.appendChild(numRow);
+      }
+    }
+
+    nextRound();
+  </script>
+</body>
+</html>
