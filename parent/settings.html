@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Parent Settings</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: #1a1a2e; overflow-y: auto; overflow-x: hidden; }
+    .settings-screen { min-height: 100vh; padding: 80px 24px 40px; max-width: 540px; margin: 0 auto; }
+    h2 { color: white; font-size: 20px; margin: 28px 0 12px; font-weight: 900; }
+    .card {
+      background: rgba(255,255,255,0.07); border-radius: 16px;
+      padding: 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1);
+    }
+    .row-between { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    label { color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 700; }
+    input[type=text], input[type=date], input[type=password] {
+      background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
+      color: white; border-radius: 10px; padding: 10px 14px;
+      font-size: 15px; font-family: var(--font); width: 100%; margin-top: 6px;
+    }
+    input::placeholder { color: rgba(255,255,255,0.35); }
+    select {
+      background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
+      color: white; border-radius: 10px; padding: 8px 12px;
+      font-size: 14px; font-family: var(--font);
+    }
+    select option { background: #1a1a2e; }
+    .btn {
+      padding: 12px 20px; border-radius: 14px; font-size: 14px; font-weight: 800;
+      cursor: pointer; border: none; font-family: var(--font);
+    }
+    .btn-primary { background: #4ECDC4; color: #1a1a2e; }
+    .btn-danger  { background: rgba(255,107,107,0.25); color: #FF6B6B;
+                   border: 2px solid rgba(255,107,107,0.35); }
+    .btn-ghost   { background: rgba(255,255,255,0.1); color: white;
+                   border: 2px solid rgba(255,255,255,0.2); }
+    .pin-display { display:flex; gap:8px; justify-content:center; margin:12px 0; }
+    .pin-dot { width:18px; height:18px; border-radius:50%;
+               background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); }
+    .pin-dot.filled { background: #4ECDC4; border-color: #4ECDC4; }
+    .pin-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:240px; margin:0 auto; }
+    .pin-key {
+      aspect-ratio:1; border-radius:50%; font-size:22px; font-weight:900;
+      color:white; background:rgba(255,255,255,0.1);
+      border:2px solid rgba(255,255,255,0.2);
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+      transition: background 0.12s;
+    }
+    .pin-key:active { background:rgba(255,255,255,0.25); }
+    #pinGate, #mainSettings { display: none; }
+  </style>
+</head>
+<body>
+  <div class="back-btn" style="position:fixed;" onclick="goBack()">←</div>
+
+  <!-- PIN Gate -->
+  <div id="pinGate" class="settings-screen" style="text-align:center;">
+    <div class="title" style="margin-bottom:8px;">⚙️ Parent Settings</div>
+    <div class="subtitle" id="pinPrompt">Enter your 4-digit PIN</div>
+    <div class="pin-display" id="pinDisplay">
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+    <div class="pin-pad" id="pinPad"></div>
+    <div style="margin-top:20px;">
+      <button class="btn btn-ghost" onclick="setupMode()">Set up new PIN</button>
+    </div>
+  </div>
+
+  <!-- Main Settings -->
+  <div id="mainSettings" class="settings-screen">
+    <div class="title">⚙️ Parent Settings</div>
+
+    <h2>👨‍👩‍👧 Child Profiles</h2>
+    <div id="profilesList"></div>
+    <button class="btn btn-primary" onclick="showAddForm()">＋ Add Child</button>
+
+    <div id="addForm" style="display:none;">
+      <div class="card" style="margin-top:12px;">
+        <h2 style="margin-top:0;">New Child</h2>
+        <label>Name</label>
+        <input type="text" id="newName" placeholder="Child's name">
+        <label style="margin-top:12px;display:block;">Birthday</label>
+        <input type="date" id="newBirthday">
+        <label style="margin-top:12px;display:block;">Avatar</label>
+        <div class="row" id="avatarPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
+        <label style="margin-top:12px;display:block;">Color</label>
+        <div class="row" id="colorPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
+        <div class="row-between" style="margin-top:16px;">
+          <button class="btn btn-primary" onclick="saveNewProfile()">Save</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('addForm').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <h2>🔐 Change PIN</h2>
+    <div class="card">
+      <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
+    </div>
+  </div>
+
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    const PIN_KEY = 'vb_pin';
+    const AVATARS = ['🐻','🐸','🐱','🐶','🐼','🦊','🐰','🐯','🐧','🦋','🌸','⭐'];
+    const COLORS  = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#a8e6cf'];
+
+    let selectedAvatar = AVATARS[0];
+    let selectedColor  = COLORS[0];
+    let pinEntry = '';
+    let pinSetupStep = 0, pinFirst = '';
+
+    function goBack() {
+      const ref = document.referrer;
+      if (ref && ref.includes(window.location.hostname)) history.back();
+      else goTo('../index.html');
+    }
+
+    // --- PIN Gate ---
+    function showPinGate() {
+      document.getElementById('pinGate').style.display = 'block';
+      document.getElementById('mainSettings').style.display = 'none';
+      buildPinPad();
+      updateDots();
+    }
+
+    function showMain() {
+      document.getElementById('pinGate').style.display = 'none';
+      document.getElementById('mainSettings').style.display = 'block';
+      renderProfiles();
+      buildAddForm();
+    }
+
+    function buildPinPad() {
+      const pad = document.getElementById('pinPad');
+      pad.innerHTML = '';
+      [1,2,3,4,5,6,7,8,9,'',0,'⌫'].forEach(k => {
+        const key = document.createElement('div');
+        key.className = 'pin-key';
+        key.textContent = k;
+        if (k === '') { key.style.visibility = 'hidden'; }
+        else {
+          key.addEventListener('click', () => {
+            if (k === '⌫') { pinEntry = pinEntry.slice(0,-1); }
+            else if (pinEntry.length < 4) { pinEntry += k; }
+            updateDots();
+            if (pinEntry.length === 4) setTimeout(checkPin, 200);
+          });
+        }
+        pad.appendChild(key);
+      });
+    }
+
+    function updateDots() {
+      document.querySelectorAll('#pinDisplay .pin-dot').forEach((d, i) => {
+        d.classList.toggle('filled', i < pinEntry.length);
+      });
+    }
+
+    function checkPin() {
+      const stored = localStorage.getItem(PIN_KEY);
+      if (!stored) { showMain(); return; }
+      if (pinEntry === stored) { showMain(); }
+      else {
+        document.getElementById('pinPrompt').textContent = 'Incorrect PIN — try again';
+        pinEntry = ''; updateDots();
+      }
+    }
+
+    function setupMode() {
+      pinSetupStep = 1; pinFirst = ''; pinEntry = '';
+      document.getElementById('pinPrompt').textContent = 'Choose a new 4-digit PIN';
+      showPinGate();
+      buildPinPad();
+      const origCheck = checkPin;
+      window.checkPin = function() {
+        if (pinSetupStep === 1) {
+          pinFirst = pinEntry; pinEntry = '';
+          document.getElementById('pinPrompt').textContent = 'Enter it again to confirm';
+          updateDots();
+          pinSetupStep = 2;
+        } else {
+          if (pinEntry === pinFirst) {
+            localStorage.setItem(PIN_KEY, pinEntry);
+            window.checkPin = origCheck;
+            showMain();
+          } else {
+            document.getElementById('pinPrompt').textContent = "Didn't match — start over";
+            pinEntry = ''; pinSetupStep = 1; pinFirst = '';
+            updateDots();
+          }
+        }
+      };
+    }
+
+    // --- Profile Management ---
+    function renderProfiles() {
+      const list = document.getElementById('profilesList');
+      list.innerHTML = '';
+      getProfiles().forEach(p => {
+        const ageMonths = getAgeMonths(p.birthday);
+        const t = tierForAge(ageMonths);
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="row-between">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:30px;">${p.avatar}</span>
+              <div>
+                <div style="color:white;font-weight:800;font-size:15px;">${p.name}</div>
+                <div style="color:rgba(255,255,255,0.5);font-size:12px;">${ageMonths}mo · Tier ${t}: ${tierLabel(t)}</div>
+              </div>
+            </div>
+            <button class="btn btn-danger" onclick="removeProfile('${p.id}')">Delete</button>
+          </div>`;
+        list.appendChild(card);
+      });
+    }
+
+    function buildAddForm() {
+      const avatarPicker = document.getElementById('avatarPicker');
+      avatarPicker.innerHTML = '';
+      AVATARS.forEach(a => {
+        const btn = document.createElement('div');
+        btn.style.cssText = 'font-size:32px;cursor:pointer;padding:4px;border-radius:8px;';
+        btn.textContent = a;
+        btn.addEventListener('click', () => {
+          selectedAvatar = a;
+          document.querySelectorAll('#avatarPicker div').forEach(d => d.style.background = '');
+          btn.style.background = 'rgba(255,255,255,0.2)';
+        });
+        avatarPicker.appendChild(btn);
+      });
+
+      const colorPicker = document.getElementById('colorPicker');
+      colorPicker.innerHTML = '';
+      COLORS.forEach(c => {
+        const dot = document.createElement('div');
+        dot.style.cssText = `width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid transparent;`;
+        dot.addEventListener('click', () => {
+          selectedColor = c;
+          document.querySelectorAll('#colorPicker div').forEach(d => d.style.borderColor = 'transparent');
+          dot.style.borderColor = 'white';
+        });
+        colorPicker.appendChild(dot);
+      });
+    }
+
+    function showAddForm() {
+      document.getElementById('addForm').style.display = 'block';
+    }
+
+    function saveNewProfile() {
+      const name = document.getElementById('newName').value.trim();
+      const birthday = document.getElementById('newBirthday').value;
+      if (!name || !birthday) { alert('Please fill in name and birthday.'); return; }
+      addProfile({ name, birthday, avatar: selectedAvatar, color: selectedColor });
+      document.getElementById('newName').value = '';
+      document.getElementById('newBirthday').value = '';
+      document.getElementById('addForm').style.display = 'none';
+      renderProfiles();
+    }
+
+    function removeProfile(id) {
+      if (confirm('Delete this profile? This cannot be undone.')) {
+        deleteProfile(id);
+        renderProfiles();
+      }
+    }
+
+    // On load: skip PIN gate if no PIN stored, or if opened via "add" action
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'add') {
+      showMain();
+      setTimeout(() => showAddForm(), 100);
+    } else if (!localStorage.getItem(PIN_KEY)) {
+      showMain();
+    } else {
+      showPinGate();
+    }
+  </script>
+</body>
+</html>
