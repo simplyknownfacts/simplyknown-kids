@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     body { background: #1a1a2e; overflow-y: auto; overflow-x: hidden; }
-    .settings-screen { min-height: 100vh; padding: 80px 24px 40px; max-width: 540px; margin: 0 auto; }
+    .settings-screen { min-height: 100vh; padding: 80px 24px 60px; max-width: 700px; margin: 0 auto; }
     h2 { color: white; font-size: 20px; margin: 28px 0 12px; font-weight: 900; }
     .card {
       background: rgba(255,255,255,0.07); border-radius: 16px;
@@ -21,12 +21,6 @@
       font-size: 15px; font-family: var(--font); width: 100%; margin-top: 6px;
     }
     input::placeholder { color: rgba(255,255,255,0.35); }
-    select {
-      background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
-      color: white; border-radius: 10px; padding: 8px 12px;
-      font-size: 14px; font-family: var(--font);
-    }
-    select option { background: #1a1a2e; }
     .btn {
       padding: 12px 20px; border-radius: 14px; font-size: 14px; font-weight: 800;
       cursor: pointer; border: none; font-family: var(--font);
@@ -50,6 +44,40 @@
     }
     .pin-key:active { background:rgba(255,255,255,0.25); }
     #pinGate, #mainSettings { display: none; }
+
+    /* Activity features table */
+    .features-scroll { overflow-x: auto; margin-top: 12px; border-radius: 12px;
+                       border: 1px solid rgba(255,255,255,0.1); }
+    .features-table { border-collapse: collapse; width: 100%; }
+    .features-table th, .features-table td {
+      padding: 12px 16px; text-align: left; vertical-align: top;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .features-table tr:last-child td { border-bottom: none; }
+    .features-table thead th {
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+    }
+    .features-table td:first-child {
+      color: white; font-weight: 800; font-size: 14px; white-space: nowrap;
+      background: rgba(255,255,255,0.03);
+    }
+    .child-col-header {
+      display:flex; flex-direction:column; align-items:center; gap:4px; min-width:80px;
+    }
+    .child-col-header .ch-avatar { font-size:24px; }
+    .child-col-header .ch-name   { font-size:12px; font-weight:800; color:white; }
+    .feat-label {
+      display:flex; align-items:center; gap:8px; margin:5px 0; cursor:pointer;
+      user-select:none;
+    }
+    .feat-label input[type=checkbox] {
+      width:18px; height:18px; accent-color:#4ECDC4; cursor:pointer;
+      flex-shrink:0;
+    }
+    .feat-label span { font-size:12px; color:rgba(255,255,255,0.7); font-weight:700; line-height:1.3; }
+    .no-profiles-note { color:rgba(255,255,255,0.4); font-size:13px; padding:16px; }
   </style>
 </head>
 <body>
@@ -95,6 +123,14 @@
       </div>
     </div>
 
+    <h2>🎮 Activity Features</h2>
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+      Check to unlock features for each child regardless of age tier.
+    </div>
+    <div class="features-scroll">
+      <table class="features-table" id="featuresTable"></table>
+    </div>
+
     <h2>🔐 Change PIN</h2>
     <div class="card">
       <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
@@ -120,7 +156,7 @@
       else goTo('../index.html');
     }
 
-    // --- PIN Gate ---
+    // ── PIN Gate ──────────────────────────────────────────────────────────────
     function showPinGate() {
       document.getElementById('pinGate').style.display = 'block';
       document.getElementById('mainSettings').style.display = 'none';
@@ -133,6 +169,7 @@
       document.getElementById('mainSettings').style.display = 'block';
       renderProfiles();
       buildAddForm();
+      buildFeaturesTable();
       if (new URLSearchParams(window.location.search).get('action') === 'add') {
         setTimeout(() => showAddForm(), 100);
       }
@@ -200,7 +237,7 @@
       };
     }
 
-    // --- Profile Management ---
+    // ── Profile Management ────────────────────────────────────────────────────
     function renderProfiles() {
       const list = document.getElementById('profilesList');
       list.innerHTML = '';
@@ -266,16 +303,72 @@
       document.getElementById('newBirthday').value = '';
       document.getElementById('addForm').style.display = 'none';
       renderProfiles();
+      buildFeaturesTable();
     }
 
     function removeProfile(id) {
       if (confirm('Delete this profile? This cannot be undone.')) {
         deleteProfile(id);
         renderProfiles();
+        buildFeaturesTable();
       }
     }
 
-    // On load: require PIN if one is set; action=add is handled inside showMain()
+    // ── Activity Features Table ───────────────────────────────────────────────
+    function buildFeaturesTable() {
+      const table = document.getElementById('featuresTable');
+      table.innerHTML = '';
+      const profiles = getProfiles();
+
+      if (!profiles.length) {
+        table.innerHTML = '<tr><td class="no-profiles-note">No child profiles yet — add a child above.</td></tr>';
+        return;
+      }
+
+      // Header row
+      const thead = table.createTHead();
+      const hr = thead.insertRow();
+      const corner = document.createElement('th');
+      corner.textContent = 'Activity';
+      hr.appendChild(corner);
+      profiles.forEach(p => {
+        const th = document.createElement('th');
+        th.innerHTML = `<div class="child-col-header">
+          <span class="ch-avatar">${p.avatar}</span>
+          <span class="ch-name">${p.name}</span>
+        </div>`;
+        hr.appendChild(th);
+      });
+
+      // One row per activity
+      const tbody = table.createTBody();
+      ACTIVITY_FEATURES.forEach(activity => {
+        const row = tbody.insertRow();
+        const nameCell = row.insertCell();
+        nameCell.textContent = activity.name;
+
+        profiles.forEach(profile => {
+          const cell = row.insertCell();
+          activity.features.forEach(feat => {
+            const lbl = document.createElement('label');
+            lbl.className = 'feat-label';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = getProfileFeature(profile, activity.id, feat.key);
+            cb.addEventListener('change', () => {
+              setProfileFeature(profile.id, activity.id, feat.key, cb.checked);
+            });
+            const span = document.createElement('span');
+            span.textContent = feat.label;
+            lbl.appendChild(cb);
+            lbl.appendChild(span);
+            cell.appendChild(lbl);
+          });
+        });
+      });
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
     if (!localStorage.getItem(PIN_KEY)) {
       showMain();
     } else {
