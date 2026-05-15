@@ -79,7 +79,7 @@
       }, 1200);
     }
 
-    if (tier >= 5) {
+    if (tier >= 3) {
       const bar = document.getElementById('stampbar');
       bar.style.display = 'flex';
 
@@ -97,7 +97,7 @@
           bar.appendChild(chip);
         });
 
-        if (tier >= 7) {
+        if (tier >= 5) {
           ['farm','ocean','space'].forEach(key => {
             const chip = document.createElement('div');
             chip.className = 'stamp-chip';

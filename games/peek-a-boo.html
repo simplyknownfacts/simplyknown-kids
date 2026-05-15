@@ -13,7 +13,17 @@
       width:160px; height:160px; border-radius:24px;
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       font-size:72px; background:rgba(255,255,255,0.12);
-      position:absolute; inset:0;
+    }
+    .curtain-wrap .animal { position:absolute; inset:0; }
+    .animal-solo {
+      font-size: clamp(100px, 28vw, 200px);
+      line-height: 1;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+      text-align: center;
+    }
+    .animal-solo .animal-name {
+      font-size: clamp(20px, 5vw, 36px);
+      font-weight: 900; color: white; display: block; margin-top: 8px;
     }
     .animal .animal-name { font-size:16px; font-weight:800; color:white; margin-top:4px; }
     .curtain {
@@ -78,7 +88,7 @@
       if (tier <= 2) {
         const a = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
         const div = document.createElement('div');
-        div.className = 'animal pop-in';
+        div.className = 'animal-solo pop-in';
         div.innerHTML = `<span>${a.emoji}</span><span class="animal-name">${a.name}</span>`;
         stage.appendChild(div);
         hint.textContent = '';
