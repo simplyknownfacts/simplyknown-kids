@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Finger Paint</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    #canvas { position:fixed; inset:0; cursor:crosshair; touch-action:none; }
+    #toolbar {
+      position:fixed; bottom:0; left:0; right:0;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px; background:rgba(0,0,0,0.35); backdrop-filter:blur(8px);
+      z-index:10;
+    }
+    .tool-btn {
+      width:48px; height:48px; border-radius:50%;
+      border:3px solid rgba(255,255,255,0.3);
+      cursor:pointer; transition:transform 0.1s;
+    }
+    .tool-btn:active { transform:scale(0.88); }
+    .tool-btn.active { border-color:white; box-shadow:0 0 0 2px white; }
+    #clearBtn2 {
+      padding:8px 16px; border-radius:20px;
+      background:rgba(255,255,255,0.15);
+      border:2px solid rgba(255,255,255,0.25);
+      color:white; font-weight:800; font-size:13px; cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="toolbar" style="display:none;"></div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    const profile = getActiveProfile();
+    if (!profile) goProfiles();
+    const tier = getActivityTier(profile, 'finger-paint');
+    renderBackBtn('index.html');
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const PALETTE = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#ffffff'];
+    let painting = false, lastX = 0, lastY = 0;
+    let hue = 0, brushSize = 18, erasing = false;
+    let activeColorIdx = 0;
+
+    function getColor() {
+      if (tier <= 4) {
+        hue = (hue + 1) % 360;
+        return `hsl(${hue},90%,60%)`;
+      }
+      return PALETTE[activeColorIdx];
+    }
+
+    function drawStroke(x, y) {
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.strokeStyle = erasing ? '#1a1a2e' : getColor();
+      ctx.lineWidth = erasing ? brushSize * 2.5 : brushSize;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      lastX = x; lastY = y;
+    }
+
+    if (tier >= 5) {
+      const toolbar = document.getElementById('toolbar');
+      toolbar.style.display = 'flex';
+
+      PALETTE.forEach((c, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'tool-btn' + (i === 0 ? ' active' : '');
+        btn.style.background = c;
+        btn.addEventListener('click', () => {
+          erasing = false;
+          activeColorIdx = i;
+          document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+        toolbar.appendChild(btn);
+      });
+
+      if (tier >= 7) {
+        const eraser = document.createElement('div');
+        eraser.className = 'tool-btn';
+        eraser.textContent = '🧹';
+        eraser.style.cssText = 'background:rgba(255,255,255,0.1);font-size:22px;display:flex;align-items:center;justify-content:center;';
+        eraser.addEventListener('click', () => {
+          erasing = !erasing;
+          document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+          if (erasing) eraser.classList.add('active');
+        });
+        toolbar.appendChild(eraser);
+      }
+
+      const clearBtn = document.createElement('button');
+      clearBtn.id = 'clearBtn2'; clearBtn.textContent = '✨ Clear';
+      clearBtn.addEventListener('click', () => {
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      });
+      toolbar.appendChild(clearBtn);
+    }
+
+    let autoRaf, t = 0, autoActive = true;
+    if (tier <= 2) {
+      function autoDraw() {
+        if (!autoActive) { autoRaf = requestAnimationFrame(autoDraw); return; }
+        t += 0.02;
+        const x = canvas.width/2 + Math.sin(t * 1.3) * canvas.width * 0.35;
+        const y = canvas.height/2 + Math.sin(t * 1.7) * canvas.height * 0.35;
+        if (t > 0.1) {
+          ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+          hue = (hue + 0.5) % 360;
+          ctx.strokeStyle = `hsl(${hue},80%,60%)`;
+          ctx.lineWidth = 20; ctx.lineCap = 'round'; ctx.stroke();
+        }
+        lastX = x; lastY = y;
+        autoRaf = requestAnimationFrame(autoDraw);
+      }
+      lastX = canvas.width/2; lastY = canvas.height/2;
+      autoDraw();
+    }
+
+    canvas.addEventListener('pointerdown', e => {
+      if (tier <= 2) autoActive = false;
+      painting = true;
+      lastX = e.clientX; lastY = e.clientY;
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointermove', e => {
+      if (!painting) return;
+      drawStroke(e.clientX, e.clientY);
+    });
+    canvas.addEventListener('pointerup', () => { painting = false; });
+  </script>
+</body>
+</html>
