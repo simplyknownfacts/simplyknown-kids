@@ -42,7 +42,7 @@ function saveProfiles(list) {
 
 function addProfile({ name, birthday, avatar, color }) {
   const list = getProfiles();
-  const p = { id: Date.now().toString(), name, birthday, avatar, color, tierOverrides: {}, features: {} };
+  const p = { id: Date.now().toString(), name, birthday, avatar, color, voice: 'girl', tierOverrides: {}, features: {} };
   list.push(p);
   saveProfiles(list);
   return p;
