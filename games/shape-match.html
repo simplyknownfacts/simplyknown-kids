@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Shape Match</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #1a1a2e, #16213e); }
+    svg.shape { overflow: visible; cursor: pointer; touch-action: none; }
+    .shapes-row, .targets-row {
+      display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+    }
+    .target {
+      width: 120px; height: 120px;
+      border: 4px dashed rgba(255,255,255,0.3);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .target.matched { border-color: #a8e6cf; background: rgba(168,230,207,0.15); }
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <div class="title">🔷 Shape Match</div>
+    <div class="subtitle" id="hint"></div>
+    <div class="shapes-row" id="shapesRow"></div>
+    <div class="targets-row" id="targetsRow"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    const profile = getActiveProfile();
+    if (!profile) goProfiles();
+    const tier = getActivityTier(profile, 'shape-match');
+    renderBackBtn('index.html');
+
+    const SHAPES = [
+      { name: 'Circle',   color: '#FF6B6B', path: (s) => `<circle cx="50" cy="50" r="${s*0.45}" fill="currentColor"/>` },
+      { name: 'Square',   color: '#FFE66D', path: (s) => `<rect x="${s*0.1}" y="${s*0.1}" width="${s*0.8}" height="${s*0.8}" fill="currentColor"/>` },
+      { name: 'Triangle', color: '#4ECDC4', path: (s) => `<polygon points="${s/2},${s*0.1} ${s*0.9},${s*0.9} ${s*0.1},${s*0.9}" fill="currentColor"/>` },
+      { name: 'Star',     color: '#FF9F43', path: (s) => {
+        const pts = [];
+        for (let i = 0; i < 10; i++) {
+          const r = i % 2 === 0 ? s * 0.45 : s * 0.2;
+          const a = (Math.PI * 2 * i) / 10 - Math.PI / 2;
+          pts.push(`${50 + r * Math.cos(a)},${50 + r * Math.sin(a)}`);
+        }
+        return `<polygon points="${pts.join(' ')}" fill="currentColor"/>`;
+      }},
+      { name: 'Heart',    color: '#c8b8f0', path: () => `<text x="50" y="72" text-anchor="middle" font-size="72">❤️</text>` },
+      { name: 'Diamond',  color: '#45B7D1', path: (s) => `<polygon points="${s/2},${s*0.08} ${s*0.92},${s/2} ${s/2},${s*0.92} ${s*0.08},${s/2}" fill="currentColor"/>` },
+    ];
+
+    function makeSVG(shape, size, useColor = true) {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', size); svg.setAttribute('height', size);
+      svg.setAttribute('viewBox', '0 0 100 100');
+      svg.classList.add('shape');
+      svg.style.color = useColor ? shape.color : 'rgba(255,255,255,0.2)';
+      svg.innerHTML = shape.path(100);
+      return svg;
+    }
+
+    function nextRound() {
+      const shapesRow = document.getElementById('shapesRow');
+      const targetsRow = document.getElementById('targetsRow');
+      const hint = document.getElementById('hint');
+      shapesRow.innerHTML = ''; targetsRow.innerHTML = '';
+
+      const count = tier <= 4 ? 1 : tier <= 5 ? 2 : tier <= 6 ? 4 : 6;
+      const selected = [...SHAPES].sort(() => Math.random() - 0.5).slice(0, count);
+
+      if (tier <= 2) {
+        hint.textContent = '';
+        let i = 0;
+        function showNext() {
+          shapesRow.innerHTML = '';
+          const s = selected[i % selected.length];
+          const svg = makeSVG(s, 160);
+          svg.classList.add('pop-in', 'float');
+          shapesRow.appendChild(svg);
+          speak(s.name);
+          i++;
+          setTimeout(showNext, 2500);
+        }
+        showNext();
+        return;
+      }
+
+      if (tier === 3) {
+        const s = selected[0];
+        const svg = makeSVG(s, 180);
+        svg.addEventListener('click', () => { speak(s.name); playChime(); });
+        shapesRow.appendChild(svg);
+        hint.textContent = 'Tap the shape!';
+        speak(s.name);
+        return;
+      }
+
+      hint.textContent = count === 1 ? 'Drag the shape to the box!' : 'Match all the shapes!';
+      let matched = 0;
+
+      const shuffledTargets = [...selected].sort(() => Math.random() - 0.5);
+      const targetEls = {};
+      shuffledTargets.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'target';
+        div.dataset.shape = s.name;
+        div.appendChild(makeSVG(s, 60, false));
+        targetsRow.appendChild(div);
+        targetEls[s.name] = div;
+      });
+
+      selected.forEach(s => {
+        const svg = makeSVG(s, tier <= 4 ? 120 : 90);
+        svg.dataset.shape = s.name;
+        let dragging = false, startX, startY, origX, origY;
+
+        svg.addEventListener('pointerdown', e => {
+          dragging = true;
+          const r = svg.getBoundingClientRect();
+          startX = e.clientX; startY = e.clientY;
+          origX = r.left; origY = r.top;
+          svg.style.position = 'fixed';
+          svg.style.zIndex = 999;
+          svg.style.left = r.left + 'px'; svg.style.top = r.top + 'px';
+          svg.setPointerCapture(e.pointerId);
+        });
+        svg.addEventListener('pointermove', e => {
+          if (!dragging) return;
+          svg.style.left = (origX + e.clientX - startX) + 'px';
+          svg.style.top  = (origY + e.clientY - startY)  + 'px';
+        });
+        svg.addEventListener('pointerup', e => {
+          dragging = false;
+          const target = targetEls[s.name];
+          const tr = target.getBoundingClientRect();
+          if (e.clientX > tr.left && e.clientX < tr.right &&
+              e.clientY > tr.top  && e.clientY < tr.bottom) {
+            target.classList.add('matched');
+            svg.style.display = 'none';
+            playSuccess(); speak(s.name);
+            matched++;
+            if (matched === count) setTimeout(nextRound, 1500);
+          } else {
+            playBoop();
+            svg.style.position = ''; svg.style.left = ''; svg.style.top = '';
+          }
+        });
+        shapesRow.appendChild(svg);
+      });
+    }
+
+    nextRound();
+  </script>
+</body>
+</html>
