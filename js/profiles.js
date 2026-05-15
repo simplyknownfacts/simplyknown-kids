@@ -63,7 +63,7 @@ function _newProfileId() {
 
 function addProfile({ name, birthday, avatar, color }) {
   const list = getProfiles();
-  const p = { id: _newProfileId(), name, birthday, avatar, color, voice: 'girl', tierOverrides: {}, features: {} };
+  const p = { id: _newProfileId(), name, birthday, avatar, color, voice: 'girl', tierOverrides: {}, features: {}, youtube: [] };
   list.push(p);
   saveProfiles(list);
   return p;

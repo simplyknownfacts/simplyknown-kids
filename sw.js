@@ -1,4 +1,4 @@
-const CACHE = 'vb-v8';
+const CACHE = 'vb-v9';
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
@@ -8,6 +8,7 @@ const ASSETS = [
   './learning/animal-sounds.html', './learning/count-along.html',
   './art/index.html', './art/color-splash.html',
   './art/finger-paint.html', './art/stamp-art.html',
+  './videos/index.html',
   './parent/settings.html',
   './icon-192.png', './icon-512.png',
   'https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap'

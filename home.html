@@ -29,6 +29,10 @@
         <div class="icon">🎨</div>
         <div class="label" style="color:#a86cdb;">ART</div>
       </div>
+      <div class="section-btn" id="watchTile" onclick="go('videos/index.html')" style="display:none;">
+        <div class="icon">📺</div>
+        <div class="label" style="color:#FFD93D;">WATCH</div>
+      </div>
     </div>
     <div class="subtitle" style="cursor:pointer;margin-top:8px;" onclick="goProfiles()">
       ← switch child
@@ -51,6 +55,10 @@
                : `Hi ${profile.name}! 👋`;
       document.getElementById('screen').style.background =
         `linear-gradient(160deg, ${profile.color} 0%, ${profile.color}88 100%)`;
+      // Show WATCH tile only if this profile has at least one channel configured
+      if (Array.isArray(profile.youtube) && profile.youtube.length > 0) {
+        document.getElementById('watchTile').style.display = '';
+      }
     } else {
       goProfiles();
     }

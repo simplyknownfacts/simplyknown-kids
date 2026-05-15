@@ -150,6 +150,13 @@
     <h2>🎙️ Voice</h2>
     <div id="voiceSection"></div>
 
+    <h2>📺 YouTube Channels</h2>
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+      Paste a channel URL (e.g. https://www.youtube.com/@msrachel or .../channel/UC...).
+      The child can browse all videos from that channel — no recommendations across channels.
+    </div>
+    <div id="youtubeSection"></div>
+
     <h2>🔐 Change PIN</h2>
     <div class="card">
       <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
@@ -289,6 +296,7 @@
       buildAddForm();
       buildFeaturesTable();
       buildVoiceSection();
+      buildYoutubeSection();
       _refreshRecoveryStatus();
       if (new URLSearchParams(window.location.search).get('action') === 'add') {
         setTimeout(() => showAddForm(), 100);
@@ -301,6 +309,85 @@
       el.textContent = localStorage.getItem(RECOVERY_KEY)
         ? '✓ A recovery phrase is set. Use it from the PIN gate if you forget the PIN.'
         : '⚠ No recovery phrase set. Without one, a forgotten PIN can only be cleared by wiping browser storage.';
+    }
+
+    function _parseChannelId(input) {
+      const s = (input || '').trim();
+      if (!s) return null;
+      // Direct channel ID
+      if (/^UC[A-Za-z0-9_-]{20,}$/.test(s)) return s;
+      // /channel/UC... URL
+      const m = s.match(/\/channel\/(UC[A-Za-z0-9_-]+)/);
+      if (m) return m[1];
+      return null; // @handle / /user/ — caller fetches a resolver or rejects
+    }
+
+    function buildYoutubeSection() {
+      const section = document.getElementById('youtubeSection');
+      section.innerHTML = '';
+      const profiles = getProfiles();
+      if (!profiles.length) {
+        section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
+        return;
+      }
+      profiles.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const list = (p.youtube || []).map((ch, i) => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <span style="font-size:24px;">${ch.emoji || '📺'}</span>
+            <span style="color:white;font-weight:700;flex:1;">${ch.label}</span>
+            <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;"
+                    onclick="removeYoutubeChannel('${p.id}', ${i})">Remove</button>
+          </div>
+        `).join('') || '<div style="color:rgba(255,255,255,0.4);font-size:13px;padding:8px 0;">No channels yet.</div>';
+        card.innerHTML = `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:24px;">${p.avatar}</span>
+            <span style="color:white;font-weight:800;">${p.name}</span>
+          </div>
+          ${list}
+          <div style="margin-top:14px;display:grid;grid-template-columns:60px 1fr;gap:8px;">
+            <input type="text" id="yt-emoji-${p.id}" placeholder="📺" maxlength="2" style="text-align:center;font-size:20px;">
+            <input type="text" id="yt-label-${p.id}" placeholder="Label (e.g. Ms Rachel)">
+          </div>
+          <input type="text" id="yt-url-${p.id}" placeholder="Channel URL or UC... id" style="margin-top:8px;">
+          <div id="yt-msg-${p.id}" style="color:#FF6B6B;font-size:12px;margin-top:6px;min-height:14px;"></div>
+          <button class="btn btn-primary" style="margin-top:10px;width:100%;"
+                  onclick="addYoutubeChannel('${p.id}')">+ Add channel</button>
+        `;
+        section.appendChild(card);
+      });
+    }
+
+    function addYoutubeChannel(profileId) {
+      const emojiEl = document.getElementById('yt-emoji-' + profileId);
+      const labelEl = document.getElementById('yt-label-' + profileId);
+      const urlEl = document.getElementById('yt-url-' + profileId);
+      const msgEl = document.getElementById('yt-msg-' + profileId);
+      const emoji = emojiEl.value.trim() || '📺';
+      const label = labelEl.value.trim();
+      const url = urlEl.value.trim();
+      msgEl.textContent = '';
+      if (!label) { msgEl.textContent = 'Label is required.'; return; }
+      const channelId = _parseChannelId(url);
+      if (!channelId) {
+        msgEl.textContent = "Couldn't parse — paste a URL like youtube.com/channel/UC... or the UC... id directly. @handle URLs aren't supported yet.";
+        return;
+      }
+      const profile = getProfiles().find(p => p.id === profileId);
+      profile.youtube = profile.youtube || [];
+      profile.youtube.push({ emoji, label, channelId });
+      updateProfile(profileId, { youtube: profile.youtube });
+      buildYoutubeSection();
+    }
+
+    function removeYoutubeChannel(profileId, index) {
+      const profile = getProfiles().find(p => p.id === profileId);
+      if (!profile || !profile.youtube) return;
+      profile.youtube.splice(index, 1);
+      updateProfile(profileId, { youtube: profile.youtube });
+      buildYoutubeSection();
     }
 
     function buildVoiceSection() {

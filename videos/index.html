@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>SimplyKnown Kids — Videos</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #2d1b5e, #1a1a4e); overflow-y: auto; }
+    .channels-screen { min-height: 100vh; padding: 80px 24px 60px; }
+    .channels-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 20px; max-width: 720px; margin: 24px auto;
+    }
+    .channel-tile {
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 24px 12px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .channel-tile:active { transform: scale(0.94); }
+    .channel-tile .ct-emoji { font-size: 56px; line-height: 1; }
+    .channel-tile .ct-label { color:white; font-weight: 900; font-size: 16px; text-align:center; }
+    .empty-state {
+      color: rgba(255,255,255,0.5); font-size: 15px;
+      text-align: center; padding: 60px 20px; line-height: 1.5;
+    }
+    #playerWrap {
+      position: fixed; inset: 0; background: #000;
+      display: none; flex-direction: column; z-index: 100;
+    }
+    #playerWrap.active { display: flex; }
+    #playerFrame { flex: 1; width: 100%; border: 0; }
+    #playerBack {
+      position: absolute; top: 16px; left: 16px;
+      background: rgba(0,0,0,0.6); color: white;
+      border: 2px solid rgba(255,255,255,0.4);
+      width: 56px; height: 56px; border-radius: 50%;
+      font-size: 24px; cursor: pointer; z-index: 101;
+      display: flex; align-items: center; justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="channels-screen" id="channelsScreen">
+    <div class="title">📺 Watch</div>
+    <div class="subtitle" id="subtitle"></div>
+    <div class="channels-grid" id="channelsGrid"></div>
+  </div>
+
+  <div id="playerWrap">
+    <button id="playerBack" aria-label="Back">←</button>
+    <iframe id="playerFrame" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    (function() {
+      const profile = getActiveProfile();
+      if (!profile) { goProfiles(); return; }
+      renderBackBtn('../home.html');
+
+      const channels = profile.youtube || [];
+      const subtitle = document.getElementById('subtitle');
+      const grid = document.getElementById('channelsGrid');
+
+      if (!channels.length) {
+        subtitle.textContent = '';
+        grid.outerHTML = `<div class="empty-state">
+          No channels yet for ${profile.name}.<br>
+          A grown-up can add channels in Parent Settings.
+        </div>`;
+        return;
+      }
+
+      subtitle.textContent = `${profile.name}'s shows`;
+
+      channels.forEach(ch => {
+        const tile = document.createElement('div');
+        tile.className = 'channel-tile';
+        tile.innerHTML = `
+          <span class="ct-emoji">${ch.emoji || '📺'}</span>
+          <span class="ct-label">${ch.label}</span>
+        `;
+        tile.addEventListener('click', () => openChannel(ch));
+        grid.appendChild(tile);
+      });
+
+      function openChannel(ch) {
+        const frame = document.getElementById('playerFrame');
+        const wrap = document.getElementById('playerWrap');
+        // Embed the channel's uploads playlist (channel IDs starting with UC → playlist UU + rest).
+        // Plays through videos in order. rel=0 limits cross-channel recommendations.
+        const uploadsId = 'UU' + ch.channelId.slice(2);
+        const src = `https://www.youtube-nocookie.com/embed/videoseries?list=${uploadsId}&autoplay=1&modestbranding=1&rel=0&playsinline=1`;
+        frame.src = src;
+        wrap.classList.add('active');
+      }
+
+      document.getElementById('playerBack').addEventListener('click', () => {
+        const frame = document.getElementById('playerFrame');
+        frame.src = ''; // stop playback
+        document.getElementById('playerWrap').classList.remove('active');
+      });
+    })();
+  </script>
+</body>
+</html>
