@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Valiant Breeze</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%); }
+    .profiles-row { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; }
+    .add-btn {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 3px dashed rgba(255,255,255,0.25);
+      font-size: 32px; color: rgba(255,255,255,0.4);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background 0.15s;
+      margin-top: 20px;
+    }
+    .add-btn:active { background: rgba(255,255,255,0.18); }
+    .stars { position: fixed; inset: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <canvas class="stars" id="stars"></canvas>
+  <div class="screen">
+    <div class="title">✨ Who's Playing? ✨</div>
+    <div class="profiles-row" id="profilesRow"></div>
+    <div class="add-btn" id="addBtn" title="Add child">＋</div>
+    <div class="subtitle" id="parentHint" style="margin-top:32px;font-size:12px;opacity:0.3;">
+      Hold ⚙️ for 3 seconds to open Parent Settings
+    </div>
+    <div style="position:fixed;bottom:20px;right:20px;font-size:28px;cursor:pointer;opacity:0.3"
+         id="settingsGear">⚙️</div>
+  </div>
+
+  <script src="js/tiers.js"></script>
+  <script src="js/profiles.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Starfield background
+    const canvas = document.getElementById('stars');
+    const sctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    for (let i = 0; i < 120; i++) {
+      sctx.beginPath();
+      sctx.arc(Math.random() * canvas.width, Math.random() * canvas.height,
+               Math.random() * 1.5, 0, Math.PI * 2);
+      sctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.6 + 0.1})`;
+      sctx.fill();
+    }
+
+    // Render profiles
+    function renderProfiles() {
+      const row = document.getElementById('profilesRow');
+      row.innerHTML = '';
+      getProfiles().forEach(p => {
+        const ageMonths = getAgeMonths(p.birthday);
+        const ageLabel = ageMonths < 24
+          ? `${ageMonths} months`
+          : `${Math.floor(ageMonths / 12)} yrs ${ageMonths % 12}mo`;
+        const btn = document.createElement('div');
+        btn.className = 'avatar-btn pop-in';
+        btn.style.background = `linear-gradient(135deg, ${p.color}, ${p.color}aa)`;
+        btn.style.boxShadow = `0 8px 28px ${p.color}55`;
+        btn.innerHTML = `
+          <span class="emoji">${p.avatar}</span>
+          <span class="name">${p.name}</span>
+          <span class="age-label">${ageLabel}</span>`;
+        btn.addEventListener('click', () => {
+          playChime();
+          setActiveProfile(p.id);
+          goTo('home.html');
+        });
+        row.appendChild(btn);
+      });
+    }
+    renderProfiles();
+
+    // Add child
+    document.getElementById('addBtn').addEventListener('click', () => {
+      goTo('parent/settings.html?action=add');
+    });
+
+    // Parent settings (3-sec hold on gear icon)
+    let holdTimer = null;
+    const gear = document.getElementById('settingsGear');
+    gear.addEventListener('pointerdown', () => {
+      holdTimer = setTimeout(() => goTo('parent/settings.html'), 3000);
+    });
+    gear.addEventListener('pointerup', () => clearTimeout(holdTimer));
+    gear.addEventListener('pointerleave', () => clearTimeout(holdTimer));
+
+    // Seed demo profiles if none exist (remove before shipping)
+    if (getProfiles().length === 0) {
+      const today = new Date();
+      const sub = (mo) => new Date(today.getFullYear(), today.getMonth() - mo, today.getDate())
+                            .toISOString().slice(0,10);
+      addProfile({ name: 'Baby', birthday: sub(8),  avatar: '🐣', color: '#c8b8f0' });
+      addProfile({ name: 'Toddler', birthday: sub(20), avatar: '🐸', color: '#4ECDC4' });
+      renderProfiles();
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>
