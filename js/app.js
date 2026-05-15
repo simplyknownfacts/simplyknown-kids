@@ -4,9 +4,10 @@ function goHome()    { goTo(rootPath() + 'home.html'); }
 function goProfiles(){ goTo(rootPath() + 'index.html'); }
 
 function rootPath() {
-  // Works from both root and sub-folders (games/, learning/, art/)
-  const depth = window.location.pathname.split('/').length - 2;
-  return depth > 0 ? '../'.repeat(depth) : './';
+  const p = window.location.pathname;
+  return (p.includes('/games/') || p.includes('/learning/') ||
+          p.includes('/art/')   || p.includes('/parent/'))
+    ? '../' : './';
 }
 
 // Audio context (lazy init — must be after user gesture on iOS)
