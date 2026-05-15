@@ -89,15 +89,50 @@
       goTo('parent/settings.html');
     });
 
-    // Seed demo profiles if none exist (remove before shipping)
+    // Seed demo profiles + default video channels if none exist
     if (getProfiles().length === 0) {
       const today = new Date();
       const sub = (mo) => new Date(today.getFullYear(), today.getMonth() - mo, today.getDate())
                             .toISOString().slice(0,10);
-      addProfile({ name: 'Baby', birthday: sub(8),  avatar: '🐣', color: '#c8b8f0' });
-      addProfile({ name: 'Toddler', birthday: sub(20), avatar: '🐸', color: '#4ECDC4' });
+      const baby = addProfile({ name: 'Baby', birthday: sub(8),  avatar: '🐣', color: '#c8b8f0' });
+      const toddler = addProfile({ name: 'Toddler', birthday: sub(20), avatar: '🐸', color: '#4ECDC4' });
+      updateProfile(baby.id, { youtube: [
+        { emoji:'🐻', label:'Hey Bear Sensory',   channelId:'UCtf9cFBJkHVAf2qMqF01xYg' },
+        { emoji:'🎵', label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
+      ]});
+      updateProfile(toddler.id, { youtube: [
+        { emoji:'👩‍🏫', label:'Ms Rachel',          channelId:'UCG2CL6EUjG8TVT1Tpl9nJdg' },
+        { emoji:'🐒',  label:'Curious George',    channelId:'UCu7IDy0y-ZA0qaG51wrQY6w' },
+        { emoji:'🎵',  label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
+      ]});
       renderProfiles();
     }
+
+    // Backfill: existing profiles with no youtube array (pre-Videos feature)
+    (function _backfillYoutube() {
+      const list = getProfiles();
+      let changed = false;
+      const defaultsByName = {
+        Baby: [
+          { emoji:'🐻', label:'Hey Bear Sensory',   channelId:'UCtf9cFBJkHVAf2qMqF01xYg' },
+          { emoji:'🎵', label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
+        ],
+        Toddler: [
+          { emoji:'👩‍🏫', label:'Ms Rachel',          channelId:'UCG2CL6EUjG8TVT1Tpl9nJdg' },
+          { emoji:'🐒',  label:'Curious George',    channelId:'UCu7IDy0y-ZA0qaG51wrQY6w' },
+          { emoji:'🎵',  label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
+        ],
+      };
+      for (const p of list) {
+        if (!Array.isArray(p.youtube) || p.youtube.length === 0) {
+          if (defaultsByName[p.name]) {
+            p.youtube = defaultsByName[p.name];
+            changed = true;
+          }
+        }
+      }
+      if (changed) saveProfiles(list);
+    })();
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js');
