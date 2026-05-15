@@ -7,17 +7,24 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     body { background: linear-gradient(160deg, #1a1a2e, #16213e); }
-    svg.shape { overflow: visible; cursor: pointer; touch-action: none; }
+    svg.shape { overflow: visible; cursor: grab; touch-action: none; }
+    svg.shape:active { cursor: grabbing; }
     .shapes-row, .targets-row {
       display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
     }
     .target {
-      width: 120px; height: 120px;
-      border: 4px dashed rgba(255,255,255,0.3);
+      width: 130px; height: 130px;
+      border: 4px dashed rgba(255,255,255,0.5);
       border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; background: rgba(255,255,255,0.05);
     }
-    .target.matched { border-color: #a8e6cf; background: rgba(168,230,207,0.15); }
+    .target-label {
+      font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.4);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .target.matched { border-color: #a8e6cf; background: rgba(168,230,207,0.2); border-style: solid; }
+    .drag-hint { font-size: 24px; color: rgba(255,255,255,0.5); margin: 4px 0; }
   </style>
 </head>
 <body>
@@ -96,15 +103,26 @@
       if (tier === 3) {
         const s = selected[0];
         const svg = makeSVG(s, 180);
-        svg.addEventListener('click', () => { speak(s.name); playChime(); });
+        svg.classList.add('pulse');
+        svg.addEventListener('click', () => {
+          speak(s.name); playChime();
+          svg.classList.remove('pulse');
+          shapeTimer = setTimeout(nextRound, 2000);
+        });
         shapesRow.appendChild(svg);
-        hint.textContent = 'Tap the shape!';
+        hint.textContent = `Tap the ${s.name}!`;
         speak(s.name);
         return;
       }
 
-      hint.textContent = count === 1 ? 'Drag the shape to the box!' : 'Match all the shapes!';
+      hint.textContent = count === 1 ? '👆 Drag the shape into the box below!' : '👆 Drag each shape to its matching box!';
       let matched = 0;
+
+      // Arrow separator between shapes and targets
+      const arrow = document.createElement('div');
+      arrow.className = 'drag-hint';
+      arrow.textContent = '⬇️';
+      shapesRow.after(arrow);
 
       const shuffledTargets = [...selected].sort(() => Math.random() - 0.5);
       const targetEls = {};
@@ -112,17 +130,23 @@
         const div = document.createElement('div');
         div.className = 'target';
         div.dataset.shape = s.name;
-        div.appendChild(makeSVG(s, 60, false));
+        div.appendChild(makeSVG(s, 55, false));
+        const lbl = document.createElement('div');
+        lbl.className = 'target-label';
+        lbl.textContent = 'drop here';
+        div.appendChild(lbl);
         targetsRow.appendChild(div);
         targetEls[s.name] = div;
       });
 
       selected.forEach(s => {
         const svg = makeSVG(s, tier <= 4 ? 120 : 90);
+        svg.classList.add('pulse');
         svg.dataset.shape = s.name;
         let dragging = false, startX, startY, origX, origY;
 
         svg.addEventListener('pointerdown', e => {
+          svg.classList.remove('pulse');
           dragging = true;
           const r = svg.getBoundingClientRect();
           startX = e.clientX; startY = e.clientY;
