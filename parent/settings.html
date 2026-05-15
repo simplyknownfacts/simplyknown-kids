@@ -87,13 +87,29 @@
   <div id="pinGate" class="settings-screen" style="text-align:center;">
     <div class="title" style="margin-bottom:8px;">⚙️ Parent Settings</div>
     <div class="subtitle" id="pinPrompt">Enter your 4-digit PIN</div>
+    <div id="lockoutBanner" style="display:none;color:#FF6B6B;font-weight:800;margin:10px 0;"></div>
     <div class="pin-display" id="pinDisplay">
       <div class="pin-dot"></div><div class="pin-dot"></div>
       <div class="pin-dot"></div><div class="pin-dot"></div>
     </div>
     <div class="pin-pad" id="pinPad"></div>
-    <div style="margin-top:20px;">
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px;align-items:center;">
       <button class="btn btn-ghost" onclick="setupMode()">Set up new PIN</button>
+      <button class="btn btn-ghost" id="forgotPinBtn" onclick="forgotPinFlow()" style="display:none;">Forgot PIN? Use recovery phrase</button>
+    </div>
+  </div>
+
+  <!-- Recovery prompt overlay -->
+  <div id="recoveryOverlay" class="settings-screen" style="display:none;text-align:center;">
+    <div class="title" style="margin-bottom:8px;">🔑 Recovery phrase</div>
+    <div class="subtitle" id="recoveryPrompt" style="margin-bottom:12px;"></div>
+    <div class="card" style="max-width:420px;margin:0 auto;">
+      <input type="password" id="recoveryInput" placeholder="Enter recovery phrase" autocomplete="off">
+      <div class="row-between" style="margin-top:14px;">
+        <button class="btn btn-primary" onclick="submitRecovery()">Continue</button>
+        <button class="btn btn-ghost" onclick="cancelRecovery()">Cancel</button>
+      </div>
+      <div id="recoveryMsg" style="color:#FF6B6B;font-size:13px;font-weight:700;margin-top:10px;min-height:18px;"></div>
     </div>
   </div>
 
@@ -131,17 +147,29 @@
       <table class="features-table" id="featuresTable"></table>
     </div>
 
+    <h2>🎙️ Voice</h2>
+    <div id="voiceSection"></div>
+
     <h2>🔐 Change PIN</h2>
     <div class="card">
       <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
+    </div>
+
+    <h2>🔑 Recovery phrase</h2>
+    <div class="card">
+      <div id="recoveryStatus" style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:10px;"></div>
+      <button class="btn btn-ghost" style="width:100%;" onclick="promptSetRecovery()">Set / change recovery phrase</button>
     </div>
   </div>
 
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script>
-    const PIN_KEY = 'vb_pin';
+    const PIN_KEY = 'vb_pin';            // stores JSON {hash,salt} now; legacy = raw 4 digits
+    const RECOVERY_KEY = 'vb_recovery';   // stores JSON {hash,salt} for recovery phrase
+    const LOCKOUT_KEY = 'vb_pin_lockout'; // stores JSON {attempts,lockedUntil}
     const AVATARS = ['🐻','🐸','🐱','🐶','🐼','🦊','🐰','🐯','🐧','🦋','🌸','⭐'];
     const COLORS  = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#a8e6cf'];
 
@@ -149,6 +177,60 @@
     let selectedColor  = COLORS[0];
     let pinEntry = '';
     let pinSetupStep = 0, pinFirst = '';
+    let recoveryMode = null; // null | 'unlock' | 'set'
+    let lockoutTimer = null;
+
+    // ── Hashing (Web Crypto SHA-256 with per-PIN salt) ────────────────────────
+    async function _sha256Hex(str) {
+      const buf = new TextEncoder().encode(str);
+      const hash = await crypto.subtle.digest('SHA-256', buf);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    function _genSalt() {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    async function _hashWithSalt(secret, salt) {
+      return await _sha256Hex(salt + ':' + secret);
+    }
+    async function _matchesStored(entered, key) {
+      const stored = localStorage.getItem(key);
+      if (!stored) return false;
+      if (stored.startsWith('{')) {
+        try {
+          const { hash, salt } = JSON.parse(stored);
+          const got = await _hashWithSalt(entered, salt);
+          return got === hash;
+        } catch { return false; }
+      }
+      return entered === stored; // legacy plaintext PIN
+    }
+    async function _storeHashed(secret, key) {
+      const salt = _genSalt();
+      const hash = await _hashWithSalt(secret, salt);
+      localStorage.setItem(key, JSON.stringify({ hash, salt }));
+    }
+
+    // ── Lockout state (5 wrong → 5 min, 10 wrong → 30 min) ─────────────────────
+    function _getLockout() {
+      try { return JSON.parse(localStorage.getItem(LOCKOUT_KEY)) || { attempts:0, lockedUntil:0 }; }
+      catch { return { attempts:0, lockedUntil:0 }; }
+    }
+    function _setLockout(s) { localStorage.setItem(LOCKOUT_KEY, JSON.stringify(s)); }
+    function _clearLockout() { localStorage.removeItem(LOCKOUT_KEY); }
+    function _isLocked() { return _getLockout().lockedUntil > Date.now(); }
+    function _lockoutRemainingSec() {
+      return Math.max(0, Math.ceil((_getLockout().lockedUntil - Date.now()) / 1000));
+    }
+    function _recordFailedAttempt() {
+      const l = _getLockout();
+      l.attempts = (l.attempts || 0) + 1;
+      if (l.attempts >= 10)       l.lockedUntil = Date.now() + 30 * 60 * 1000;
+      else if (l.attempts >= 5)   l.lockedUntil = Date.now() +  5 * 60 * 1000;
+      _setLockout(l);
+      return l;
+    }
 
     function goBack() {
       const ref = document.referrer;
@@ -160,19 +242,118 @@
     function showPinGate() {
       document.getElementById('pinGate').style.display = 'block';
       document.getElementById('mainSettings').style.display = 'none';
+      document.getElementById('recoveryOverlay').style.display = 'none';
+      // Show "Forgot PIN?" only if a recovery phrase is set
+      const forgotBtn = document.getElementById('forgotPinBtn');
+      if (forgotBtn) forgotBtn.style.display = localStorage.getItem(RECOVERY_KEY) ? '' : 'none';
       buildPinPad();
       updateDots();
+      _refreshLockoutUI();
+    }
+
+    function _refreshLockoutUI() {
+      const banner = document.getElementById('lockoutBanner');
+      const pad = document.getElementById('pinPad');
+      if (lockoutTimer) { clearInterval(lockoutTimer); lockoutTimer = null; }
+      if (_isLocked()) {
+        const tick = () => {
+          const remain = _lockoutRemainingSec();
+          if (remain <= 0) {
+            banner.style.display = 'none';
+            pad.style.pointerEvents = '';
+            pad.style.opacity = '';
+            clearInterval(lockoutTimer); lockoutTimer = null;
+            // Don't auto-clear attempt count — only a correct PIN or recovery clears it
+            return;
+          }
+          const m = Math.floor(remain / 60), s = remain % 60;
+          banner.textContent = `🔒 Locked out — try again in ${m}:${String(s).padStart(2,'0')}`;
+          banner.style.display = '';
+        };
+        tick();
+        lockoutTimer = setInterval(tick, 1000);
+        pad.style.pointerEvents = 'none';
+        pad.style.opacity = '0.35';
+      } else {
+        banner.style.display = 'none';
+        pad.style.pointerEvents = '';
+        pad.style.opacity = '';
+      }
     }
 
     function showMain() {
       document.getElementById('pinGate').style.display = 'none';
       document.getElementById('mainSettings').style.display = 'block';
+      document.getElementById('recoveryOverlay').style.display = 'none';
       renderProfiles();
       buildAddForm();
       buildFeaturesTable();
+      buildVoiceSection();
+      _refreshRecoveryStatus();
       if (new URLSearchParams(window.location.search).get('action') === 'add') {
         setTimeout(() => showAddForm(), 100);
       }
+    }
+
+    function _refreshRecoveryStatus() {
+      const el = document.getElementById('recoveryStatus');
+      if (!el) return;
+      el.textContent = localStorage.getItem(RECOVERY_KEY)
+        ? '✓ A recovery phrase is set. Use it from the PIN gate if you forget the PIN.'
+        : '⚠ No recovery phrase set. Without one, a forgotten PIN can only be cleared by wiping browser storage.';
+    }
+
+    function buildVoiceSection() {
+      const section = document.getElementById('voiceSection');
+      section.innerHTML = '';
+      const profiles = getProfiles();
+      if (!profiles.length) {
+        section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
+        return;
+      }
+      const VOICES = [
+        { id:'browser', label:'Browser default' },
+        { id:'girl',    label:'Nurturing Girl (Sarah)' },
+        { id:'boy',     label:'Nurturing Boy (Josh)' },
+      ];
+      profiles.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const current = p.voice || 'browser';
+        const opts = VOICES.map(v => `
+          <label style="display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer;">
+            <input type="radio" name="voice-${p.id}" value="${v.id}" ${current === v.id ? 'checked' : ''}
+                   style="width:18px;height:18px;accent-color:#4ECDC4;">
+            <span style="color:white;font-weight:700;font-size:14px;">${v.label}</span>
+          </label>
+        `).join('');
+        card.innerHTML = `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:24px;">${p.avatar}</span>
+            <span style="color:white;font-weight:800;">${p.name}</span>
+          </div>
+          ${opts}
+          <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:8px 14px;"
+                  onclick="testVoice('${p.id}')">▶ Play sample</button>
+        `;
+        card.querySelectorAll('input[type=radio]').forEach(r => {
+          r.addEventListener('change', () => {
+            updateProfile(p.id, { voice: r.value });
+          });
+        });
+        section.appendChild(card);
+      });
+    }
+
+    function testVoice(profileId) {
+      const p = getProfiles().find(x => x.id === profileId);
+      if (!p) return;
+      const v = p.voice || 'browser';
+      // Use the same speak() pipeline by temporarily activating this profile
+      const prev = localStorage.getItem('vb_active_profile');
+      setActiveProfile(profileId);
+      speak('Yes! Apple is Red!');
+      if (prev) localStorage.setItem('vb_active_profile', prev);
     }
 
     function buildPinPad() {
@@ -201,13 +382,34 @@
       });
     }
 
-    function checkPin() {
+    async function checkPin() {
+      if (_isLocked()) { _refreshLockoutUI(); return; }
       const stored = localStorage.getItem(PIN_KEY);
       if (!stored) { showMain(); return; }
-      if (pinEntry === stored) { showMain(); }
-      else {
-        document.getElementById('pinPrompt').textContent = 'Incorrect PIN — try again';
+      const ok = await _matchesStored(pinEntry, PIN_KEY);
+      if (ok) {
+        // Migrate legacy plaintext PIN to hashed form on first successful login
+        if (!stored.startsWith('{')) {
+          await _storeHashed(pinEntry, PIN_KEY);
+        }
+        _clearLockout();
+        // Prompt to set recovery phrase if missing
+        if (!localStorage.getItem(RECOVERY_KEY)) {
+          showMain();
+          setTimeout(promptSetRecovery, 250);
+        } else {
+          showMain();
+        }
+      } else {
+        const l = _recordFailedAttempt();
         pinEntry = ''; updateDots();
+        if (l.lockedUntil > Date.now()) {
+          _refreshLockoutUI();
+        } else {
+          const left = 5 - (l.attempts % 5);
+          document.getElementById('pinPrompt').textContent =
+            `Incorrect PIN — ${l.attempts >= 5 ? 10 - l.attempts : left} attempt${left===1?'':'s'} before lockout`;
+        }
       }
     }
 
@@ -217,7 +419,7 @@
       showPinGate();
       buildPinPad();
       const origCheck = checkPin;
-      window.checkPin = function() {
+      window.checkPin = async function() {
         if (pinSetupStep === 1) {
           pinFirst = pinEntry; pinEntry = '';
           document.getElementById('pinPrompt').textContent = 'Enter it again to confirm';
@@ -225,9 +427,15 @@
           pinSetupStep = 2;
         } else {
           if (pinEntry === pinFirst) {
-            localStorage.setItem(PIN_KEY, pinEntry);
+            await _storeHashed(pinEntry, PIN_KEY);
+            _clearLockout();
             window.checkPin = origCheck;
-            showMain();
+            if (!localStorage.getItem(RECOVERY_KEY)) {
+              showMain();
+              setTimeout(promptSetRecovery, 250);
+            } else {
+              showMain();
+            }
           } else {
             document.getElementById('pinPrompt').textContent = "Didn't match — start over";
             pinEntry = ''; pinSetupStep = 1; pinFirst = '';
@@ -235,6 +443,58 @@
           }
         }
       };
+    }
+
+    // ── Recovery phrase ───────────────────────────────────────────────────────
+    function _showRecoveryOverlay(promptText) {
+      document.getElementById('pinGate').style.display = 'none';
+      document.getElementById('mainSettings').style.display = 'none';
+      document.getElementById('recoveryOverlay').style.display = 'block';
+      document.getElementById('recoveryPrompt').textContent = promptText;
+      document.getElementById('recoveryInput').value = '';
+      document.getElementById('recoveryMsg').textContent = '';
+      setTimeout(() => document.getElementById('recoveryInput').focus(), 50);
+    }
+    function forgotPinFlow() {
+      if (!localStorage.getItem(RECOVERY_KEY)) {
+        document.getElementById('pinPrompt').textContent = 'No recovery phrase set';
+        return;
+      }
+      recoveryMode = 'unlock';
+      _showRecoveryOverlay('Enter your recovery phrase to reset the PIN and lockout.');
+    }
+    function promptSetRecovery() {
+      recoveryMode = 'set';
+      _showRecoveryOverlay('Set a recovery phrase (12+ chars). Save it in a password manager — it is the only way to reset the PIN without clearing browser storage.');
+    }
+    async function submitRecovery() {
+      const val = document.getElementById('recoveryInput').value;
+      const msg = document.getElementById('recoveryMsg');
+      if (recoveryMode === 'set') {
+        if (!val || val.length < 12) {
+          msg.textContent = 'Recovery phrase must be at least 12 characters.';
+          return;
+        }
+        await _storeHashed(val, RECOVERY_KEY);
+        recoveryMode = null;
+        showMain();
+      } else if (recoveryMode === 'unlock') {
+        const ok = await _matchesStored(val, RECOVERY_KEY);
+        if (!ok) { msg.textContent = 'Incorrect recovery phrase.'; return; }
+        // Clear PIN + lockout, drop user into setupMode to choose a fresh PIN
+        localStorage.removeItem(PIN_KEY);
+        _clearLockout();
+        recoveryMode = null;
+        setupMode();
+      }
+    }
+    function cancelRecovery() {
+      recoveryMode = null;
+      if (localStorage.getItem(PIN_KEY)) {
+        showPinGate();
+      } else {
+        showMain();
+      }
     }
 
     // ── Profile Management ────────────────────────────────────────────────────
@@ -304,6 +564,7 @@
       document.getElementById('addForm').style.display = 'none';
       renderProfiles();
       buildFeaturesTable();
+      buildVoiceSection();
     }
 
     function removeProfile(id) {

@@ -58,12 +58,73 @@ function playSuccess() {
 function playChime() { playTone(880, 0.4, 0.2); }
 function playBoop()  { playTone(330, 0.1, 0.2, 'square'); }
 
-function speak(text, rate = 0.85, pitch = 1.2) {
+function _browserSpeak(text, rate = 0.85, pitch = 1.2) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.rate = rate; u.pitch = pitch;
   window.speechSynthesis.speak(u);
+}
+
+// Decompose count-along style "5 ducks" or "Yes! 5 ducks!" into clip list.
+function _matchClips(text) {
+  if (typeof VOICE_MANIFEST === 'undefined') return null;
+  const phrases = VOICE_MANIFEST.phraseHash;
+
+  // Exact match first
+  if (phrases[text] !== undefined) return [text];
+
+  // Pattern: "N noun" or "N noun!" (count-along)
+  const m1 = text.match(/^(\d+)\s+([a-z\s]+?)[!.]?$/i);
+  if (m1) {
+    const num = m1[1], noun = m1[2].trim().toLowerCase();
+    if (phrases[num] && phrases[noun]) return [num, noun];
+  }
+
+  // Pattern: "Yes! N noun!" (count-along success)
+  const m2 = text.match(/^Yes!\s+(\d+)\s+([a-z\s]+?)!$/i);
+  if (m2) {
+    const num = m2[1], noun = m2[2].trim().toLowerCase();
+    if (phrases['Yes!'] && phrases[num] && phrases[noun]) return ['Yes!', num, noun];
+  }
+
+  // Pattern: "How many ducks?"
+  const m3 = text.match(/^How many\s+([a-z\s]+?)\??$/i);
+  if (m3) {
+    const noun = m3[1].trim().toLowerCase();
+    if (phrases['How many'] && phrases[noun]) return ['How many', noun];
+  }
+
+  return null;
+}
+
+let _audioQueue = Promise.resolve();
+function _playClip(voice, hash) {
+  return new Promise(resolve => {
+    const audio = new Audio(`${rootPath()}audio/${voice}/${hash}.mp3`);
+    audio.onended = audio.onerror = () => resolve();
+    audio.play().catch(() => resolve());
+  });
+}
+
+function _voiceSpeak(text, voice) {
+  const clips = _matchClips(text);
+  if (!clips) return _browserSpeak(text);
+  const hashes = clips.map(c => VOICE_MANIFEST.phraseHash[c]);
+  _audioQueue = _audioQueue.then(async () => {
+    for (const h of hashes) await _playClip(voice, h);
+  });
+}
+
+function _getActiveVoice() {
+  const p = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
+  return (p && p.voice) || 'browser';
+}
+
+function speak(text, rate = 0.85, pitch = 1.2) {
+  const v = _getActiveVoice();
+  if (v === 'browser') return _browserSpeak(text, rate, pitch);
+  return _voiceSpeak(text, v);
 }
 
 // Render a standard back button
