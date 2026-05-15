@@ -110,8 +110,8 @@
       animId = requestAnimationFrame(draw);
     }
 
-    const spawnMs = tier <= 2 ? 1500 : floatOn ? 1000 : 2500;
-    const maxBubbles = tier <= 2 ? 5 : floatOn ? 8 : 1;
+    const spawnMs    = tier <= 2 ? 700 : floatOn ? 600 : 1200;
+    const maxBubbles = tier <= 2 ? 10  : floatOn ? 12  : 4;
     const spawnTimer = setInterval(() => {
       if (bubbles.filter(b => !b.popping).length < maxBubbles) spawnBubble();
     }, spawnMs);

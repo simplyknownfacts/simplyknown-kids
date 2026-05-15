@@ -31,12 +31,17 @@
       25%     { transform:translate(-50%,-50%) rotate(-10deg) scale(1.1); }
       75%     { transform:translate(-50%,-50%) rotate(10deg) scale(1.1); }
     }
+    @keyframes grow {
+      0%   { transform:translate(-50%,-50%) scale(1);   }
+      100% { transform:translate(-50%,-50%) scale(1.6); }
+    }
     @keyframes fadeOut {
-      0%   { transform:translate(-50%,-50%) scale(1);   opacity:1; }
+      0%   { transform:translate(-50%,-50%) scale(1.6); opacity:1; }
       100% { transform:translate(-50%,-50%) scale(0.5); opacity:0; }
     }
     .animal-float.popping  { animation:animalPop 0.4s ease forwards; }
     .animal-float.jiggling { animation:jiggle 0.45s ease; }
+    .animal-float.growing  { animation:grow 0.5s ease forwards; }
     .animal-float.fading   { animation:fadeOut 0.4s ease forwards;
                              pointer-events:none; }
 
@@ -141,21 +146,18 @@
         const record = { x, y, el, a };
         const onTap = (ev) => {
           ev.preventDefault();
-          if (el.classList.contains('fading')) return;
-          el.classList.remove('jiggling');
+          if (el.classList.contains('fading') || el.classList.contains('growing')) return;
+          el.classList.remove('popping');
           void el.offsetWidth;
-          el.classList.add('jiggling');
+          el.classList.add('growing');
           speakAnimal(a);
           playChime();
-          setTimeout(() => removeAnimal(record), 500);
-          setTimeout(spawnGardenAnimal, 700);
+          setTimeout(() => removeAnimal(record), 700);
+          setTimeout(spawnGardenAnimal, 900);
         };
         el.addEventListener('pointerdown', onTap);
         garden.appendChild(el);
         gardenAnimals.push(record);
-
-        // For tier ≤ 2: auto-speak on first spawn
-        if (tier <= 2) setTimeout(() => speakAnimal(a), 400);
       }
 
       // Seed garden with initial animals

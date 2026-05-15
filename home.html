@@ -44,7 +44,10 @@
     const profile = getActiveProfile();
     if (profile) {
       document.getElementById('childAvatar').textContent = profile.avatar;
-      document.getElementById('greeting').textContent = `Hi ${profile.name}! 👋`;
+      const t = tierForAge(getAgeMonths(profile.birthday));
+      document.getElementById('greeting').textContent =
+        t <= 2 ? `Hi ${profile.name}! Let's play! 👋`
+               : `Hi ${profile.name}! 👋`;
       document.getElementById('screen').style.background =
         `linear-gradient(160deg, ${profile.color} 0%, ${profile.color}88 100%)`;
     } else {

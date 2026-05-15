@@ -18,9 +18,6 @@ const ACTIVITY_FEATURES = [
     { key:'scoreCounter',  label:'Score counter' },
     { key:'floatMode',     label:'Floating bubbles (race mode)' },
   ]},
-  { id:'peek-a-boo',    name:'Peek-a-Boo',    features:[
-    { key:'multiChoice',   label:'Multiple curtains (guess mode)' },
-  ]},
   { id:'shape-match',   name:'Shape Match',   features:[
     { key:'dragMode',      label:'Drag-to-match mode' },
   ]},

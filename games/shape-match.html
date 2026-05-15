@@ -84,34 +84,17 @@
       const count = tier <= 4 ? 1 : tier <= 5 ? 2 : tier <= 6 ? 4 : 6;
       const selected = [...SHAPES].sort(() => Math.random() - 0.5).slice(0, count);
 
-      if (tier <= 2) {
-        hint.textContent = '';
-        let i = 0;
-        function showNext() {
-          shapesRow.innerHTML = '';
-          const s = selected[i % selected.length];
-          const svg = makeSVG(s, 160);
-          svg.classList.add('pop-in', 'float');
-          shapesRow.appendChild(svg);
-          speak(s.name);
-          i++;
-          shapeTimer = setTimeout(showNext, 2500);
-        }
-        showNext();
-        return;
-      }
-
       if (!dragOn) {
         const s = selected[0];
-        const svg = makeSVG(s, 180);
+        const svg = makeSVG(s, tier <= 2 ? 200 : 180);
         svg.classList.add('pulse');
         svg.addEventListener('click', () => {
           speak(s.name); playChime();
           svg.classList.remove('pulse');
-          shapeTimer = setTimeout(nextRound, 2000);
+          shapeTimer = setTimeout(nextRound, 1500);
         });
         shapesRow.appendChild(svg);
-        hint.textContent = `Tap the ${s.name}!`;
+        hint.textContent = tier <= 2 ? '' : `Tap the ${s.name}!`;
         speak(s.name);
         return;
       }

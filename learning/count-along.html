@@ -84,11 +84,13 @@
     function clearAuto() { clearTimeout(autoTimer); }
     window.addEventListener('beforeunload', clearAuto);
 
+    let currentCount = 0;
     function nextRound() {
       stage.innerHTML = ''; clearAuto();
       const thing = pickThing();
-      const maxCount = tier <= 4 ? 3 : tier <= 6 ? 5 : 10;
-      const count = Math.floor(Math.random() * maxCount) + 1;
+      const maxCount = tier <= 4 ? 10 : tier <= 6 ? 20 : 50;
+      currentCount = (currentCount % maxCount) + 1;
+      const count = currentCount;
 
       if (tier <= 2) {
         instruction.textContent = '👆 Tap to count!';

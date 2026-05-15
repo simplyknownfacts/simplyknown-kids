@@ -24,7 +24,9 @@
     .thing-card:active { transform:scale(0.9); }
     .thing-emoji { font-size: clamp(56px, 13vw, 90px); line-height:1; }
     .thing-name  { font-size:15px; font-weight:800; color:white;
-                   text-shadow:0 2px 8px rgba(0,0,0,0.5); text-align:center; }
+                   text-shadow:0 2px 8px rgba(0,0,0,0.5); text-align:center;
+                   visibility:hidden; }
+    .thing-card.revealed .thing-name { visibility:visible; }
     .quiz-label {
       font-size: clamp(20px, 5vw, 32px); font-weight:900; color:white;
       text-shadow:0 3px 12px rgba(0,0,0,0.4); position:relative; z-index:2;
@@ -87,27 +89,19 @@
         bg.style.background = color.hex;
         label.textContent = color.name;
         label.style.display = 'block';
-        speak(color.name);
-        color.things.forEach((t, i) => {
+        color.things.forEach(t => {
           const card = document.createElement('div');
           card.className = 'thing-card pop-in';
           card.innerHTML = `<span class="thing-emoji">${t.e}</span><span class="thing-name">${t.n}</span>`;
           card.addEventListener('click', (e) => {
             e.stopPropagation();
+            card.classList.add('revealed');
             speak(`${t.n}! ${color.name}.`);
           });
           thingsRow.appendChild(card);
-          // For youngest tier: speak each thing's name in sequence
-          if (tier <= 2 && i < 4) {
-            setTimeout(() => speak(`${t.n}! ${color.name}.`), 800 + i * 1500);
-          }
         });
-        quizLbl.textContent = '👆 Tap anywhere for the next color!';
+        quizLbl.textContent = '👆 Tap a thing or anywhere for the next color!';
         screen.onclick = () => { colorIdx++; nextRound(); };
-        // Auto-advance after 10s if no tap (for very young kids)
-        if (tier <= 2) {
-          autoTimer = setTimeout(() => { colorIdx++; nextRound(); }, 10000);
-        }
 
       } else {
         // Quiz: one thing from each of 4 random colors — tap the right one
