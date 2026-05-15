@@ -1,4 +1,4 @@
-const CACHE = 'vb-v12';
+const CACHE = 'vb-v13';
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
@@ -34,9 +34,10 @@ self.addEventListener('fetch', e => {
                  url.pathname.endsWith('.html') ||
                  url.pathname.endsWith('/');
   if (isHTML) {
-    // Network-first for HTML: always try fresh, fall back to cache if offline.
+    // Network-first for HTML — bypass HTTP cache (GitHub Pages sets max-age=600).
+    // cache:'no-store' makes the request hit origin every time.
     e.respondWith(
-      fetch(e.request).then(res => {
+      fetch(e.request, { cache: 'no-store' }).then(res => {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
         return res;
