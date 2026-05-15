@@ -76,7 +76,8 @@
       }, 800);
     }
 
-    if (tier >= 3) {
+    const splashOn = tier >= 3 || getProfileFeature(profile, 'color-splash', 'colorPicker');
+    if (splashOn) {
       document.getElementById('clearBtn').style.display = 'block';
       const picker = document.getElementById('picker');
       COLORS.slice(0, 6).forEach((c, i) => {
@@ -99,7 +100,7 @@
 
     canvas.addEventListener('pointerdown', e => {
       clearInterval(autoInterval);
-      const color = tier >= 3 ? activeColor : randColor();
+      const color = splashOn ? activeColor : randColor();
       splash(e.clientX, e.clientY, color);
     });
     })();

@@ -37,9 +37,12 @@
     const COLORS = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1'];
     let bubbles = [], score = 0, animId;
 
+    const floatOn = tier >= 5 || getProfileFeature(profile, 'tap-pop', 'floatMode');
+    const scoreOn = tier >= 5 || getProfileFeature(profile, 'tap-pop', 'scoreCounter');
+
     const scoreEl = document.getElementById('score');
     const scoreVal = document.getElementById('scoreVal');
-    if (tier >= 5) scoreEl.style.display = 'block';
+    if (scoreOn) scoreEl.style.display = 'block';
 
     function randColor() { return COLORS[Math.floor(Math.random() * COLORS.length)]; }
 
@@ -47,12 +50,12 @@
       const r = tier <= 2 ? 80 : tier <= 4 ? 70 : 55;
       bubbles.push({
         x: r + Math.random() * (canvas.width - r * 2),
-        y: tier >= 5
+        y: floatOn
           ? canvas.height + r
           : r + Math.random() * (canvas.height - r * 2),
         r,
         color: randColor(),
-        vy: tier >= 5 ? -(1 + Math.random() * 1.5) : 0,
+        vy: floatOn ? -(1 + Math.random() * 1.5) : 0,
         born: Date.now(),
         popping: false,
         popProgress: 0
@@ -63,7 +66,7 @@
       if (b.popping) return;
       b.popping = true;
       playPop();
-      if (tier >= 5) { score++; scoreVal.textContent = score; }
+      if (scoreOn) { score++; scoreVal.textContent = score; }
     }
 
     function draw() {
@@ -85,8 +88,7 @@
         }
         // Auto-pop for T1-T2
         if (tier <= 2 && now - b.born > 2000) { popBubble(b); return true; }
-        // Float upward for T5+
-        if (tier >= 5) {
+        if (floatOn) {
           b.y += b.vy;
           if (b.y < -b.r) return false; // missed
         }
@@ -108,8 +110,8 @@
       animId = requestAnimationFrame(draw);
     }
 
-    const spawnMs = tier <= 2 ? 1500 : tier <= 4 ? 2500 : 1000;
-    const maxBubbles = tier <= 2 ? 5 : tier <= 4 ? 1 : 8;
+    const spawnMs = tier <= 2 ? 1500 : floatOn ? 1000 : 2500;
+    const maxBubbles = tier <= 2 ? 5 : floatOn ? 8 : 1;
     const spawnTimer = setInterval(() => {
       if (bubbles.filter(b => !b.popping).length < maxBubbles) spawnBubble();
     }, spawnMs);

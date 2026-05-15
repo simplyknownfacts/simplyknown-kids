@@ -79,7 +79,10 @@
       }, 1200);
     }
 
-    if (tier >= 3) {
+    const showPalette = tier >= 3 || getProfileFeature(profile, 'stamp-art', 'stampPalette');
+    const showThemes  = tier >= 5 || getProfileFeature(profile, 'stamp-art', 'themeSwitcher');
+
+    if (showPalette) {
       const bar = document.getElementById('stampbar');
       bar.style.display = 'flex';
 
@@ -97,7 +100,7 @@
           bar.appendChild(chip);
         });
 
-        if (tier >= 5) {
+        if (showThemes) {
           ['farm','ocean','space'].forEach(key => {
             const chip = document.createElement('div');
             chip.className = 'stamp-chip';
@@ -118,7 +121,7 @@
 
     canvas.addEventListener('pointerdown', e => {
       clearInterval(autoInt);
-      const stamp = tier >= 5 ? activeStamp : theme.stamps[Math.floor(Math.random() * theme.stamps.length)];
+      const stamp = showPalette ? activeStamp : theme.stamps[Math.floor(Math.random() * theme.stamps.length)];
       placeStamp(e.clientX, e.clientY, stamp, tier <= 4 ? 80 : 60);
     });
     })();

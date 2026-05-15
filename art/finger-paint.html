@@ -73,7 +73,7 @@
       lastX = x; lastY = y;
     }
 
-    if (tier >= 3) {
+    if (tier >= 3 || getProfileFeature(profile, 'finger-paint', 'colorPalette')) {
       const toolbar = document.getElementById('toolbar');
       toolbar.style.display = 'flex';
 
@@ -90,7 +90,7 @@
         toolbar.appendChild(btn);
       });
 
-      if (tier >= 5) {
+      if (tier >= 5 || getProfileFeature(profile, 'finger-paint', 'eraser')) {
         const eraser = document.createElement('div');
         eraser.className = 'tool-btn';
         eraser.textContent = '🧹';

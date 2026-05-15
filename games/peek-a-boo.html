@@ -66,6 +66,7 @@
       { emoji:'🐘', name:'Elephant', sound:'Trumpet' },
     ];
 
+    const multiOn = tier >= 5 || getProfileFeature(profile, 'peek-a-boo', 'multiChoice');
     let answerIdx = 0;
 
     function pickRandom(n) {
@@ -95,7 +96,7 @@
         speak(`${a.name}! ${a.sound}`);
         roundTimer = setTimeout(nextRound, 2800);
 
-      } else if (tier <= 4) {
+      } else if (!multiOn) {
         const a = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
         hint.textContent = 'Who is hiding? Tap to see!';
         const wrap = document.createElement('div');

@@ -44,6 +44,7 @@
     const tier = getActivityTier(profile, 'shape-match');
     renderBackBtn('index.html');
 
+    const dragOn = tier >= 4 || getProfileFeature(profile, 'shape-match', 'dragMode');
     let shapeTimer = null;
     window.addEventListener('beforeunload', () => clearTimeout(shapeTimer));
 
@@ -100,7 +101,7 @@
         return;
       }
 
-      if (tier === 3) {
+      if (!dragOn) {
         const s = selected[0];
         const svg = makeSVG(s, 180);
         svg.classList.add('pulse');
