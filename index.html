@@ -29,7 +29,7 @@
     <div class="profiles-row" id="profilesRow"></div>
     <div class="add-btn" id="addBtn" title="Add child">＋</div>
     <div class="subtitle" id="parentHint" style="margin-top:32px;font-size:12px;opacity:0.3;">
-      Hold ⚙️ for 3 seconds to open Parent Settings
+      Tap ⚙️ to open Parent Settings (PIN required)
     </div>
     <div style="position:fixed;bottom:20px;right:20px;font-size:28px;cursor:pointer;opacity:0.3"
          id="settingsGear">⚙️</div>
@@ -84,14 +84,10 @@
       goTo('parent/settings.html?action=add');
     });
 
-    // Parent settings (3-sec hold on gear icon)
-    let holdTimer = null;
-    const gear = document.getElementById('settingsGear');
-    gear.addEventListener('pointerdown', () => {
-      holdTimer = setTimeout(() => goTo('parent/settings.html'), 3000);
+    // Parent settings — single tap, PIN gate handles auth
+    document.getElementById('settingsGear').addEventListener('click', () => {
+      goTo('parent/settings.html');
     });
-    gear.addEventListener('pointerup', () => clearTimeout(holdTimer));
-    gear.addEventListener('pointerleave', () => clearTimeout(holdTimer));
 
     // Seed demo profiles if none exist (remove before shipping)
     if (getProfiles().length === 0) {
