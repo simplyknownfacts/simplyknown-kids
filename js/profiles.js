@@ -1,6 +1,40 @@
 const _PROFILES_KEY = 'vb_profiles';
 const _ACTIVE_KEY   = 'vb_active_id';
 
+const ACTIVITY_FEATURES = [
+  { id:'stamp-art',     name:'Stamp Art',     features:[
+    { key:'stampPalette',  label:'Stamp picker' },
+    { key:'themeSwitcher', label:'Theme switcher (farm/ocean/space)' },
+  ]},
+  { id:'finger-paint',  name:'Finger Paint',  features:[
+    { key:'colorPalette',  label:'Color palette' },
+    { key:'eraser',        label:'Eraser tool' },
+  ]},
+  { id:'color-splash',  name:'Color Splash',  features:[
+    { key:'colorPicker',   label:'Color picker' },
+    { key:'clearButton',   label:'Clear button' },
+  ]},
+  { id:'tap-pop',       name:'Tap & Pop',     features:[
+    { key:'scoreCounter',  label:'Score counter' },
+    { key:'floatMode',     label:'Floating bubbles (race mode)' },
+  ]},
+  { id:'peek-a-boo',    name:'Peek-a-Boo',    features:[
+    { key:'multiChoice',   label:'Multiple curtains (guess mode)' },
+  ]},
+  { id:'shape-match',   name:'Shape Match',   features:[
+    { key:'dragMode',      label:'Drag-to-match mode' },
+  ]},
+  { id:'hello-colors',  name:'Hello Colors',  features:[
+    { key:'colorQuiz',     label:'Color quiz mode' },
+  ]},
+  { id:'animal-sounds', name:'Animal Sounds', features:[
+    { key:'quizMode',      label:'Sound quiz mode' },
+  ]},
+  { id:'count-along',   name:'Count Along',   features:[
+    { key:'quizMode',      label:'How-many quiz mode' },
+  ]},
+];
+
 function getProfiles() {
   return JSON.parse(localStorage.getItem(_PROFILES_KEY) || '[]');
 }
@@ -11,7 +45,7 @@ function saveProfiles(list) {
 
 function addProfile({ name, birthday, avatar, color }) {
   const list = getProfiles();
-  const p = { id: Date.now().toString(), name, birthday, avatar, color, tierOverrides: {} };
+  const p = { id: Date.now().toString(), name, birthday, avatar, color, tierOverrides: {}, features: {} };
   list.push(p);
   saveProfiles(list);
   return p;
@@ -49,4 +83,18 @@ function setActivityTierOverride(profileId, activityId, tier) {
   profile.tierOverrides = profile.tierOverrides || {};
   profile.tierOverrides[activityId] = tier;
   updateProfile(profileId, { tierOverrides: profile.tierOverrides });
+}
+
+function getProfileFeature(profile, activityId, featureKey) {
+  return !!(profile.features && profile.features[activityId] &&
+            profile.features[activityId][featureKey]);
+}
+
+function setProfileFeature(profileId, activityId, featureKey, enabled) {
+  const profile = getProfiles().find(p => p.id === profileId);
+  if (!profile) return;
+  profile.features = profile.features || {};
+  profile.features[activityId] = profile.features[activityId] || {};
+  profile.features[activityId][featureKey] = enabled;
+  updateProfile(profileId, { features: profile.features });
 }
