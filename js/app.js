@@ -123,6 +123,8 @@ function _getActiveVoice() {
 
 function speak(text, rate = 0.85, pitch = 1.2) {
   const v = _getActiveVoice();
+  const matched = (v !== 'browser') ? _matchClips(text) : null;
+  console.log('[speak]', { text, voice: v, matched, manifest: typeof VOICE_MANIFEST });
   if (v === 'browser') return _browserSpeak(text, rate, pitch);
   return _voiceSpeak(text, v);
 }

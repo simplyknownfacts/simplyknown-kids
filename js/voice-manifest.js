@@ -51,7 +51,9 @@ const ANIMALS = [
   { id:'rabbit',   name:'Rabbit',   sound:'Squeak' },
   { id:'fox',      name:'Fox',      sound:'Yip' },
 ];
-const ANIMAL_PHRASES = ANIMALS.map(a => `The ${a.name} says ${a.sound}!`);
+// Voice says "The Cow says..." — actual sound plays as SFX after.
+// Trailing comma keeps the prosody open-ended so the SFX continues naturally.
+const ANIMAL_PHRASES = ANIMALS.map(a => `The ${a.name} says,`);
 
 // Count-along nouns (singular + plural)
 const COUNT_NOUNS = [
