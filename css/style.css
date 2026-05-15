@@ -17,12 +17,22 @@ html, body {
   font-family: var(--font);
   background: var(--bg-dark);
   touch-action: manipulation;
+  overscroll-behavior: none;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  position: fixed;
 }
 
 /* Prevent double-tap zoom on iOS */
 * { touch-action: manipulation; }
+
+/* Parent settings opts in to scroll/zoom because the form is long */
+body[data-allow-zoom="1"] {
+  position: static;
+  overflow: auto;
+  touch-action: auto;
+}
 
 .screen {
   width: 100vw; height: 100vh;

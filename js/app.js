@@ -1,3 +1,19 @@
+// Block pinch-zoom and double-tap-zoom (iOS Safari ignores meta viewport user-scalable=no).
+// Parent settings opts out by setting body.dataset.allowZoom = '1'.
+(function _lockGestures() {
+  const allowZoom = () => document.body && document.body.dataset && document.body.dataset.allowZoom === '1';
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => {
+    document.addEventListener(ev, e => { if (!allowZoom()) e.preventDefault(); }, { passive: false });
+  });
+  let _lastTouchEnd = 0;
+  document.addEventListener('touchend', e => {
+    if (allowZoom()) return;
+    const now = Date.now();
+    if (now - _lastTouchEnd <= 350) e.preventDefault();
+    _lastTouchEnd = now;
+  }, { passive: false });
+})();
+
 // Navigation
 function goTo(path) { window.location.href = path; }
 function goHome()    { goTo(rootPath() + 'home.html'); }
