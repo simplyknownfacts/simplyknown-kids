@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Valiant Breeze — Home</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .section-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+    .section-btn { width: 140px; height: 140px; }
+  </style>
+</head>
+<body>
+  <div class="screen" id="screen">
+    <div class="row" style="gap:12px;">
+      <div id="childAvatar" style="font-size:40px;"></div>
+      <div class="title" id="greeting"></div>
+    </div>
+    <div class="section-row">
+      <div class="section-btn" onclick="go('games/')">
+        <div class="icon">🎮</div>
+        <div class="label" style="color:#FF6B6B;">GAMES</div>
+      </div>
+      <div class="section-btn" onclick="go('learning/')">
+        <div class="icon">📚</div>
+        <div class="label" style="color:#4ECDC4;">LEARN</div>
+      </div>
+      <div class="section-btn" onclick="go('art/')">
+        <div class="icon">🎨</div>
+        <div class="label" style="color:#a86cdb;">ART</div>
+      </div>
+    </div>
+    <div class="subtitle" style="cursor:pointer;margin-top:8px;" onclick="goProfiles()">
+      ← switch child
+    </div>
+  </div>
+
+  <script src="js/tiers.js"></script>
+  <script src="js/profiles.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); }
+
+    document.getElementById('childAvatar').textContent = profile.avatar;
+    document.getElementById('greeting').textContent = `Hi ${profile.name}! 👋`;
+    document.getElementById('screen').style.background =
+      `linear-gradient(160deg, ${profile.color} 0%, ${profile.color}88 100%)`;
+
+    function go(section) { playChime(); goTo(section); }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>
