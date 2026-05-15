@@ -39,10 +39,14 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/app.js"></script>
   <script>
+    (function() {
     const profile = getActiveProfile();
-    if (!profile) goProfiles();
+    if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'animal-sounds');
     renderBackBtn('index.html');
+
+    let roundTimer = null;
+    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
 
     const ANIMALS = [
       { emoji:'🐮', name:'Cow',      sound:'Moo' },
@@ -82,7 +86,7 @@
         stage.appendChild(div);
         instruction.textContent = a.name;
         speakAnimal(a);
-        setTimeout(nextRound, 3000);
+        roundTimer = setTimeout(nextRound, 3000);
 
       } else if (tier <= 4) {
         instruction.textContent = 'Tap the animal!';
@@ -136,6 +140,7 @@
     }
 
     nextRound();
+    })();
   </script>
 </body>
 </html>

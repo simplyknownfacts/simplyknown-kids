@@ -35,8 +35,9 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/app.js"></script>
   <script>
+    (function() {
     const profile = getActiveProfile();
-    if (!profile) goProfiles();
+    if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'finger-paint');
     renderBackBtn('index.html');
 
@@ -142,6 +143,7 @@
       drawStroke(e.clientX, e.clientY);
     });
     canvas.addEventListener('pointerup', () => { painting = false; });
+    })();
   </script>
 </body>
 </html>

@@ -17,15 +17,15 @@
       <div class="title" id="greeting"></div>
     </div>
     <div class="section-row">
-      <div class="section-btn" onclick="go('games/')">
+      <div class="section-btn" onclick="go('games/index.html')">
         <div class="icon">🎮</div>
         <div class="label" style="color:#FF6B6B;">GAMES</div>
       </div>
-      <div class="section-btn" onclick="go('learning/')">
+      <div class="section-btn" onclick="go('learning/index.html')">
         <div class="icon">📚</div>
         <div class="label" style="color:#4ECDC4;">LEARN</div>
       </div>
-      <div class="section-btn" onclick="go('art/')">
+      <div class="section-btn" onclick="go('art/index.html')">
         <div class="icon">🎨</div>
         <div class="label" style="color:#a86cdb;">ART</div>
       </div>
@@ -39,15 +39,17 @@
   <script src="js/profiles.js"></script>
   <script src="js/app.js"></script>
   <script>
-    const profile = getActiveProfile();
-    if (!profile) { goProfiles(); }
-
-    document.getElementById('childAvatar').textContent = profile.avatar;
-    document.getElementById('greeting').textContent = `Hi ${profile.name}! 👋`;
-    document.getElementById('screen').style.background =
-      `linear-gradient(160deg, ${profile.color} 0%, ${profile.color}88 100%)`;
-
     function go(section) { playChime(); goTo(section); }
+
+    const profile = getActiveProfile();
+    if (profile) {
+      document.getElementById('childAvatar').textContent = profile.avatar;
+      document.getElementById('greeting').textContent = `Hi ${profile.name}! 👋`;
+      document.getElementById('screen').style.background =
+        `linear-gradient(160deg, ${profile.color} 0%, ${profile.color}88 100%)`;
+    } else {
+      goProfiles();
+    }
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js');

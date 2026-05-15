@@ -34,8 +34,9 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/app.js"></script>
   <script>
+    (function() {
     const profile = getActiveProfile();
-    if (!profile) goProfiles();
+    if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'color-splash');
     renderBackBtn('index.html');
 
@@ -101,6 +102,7 @@
       const color = tier >= 5 ? activeColor : randColor();
       splash(e.clientX, e.clientY, color);
     });
+    })();
   </script>
 </body>
 </html>

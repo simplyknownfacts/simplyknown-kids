@@ -133,6 +133,9 @@
       document.getElementById('mainSettings').style.display = 'block';
       renderProfiles();
       buildAddForm();
+      if (new URLSearchParams(window.location.search).get('action') === 'add') {
+        setTimeout(() => showAddForm(), 100);
+      }
     }
 
     function buildPinPad() {
@@ -272,12 +275,8 @@
       }
     }
 
-    // On load: skip PIN gate if no PIN stored, or if opened via "add" action
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('action') === 'add') {
-      showMain();
-      setTimeout(() => showAddForm(), 100);
-    } else if (!localStorage.getItem(PIN_KEY)) {
+    // On load: require PIN if one is set; action=add is handled inside showMain()
+    if (!localStorage.getItem(PIN_KEY)) {
       showMain();
     } else {
       showPinGate();

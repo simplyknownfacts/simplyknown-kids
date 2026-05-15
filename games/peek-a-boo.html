@@ -38,10 +38,14 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/app.js"></script>
   <script>
+    (function() {
     const profile = getActiveProfile();
-    if (!profile) goProfiles();
+    if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'peek-a-boo');
     renderBackBtn('index.html');
+
+    let roundTimer = null;
+    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
 
     const ANIMALS = [
       { emoji:'🐮', name:'Cow',      sound:'Moo' },
@@ -79,7 +83,7 @@
         stage.appendChild(div);
         hint.textContent = '';
         speak(`${a.name}! ${a.sound}`);
-        setTimeout(nextRound, 2800);
+        roundTimer = setTimeout(nextRound, 2800);
 
       } else if (tier <= 4) {
         const a = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
@@ -131,6 +135,7 @@
     }
 
     nextRound();
+    })();
   </script>
 </body>
 </html>

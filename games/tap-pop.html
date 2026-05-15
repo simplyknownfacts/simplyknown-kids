@@ -22,8 +22,9 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/app.js"></script>
   <script>
+    (function() {
     const profile = getActiveProfile();
-    if (!profile) goProfiles();
+    if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'tap-pop');
 
     renderBackBtn('index.html');
@@ -134,6 +135,7 @@
       clearInterval(spawnTimer);
       cancelAnimationFrame(animId);
     });
+    })();
   </script>
 </body>
 </html>

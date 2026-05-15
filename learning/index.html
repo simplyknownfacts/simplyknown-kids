@@ -33,9 +33,9 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/app.js"></script>
   <script>
-    if (!getActiveProfile()) goProfiles();
-    renderBackBtn('../home.html');
     function go(page) { playChime(); goTo(page); }
+    renderBackBtn('../home.html');
+    if (!getActiveProfile()) goProfiles();
   </script>
 </body>
 </html>

@@ -39,8 +39,9 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/app.js"></script>
   <script>
+    (function() {
     const profile = getActiveProfile();
-    if (!profile) goProfiles();
+    if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'count-along');
     renderBackBtn('index.html');
 
@@ -49,6 +50,7 @@
 
     let autoTimer;
     function clearAuto() { clearTimeout(autoTimer); }
+    window.addEventListener('beforeunload', clearAuto);
 
     function nextRound() {
       stage.innerHTML = ''; clearAuto();
@@ -162,6 +164,7 @@
     }
 
     nextRound();
+    })();
   </script>
 </body>
 </html>

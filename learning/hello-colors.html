@@ -40,8 +40,9 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/app.js"></script>
   <script>
+    (function() {
     const profile = getActiveProfile();
-    if (!profile) goProfiles();
+    if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'hello-colors');
     renderBackBtn('index.html');
 
@@ -116,6 +117,7 @@
     }
 
     nextRound();
+    })();
   </script>
 </body>
 </html>

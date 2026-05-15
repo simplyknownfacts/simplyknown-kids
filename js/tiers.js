@@ -12,8 +12,10 @@ const TIERS = [
 function getAgeMonths(birthday) {
   const now = new Date();
   const b = new Date(birthday);
-  return (now.getFullYear() - b.getFullYear()) * 12
-         + (now.getMonth() - b.getMonth());
+  let months = (now.getFullYear() - b.getFullYear()) * 12
+               + (now.getMonth() - b.getMonth());
+  if (now.getDate() < b.getDate()) months--;
+  return Math.max(0, months);
 }
 
 function tierForAge(ageMonths) {
