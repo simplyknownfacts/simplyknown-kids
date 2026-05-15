@@ -1,4 +1,4 @@
-const CACHE = 'vb-v7';
+const CACHE = 'vb-v8';
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

@@ -40,9 +40,30 @@ function saveProfiles(list) {
   localStorage.setItem(_PROFILES_KEY, JSON.stringify(list));
 }
 
+function _newProfileId() {
+  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+}
+
+// One-time migration: ensure all profiles have unique IDs.
+// Old seed code used Date.now() — two rapid addProfile calls could collide.
+(function _migrateDuplicateIds() {
+  const list = getProfiles();
+  if (list.length < 2) return;
+  const seen = new Set();
+  let changed = false;
+  for (const p of list) {
+    if (!p.id || seen.has(p.id)) {
+      p.id = _newProfileId();
+      changed = true;
+    }
+    seen.add(p.id);
+  }
+  if (changed) saveProfiles(list);
+})();
+
 function addProfile({ name, birthday, avatar, color }) {
   const list = getProfiles();
-  const p = { id: Date.now().toString(), name, birthday, avatar, color, voice: 'girl', tierOverrides: {}, features: {} };
+  const p = { id: _newProfileId(), name, birthday, avatar, color, voice: 'girl', tierOverrides: {}, features: {} };
   list.push(p);
   saveProfiles(list);
   return p;
