@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
+
+:root {
+  --font: 'Nunito', 'Comic Sans MS', cursive;
+  --tap: 80px;
+  --radius: 24px;
+  --c1: #c8b8f0; --c2: #b8d4f0; --c3: #a8e6cf; --c4: #FFD93D;
+  --c5: #FF9F43; --c6: #FF6B6B; --c7: #4ECDC4; --c8: #45B7D1;
+  --bg-dark: #1a1a2e;
+  --white: #ffffff;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  font-family: var(--font);
+  background: var(--bg-dark);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Prevent double-tap zoom on iOS */
+* { touch-action: manipulation; }
+
+.screen {
+  width: 100vw; height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px; gap: 20px;
+}
+
+.title {
+  font-size: clamp(28px, 6vw, 48px);
+  font-weight: 900; color: var(--white);
+  text-shadow: 0 3px 12px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.subtitle {
+  font-size: clamp(14px, 3vw, 20px);
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+}
+
+/* Avatar bubble (profile chooser) */
+.avatar-btn {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 4px solid rgba(255,255,255,0.3);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+  gap: 4px;
+}
+.avatar-btn:active { transform: scale(0.92); }
+.avatar-btn .emoji { font-size: 52px; line-height: 1; }
+.avatar-btn .name {
+  font-size: 14px; font-weight: 800;
+  color: var(--white); text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.avatar-btn .age-label {
+  font-size: 11px; color: rgba(255,255,255,0.5);
+}
+
+/* Big section button (home screen) */
+.section-btn {
+  min-width: var(--tap); min-height: var(--tap);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.92);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; gap: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  transition: transform 0.12s ease;
+  padding: 16px 20px;
+}
+.section-btn:active { transform: scale(0.93); }
+.section-btn .icon { font-size: 44px; line-height: 1; }
+.section-btn .label { font-size: 15px; font-weight: 900; letter-spacing: 1px; }
+
+/* Activity card (section hub) */
+.activity-card {
+  min-width: var(--tap); min-height: var(--tap);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.2);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; gap: 8px; padding: 20px;
+  transition: transform 0.12s ease, background 0.12s ease;
+  flex: 1;
+}
+.activity-card:active { transform: scale(0.93); background: rgba(255,255,255,0.22); }
+.activity-card .icon { font-size: 40px; }
+.activity-card .label { font-size: 14px; font-weight: 800; color: var(--white); text-align: center; }
+
+/* Back button */
+.back-btn {
+  position: fixed; top: 16px; left: 16px;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: 2px solid rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; cursor: pointer;
+  transition: background 0.12s;
+  z-index: 100;
+}
+.back-btn:active { background: rgba(255,255,255,0.3); }
+
+/* Row / column flex helpers */
+.row { display: flex; flex-direction: row; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.col { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+
+/* Animations */
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.pop-in { animation: popIn 0.3s ease forwards; }
+.float { animation: float 3s ease-in-out infinite; }
+.pulse { animation: pulse 2s ease-in-out infinite; }
