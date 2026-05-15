@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Hello Colors</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    #bg { position:fixed; inset:0; transition: background 0.8s ease; }
+    .color-label {
+      font-size: clamp(48px, 14vw, 100px);
+      font-weight: 900; color: white;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      position: relative; z-index: 2;
+    }
+    .color-swatch {
+      width: 130px; height: 130px; border-radius: 28px;
+      border: 5px solid rgba(255,255,255,0.5);
+      cursor: pointer; transition: transform 0.12s;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; color: white;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .color-swatch:active { transform: scale(0.9); }
+    .color-swatch.wrong { animation: shake 0.3s; }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)}
+    }
+  </style>
+</head>
+<body>
+  <div id="bg"></div>
+  <div class="screen" id="screen" style="position:relative;z-index:2;">
+    <div class="color-label" id="colorLabel"></div>
+    <div class="row" id="swatchRow"></div>
+    <div class="subtitle" id="instruction"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    const profile = getActiveProfile();
+    if (!profile) goProfiles();
+    const tier = getActivityTier(profile, 'hello-colors');
+    renderBackBtn('index.html');
+
+    const COLORS = [
+      { name:'Red',    hex:'#FF4444' },
+      { name:'Blue',   hex:'#4488FF' },
+      { name:'Yellow', hex:'#FFD700' },
+      { name:'Green',  hex:'#44CC44' },
+      { name:'Purple', hex:'#9966CC' },
+      { name:'Orange', hex:'#FF8C00' },
+    ];
+
+    let colorIdx = 0;
+    const label = document.getElementById('colorLabel');
+    const swatchRow = document.getElementById('swatchRow');
+    const instruction = document.getElementById('instruction');
+    const bg = document.getElementById('bg');
+
+    function showColor(c) {
+      bg.style.background = c.hex;
+      label.textContent = c.name;
+      speak(c.name);
+    }
+
+    function nextRound() {
+      swatchRow.innerHTML = '';
+
+      if (tier <= 2) {
+        label.style.display = 'block';
+        instruction.textContent = '';
+        showColor(COLORS[colorIdx % COLORS.length]);
+        colorIdx++;
+        setTimeout(nextRound, 3000);
+
+      } else if (tier === 3) {
+        label.style.display = 'block';
+        instruction.textContent = 'Tap anywhere for the next color!';
+        showColor(COLORS[colorIdx % COLORS.length]);
+        colorIdx++;
+        document.getElementById('screen').onclick = nextRound;
+
+      } else {
+        label.style.display = 'none';
+        bg.style.background = '#1a1a2e';
+        const count = tier <= 5 ? 2 : tier <= 6 ? 4 : 6;
+        const selected = [...COLORS].sort(() => Math.random() - 0.5).slice(0, count);
+        const answerIdx = Math.floor(Math.random() * count);
+        const target = selected[answerIdx];
+        instruction.textContent = '';
+        setTimeout(() => speak(`Tap the ${target.name}!`), 300);
+        instruction.textContent = `Tap the ${target.name}!`;
+
+        selected.forEach((c, i) => {
+          const sw = document.createElement('div');
+          sw.className = 'color-swatch';
+          sw.style.background = c.hex;
+          sw.textContent = tier >= 7 ? c.name : '';
+          sw.addEventListener('click', () => {
+            if (i === answerIdx) {
+              playSuccess(); speak(`Yes! ${c.name}!`);
+              bg.style.background = c.hex;
+              setTimeout(nextRound, 1500);
+            } else {
+              playBoop(); sw.classList.add('wrong');
+              setTimeout(() => sw.classList.remove('wrong'), 400);
+              speak('Try again!');
+            }
+          });
+          swatchRow.appendChild(sw);
+        });
+      }
+    }
+
+    nextRound();
+  </script>
+</body>
+</html>
