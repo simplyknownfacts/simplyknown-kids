@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Peek-a-Boo</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #1a1a2e, #2d1b69); }
+    .stage { display:flex; align-items:center; justify-content:center; gap:32px; flex-wrap:wrap; }
+    .curtain-wrap { position:relative; width:160px; height:160px; }
+    .animal {
+      width:160px; height:160px; border-radius:24px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      font-size:72px; background:rgba(255,255,255,0.12);
+      position:absolute; inset:0;
+    }
+    .animal .animal-name { font-size:16px; font-weight:800; color:white; margin-top:4px; }
+    .curtain {
+      position:absolute; inset:0; border-radius:24px;
+      background:linear-gradient(160deg,#4ECDC4,#45B7D1);
+      display:flex; align-items:center; justify-content:center;
+      font-size:48px; cursor:pointer;
+      transition:transform 0.4s ease;
+      transform-origin:top center;
+    }
+    .curtain.open { transform:scaleY(0); }
+    .hint { font-size:18px; font-weight:800; color:white; text-align:center; min-height:28px; }
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <div class="title">👀 Peek-a-Boo!</div>
+    <div class="hint" id="hint"></div>
+    <div class="stage" id="stage"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    const profile = getActiveProfile();
+    if (!profile) goProfiles();
+    const tier = getActivityTier(profile, 'peek-a-boo');
+    renderBackBtn('index.html');
+
+    const ANIMALS = [
+      { emoji:'🐮', name:'Cow',      sound:'Moo' },
+      { emoji:'🐶', name:'Dog',      sound:'Woof' },
+      { emoji:'🐱', name:'Cat',      sound:'Meow' },
+      { emoji:'🐸', name:'Frog',     sound:'Ribbit' },
+      { emoji:'🦁', name:'Lion',     sound:'Roar' },
+      { emoji:'🐘', name:'Elephant', sound:'Trumpet' },
+    ];
+
+    let answerIdx = 0;
+
+    function pickRandom(n) {
+      const shuffled = [...ANIMALS].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, n);
+    }
+
+    function reveal(wrap, onDone) {
+      const curtain = wrap.querySelector('.curtain');
+      curtain.classList.add('open');
+      playSuccess();
+      setTimeout(onDone, 1800);
+    }
+
+    function nextRound() {
+      const stage = document.getElementById('stage');
+      const hint  = document.getElementById('hint');
+      stage.innerHTML = '';
+
+      if (tier <= 2) {
+        const a = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+        const div = document.createElement('div');
+        div.className = 'animal pop-in';
+        div.innerHTML = `<span>${a.emoji}</span><span class="animal-name">${a.name}</span>`;
+        stage.appendChild(div);
+        hint.textContent = '';
+        speak(`${a.name}! ${a.sound}`);
+        setTimeout(nextRound, 2800);
+
+      } else if (tier <= 4) {
+        const a = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+        hint.textContent = 'Who is hiding? Tap to see!';
+        const wrap = document.createElement('div');
+        wrap.className = 'curtain-wrap';
+        wrap.innerHTML = `
+          <div class="animal"><span>${a.emoji}</span><span class="animal-name">${a.name}</span></div>
+          <div class="curtain">🎀</div>`;
+        wrap.querySelector('.curtain').addEventListener('click', () => {
+          reveal(wrap, () => { speak(a.name); setTimeout(nextRound, 1500); });
+        });
+        stage.appendChild(wrap);
+
+      } else {
+        const count = tier <= 6 ? 2 : 3;
+        const animals = pickRandom(count);
+        answerIdx = Math.floor(Math.random() * count);
+        const target = animals[answerIdx];
+
+        if (tier >= 7) {
+          hint.textContent = `Tap the ${target.name}!`;
+        } else {
+          hint.textContent = '🔊 Listen...';
+          setTimeout(() => speak(`${target.sound}! ${target.sound}! Who am I?`), 400);
+        }
+
+        animals.forEach((a, i) => {
+          const wrap = document.createElement('div');
+          wrap.className = 'curtain-wrap';
+          wrap.innerHTML = `
+            <div class="animal"><span>${a.emoji}</span><span class="animal-name">${a.name}</span></div>
+            <div class="curtain">🎀</div>`;
+          wrap.querySelector('.curtain').addEventListener('click', () => {
+            if (i === answerIdx) {
+              reveal(wrap, () => { speak(`Yes! ${a.name}!`); setTimeout(nextRound, 1500); });
+            } else {
+              playBoop();
+              wrap.querySelector('.curtain').style.background = '#FF6B6B';
+              setTimeout(() => {
+                wrap.querySelector('.curtain').style.background = '';
+                speak(`Try again!`);
+              }, 600);
+            }
+          });
+          stage.appendChild(wrap);
+        });
+      }
+    }
+
+    nextRound();
+  </script>
+</body>
+</html>
