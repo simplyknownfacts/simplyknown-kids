@@ -159,9 +159,9 @@ async function handleYTFeed(req) {
     return jsonResp({ error: 'bad channel id' }, 400);
   }
   const cache = caches.default;
-  const cacheKey = new Request('https://yt-feed-cache.invalid/' + channelId);
+  const cacheKey = new Request('https://yt-feed-cache.invalid/v3/' + channelId);
   const cached = await cache.match(cacheKey);
-  if (cached) return cached;
+  if (cached && !url.searchParams.get('nocache')) return cached;
 
   const ytUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
   const ytRes = await fetch(ytUrl, {
@@ -174,9 +174,24 @@ async function handleYTFeed(req) {
   const xml = await ytRes.text();
   const ids = [...xml.matchAll(/<yt:videoId>([^<]+)<\/yt:videoId>/g)].map(m => m[1]);
   const titles = [...xml.matchAll(/<entry>[\s\S]*?<title>([^<]+)<\/title>/g)].map(m => m[1]);
-  const videos = ids.slice(0, 25).map((id, i) => ({ id, title: titles[i] || '' }));
+  // Filter to only embeddable videos. Many "made for kids" channels disable
+  // embedding on certain uploads. YouTube's oEmbed endpoint returns 401 in
+  // that case. Check top 15 in parallel, keep only those that work.
+  const candidates = ids.slice(0, 15);
+  const checks = await Promise.all(candidates.map(async id => {
+    try {
+      const r = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`);
+      return r.ok ? id : null;
+    } catch { return null; }
+  }));
+  const embeddableSet = new Set(checks.filter(Boolean));
+  const videos = ids
+    .filter(id => embeddableSet.has(id))
+    .map(id => ({ id, title: titles[ids.indexOf(id)] || '' }));
   const debug = url.searchParams.get('debug');
-  const body = JSON.stringify(debug ? { videos, sample: xml.slice(0, 400), len: xml.length } : { videos });
+  const body = JSON.stringify(debug
+    ? { videos, all: candidates, embeddable: [...embeddableSet], len: xml.length }
+    : { videos });
   const resp = new Response(body, {
     status: 200,
     headers: {
