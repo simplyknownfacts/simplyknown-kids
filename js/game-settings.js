@@ -29,13 +29,16 @@
     gear.title = 'Game settings';
     gear.textContent = '⚙️';
     gear.style.cssText = `
-      position: fixed; top: 14px; right: 14px;
-      width: 56px; height: 56px; border-radius: 50%;
-      background: rgba(255,255,255,0.15); color: white;
-      border: 2px solid rgba(255,255,255,0.3);
-      font-size: 28px; cursor: pointer; z-index: 100;
+      position: fixed;
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      right: calc(14px + env(safe-area-inset-right));
+      width: 48px; height: 48px; border-radius: 50%;
+      background: rgba(0,0,0,0.5); color: white;
+      border: 2px solid rgba(255,255,255,0.4);
+      font-size: 22px; cursor: pointer; z-index: 9000;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      opacity: 0.7;
     `;
     gear.addEventListener('click', () => _openOverlay(activity));
     document.body.appendChild(gear);

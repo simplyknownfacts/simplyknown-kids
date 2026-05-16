@@ -15,4 +15,3 @@ secrets/
 *_token.txt
 *_credentials.json
 # mascots/ committed for preview — will move to R2 once Worker is built
-apk-build/
