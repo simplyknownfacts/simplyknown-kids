@@ -207,7 +207,7 @@ function _shouldSpeak(profileId, key) {
   return true;
 }
 
-function play(key) {
+function play(key, opts) {
   const profile = _activeProfile();
   if (!profile || !profile.mascot || !profile.mascot.id) return;
   if (!_shouldSpeak(profile.id, key)) {
@@ -225,8 +225,11 @@ function play(key) {
     wrap.style.opacity = '1';
     wrap.style.transform = 'scale(1)';
   });
+  // Pass {muted:true} to use the mascot animation only — the page is
+  // responsible for playing the matching audio (e.g. a per-kid greeting
+  // pre-generated in voice-manifest).
   _crossfadeTo(_src(profile.mascot.id, voice, key), {
-    muted: false, loop: false, onended: () => _playBase(),
+    muted: !!(opts && opts.muted), loop: false, onended: () => _playBase(),
   });
 }
 

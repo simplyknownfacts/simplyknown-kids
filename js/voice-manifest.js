@@ -97,6 +97,7 @@ _phrases.push('Try again!');
 KID_NAMES.forEach(n => {
   _phrases.push(`Hi ${n}!`);
   _phrases.push(`Hi ${n}! Let's play!`);
+  _phrases.push(`Hi ${n}! Welcome to your play space.`);
 });
 
 // Numbers 1-50 spoken as digits
