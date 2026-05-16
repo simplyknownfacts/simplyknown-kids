@@ -18,7 +18,18 @@ const MASCOT_LABELS = {
   dog: '🐶 Dog', tiger: '🐯 Tiger', giraffe: '🦒 Giraffe',
   panda: '🐼 Panda', orca: '🐳 Orca', eagle: '🦅 Eagle',
 };
-const IDLE_KEYS = ['idle_wave', 'idle_bubbles', 'idle_book', 'idle_popcorn'];
+const UNIVERSAL_IDLES = ['idle_wave', 'idle_bubbles', 'idle_book', 'idle_popcorn'];
+const SPECIES_IDLES = {
+  dog:     ['idle_tail', 'idle_scratch', 'idle_sniff', 'idle_pant'],
+  tiger:   ['idle_yawn', 'idle_stretch', 'idle_lick', 'idle_prowl'],
+  giraffe: ['idle_bend', 'idle_leaves', 'idle_eyelash', 'idle_sway'],
+  panda:   ['idle_bamboo', 'idle_roll', 'idle_hug', 'idle_somer'],
+  orca:    ['idle_flip', 'idle_breach', 'idle_splash', 'idle_swim'],
+  eagle:   ['idle_flap', 'idle_preen', 'idle_alert', 'idle_call'],
+};
+function _idleKeys(mascotId) {
+  return [...UNIVERSAL_IDLES, ...(SPECIES_IDLES[mascotId] || [])];
+}
 
 let _mascotEl = null;
 let _state = 'hidden'; // 'hidden' | 'speaking' | 'idle'
@@ -69,21 +80,27 @@ function _activeProfile() {
   return (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
 }
 
-function _pickIdle() {
-  return IDLE_KEYS[Math.floor(Math.random() * IDLE_KEYS.length)];
+function _pickIdle(mascotId, exclude) {
+  const keys = _idleKeys(mascotId);
+  let pool = exclude ? keys.filter(k => k !== exclude) : keys;
+  if (!pool.length) pool = keys;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
+let _lastIdle = null;
 function _loadIdleLoop() {
   const p = _activeProfile();
   if (!p || !p.mascot || !p.mascot.id) return;
   const wrap = _ensureEl();
   const vid = wrap.querySelector('video');
-  const idleKey = _pickIdle();
+  const idleKey = _pickIdle(p.mascot.id, _lastIdle);
+  _lastIdle = idleKey;
   const src = `${rootPath()}mascots/${p.mascot.id}/idle/${idleKey}.mp4`;
   vid.muted = true;
-  vid.loop = true;
+  vid.loop = false; // play once, then pick a new random idle
   vid.src = src;
-  vid.onended = null;
+  // When this idle ends, transition to another random idle (variety, not a single loop)
+  vid.onended = () => _loadIdleLoop();
   vid.onerror = () => {
     // Fallback: show static master image if idle clip missing
     vid.style.display = 'none';

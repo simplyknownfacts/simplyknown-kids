@@ -278,12 +278,55 @@ async function klingLipSync(videoId, audioPath, outPath) {
 }
 
 // Idle loop generation (Kling image-to-video, no audio, ~$0.20 per 5s std clip).
-const IDLES = [
+const UNIVERSAL_IDLES = [
   { key: 'idle_wave',    prompt: 'The character waves one paw at the camera with a friendly smile, gentle swaying motion, looking happy and welcoming, idle pose, neutral background.' },
   { key: 'idle_bubbles', prompt: 'The character blows colorful soap bubbles from a small bubble wand, bubbles drift up around them, happy expression, gentle bobbing motion, idle pose.' },
   { key: 'idle_book',    prompt: 'The character holds an open colorful storybook in their paws, reading and occasionally looking up with a curious smile, peaceful idle motion.' },
   { key: 'idle_popcorn', prompt: 'The character holds a red-and-white striped popcorn bucket, eating popcorn one piece at a time with cheerful chewing motions, content and happy.' },
 ];
+
+const SPECIES_IDLES = {
+  dog: [
+    { key: 'idle_tail',   prompt: 'The dog spins in a quick playful circle chasing its own tail, tongue out, having fun, then settles back to sit, looping motion.' },
+    { key: 'idle_scratch', prompt: 'The dog scratches behind its ear with one back paw, head tilted, eyes squinting happily, classic dog scratching motion.' },
+    { key: 'idle_sniff',  prompt: 'The dog sniffs the air curiously, nose twitching, ears perking up, head turning side to side as if smelling something interesting.' },
+    { key: 'idle_pant',   prompt: 'The dog sits and pants happily with tongue hanging out, tail wagging visibly, panting motion of the chest and tongue.' },
+  ],
+  tiger: [
+    { key: 'idle_yawn',    prompt: 'The tiger opens its mouth in a big slow yawn showing whiskers and tongue, then closes mouth and blinks sleepily, cute lazy moment.' },
+    { key: 'idle_stretch', prompt: 'The tiger stretches forward like a cat, front paws extending, back arching, then relaxes back to sitting pose, satisfied expression.' },
+    { key: 'idle_lick',    prompt: 'The tiger licks one of its front paws with a small pink tongue and rubs it over its face like a cat grooming itself, cute motion.' },
+    { key: 'idle_prowl',   prompt: 'The tiger does a slow playful prowl in place, low to the ground, shoulders shifting, looking at the camera mischievously.' },
+  ],
+  giraffe: [
+    { key: 'idle_bend',     prompt: 'The giraffe bends its long neck down toward the ground curiously, then slowly raises it back up to look at the camera, gentle motion.' },
+    { key: 'idle_leaves',   prompt: 'The giraffe reaches up high with its long neck as if eating leaves from a tall tree, chewing happily, then looks at the camera.' },
+    { key: 'idle_eyelash',  prompt: 'The giraffe blinks slowly with its long eyelashes, head tilted slightly, sweet innocent expression, then a small playful smile.' },
+    { key: 'idle_sway',     prompt: 'The giraffe sways its long neck gently side to side like dancing to a slow rhythm, eyes closed peacefully, body bobbing.' },
+  ],
+  panda: [
+    { key: 'idle_bamboo',  prompt: 'The panda holds a green bamboo stalk in its paws and munches on it happily, leaves visible, cheerful chewing motion.' },
+    { key: 'idle_roll',    prompt: 'The panda rolls onto its back playfully, paws up in the air, then rights itself again, classic panda tumble.' },
+    { key: 'idle_hug',     prompt: 'The panda hugs itself with both paws across its chest, gentle rocking motion, eyes squeezed happily shut in a self-hug.' },
+    { key: 'idle_somer',   prompt: 'The panda does a small somersault forward in place, tumbling cute and playful, then sits back up grinning.' },
+  ],
+  orca: [
+    { key: 'idle_flip',   prompt: 'The orca whale flips its tail and does a quick rolling spin underwater with bubbles trailing, then settles back to swimming pose, playful motion.' },
+    { key: 'idle_breach', prompt: 'The orca leaps up and breaches the surface of the water with a splash, water droplets flying around, then dives back down playfully.' },
+    { key: 'idle_splash', prompt: 'The orca slaps the water with its tail fin creating a small splash, bubbles rising, playful happy expression.' },
+    { key: 'idle_swim',   prompt: 'The orca swims in a slow gentle circle, fins moving smoothly, water flowing around it, peaceful underwater motion.' },
+  ],
+  eagle: [
+    { key: 'idle_flap',   prompt: 'The eagle stretches and flaps its large wings open and closed a few times, feathers spreading, then folds them back, majestic motion.' },
+    { key: 'idle_preen',  prompt: 'The eagle turns its head and uses its golden beak to preen the feathers on its shoulder and chest, careful grooming motion.' },
+    { key: 'idle_alert',  prompt: 'The eagle turns its head sharply side to side looking around alertly, sharp eyes scanning, feathers ruffling slightly.' },
+    { key: 'idle_call',   prompt: 'The eagle opens its beak and lets out a small screech call, head tipped back slightly, chest puffing, throat moving with the sound.' },
+  ],
+};
+
+function _idleSetFor(mascotId) {
+  return [...UNIVERSAL_IDLES, ...(SPECIES_IDLES[mascotId] || [])];
+}
 
 async function klingImage2VideoIdle(imagePath, prompt, outPath) {
   const imageB64 = fs.readFileSync(imagePath).toString('base64');
@@ -361,7 +404,8 @@ if (mode === 'idle') {
   const idleDir = path.join(dir, 'idle');
   fs.mkdirSync(idleDir, { recursive: true });
   let done = 0, failed = 0;
-  for (const idle of IDLES) {
+  const idleSet = _idleSetFor(mascotId);
+  for (const idle of idleSet) {
     const outPath = path.join(idleDir, `${idle.key}.mp4`);
     if (fs.existsSync(outPath) && fs.statSync(outPath).size > 1000) {
       console.log(`✓ skip ${idle.key}`); done++; continue;
@@ -376,7 +420,7 @@ if (mode === 'idle') {
       failed++;
     }
   }
-  console.log(`\n${done}/${IDLES.length} idle clips done, ${failed} failed.`);
+  console.log(`\n${done}/${idleSet.length} idle clips done, ${failed} failed.`);
   process.exit(failed > 0 ? 1 : 0);
 }
 
