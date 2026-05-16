@@ -21,6 +21,11 @@ const SPECIES_IDLES = {
   orca:    ['idle_flip', 'idle_breach', 'idle_splash', 'idle_swim'],
   eagle:   ['idle_flap', 'idle_preen', 'idle_alert', 'idle_call'],
 };
+// Animal sound file per mascot — played as overlay when kid taps the mascot
+const MASCOT_SOUND_FILE = {
+  dog: 'dog.mp3', tiger: 'tiger.mp3', giraffe: 'giraffe.mp3',
+  panda: 'panda.mp3', orca: 'whale.mp3', eagle: 'eagle.mp3',
+};
 function _actionKeys(mascotId) {
   return [...UNIVERSAL_IDLES, ...(SPECIES_IDLES[mascotId] || [])];
 }
@@ -76,10 +81,31 @@ function _ensureEl() {
     `;
     wrap.appendChild(vid);
   }
+  // Tap mascot: cycle to a new random action + play the species sound effect.
+  wrap.addEventListener('click', _onMascotTap);
   document.body.appendChild(wrap);
   _mascotEl = wrap;
   _frontIdx = 0;
   return wrap;
+}
+
+function _onMascotTap() {
+  if (_state === 'speaking') return; // don't interrupt active speech
+  const p = _activeProfile();
+  if (!p || !p.mascot || !p.mascot.id) return;
+  // Play the species signature sound in parallel
+  const sfxFile = MASCOT_SOUND_FILE[p.mascot.id];
+  if (sfxFile) {
+    try {
+      const a = new Audio(`${rootPath()}audio/sounds/${sfxFile}`);
+      a.volume = 0.7;
+      a.play().catch(() => {});
+    } catch {}
+  }
+  // Cycle to a new random action (different from the last one)
+  clearTimeout(_actionTimer);
+  _state = 'base'; // pretend base so _playAction will run
+  _playAction();
 }
 
 function _videos() {
