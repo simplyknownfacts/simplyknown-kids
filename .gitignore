@@ -6,3 +6,10 @@ Thumbs.db
 .env.*
 node_modules/
 .claude/
+CLAUDE.md
+secrets/
+*_key.txt
+*_secret.txt
+*_token.txt
+*_credentials.json
+# mascots/ committed for preview — will move to R2 once Worker is built

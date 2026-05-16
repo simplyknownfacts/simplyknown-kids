@@ -1,0 +1,308 @@
+#!/usr/bin/env node
+// Mascot pipeline: Gemini Imagen 3 → ElevenLabs → Kling lip-sync.
+//
+// Usage:
+//   node scripts/generate-mascot.mjs <mascot> --image-only
+//   node scripts/generate-mascot.mjs <mascot> --one-clip
+//   node scripts/generate-mascot.mjs <mascot> --full
+//
+// Mascots defined below (MASCOTS const). Output → mascots/<id>/
+
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, '..');
+
+// Load .env
+const ENV_PATH = path.join(ROOT, '.env');
+if (fs.existsSync(ENV_PATH)) {
+  for (const line of fs.readFileSync(ENV_PATH, 'utf8').split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*?)"?\s*$/);
+    if (m) process.env[m[1]] ||= m[2];
+  }
+}
+
+const MASCOTS = {
+  dog:     { name: 'Dog',     prompt: 'a friendly black pit bull mutt puppy with a white nose and white chest, sitting upright, big expressive eyes, cute cartoon illustration, kids book style, plain soft pastel background, full body visible, mouth slightly open in a happy smile' },
+  tiger:   { name: 'Tiger',   prompt: 'a friendly cartoon tiger cub sitting upright, big expressive eyes, orange and black stripes, white chest and belly, plain soft pastel background, kids book illustration style, full body visible, mouth slightly open in a happy smile' },
+  giraffe: { name: 'Giraffe', prompt: 'a friendly cartoon baby giraffe standing upright, long neck visible, big expressive eyes, yellow and brown spots, plain soft pastel background, kids book illustration style, full body visible, mouth slightly open in a happy smile' },
+  panda:   { name: 'Panda',   prompt: 'a friendly cartoon baby panda sitting upright, big expressive eyes, classic black and white markings, plain soft pastel background, kids book illustration style, full body visible, mouth slightly open in a happy smile' },
+  orca:    { name: 'Orca',    prompt: 'a friendly cartoon baby orca whale, smiling, big expressive eyes, glossy black and white skin, water-blue gradient background, kids book illustration style, body in playful pose, mouth slightly open showing a friendly smile' },
+  eagle:   { name: 'Eagle',   prompt: 'a friendly cartoon bald eagle, big expressive eyes, white head, brown body, golden beak slightly open in a friendly smile, plain soft pastel background, kids book illustration style, perched upright' },
+};
+
+const PHRASES = [
+  { key: 'welcome',     text: 'Welcome to your play space! Click what you want to do today!' },
+  { key: 'games_intro', text: "Let's play some games!" },
+  { key: 'learn_intro', text: "Let's learn something new!" },
+  { key: 'art_intro',   text: "Let's make some art!" },
+  { key: 'watch_intro', text: "Let's watch some videos!" },
+  { key: 'cheer_great', text: 'Great job!' },
+  { key: 'cheer_didit', text: 'You did it!' },
+  { key: 'cheer_awesome', text: 'Awesome!' },
+  { key: 'cheer_yay',   text: 'Yay!' },
+  { key: 'goodbye',     text: 'See you next time!' },
+];
+
+const VOICES = {
+  girl: process.env.EL_VOICE_GIRL || 'EXAVITQu4vr4xnSDxMaL',
+  boy:  process.env.EL_VOICE_BOY  || 'TxGEqnHWrfWFTfGW9XjX',
+};
+
+// ───── helpers ──────────────────────────────────────────────────────────
+
+function b64url(buf) {
+  return Buffer.from(buf).toString('base64')
+    .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function klingJWT() {
+  const accessKey = process.env.KLING_ACCESS_KEY;
+  const secretKey = process.env.KLING_SECRET_KEY;
+  if (!accessKey || !secretKey) throw new Error('KLING_ACCESS_KEY / KLING_SECRET_KEY missing');
+  const now = Math.floor(Date.now() / 1000);
+  const header = b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = b64url(JSON.stringify({ iss: accessKey, exp: now + 1800, nbf: now - 5 }));
+  const sig = b64url(crypto.createHmac('sha256', secretKey).update(`${header}.${payload}`).digest());
+  return `${header}.${payload}.${sig}`;
+}
+
+async function genImage(prompt, outPath) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('GEMINI_API_KEY missing');
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${key}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      instances: [{ prompt }],
+      parameters: { sampleCount: 1, aspectRatio: '1:1' },
+    }),
+  });
+  if (!res.ok) throw new Error(`Imagen ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  const b64 = json?.predictions?.[0]?.bytesBase64Encoded;
+  if (!b64) throw new Error('Imagen returned no image: ' + JSON.stringify(json).slice(0, 300));
+  fs.writeFileSync(outPath, Buffer.from(b64, 'base64'));
+  return outPath;
+}
+
+async function genVoice(text, voiceId, outPath) {
+  const key = process.env.ELEVENLABS_API_KEY;
+  if (!key) throw new Error('ELEVENLABS_API_KEY missing');
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'xi-api-key': key, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
+    body: JSON.stringify({
+      text,
+      model_id: 'eleven_turbo_v2_5',
+      voice_settings: { stability: 0.55, similarity_boost: 0.75, style: 0.30 },
+    }),
+  });
+  if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${await res.text()}`);
+  fs.writeFileSync(outPath, Buffer.from(await res.arrayBuffer()));
+  return outPath;
+}
+
+async function replicateLipSync(imagePath, audioPath, outPath) {
+  // Wav2Lip via Replicate — works on cartoon faces (no human-detection requirement).
+  const key = process.env.REPLICATE_API_TOKEN;
+  if (!key) throw new Error('REPLICATE_API_TOKEN missing');
+
+  // Look up the latest version of prunaai/p-video-avatar (works with cartoon faces).
+  const modelRes = await fetch('https://api.replicate.com/v1/models/prunaai/p-video-avatar', {
+    headers: { Authorization: `Token ${key}` },
+  });
+  if (!modelRes.ok) throw new Error(`Replicate model lookup ${modelRes.status}: ${await modelRes.text()}`);
+  const versionId = (await modelRes.json())?.latest_version?.id;
+  if (!versionId) throw new Error('No latest_version on prunaai/p-video-avatar');
+
+  // Encode inputs as data URIs (Replicate accepts them up to a few MB).
+  const imageB64 = fs.readFileSync(imagePath).toString('base64');
+  const audioB64 = fs.readFileSync(audioPath).toString('base64');
+  const faceUri = `data:image/png;base64,${imageB64}`;
+  const audioUri = `data:audio/mpeg;base64,${audioB64}`;
+
+  // Create prediction
+  const create = await fetch('https://api.replicate.com/v1/predictions', {
+    method: 'POST',
+    headers: { Authorization: `Token ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ version: versionId, input: { image: faceUri, audio: audioUri } }),
+  });
+  if (!create.ok) throw new Error(`Replicate create ${create.status}: ${await create.text()}`);
+  const prediction = await create.json();
+
+  // Poll
+  const start = Date.now();
+  let result = prediction;
+  while (result.status !== 'succeeded' && result.status !== 'failed' && result.status !== 'canceled') {
+    if (Date.now() - start > 10 * 60 * 1000) throw new Error('Replicate timeout');
+    await new Promise(r => setTimeout(r, 4000));
+    const poll = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
+      headers: { Authorization: `Token ${key}` },
+    });
+    if (!poll.ok) { console.warn(`  poll ${poll.status}`); continue; }
+    result = await poll.json();
+    process.stdout.write('.');
+  }
+  if (result.status !== 'succeeded') throw new Error('Replicate ' + result.status + ': ' + (result.error || ''));
+  // Output may be a string URL or { video: url } depending on model
+  const outputUrl = typeof result.output === 'string' ? result.output : (result.output?.video || result.output?.[0]);
+  if (!outputUrl) throw new Error('Replicate no output: ' + JSON.stringify(result.output).slice(0, 200));
+  const vid = await fetch(outputUrl);
+  fs.writeFileSync(outPath, Buffer.from(await vid.arrayBuffer()));
+  return outPath;
+}
+
+async function klingPoll(path, taskId) {
+  const queryUrl = `https://api.klingai.com${path}/${taskId}`;
+  const start = Date.now();
+  while (Date.now() - start < 10 * 60 * 1000) {
+    await new Promise(r => setTimeout(r, 6000));
+    const q = await fetch(queryUrl, { headers: { Authorization: `Bearer ${klingJWT()}` } });
+    if (!q.ok) { console.warn(`  poll ${q.status}: ${(await q.text()).slice(0,200)}`); continue; }
+    const data = (await q.json())?.data;
+    const status = data?.task_status;
+    if (status === 'succeed') return data;
+    if (status === 'failed') throw new Error('Kling failed: ' + JSON.stringify(data));
+    process.stdout.write('.');
+  }
+  throw new Error('Kling timeout');
+}
+
+async function klingImage2Video(imagePath, prompt, outVidPath) {
+  // One-time per mascot: generate the base 5s talking video.
+  // Save both the local video and the Kling video_id (for later lip-sync).
+  const imageB64 = fs.readFileSync(imagePath).toString('base64');
+  const body = {
+    model_name: 'kling-v1-6',
+    mode: 'std',
+    duration: '5',
+    image: imageB64,
+    prompt,
+    cfg_scale: 0.5,
+  };
+  const res = await fetch('https://api.klingai.com/v1/videos/image2video', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${klingJWT()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Kling image2video ${res.status}: ${await res.text()}`);
+  const created = await res.json();
+  const taskId = created?.data?.task_id;
+  if (!taskId) throw new Error('Kling no task_id: ' + JSON.stringify(created).slice(0, 300));
+  const data = await klingPoll('/v1/videos/image2video', taskId);
+  const videoId = data?.task_result?.videos?.[0]?.id;
+  const videoUrl = data?.task_result?.videos?.[0]?.url;
+  if (!videoId || !videoUrl) throw new Error('image2video no id/url: ' + JSON.stringify(data));
+  const vid = await fetch(videoUrl);
+  fs.writeFileSync(outVidPath, Buffer.from(await vid.arrayBuffer()));
+  return { videoId, videoUrl };
+}
+
+async function klingLipSync(videoId, audioPath, outPath) {
+  // Reuses a previously-generated Kling video by video_id.
+  // Audio must be ≤5MB and 2-300s; we send as base64 file.
+  const audioB64 = fs.readFileSync(audioPath).toString('base64');
+  const body = {
+    input: {
+      mode: 'audio2video',
+      video_id: videoId,
+      audio_type: 'file',
+      audio_file: audioB64,
+    },
+  };
+  const res = await fetch('https://api.klingai.com/v1/videos/lip-sync', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${klingJWT()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Kling lip-sync ${res.status}: ${await res.text()}`);
+  const created = await res.json();
+  const taskId = created?.data?.task_id;
+  if (!taskId) throw new Error('Kling no task_id: ' + JSON.stringify(created).slice(0, 300));
+  const data = await klingPoll('/v1/videos/lip-sync', taskId);
+  const videoUrl = data?.task_result?.videos?.[0]?.url;
+  if (!videoUrl) throw new Error('lip-sync no URL: ' + JSON.stringify(data));
+  const vid = await fetch(videoUrl);
+  fs.writeFileSync(outPath, Buffer.from(await vid.arrayBuffer()));
+  return outPath;
+}
+
+// ───── main ────────────────────────────────────────────────────────────
+
+const args = process.argv.slice(2);
+const mascotId = args[0];
+const mode = args.find(a => a.startsWith('--'))?.slice(2) || 'image-only';
+
+if (!mascotId || !MASCOTS[mascotId]) {
+  console.error('Usage: node scripts/generate-mascot.mjs <mascot> [--image-only|--one-clip|--full]');
+  console.error('Mascots: ' + Object.keys(MASCOTS).join(', '));
+  process.exit(1);
+}
+
+const mascot = MASCOTS[mascotId];
+const dir = path.join(ROOT, 'mascots', mascotId);
+fs.mkdirSync(dir, { recursive: true });
+
+console.log(`\n=== ${mascot.name} (${mode}) ===\n`);
+
+const imagePath = path.join(dir, 'master.png');
+
+// Image
+if (!fs.existsSync(imagePath) || fs.statSync(imagePath).size < 1000) {
+  console.log('→ generating master image (Gemini Imagen 3)...');
+  await genImage(mascot.prompt, imagePath);
+  console.log(`  saved ${imagePath} (${(fs.statSync(imagePath).size / 1024).toFixed(0)} KB)\n`);
+} else {
+  console.log(`✓ image exists: ${imagePath}\n`);
+}
+
+if (mode === 'image-only') {
+  console.log(`Open it: ${imagePath}`);
+  process.exit(0);
+}
+
+// Step 2: Pick how many lip-sync clips to make (Wav2Lip on Replicate, no base video step needed)
+const phrasesToRun = mode === 'one-clip' ? [PHRASES[0]] : PHRASES;
+const voicesToRun  = mode === 'one-clip' ? ['girl'] : Object.keys(VOICES);
+
+let done = 0, failed = 0;
+const totalClips = phrasesToRun.length * voicesToRun.length;
+const audioDir = path.join(dir, 'audio');
+const videoDir = path.join(dir, 'video');
+fs.mkdirSync(audioDir, { recursive: true });
+fs.mkdirSync(videoDir, { recursive: true });
+
+for (const voice of voicesToRun) {
+  for (const p of phrasesToRun) {
+    const audioPath = path.join(audioDir, `${voice}_${p.key}.mp3`);
+    const videoPath = path.join(videoDir, `${voice}_${p.key}.mp4`);
+
+    if (fs.existsSync(videoPath) && fs.statSync(videoPath).size > 1000) {
+      console.log(`✓ skip ${voice}/${p.key} (already exists)`);
+      done++; continue;
+    }
+
+    try {
+      console.log(`→ [${voice}/${p.key}] "${p.text}"`);
+      if (!fs.existsSync(audioPath)) {
+        await genVoice(p.text, VOICES[voice], audioPath);
+        console.log(`  voice ok`);
+      }
+      await replicateLipSync(imagePath, audioPath, videoPath);
+      console.log(`\n  video ok (${(fs.statSync(videoPath).size / 1024 / 1024).toFixed(1)} MB)`);
+      done++;
+    } catch (e) {
+      console.error(`  ✗ ${e.message}`);
+      failed++;
+    }
+  }
+}
+
+console.log(`\n${done}/${totalClips} done, ${failed} failed.`);
+console.log(`Output in ${dir}/`);

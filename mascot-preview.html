@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tiger Mascot — preview</title>
+  <style>
+    body { font-family: system-ui; background: #1a1a2e; color: white; margin: 0; padding: 24px; }
+    .row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+    .card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; }
+    h1, h2 { margin: 0 0 12px; }
+    img, video { max-width: 400px; border-radius: 8px; display: block; }
+    .label { font-size: 13px; color: #aaa; margin-top: 8px; }
+    audio { margin-top: 8px; }
+    .err { color: #ff6b6b; font-size: 13px; margin-top: 8px; display: none; }
+  </style>
+</head>
+<body>
+  <h1>Tiger Mascot Preview</h1>
+  <div class="row">
+    <div class="card">
+      <h2>Master image (Gemini Imagen 4)</h2>
+      <img src="mascots/tiger/master.png" alt="Tiger master" onerror="this.nextElementSibling.style.display='block'">
+      <div class="err">Image failed to load: mascots/tiger/master.png</div>
+      <div class="label">$0.04 — generated once, reused for all clips</div>
+    </div>
+    <div class="card">
+      <h2>Lip-synced clip (Replicate p-video-avatar)</h2>
+      <video src="mascots/tiger/video/girl_welcome.mp4" controls autoplay loop
+             onerror="this.nextElementSibling.style.display='block'"></video>
+      <div class="err">Video failed to load: mascots/tiger/video/girl_welcome.mp4</div>
+      <div class="label">"Welcome to your play space! Click what you want to do today!" — girl voice (Sarah)</div>
+      <div class="label">~$0.02 per clip</div>
+      <audio src="mascots/tiger/audio/girl_welcome.mp3" controls onerror="this.nextElementSibling.style.display='block'"></audio>
+      <div class="err">Audio failed to load: mascots/tiger/audio/girl_welcome.mp3</div>
+    </div>
+  </div>
+  <p style="margin-top: 24px; color: #aaa; font-size: 14px;">
+    Direct file paths (in case browser preview blocks relative load):<br>
+    <code>C:\Users\HomeSeer\OneDrive\Documents\Claude\Projects\Kids_App\mascots\tiger\video\girl_welcome.mp4</code>
+  </p>
+</body>
+</html>
