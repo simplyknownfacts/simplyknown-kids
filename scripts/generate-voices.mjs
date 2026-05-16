@@ -13,6 +13,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { spawn } from 'node:child_process';
+
+async function _pitchShift(inPath, outPath, ratio) {
+  return new Promise((resolve, reject) => {
+    const ff = spawn('ffmpeg', ['-y', '-i', inPath, '-af',
+      `asetrate=44100*${ratio},aresample=44100,atempo=1/${ratio}`,
+      outPath]);
+    ff.on('close', code => code === 0 ? resolve() : reject(new Error('ffmpeg exit ' + code)));
+    ff.on('error', reject);
+  });
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, '..');
@@ -38,8 +49,10 @@ if (!API_KEY && !process.argv.includes('--dry')) {
 // Override via env: EL_VOICE_GIRL, EL_VOICE_BOY
 const VOICES = {
   girl: process.env.EL_VOICE_GIRL || 'EXAVITQu4vr4xnSDxMaL', // "Sarah" - warm female
-  boy:  process.env.EL_VOICE_BOY  || 'TxGEqnHWrfWFTfGW9XjX', // "Josh" - young male
+  boy:  process.env.EL_VOICE_BOY  || 'TX3LPaxmHKxFdv7VOQHJ', // "Liam" - energetic young male (was Josh, too deep)
 };
+// Pitch up +3 semitones via ffmpeg to sound more kid-like
+const PITCH_RATIO = 1.189207;
 
 const MODEL_ID = process.env.EL_MODEL || 'eleven_turbo_v2_5'; // cheap + fast
 const USD_PER_1K_CHARS = 0.30; // approximate pay-as-you-go rate
@@ -140,7 +153,16 @@ for (const item of toGenerate) {
       continue;
     }
     const buf = Buffer.from(await res.arrayBuffer());
-    fs.writeFileSync(item.filepath, buf);
+    if (item.kind === 'tts') {
+      // TTS clips: write raw, pitch-shift +3 semi for kid voice, replace
+      const rawPath = item.filepath + '.raw.mp3';
+      fs.writeFileSync(rawPath, buf);
+      await _pitchShift(rawPath, item.filepath, PITCH_RATIO);
+      fs.unlinkSync(rawPath);
+    } else {
+      // SFX: keep as-is (animal sounds, not voices)
+      fs.writeFileSync(item.filepath, buf);
+    }
     done++;
     if (done % 10 === 0) console.log(`  ${done}/${toGenerate.length} done...`);
   } catch (err) {

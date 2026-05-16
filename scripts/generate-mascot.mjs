@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -58,9 +59,13 @@ const PHRASES = [
 ];
 
 const VOICES = {
-  girl: process.env.EL_VOICE_GIRL || 'EXAVITQu4vr4xnSDxMaL',
-  boy:  process.env.EL_VOICE_BOY  || 'TxGEqnHWrfWFTfGW9XjX',
+  girl: process.env.EL_VOICE_GIRL || 'EXAVITQu4vr4xnSDxMaL', // Sarah
+  boy:  process.env.EL_VOICE_BOY  || 'TX3LPaxmHKxFdv7VOQHJ', // Liam (was Josh - too deep)
 };
+
+// Pitch up all generated audio +3 semitones to sound more kid-like.
+// 2^(3/12) ≈ 1.189 frequency multiplier.
+const PITCH_RATIO = 1.189207;
 
 // ───── helpers ──────────────────────────────────────────────────────────
 
@@ -114,7 +119,17 @@ async function genVoice(text, voiceId, outPath) {
     }),
   });
   if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${await res.text()}`);
-  fs.writeFileSync(outPath, Buffer.from(await res.arrayBuffer()));
+  // Write raw audio, then pitch-shift in place via ffmpeg.
+  const rawPath = outPath + '.raw.mp3';
+  fs.writeFileSync(rawPath, Buffer.from(await res.arrayBuffer()));
+  await new Promise((resolve, reject) => {
+    const ff = spawn('ffmpeg', ['-y', '-i', rawPath, '-af',
+      `asetrate=44100*${PITCH_RATIO},aresample=44100,atempo=1/${PITCH_RATIO}`,
+      outPath]);
+    ff.on('close', code => code === 0 ? resolve() : reject(new Error('ffmpeg exit ' + code)));
+    ff.on('error', reject);
+  });
+  fs.unlinkSync(rawPath);
   return outPath;
 }
 
