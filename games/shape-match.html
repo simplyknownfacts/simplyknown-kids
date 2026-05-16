@@ -17,16 +17,19 @@
     .target {
       position: absolute;
       width: 130px; height: 130px;
-      border: 4px dashed rgba(255,255,255,0.5);
+      border: 4px dashed currentColor;
       border-radius: 16px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 6px; background: rgba(255,255,255,0.05);
+      gap: 6px;
+      /* color set inline per-target = shape color; tinted bg derived from it */
     }
+    .target svg.shape { opacity: 0.45; }
     .target-label {
-      font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.4);
+      font-size: 11px; font-weight: 800; color: currentColor; opacity: 0.85;
       text-transform: uppercase; letter-spacing: 1px;
     }
-    .target.matched { border-color: #a8e6cf; background: rgba(168,230,207,0.2); border-style: solid; }
+    .target.matched { border-style: solid; opacity: 1; }
+    .target.matched svg.shape { opacity: 1; }
     .drag-hint { font-size: 24px; color: rgba(255,255,255,0.5); margin: 4px 0; }
   </style>
 </head>
@@ -41,12 +44,14 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
+  <script src="../js/game-settings.js"></script>
   <script>
     (function() {
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'shape-match');
     renderBackBtn('index.html');
+    gameSettings.attach('shape-match');
 
     const dragOn = tier >= 4 || getProfileFeature(profile, 'shape-match', 'dragMode');
     let shapeTimer = null;
@@ -145,7 +150,10 @@
         div.style.left = spot.xPct + '%';
         div.style.top  = spot.yPct + '%';
         div.style.transform = 'translate(-50%, -50%)';
-        div.appendChild(makeSVG(s, 55, false));
+        // Color-match: border + label inherit currentColor; bg is faint tint of shape color
+        div.style.color = s.color;
+        div.style.background = s.color + '20'; // ~12% alpha
+        div.appendChild(makeSVG(s, 55, true));
         const lbl = document.createElement('div');
         lbl.className = 'target-label';
         lbl.textContent = 'drop here';
