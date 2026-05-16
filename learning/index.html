@@ -33,10 +33,12 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
+  <script src="../js/mascot.js"></script>
   <script>
     function go(page) { playChime(); goTo(page); }
     renderBackBtn('../home.html');
     if (!getActiveProfile()) goProfiles();
+    if (window.mascot) setTimeout(() => mascot.play('learn_intro'), 400);
   </script>
 </body>
 </html>

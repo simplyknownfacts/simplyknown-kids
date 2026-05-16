@@ -43,6 +43,7 @@
   <script src="js/profiles.js"></script>
   <script src="js/voice-manifest.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/mascot.js"></script>
   <script>
     function go(section) { playChime(); goTo(section); }
 
@@ -59,6 +60,8 @@
       if (Array.isArray(profile.youtube) && profile.youtube.length > 0) {
         document.getElementById('watchTile').style.display = '';
       }
+      // Mascot welcomes the child (once per day per profile)
+      if (window.mascot) setTimeout(() => mascot.play('welcome'), 600);
     } else {
       goProfiles();
     }

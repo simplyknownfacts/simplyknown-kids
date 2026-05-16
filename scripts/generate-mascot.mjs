@@ -45,15 +45,15 @@ const PHRASES = [
     motion: 'The character mimes painting with one paw in the air, swaying side to side, looking creative and playful, paws moving like holding a paintbrush.' },
   { key: 'watch_intro', text: "Let's watch some videos!",
     motion: 'The character points forward with both paws as if at a TV, eyes wide and sparkling, head tilts with anticipation.' },
-  { key: 'cheer_great', text: 'Great job!',
+  { key: 'cheer_great', text: 'Great job, way to go!',
     motion: 'The character claps paws together quickly, jumps up and down with joy, huge celebrating smile.' },
-  { key: 'cheer_didit', text: 'You did it!',
+  { key: 'cheer_didit', text: 'You did it, woohoo! Yes!',
     motion: 'The character throws both arms up in the air triumphantly, leans forward proudly, beaming celebration.' },
-  { key: 'cheer_awesome', text: 'Awesome!',
+  { key: 'cheer_awesome', text: 'That is so awesome!',
     motion: 'The character points at the viewer with one paw and gives a thumbs-up with the other, big enthusiastic grin.' },
-  { key: 'cheer_yay',   text: 'Yay!',
+  { key: 'cheer_yay',   text: 'Yay! Hooray! Yay!',
     motion: 'The character jumps in place with arms raised, spins slightly, pure joy and excitement.' },
-  { key: 'goodbye',     text: 'See you next time!',
+  { key: 'goodbye',     text: 'See you next time, bye-bye!',
     motion: 'The character waves one paw goodbye, blows a small kiss with the other, gentle smile and a slight bow.' },
 ];
 
@@ -137,22 +137,33 @@ async function replicateLipSync(imagePath, audioPath, outPath, motionPrompt) {
   const faceUri = `data:image/png;base64,${imageB64}`;
   const audioUri = `data:audio/mpeg;base64,${audioB64}`;
 
-  // Create prediction
-  const create = await fetch('https://api.replicate.com/v1/predictions', {
-    method: 'POST',
-    headers: { Authorization: `Token ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      version: versionId,
-      input: {
-        image: faceUri,
-        audio: audioUri,
-        video_prompt: motionPrompt || 'The character is talking expressively with friendly gestures.',
-        disable_prompt_upsampling: false,
-      },
-    }),
-  });
-  if (!create.ok) throw new Error(`Replicate create ${create.status}: ${await create.text()}`);
-  const prediction = await create.json();
+  // Create prediction, retrying on 429 (Replicate rate-limits to 6/min while balance < $5).
+  let prediction;
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    const create = await fetch('https://api.replicate.com/v1/predictions', {
+      method: 'POST',
+      headers: { Authorization: `Token ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        version: versionId,
+        input: {
+          image: faceUri,
+          audio: audioUri,
+          video_prompt: motionPrompt || 'The character is talking expressively with friendly gestures.',
+          disable_prompt_upsampling: false,
+        },
+      }),
+    });
+    if (create.ok) { prediction = await create.json(); break; }
+    if (create.status === 429) {
+      const body = await create.json().catch(() => ({}));
+      const wait = (body?.retry_after || 12) + 1;
+      console.log(`\n  rate-limited, sleep ${wait}s (attempt ${attempt}/6)`);
+      await new Promise(r => setTimeout(r, wait * 1000));
+      continue;
+    }
+    throw new Error(`Replicate create ${create.status}: ${await create.text()}`);
+  }
+  if (!prediction) throw new Error('Replicate create: rate-limit retries exhausted');
 
   // Poll
   const start = Date.now();

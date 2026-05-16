@@ -150,6 +150,12 @@
     <h2>🎙️ Voice</h2>
     <div id="voiceSection"></div>
 
+    <h2>🐾 Mascot Buddy</h2>
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+      The mascot welcomes the child, introduces each section, and cheers them on. Pick one per kid (or skip).
+    </div>
+    <div id="mascotSection"></div>
+
     <h2>📺 YouTube Channels</h2>
     <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
       Paste a channel URL (e.g. https://www.youtube.com/@msrachel or .../channel/UC...).
@@ -173,6 +179,7 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
+  <script src="../js/mascot.js"></script>
   <script>
     const PIN_KEY = 'vb_pin';            // stores JSON {hash,salt} now; legacy = raw 4 digits
     const RECOVERY_KEY = 'vb_recovery';   // stores JSON {hash,salt} for recovery phrase
@@ -296,6 +303,7 @@
       buildAddForm();
       buildFeaturesTable();
       buildVoiceSection();
+      buildMascotSection();
       buildYoutubeSection();
       _refreshRecoveryStatus();
       if (new URLSearchParams(window.location.search).get('action') === 'add') {
@@ -388,6 +396,55 @@
       profile.youtube.splice(index, 1);
       updateProfile(profileId, { youtube: profile.youtube });
       buildYoutubeSection();
+    }
+
+    function buildMascotSection() {
+      const section = document.getElementById('mascotSection');
+      section.innerHTML = '';
+      const profiles = getProfiles();
+      if (!profiles.length) {
+        section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
+        return;
+      }
+      const MASCOTS = (window.mascot && window.mascot.available) || ['dog','tiger','giraffe','panda','orca','eagle'];
+      const LABELS = (window.mascot && window.mascot.labels) || {};
+      profiles.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const current = p.mascot && p.mascot.id;
+        const opts = ['<option value="">None</option>'].concat(
+          MASCOTS.map(m => `<option value="${m}" ${current === m ? 'selected' : ''}>${LABELS[m] || m}</option>`)
+        ).join('');
+        card.innerHTML = `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:24px;">${p.avatar}</span>
+            <span style="color:white;font-weight:800;">${p.name}</span>
+          </div>
+          <select id="mascot-${p.id}" style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,0.1);color:white;border:2px solid rgba(255,255,255,0.2);font-size:15px;">
+            ${opts}
+          </select>
+          <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:8px 14px;"
+                  onclick="testMascot('${p.id}')">▶ Preview welcome</button>
+        `;
+        card.querySelector('select').addEventListener('change', (e) => {
+          const newId = e.target.value || null;
+          updateProfile(p.id, { mascot: newId ? { id: newId } : null });
+        });
+        section.appendChild(card);
+      });
+    }
+
+    function testMascot(profileId) {
+      const p = getProfiles().find(x => x.id === profileId);
+      if (!p || !p.mascot || !p.mascot.id) return alert('Pick a mascot first.');
+      const prev = localStorage.getItem('vb_active_id');
+      setActiveProfile(profileId);
+      // Bypass once-per-day gate by clearing the welcome log for this profile
+      const plays = JSON.parse(localStorage.getItem('vb_mascot_plays') || '{}');
+      delete plays[profileId + '/welcome'];
+      localStorage.setItem('vb_mascot_plays', JSON.stringify(plays));
+      if (window.mascot) window.mascot.play('welcome');
+      if (prev) localStorage.setItem('vb_active_id', prev);
     }
 
     function buildVoiceSection() {
