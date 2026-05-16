@@ -148,20 +148,41 @@ function _matchClips(text) {
 }
 
 let _audioQueue = Promise.resolve();
-function _playClip(voice, hash) {
+let _currentAudio = null;
+let _speakGen = 0; // increments on cancel; in-flight chain checks this to bail
+function _playClip(voice, hash, gen) {
   return new Promise(resolve => {
+    if (gen !== _speakGen) return resolve();
     const audio = new Audio(`${rootPath()}audio/${voice}/${hash}.mp3`);
-    audio.onended = audio.onerror = () => resolve();
+    _currentAudio = audio;
+    audio.onended = audio.onerror = () => {
+      if (_currentAudio === audio) _currentAudio = null;
+      resolve();
+    };
     audio.play().catch(() => resolve());
   });
+}
+
+function cancelSpeak() {
+  _speakGen++;
+  if (_currentAudio) {
+    try { _currentAudio.pause(); _currentAudio.src = ''; } catch {}
+    _currentAudio = null;
+  }
+  if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch {} }
+  _audioQueue = Promise.resolve();
 }
 
 function _voiceSpeak(text, voice) {
   const clips = _matchClips(text);
   if (!clips) return _browserSpeak(text);
   const hashes = clips.map(c => VOICE_MANIFEST.phraseHash[c]);
+  const gen = _speakGen;
   _audioQueue = _audioQueue.then(async () => {
-    for (const h of hashes) await _playClip(voice, h);
+    for (const h of hashes) {
+      if (gen !== _speakGen) return;
+      await _playClip(voice, h, gen);
+    }
   });
 }
 

@@ -125,22 +125,25 @@
         for (let i = 0; i < count; i++) {
           const d = document.createElement('div');
           d.className = 'dot'; d.textContent = thing.e;
-          d.addEventListener('click', () => {
+          d.addEventListener('pointerdown', () => {
             if (d.classList.contains('counted')) return;
             d.classList.add('counted');
             tapped++;
-            speak(countWord(tapped, thing));
+            // Snappy: just the number on each tap, interrupt prior speech.
+            cancelSpeak();
+            speak(String(tapped));
             if (tapped === count) {
+              // After the last item: announce the total with the noun.
+              setTimeout(() => { cancelSpeak(); speak(countWord(count, thing)); }, 350);
               playSuccess();
-              autoTimer = setTimeout(nextRound, 1800);
+              autoTimer = setTimeout(nextRound, 2200);
             }
           });
           row.appendChild(d);
         }
         // Tap the big number to skip to next round
         numEl.style.cursor = 'pointer';
-        numEl.addEventListener('click', () => { clearAuto(); nextRound(); });
-        speak(countWord(count, thing));
+        numEl.addEventListener('pointerdown', () => { clearAuto(); nextRound(); });
 
       } else if (tier <= 4) {
         instruction.textContent = `Tap each ${thing.s} to count!`;
@@ -149,7 +152,7 @@
         for (let i = 0; i < count; i++) {
           const d = document.createElement('div');
           d.className = 'dot'; d.textContent = thing.e;
-          d.addEventListener('click', () => {
+          d.addEventListener('pointerdown', () => {
             if (d.classList.contains('counted')) return;
             d.classList.add('counted');
             tapped++;
@@ -157,10 +160,12 @@
             badge.className = 'count-badge';
             badge.textContent = tapped;
             d.appendChild(badge);
-            speak(countWord(tapped, thing));
+            cancelSpeak();
+            speak(String(tapped));
             if (tapped === count) {
+              setTimeout(() => { cancelSpeak(); speak(countWord(count, thing)); }, 350);
               playSuccess();
-              autoTimer = setTimeout(nextRound, 1500);
+              autoTimer = setTimeout(nextRound, 2200);
             }
           });
           row.appendChild(d);
@@ -208,7 +213,7 @@
         for (let i = 0; i < count; i++) {
           const d = document.createElement('div');
           d.className = 'dot'; d.textContent = thing.e;
-          d.addEventListener('click', () => {
+          d.addEventListener('pointerdown', () => {
             if (d.classList.contains('counted')) return;
             d.classList.add('counted');
             tapped++;
@@ -216,10 +221,12 @@
             badge.className = 'count-badge';
             badge.textContent = tapped;
             d.appendChild(badge);
-            speak(countWord(tapped, thing));
+            cancelSpeak();
+            speak(String(tapped));
             if (tapped === count) {
+              setTimeout(() => { cancelSpeak(); speak(countWord(count, thing)); }, 350);
               playSuccess();
-              autoTimer = setTimeout(nextRound, 1500);
+              autoTimer = setTimeout(nextRound, 2200);
             }
           });
           row.appendChild(d);
