@@ -69,6 +69,8 @@ function _ensureEl() {
     document.head.appendChild(style);
   }
   // Two stacked <video>s for crossfade — eliminates flash on src change.
+  // The wrap background sits BEHIND both videos, so during the fade overlap
+  // the dark border won't bleed through (matches the mascot bg color).
   for (let i = 0; i < 2; i++) {
     const vid = document.createElement('video');
     vid.className = 'mascot-vid';
@@ -79,7 +81,8 @@ function _ensureEl() {
       position: absolute; inset: 0;
       width: 100%; height: 100%; object-fit: cover;
       opacity: ${i === 0 ? 1 : 0};
-      transition: opacity 0.25s ease;
+      transition: opacity 0.4s ease;
+      background: rgba(0,0,0,0.4);
     `;
     wrap.appendChild(vid);
   }
@@ -93,7 +96,9 @@ function _ensureEl() {
 }
 
 function _onMascotTap() {
-  if (_state === 'speaking') return; // don't interrupt active speech
+  // Only accept taps while the mascot is idle (base loop). Mid-action and
+  // mid-speech taps are ignored so animations always play to completion.
+  if (_state !== 'base') return;
   const p = _activeProfile();
   if (!p || !p.mascot || !p.mascot.id) return;
   // Play the species signature sound — but only if we haven't played it
@@ -122,8 +127,15 @@ function _videos() {
 function _front() { const v = _videos(); return v ? v[_frontIdx] : null; }
 function _back()  { const v = _videos(); return v ? v[1 - _frontIdx] : null; }
 
-// Load src into the BACK video, then crossfade swap when first frame is ready.
-// opts: { muted, loop, onended }
+// Load src into the BACK video, start it playing UNDER the front, then
+// crossfade. Two anti-flicker tricks:
+//   1) Wait until the back is actually playing (first frames decoded) before
+//      starting the opacity swap — so what fades in is in-motion, not a
+//      static first frame.
+//   2) Don't clear the front's src after fade-out; just pause it. Tearing
+//      down the <video> source caused a brief black frame during reassignment
+//      on the next swap. The src naturally gets replaced when this element
+//      becomes "back" again next round.
 function _crossfadeTo(src, opts) {
   const wrap = _ensureEl();
   const back = _back();
@@ -132,21 +144,30 @@ function _crossfadeTo(src, opts) {
   back.muted = !!opts.muted;
   back.loop = !!opts.loop;
   back.onended = null;
-  // Wait for first frame
-  const onReady = () => {
-    back.removeEventListener('loadeddata', onReady);
-    // Wire onended AFTER swap so it doesn't fire on the old front
+
+  const startCrossfade = () => {
     back.onended = opts.onended || null;
-    back.play().catch(() => {});
-    // Crossfade
     back.style.opacity = '1';
     front.style.opacity = '0';
     setTimeout(() => {
       try { front.pause(); } catch {}
-      front.removeAttribute('src');
-      front.load();
-    }, 260);
+    }, 450);
     _frontIdx = 1 - _frontIdx;
+  };
+
+  const onPlaying = () => {
+    back.removeEventListener('playing', onPlaying);
+    // One animation frame so a frame has actually painted before fading in.
+    requestAnimationFrame(() => requestAnimationFrame(startCrossfade));
+  };
+  const onReady = () => {
+    back.removeEventListener('loadeddata', onReady);
+    back.addEventListener('playing', onPlaying, { once: true });
+    back.play().catch(() => {
+      // Autoplay blocked or play() rejected — fall back to immediate crossfade
+      // (otherwise the swap would never happen).
+      startCrossfade();
+    });
   };
   back.addEventListener('loadeddata', onReady, { once: true });
   back.src = src;
