@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "co.simplyknown.kids",
+        "sha256_cert_fingerprints": ["DA:65:70:AA:70:90:8E:21:30:D5:57:A7:81:48:1E:78:9F:11:A8:08:EE:F3:26:24:14:93:A4:FD:D6:F4:7A:E5"]
+      }
+    }]
