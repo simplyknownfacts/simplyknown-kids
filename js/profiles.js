@@ -38,6 +38,11 @@ function getProfiles() {
 
 function saveProfiles(list) {
   localStorage.setItem(_PROFILES_KEY, JSON.stringify(list));
+  localStorage.setItem('vb_local_updated_at', String(Date.now()));
+  // If cloud sync is loaded + user is signed in, debounced push will fire
+  if (window.cloudSync && typeof window.cloudSync.onLocalChange === 'function') {
+    window.cloudSync.onLocalChange();
+  }
 }
 
 function _newProfileId() {
