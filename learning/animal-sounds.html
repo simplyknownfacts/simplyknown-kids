@@ -178,6 +178,8 @@
     }
 
     // ── QUIZ MODE (tier 5+) ──────────────────────────────────────────────────
+    // Garden div is position:fixed inset:0 — it eats clicks even when empty.
+    document.getElementById('garden').style.display = 'none';
     document.getElementById('quizArea').style.display = 'flex';
 
     let roundTimer = null;
@@ -201,7 +203,7 @@
         const btn = document.createElement('div');
         btn.className = 'choice-btn';
         btn.innerHTML = `<span>${a.emoji}</span><span class="cname">${a.name}</span>`;
-        btn.addEventListener('click', () => {
+        btn.addEventListener('pointerdown', () => {
           if (i === answerIdx) {
             playSuccess(); speakAnimal(a);
             btn.style.background = 'rgba(168,230,207,0.4)';
