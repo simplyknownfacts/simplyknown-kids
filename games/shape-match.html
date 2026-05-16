@@ -12,16 +12,16 @@
     .shapes-row {
       display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
     }
-    /* Targets in drag mode are scattered absolutely across the play area */
-    #targetsRow { position: relative; width: 100%; height: 65vh; }
+    /* Targets in drag mode are pinned to viewport pixels so they can't overflow */
+    #targetsRow { position: relative; width: 100%; height: 1px; }
     .target {
-      position: absolute;
+      position: fixed; /* viewport-anchored; left/top set in JS as px */
       width: 130px; height: 130px;
       border: 4px dashed currentColor;
       border-radius: 16px;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 6px;
-      /* color set inline per-target = shape color; tinted bg derived from it */
+      z-index: 5;
     }
     .target svg.shape { opacity: 0.45; }
     .target-label {
@@ -89,6 +89,8 @@
       const targetsRow = document.getElementById('targetsRow');
       const hint = document.getElementById('hint');
       shapesRow.innerHTML = ''; targetsRow.innerHTML = '';
+      // Clean up any prior round's targets that were attached to body (drag mode)
+      document.querySelectorAll('.target').forEach(t => t.remove());
 
       // Tap-to-identify mode (!dragOn): always 1 shape (single shape named on tap).
       // Drag mode: start at 2, scale up with tier so kid has to choose the right target.
@@ -116,17 +118,22 @@
       const shuffledTargets = [...selected].sort(() => Math.random() - 0.5);
       const targetEls = {};
 
-      // Define safe play area in pixels (relative to targetsRow which is full-width).
-      // Avoid: back-btn (top-left ~90x90), gear (bottom-right ~70x70), screen edges.
+      // Safe play area = viewport rectangle minus reserved zones for chrome/UI.
+      // Targets are position:fixed so they can't overflow document below the fold.
       const TARGET = 130, MARGIN = 16;
-      const rowRect = targetsRow.getBoundingClientRect();
-      const reserveLeft  = 110; // clears 88px tablet back-btn + margin
-      const reserveRight = 80;  // clears 48px gear + margin
-      const reserveBottom = 80; // clears gear + safe-area
+      const safeBottomCSS = parseInt(getComputedStyle(document.documentElement)
+        .getPropertyValue('--sai-b').trim()) || 0;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const shapesBottom = shapesRow.getBoundingClientRect().bottom;
+      const reserveTop    = shapesBottom + MARGIN;
+      const reserveBottom = 120 + safeBottomCSS; // gear (48) + safe-area + app drawer breathing room
+      const reserveLeft   = 110; // clears back-btn (max 88 + margin)
+      const reserveRight  = 90;  // clears gear (48 + margin)
       const minX = reserveLeft + TARGET / 2;
-      const maxX = rowRect.width - reserveRight - TARGET / 2;
-      const minY = MARGIN + TARGET / 2;
-      const maxY = rowRect.height - reserveBottom - TARGET / 2;
+      const maxX = vw - reserveRight - TARGET / 2;
+      const minY = reserveTop + TARGET / 2;
+      const maxY = vh - reserveBottom - TARGET / 2;
 
       const placed = []; // {x, y} centers in px relative to targetsRow
       function pickSpot() {
@@ -148,18 +155,17 @@
         div.className = 'target';
         div.dataset.shape = s.name;
         const spot = pickSpot();
-        div.style.left = spot.x + 'px';
-        div.style.top  = spot.y + 'px';
-        div.style.transform = 'translate(-50%, -50%)';
-        // Color-match: border + label inherit currentColor; bg is faint tint of shape color
+        // pickSpot returns center coordinates; translate to top-left for position:fixed
+        div.style.left = (spot.x - TARGET / 2) + 'px';
+        div.style.top  = (spot.y - TARGET / 2) + 'px';
         div.style.color = s.color;
-        div.style.background = s.color + '20'; // ~12% alpha
+        div.style.background = s.color + '20';
         div.appendChild(makeSVG(s, 55, true));
         const lbl = document.createElement('div');
         lbl.className = 'target-label';
         lbl.textContent = 'drop here';
         div.appendChild(lbl);
-        targetsRow.appendChild(div);
+        document.body.appendChild(div); // attach to body, not targetsRow (target uses position:fixed)
         targetEls[s.name] = div;
       });
 

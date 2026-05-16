@@ -29,6 +29,7 @@ let _mascotEl = null;
 let _actionTimer = null;
 let _lastAction = null;
 let _state = 'hidden';
+let _frontIdx = 0;
 
 function _activeProfile() {
   return (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
@@ -42,7 +43,7 @@ function _ensureEl() {
     position: fixed; bottom: 16px; right: 16px;
     width: 180px; height: 180px; border-radius: 50%;
     background: rgba(0,0,0,0.4); overflow: hidden;
-    display: none; align-items: center; justify-content: center;
+    display: none;
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     z-index: 9999;
     border: 4px solid rgba(255,255,255,0.6);
@@ -60,15 +61,62 @@ function _ensureEl() {
     `;
     document.head.appendChild(style);
   }
-  const vid = document.createElement('video');
-  vid.id = 'mascotVid';
-  vid.muted = false; vid.playsInline = true; vid.autoplay = false;
-  vid.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
-  wrap.appendChild(vid);
-  // Tap mascot: no-op per user request
+  // Two stacked <video>s for crossfade — eliminates flash on src change.
+  for (let i = 0; i < 2; i++) {
+    const vid = document.createElement('video');
+    vid.className = 'mascot-vid';
+    vid.dataset.idx = i;
+    vid.muted = true; vid.playsInline = true; vid.autoplay = false;
+    vid.preload = 'auto';
+    vid.style.cssText = `
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+      opacity: ${i === 0 ? 1 : 0};
+      transition: opacity 0.25s ease;
+    `;
+    wrap.appendChild(vid);
+  }
   document.body.appendChild(wrap);
   _mascotEl = wrap;
+  _frontIdx = 0;
   return wrap;
+}
+
+function _videos() {
+  return _mascotEl ? _mascotEl.querySelectorAll('video.mascot-vid') : [];
+}
+function _front() { const v = _videos(); return v ? v[_frontIdx] : null; }
+function _back()  { const v = _videos(); return v ? v[1 - _frontIdx] : null; }
+
+// Load src into the BACK video, then crossfade swap when first frame is ready.
+// opts: { muted, loop, onended }
+function _crossfadeTo(src, opts) {
+  const wrap = _ensureEl();
+  const back = _back();
+  const front = _front();
+  if (!back || !front) return;
+  back.muted = !!opts.muted;
+  back.loop = !!opts.loop;
+  back.onended = null;
+  // Wait for first frame
+  const onReady = () => {
+    back.removeEventListener('loadeddata', onReady);
+    // Wire onended AFTER swap so it doesn't fire on the old front
+    back.onended = opts.onended || null;
+    back.play().catch(() => {});
+    // Crossfade
+    back.style.opacity = '1';
+    front.style.opacity = '0';
+    setTimeout(() => {
+      try { front.pause(); } catch {}
+      front.removeAttribute('src');
+      front.load();
+    }, 260);
+    _frontIdx = 1 - _frontIdx;
+  };
+  back.addEventListener('loadeddata', onReady, { once: true });
+  back.src = src;
+  back.load();
 }
 
 function _src(mascotId, voice, key) {
@@ -88,28 +136,9 @@ function _playBase() {
   const p = _activeProfile();
   if (!p || !p.mascot || !p.mascot.id) return;
   const wrap = _ensureEl();
-  const vid = wrap.querySelector('video');
-  vid.muted = true;
-  vid.loop = true; // base genuinely loops
-  vid.src = _src(p.mascot.id, null, 'BASE');
-  vid.onended = null;
-  vid.onerror = () => {
-    // Fallback: static master image if base clip missing
-    vid.style.display = 'none';
-    if (!wrap.querySelector('img.mascot-still')) {
-      const img = document.createElement('img');
-      img.className = 'mascot-still';
-      img.src = `${rootPath()}mascots/${p.mascot.id}/master.png`;
-      img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-      wrap.appendChild(img);
-    }
-  };
-  vid.style.display = '';
-  const still = wrap.querySelector('img.mascot-still');
-  if (still) still.remove();
   _state = 'base';
   if (wrap.style.display === 'none') {
-    wrap.style.display = 'flex';
+    wrap.style.display = 'block';
     wrap.style.opacity = '0';
     wrap.style.transform = 'scale(0.5)';
     requestAnimationFrame(() => {
@@ -117,28 +146,21 @@ function _playBase() {
       wrap.style.transform = 'scale(1)';
     });
   }
-  vid.play().catch(() => {});
+  _crossfadeTo(_src(p.mascot.id, null, 'BASE'), { muted: true, loop: true, onended: null });
   _scheduleNextAction();
 }
 
 function _playAction() {
   const p = _activeProfile();
   if (!p || !p.mascot || !p.mascot.id) return;
-  if (_state !== 'base') { _scheduleNextAction(); return; } // skip if speaking
-  const wrap = _ensureEl();
-  const vid = wrap.querySelector('video');
+  if (_state !== 'base') { _scheduleNextAction(); return; }
   const keys = _actionKeys(p.mascot.id);
   let pool = _lastAction ? keys.filter(k => k !== _lastAction) : keys;
   if (!pool.length) pool = keys;
   const key = pool[Math.floor(Math.random() * pool.length)];
   _lastAction = key;
-  vid.muted = true;
-  vid.loop = false;
-  vid.src = _src(p.mascot.id, null, key);
-  vid.onended = () => _playBase(); // when action finishes, return to base
-  vid.onerror = () => _playBase();
   _state = 'action';
-  vid.play().catch(() => _playBase());
+  _crossfadeTo(_src(p.mascot.id, null, key), { muted: true, loop: false, onended: () => _playBase() });
 }
 
 function _shouldSpeak(profileId, key) {
@@ -160,25 +182,18 @@ function play(key) {
   }
   const voice = profile.mascot.voice || profile.voice || 'girl';
   const wrap = _ensureEl();
-  const vid = wrap.querySelector('video');
   clearTimeout(_actionTimer);
-  vid.muted = false;
-  vid.loop = false;
-  vid.src = _src(profile.mascot.id, voice, key);
-  vid.onerror = () => _playBase();
-  vid.onended = () => _playBase();
-  const still = wrap.querySelector('img.mascot-still');
-  if (still) still.remove();
-  vid.style.display = '';
   _state = 'speaking';
-  wrap.style.display = 'flex';
+  wrap.style.display = 'block';
   wrap.style.opacity = '0';
   wrap.style.transform = 'scale(0.5)';
   requestAnimationFrame(() => {
     wrap.style.opacity = '1';
     wrap.style.transform = 'scale(1)';
   });
-  vid.play().catch(() => {});
+  _crossfadeTo(_src(profile.mascot.id, voice, key), {
+    muted: false, loop: false, onended: () => _playBase(),
+  });
 }
 
 function show() {
@@ -189,8 +204,7 @@ function show() {
 function hide() {
   if (!_mascotEl) return;
   clearTimeout(_actionTimer);
-  const vid = _mascotEl.querySelector('video');
-  if (vid) { vid.pause(); vid.src = ''; }
+  _videos().forEach(v => { try { v.pause(); } catch {} v.removeAttribute('src'); v.load(); });
   _mascotEl.style.opacity = '0';
   _mascotEl.style.transform = 'scale(0.5)';
   setTimeout(() => { if (_mascotEl) _mascotEl.style.display = 'none'; }, 300);
