@@ -16,7 +16,9 @@ html, body {
   width: 100%; height: 100%; overflow: hidden;
   font-family: var(--font);
   background: var(--bg-dark);
-  touch-action: manipulation;
+  /* pan-x pan-y allows scroll but blocks both pinch-zoom and double-tap zoom.
+     `manipulation` (the old value) still lets pinch through. */
+  touch-action: pan-x pan-y;
   overscroll-behavior: none;
   user-select: none;
   -webkit-user-select: none;
@@ -24,8 +26,8 @@ html, body {
   position: fixed;
 }
 
-/* Prevent double-tap zoom on iOS */
-* { touch-action: manipulation; }
+/* Default for any element: same as body — block pinch + double-tap zoom. */
+* { touch-action: pan-x pan-y; }
 
 /* Parent settings opts in to scroll/zoom because the form is long */
 body[data-allow-zoom="1"] {

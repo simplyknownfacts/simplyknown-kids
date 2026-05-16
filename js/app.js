@@ -3,26 +3,35 @@
 // Chrome PWA on desktop still honors Ctrl+wheel and Ctrl+=. Trap the routes
 // kids can stumble into.
 (function _blockZoom() {
+  // Use CAPTURE phase + passive:false so no descendant handler can swallow
+  // these before we cancel them. window-level listeners weren't enough.
   // iOS Safari pinch
   ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
-    document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
-  // Desktop Chrome / Edge: Ctrl + wheel
+    window.addEventListener(ev, e => e.preventDefault(), { capture: true, passive: false }));
+  // Ctrl+wheel (Chrome/Edge desktop) AND trackpad pinch on Mac (fires wheel + ctrlKey)
   window.addEventListener('wheel', e => {
-    if (e.ctrlKey || e.metaKey) e.preventDefault();
-  }, { passive: false });
-  // Desktop keyboard: Ctrl+=, Ctrl+-, Ctrl+0
+    if (e.ctrlKey || e.metaKey) { e.preventDefault(); e.stopPropagation(); }
+  }, { capture: true, passive: false });
+  // Keyboard: Ctrl/Cmd + =/+/-/_/0
   window.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && ['=', '+', '-', '_', '0'].includes(e.key)) {
       e.preventDefault();
     }
-  });
-  // Double-tap zoom on Safari (kid taps too fast).
+  }, { capture: true });
+  // Double-tap zoom on Safari.
   let _lastTap = 0;
-  document.addEventListener('touchend', e => {
+  window.addEventListener('touchend', e => {
     const now = Date.now();
     if (now - _lastTap < 350) e.preventDefault();
     _lastTap = now;
-  }, { passive: false });
+  }, { capture: true, passive: false });
+  // Multi-touch start → block (catches pinch begin)
+  window.addEventListener('touchstart', e => {
+    if (e.touches && e.touches.length > 1) e.preventDefault();
+  }, { capture: true, passive: false });
+  window.addEventListener('touchmove', e => {
+    if (e.touches && e.touches.length > 1) e.preventDefault();
+  }, { capture: true, passive: false });
 })();
 
 // Idle detection — pauses all <video> elements after 3 min of no input, so the
@@ -219,6 +228,12 @@ function _getActiveVoice() {
 }
 
 function speak(text, rate = 0.85, pitch = 1.2) {
+  // Always cancel any in-flight speech before queuing the next phrase. Without
+  // this, a kid spam-tapping in a game stacks up clips that play long after
+  // they're done. The internal clip-sequencing for multi-clip phrases (e.g.
+  // "3 ducks" = ["3","ducks"]) is unaffected because that's a single speak()
+  // call that builds one chain.
+  cancelSpeak();
   const v = _getActiveVoice();
   if (v === 'browser') return _browserSpeak(text, rate, pitch);
   return _voiceSpeak(text, v);

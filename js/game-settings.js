@@ -82,7 +82,16 @@
       </div>
     `;
     document.body.appendChild(overlay);
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    // Close on tap-OUTSIDE the inner card. Use pointerdown so the *same* tap
+    // that opened the overlay (also a pointerdown on the gear) can't immediately
+    // close it — the user has to lift their finger and tap again. Without this,
+    // the gear's pointerdown opens the overlay and then the pointerup/click on
+    // the now-covering overlay closes it instantly.
+    let _overlayReady = false;
+    setTimeout(() => { _overlayReady = true; }, 400);
+    overlay.addEventListener('pointerdown', (e) => {
+      if (_overlayReady && e.target === overlay) overlay.remove();
+    });
 
     // Show PIN gate first if PIN is set, else go straight to settings
     if (localStorage.getItem(PIN_KEY)) {
