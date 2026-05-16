@@ -1,39 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Voice A/B — Adult vs Kid-pitched</title>
+  <title>Boy Voice Picker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body { font-family: system-ui; background: #1a1a2e; color: white; padding: 24px; max-width: 600px; margin: 0 auto; }
     h1 { margin: 0 0 16px; }
-    .row { display: flex; flex-direction: column; gap: 8px; margin: 24px 0; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px; }
+    .label { color: #aaa; font-size: 14px; margin-bottom: 24px; }
+    .row { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px; }
     audio { width: 100%; }
-    .label { color: #aaa; font-size: 14px; }
-    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .col h3 { margin: 0 0 8px; font-size: 14px; color: #4ECDC4; }
+    .name { font-size: 16px; font-weight: 800; color: #4ECDC4; }
+    .desc { color: #aaa; font-size: 13px; }
+    .ok { color: #a8e6cf; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>🎙️ Voice A/B Test</h1>
-  <p class="label">Same phrase, same voice — left is current (Sarah/Josh adult), right is pitch-shifted up to sound younger. Pick which you prefer.</p>
+  <h1>🎙️ Boy Voice Picker</h1>
+  <p class="label">Girl voice (Sarah +3 semi) <span class="ok">approved</span>. Picking a higher-pitch boy voice now. All samples below speak the welcome line.</p>
 
   <div class="row">
-    <strong>Girl voice (Sarah)</strong>
-    <div class="pair">
-      <div class="col"><h3>Current (adult)</h3><audio src="voice-test/girl_welcome_adult.mp3?v=1" controls></audio></div>
-      <div class="col"><h3>Pitched +3 semitones</h3><audio src="voice-test/girl_welcome_kid.mp3?v=1" controls></audio></div>
-    </div>
+    <div class="name">Josh (current)</div>
+    <div class="desc">Adult male, deep, mature — what we want to replace</div>
+    <audio src="voice-test/boy_welcome_adult.mp3?v=2" controls></audio>
   </div>
 
   <div class="row">
-    <strong>Boy voice (Josh)</strong>
-    <div class="pair">
-      <div class="col"><h3>Current (adult)</h3><audio src="voice-test/boy_welcome_adult.mp3?v=1" controls></audio></div>
-      <div class="col"><h3>Pitched +5 semitones</h3><audio src="voice-test/boy_welcome_kid.mp3?v=1" controls></audio></div>
-    </div>
+    <div class="name">Josh +5 semitones</div>
+    <div class="desc">Same Josh, pitched up — sounds drawn out, you didn't like this</div>
+    <audio src="voice-test/boy_welcome_kid.mp3?v=2" controls></audio>
   </div>
 
-  <p class="label">If you prefer pitched: I regenerate all 120 mascot videos with pitched audio (~$2.50 in Replicate, no new ElevenLabs cost since we already have the source audio). The voice picker setting and existing app speak() voices also get the same treatment.</p>
-  <p class="label">If you want a different approach (e.g., different voice ID, custom voice clone), tell me.</p>
+  <div class="row">
+    <div class="name">Liam (TX3LPaxmHKxFdv7VOQHJ)</div>
+    <div class="desc">"Energetic, Social Media Creator" — young, confident, upbeat American</div>
+    <audio src="voice-test/boy_liam.mp3?v=2" controls></audio>
+  </div>
+
+  <div class="row">
+    <div class="name">Charlee (cQIBhnciTWugZAxX52uW)</div>
+    <div class="desc">"Playful Fantasy Character" — young, upbeat, Latin American accent</div>
+    <audio src="voice-test/boy_charlee.mp3?v=2" controls></audio>
+  </div>
+
+  <div class="row">
+    <div class="name">Charlie (IKne3meq5aSn9XLyUdCD)</div>
+    <div class="desc">"Deep, Confident, Energetic" — labeled hyped but probably still deep</div>
+    <audio src="voice-test/boy_charlie.mp3?v=2" controls></audio>
+  </div>
+
+  <p class="label">Pick one. I'll regen all 60 boy mascot clips (~$1.20). If none of these are right, tell me what to try.</p>
 </body>
 </html>
