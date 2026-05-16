@@ -47,6 +47,10 @@
       { key: 'cheer_awesome', label: 'Awesome!' },
       { key: 'cheer_yay',     label: 'Yay!' },
       { key: 'goodbye',       label: 'Goodbye' },
+      { key: 'IDLE_wave',     label: '— idle: waving' },
+      { key: 'IDLE_bubbles',  label: '— idle: blowing bubbles' },
+      { key: 'IDLE_book',     label: '— idle: reading' },
+      { key: 'IDLE_popcorn',  label: '— idle: eating popcorn' },
     ];
     const v = '?v=3';
     const grid = document.getElementById('grid');
@@ -76,8 +80,17 @@
       let voice = 'girl';
       const reload = () => {
         const phrase = PHRASES.find(p => p.key === sel.value);
-        vid.src = `mascots/${m.id}/video/${voice}_${phrase.key}.mp4${v}`;
-        lbl.textContent = `${voice} · ${phrase.label}`;
+        // Idle clips live in /idle/ subdir, no voice prefix, loop
+        if (phrase.key.startsWith('IDLE_')) {
+          const idleKey = 'idle_' + phrase.key.slice(5);
+          vid.src = `mascots/${m.id}/idle/${idleKey}.mp4${v}`;
+          vid.loop = true; vid.muted = true;
+          lbl.textContent = `idle loop · ${phrase.label}`;
+        } else {
+          vid.src = `mascots/${m.id}/video/${voice}_${phrase.key}.mp4${v}`;
+          vid.loop = true; vid.muted = false;
+          lbl.textContent = `${voice} · ${phrase.label}`;
+        }
       };
       sel.addEventListener('change', reload);
       btns.forEach(b => b.addEventListener('click', () => {

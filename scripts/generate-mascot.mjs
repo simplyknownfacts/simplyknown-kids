@@ -277,6 +277,51 @@ async function klingLipSync(videoId, audioPath, outPath) {
   return outPath;
 }
 
+// Idle loop generation (Kling image-to-video, no audio, ~$0.20 per 5s std clip).
+const IDLES = [
+  { key: 'idle_wave',    prompt: 'The character waves one paw at the camera with a friendly smile, gentle swaying motion, looking happy and welcoming, idle pose, neutral background.' },
+  { key: 'idle_bubbles', prompt: 'The character blows colorful soap bubbles from a small bubble wand, bubbles drift up around them, happy expression, gentle bobbing motion, idle pose.' },
+  { key: 'idle_book',    prompt: 'The character holds an open colorful storybook in their paws, reading and occasionally looking up with a curious smile, peaceful idle motion.' },
+  { key: 'idle_popcorn', prompt: 'The character holds a red-and-white striped popcorn bucket, eating popcorn one piece at a time with cheerful chewing motions, content and happy.' },
+];
+
+async function klingImage2VideoIdle(imagePath, prompt, outPath) {
+  const imageB64 = fs.readFileSync(imagePath).toString('base64');
+  const body = {
+    model_name: 'kling-v1-6',
+    mode: 'std',
+    duration: '5',
+    image: imageB64,
+    prompt,
+    cfg_scale: 0.5,
+  };
+  const res = await fetch('https://api.klingai.com/v1/videos/image2video', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${klingJWT()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`Kling i2v ${res.status}: ${await res.text()}`);
+  const taskId = (await res.json())?.data?.task_id;
+  if (!taskId) throw new Error('no task_id');
+  const data = await klingPoll('/v1/videos/image2video', taskId);
+  const videoUrl = data?.task_result?.videos?.[0]?.url;
+  if (!videoUrl) throw new Error('no video url');
+  const tmpPath = outPath + '.fwd.mp4';
+  const vid = await fetch(videoUrl);
+  fs.writeFileSync(tmpPath, Buffer.from(await vid.arrayBuffer()));
+
+  // Make seamless loop: concat forward + reverse via ffmpeg
+  await new Promise((resolve, reject) => {
+    const ff = spawn('ffmpeg', ['-y', '-i', tmpPath, '-filter_complex',
+      '[0:v]reverse[r];[0:v][r]concat=n=2:v=1:a=0[v]', '-map', '[v]',
+      '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-preset', 'fast', outPath]);
+    ff.stderr.on('data', () => {}); // silence
+    ff.on('close', code => code === 0 ? resolve() : reject(new Error('ffmpeg palindrome exit ' + code)));
+  });
+  fs.unlinkSync(tmpPath);
+  return outPath;
+}
+
 // ───── main ────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
@@ -309,6 +354,30 @@ if (!fs.existsSync(imagePath) || fs.statSync(imagePath).size < 1000) {
 if (mode === 'image-only') {
   console.log(`Open it: ${imagePath}`);
   process.exit(0);
+}
+
+if (mode === 'idle') {
+  // Generate idle loops only (no audio, no lip-sync)
+  const idleDir = path.join(dir, 'idle');
+  fs.mkdirSync(idleDir, { recursive: true });
+  let done = 0, failed = 0;
+  for (const idle of IDLES) {
+    const outPath = path.join(idleDir, `${idle.key}.mp4`);
+    if (fs.existsSync(outPath) && fs.statSync(outPath).size > 1000) {
+      console.log(`✓ skip ${idle.key}`); done++; continue;
+    }
+    try {
+      console.log(`→ [${idle.key}] generating idle loop...`);
+      await klingImage2VideoIdle(imagePath, idle.prompt, outPath);
+      console.log(`  ok (${(fs.statSync(outPath).size / 1024 / 1024).toFixed(1)} MB)`);
+      done++;
+    } catch (e) {
+      console.error(`  ✗ ${e.message}`);
+      failed++;
+    }
+  }
+  console.log(`\n${done}/${IDLES.length} idle clips done, ${failed} failed.`);
+  process.exit(failed > 0 ? 1 : 0);
 }
 
 // Step 2: Pick how many lip-sync clips to make (Wav2Lip on Replicate, no base video step needed)
