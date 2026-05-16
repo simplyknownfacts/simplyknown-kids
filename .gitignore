@@ -7,6 +7,8 @@ Thumbs.db
 node_modules/
 .claude/
 CLAUDE.md
+.wrangler/
+workers/*/node_modules/
 secrets/
 *_key.txt
 *_secret.txt
