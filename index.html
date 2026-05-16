@@ -122,16 +122,22 @@
     (function _seedYoutube() {
       const list = getProfiles();
       let changed = false;
+      const BABY_DEFAULTS = [
+        { emoji:'🐻', label:'Hey Bear Sensory',   channelId:'UCtf9cFBJkHVAf2qMqF01xYg' },
+        { emoji:'🎵', label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
+      ];
+      const TODDLER_DEFAULTS = [
+        { emoji:'👩‍🏫', label:'Ms Rachel',          channelId:'UCG2CL6EUjG8TVT1Tpl9nJdg' },
+        { emoji:'🐒',  label:'Curious George',    channelId:'UCu7IDy0y-ZA0qaG51wrQY6w' },
+        { emoji:'🎵',  label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
+      ];
       const defaultsByName = {
-        Baby: [
-          { emoji:'🐻', label:'Hey Bear Sensory',   channelId:'UCtf9cFBJkHVAf2qMqF01xYg' },
-          { emoji:'🎵', label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
-        ],
-        Toddler: [
-          { emoji:'👩‍🏫', label:'Ms Rachel',          channelId:'UCG2CL6EUjG8TVT1Tpl9nJdg' },
-          { emoji:'🐒',  label:'Curious George',    channelId:'UCu7IDy0y-ZA0qaG51wrQY6w' },
-          { emoji:'🎵',  label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
-        ],
+        // Generic seed names
+        Baby:    BABY_DEFAULTS,
+        Toddler: TODDLER_DEFAULTS,
+        // Scott's family
+        Leah:    BABY_DEFAULTS,
+        Noah:    TODDLER_DEFAULTS,
       };
       const FALLBACK_DEFAULT = [
         { emoji:'🎵', label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
