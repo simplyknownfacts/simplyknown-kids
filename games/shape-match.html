@@ -13,7 +13,7 @@
       display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
     }
     /* Targets in drag mode are scattered absolutely across the play area */
-    #targetsRow { position: relative; width: 100%; height: 55vh; }
+    #targetsRow { position: relative; width: 100%; height: 65vh; }
     .target {
       position: absolute;
       width: 130px; height: 130px;
@@ -116,30 +116,31 @@
       const shuffledTargets = [...selected].sort(() => Math.random() - 0.5);
       const targetEls = {};
 
-      // Generate non-overlapping random positions for targets within the targets area.
-      // Layout: targetsRow is 55vh tall, full width. Target boxes are 130×130.
-      const placed = []; // {x, y} centers in % of container
+      // Define safe play area in pixels (relative to targetsRow which is full-width).
+      // Avoid: back-btn (top-left ~90x90), gear (bottom-right ~70x70), screen edges.
+      const TARGET = 130, MARGIN = 16;
+      const rowRect = targetsRow.getBoundingClientRect();
+      const reserveLeft  = 110; // clears 88px tablet back-btn + margin
+      const reserveRight = 80;  // clears 48px gear + margin
+      const reserveBottom = 80; // clears gear + safe-area
+      const minX = reserveLeft + TARGET / 2;
+      const maxX = rowRect.width - reserveRight - TARGET / 2;
+      const minY = MARGIN + TARGET / 2;
+      const maxY = rowRect.height - reserveBottom - TARGET / 2;
+
+      const placed = []; // {x, y} centers in px relative to targetsRow
       function pickSpot() {
-        const TARGET = 130, MARGIN = 12;
-        for (let attempt = 0; attempt < 40; attempt++) {
-          // x: 5%-95%, y: 5%-95% (percentages of container)
-          const xPct = 5 + Math.random() * 80;
-          const yPct = 5 + Math.random() * 80;
-          // Check against existing placed targets (in pixels for collision)
-          const rect = targetsRow.getBoundingClientRect();
-          const xPx = (xPct / 100) * rect.width;
-          const yPx = (yPct / 100) * rect.height;
-          const tooClose = placed.some(p => {
-            const dx = p.xPx - xPx, dy = p.yPx - yPx;
-            return Math.hypot(dx, dy) < TARGET + MARGIN;
-          });
-          if (!tooClose) {
-            placed.push({ xPx, yPx });
-            return { xPct, yPct };
-          }
+        for (let attempt = 0; attempt < 60; attempt++) {
+          const x = minX + Math.random() * Math.max(0, maxX - minX);
+          const y = minY + Math.random() * Math.max(0, maxY - minY);
+          const tooClose = placed.some(p => Math.hypot(p.x - x, p.y - y) < TARGET + MARGIN);
+          if (!tooClose) { placed.push({ x, y }); return { x, y }; }
         }
-        // Fallback: just use a corner
-        return { xPct: 50, yPct: 50 };
+        // Fallback: stack vertically in center
+        const x = (minX + maxX) / 2;
+        const y = minY + placed.length * (TARGET + MARGIN);
+        placed.push({ x, y });
+        return { x, y };
       }
 
       shuffledTargets.forEach(s => {
@@ -147,8 +148,8 @@
         div.className = 'target';
         div.dataset.shape = s.name;
         const spot = pickSpot();
-        div.style.left = spot.xPct + '%';
-        div.style.top  = spot.yPct + '%';
+        div.style.left = spot.x + 'px';
+        div.style.top  = spot.y + 'px';
         div.style.transform = 'translate(-50%, -50%)';
         // Color-match: border + label inherit currentColor; bg is faint tint of shape color
         div.style.color = s.color;
