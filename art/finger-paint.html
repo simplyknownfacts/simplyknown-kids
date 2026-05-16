@@ -16,20 +16,21 @@
     }
     @media (orientation: landscape) and (min-width: 768px) {
       #toolbar {
-        flex-direction:column;
+        flex-direction:column; flex-wrap:wrap;
+        align-content:flex-start;
         top:0; right:0; bottom:0; left:auto;
-        width:auto; max-width:96px; height:100vh;
+        width:auto; max-width:200px; height:100vh;
         padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) 12px;
-        gap:14px;
+        overflow:hidden; gap:14px;
       }
     }
     .tool-btn {
-      width:48px; height:48px; border-radius:50%;
+      width:56px; height:56px; border-radius:50%;
       border:3px solid rgba(255,255,255,0.3);
-      cursor:pointer; transition:transform 0.1s;
+      cursor:pointer;
     }
-    .tool-btn:active { transform:scale(0.88); }
-    .tool-btn.active { border-color:white; box-shadow:0 0 0 2px white; }
+    .tool-btn:active { box-shadow: 0 0 0 5px rgba(78,205,196,0.6); }
+    .tool-btn.active { border-color:white; box-shadow:0 0 0 3px white; }
     #clearBtn2 {
       padding:8px 16px; border-radius:20px;
       background:rgba(255,255,255,0.15);
@@ -95,7 +96,7 @@
         const btn = document.createElement('div');
         btn.className = 'tool-btn' + (i === 0 ? ' active' : '');
         btn.style.background = c;
-        btn.addEventListener('click', () => {
+        btn.addEventListener('pointerdown', () => {
           erasing = false;
           activeColorIdx = i;
           document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
@@ -109,7 +110,7 @@
         eraser.className = 'tool-btn';
         eraser.textContent = '🧹';
         eraser.style.cssText = 'background:rgba(255,255,255,0.1);font-size:22px;display:flex;align-items:center;justify-content:center;';
-        eraser.addEventListener('click', () => {
+        eraser.addEventListener('pointerdown', () => {
           erasing = !erasing;
           document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
           if (erasing) eraser.classList.add('active');
@@ -119,7 +120,7 @@
 
       const clearBtn = document.createElement('button');
       clearBtn.id = 'clearBtn2'; clearBtn.textContent = '✨ Clear';
-      clearBtn.addEventListener('click', () => {
+      clearBtn.addEventListener('pointerdown', () => {
         ctx.fillStyle = '#1a1a2e';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       });
