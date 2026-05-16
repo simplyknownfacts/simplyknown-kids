@@ -27,25 +27,20 @@ let _playLog = JSON.parse(localStorage.getItem('vb_mascot_plays') || '{}');
 function _saveLog() { localStorage.setItem('vb_mascot_plays', JSON.stringify(_playLog)); }
 
 function _shouldPlay(profileId, key) {
-  // Limit "welcome" to once per day. Category intros to once per session. Cheers always play.
-  const today = new Date().toISOString().slice(0, 10);
+  // Welcome plays every time the child enters home. Category intros once per session. Cheers always.
+  if (key === 'welcome') return true;
   const k = `${profileId}/${key}`;
-  if (key === 'welcome') {
-    const last = _playLog[k];
-    return last !== today;
-  }
   if (key.endsWith('_intro')) {
     const session = sessionStorage.getItem('vb_mascot_' + k);
     return !session;
   }
-  return true; // cheers, goodbye — always
+  return true;
 }
 
 function _markPlayed(profileId, key) {
-  const today = new Date().toISOString().slice(0, 10);
-  const k = `${profileId}/${key}`;
-  if (key === 'welcome') { _playLog[k] = today; _saveLog(); }
-  else if (key.endsWith('_intro')) { sessionStorage.setItem('vb_mascot_' + k, '1'); }
+  if (key.endsWith('_intro')) {
+    sessionStorage.setItem('vb_mascot_' + `${profileId}/${key}`, '1');
+  }
 }
 
 function _ensureEl() {
