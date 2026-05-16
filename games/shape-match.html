@@ -9,10 +9,13 @@
     body { background: linear-gradient(160deg, #1a1a2e, #16213e); }
     svg.shape { overflow: visible; cursor: grab; touch-action: none; }
     svg.shape:active { cursor: grabbing; }
-    .shapes-row, .targets-row {
+    .shapes-row {
       display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
     }
+    /* Targets in drag mode are scattered absolutely across the play area */
+    #targetsRow { position: relative; width: 100%; height: 55vh; }
     .target {
+      position: absolute;
       width: 130px; height: 130px;
       border: 4px dashed rgba(255,255,255,0.5);
       border-radius: 16px;
@@ -105,18 +108,43 @@
       hint.textContent = '👆 Drag each shape to its matching box!';
       let matched = 0;
 
-      // Arrow separator between shapes and targets
-      const arrow = document.createElement('div');
-      arrow.className = 'drag-hint';
-      arrow.textContent = '⬇️';
-      shapesRow.after(arrow);
-
       const shuffledTargets = [...selected].sort(() => Math.random() - 0.5);
       const targetEls = {};
+
+      // Generate non-overlapping random positions for targets within the targets area.
+      // Layout: targetsRow is 55vh tall, full width. Target boxes are 130×130.
+      const placed = []; // {x, y} centers in % of container
+      function pickSpot() {
+        const TARGET = 130, MARGIN = 12;
+        for (let attempt = 0; attempt < 40; attempt++) {
+          // x: 5%-95%, y: 5%-95% (percentages of container)
+          const xPct = 5 + Math.random() * 80;
+          const yPct = 5 + Math.random() * 80;
+          // Check against existing placed targets (in pixels for collision)
+          const rect = targetsRow.getBoundingClientRect();
+          const xPx = (xPct / 100) * rect.width;
+          const yPx = (yPct / 100) * rect.height;
+          const tooClose = placed.some(p => {
+            const dx = p.xPx - xPx, dy = p.yPx - yPx;
+            return Math.hypot(dx, dy) < TARGET + MARGIN;
+          });
+          if (!tooClose) {
+            placed.push({ xPx, yPx });
+            return { xPct, yPct };
+          }
+        }
+        // Fallback: just use a corner
+        return { xPct: 50, yPct: 50 };
+      }
+
       shuffledTargets.forEach(s => {
         const div = document.createElement('div');
         div.className = 'target';
         div.dataset.shape = s.name;
+        const spot = pickSpot();
+        div.style.left = spot.xPct + '%';
+        div.style.top  = spot.yPct + '%';
+        div.style.transform = 'translate(-50%, -50%)';
         div.appendChild(makeSVG(s, 55, false));
         const lbl = document.createElement('div');
         lbl.className = 'target-label';

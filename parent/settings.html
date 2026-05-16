@@ -409,7 +409,7 @@
       const profile = getProfiles().find(p => p.id === profileId);
       profile.youtube = profile.youtube || [];
       profile.youtube.push({ emoji, label, channelId });
-      updateProfile(profileId, { youtube: profile.youtube });
+      updateProfile(profileId, { youtube: profile.youtube, youtubeInitialized: true });
       buildYoutubeSection();
     }
 
@@ -417,7 +417,8 @@
       const profile = getProfiles().find(p => p.id === profileId);
       if (!profile || !profile.youtube) return;
       profile.youtube.splice(index, 1);
-      updateProfile(profileId, { youtube: profile.youtube });
+      // Mark initialized so deletions stick (won't be re-seeded on next page load)
+      updateProfile(profileId, { youtube: profile.youtube, youtubeInitialized: true });
       buildYoutubeSection();
     }
 

@@ -110,17 +110,23 @@ body[data-allow-zoom="1"] {
 
 /* Back button */
 .back-btn {
-  position: fixed; top: 16px; left: 16px;
-  width: 56px; height: 56px;
+  position: fixed; top: 14px; left: 14px;
+  width: 72px; height: 72px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  border: 2px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.92);
+  border: 4px solid #4ECDC4;
   display: flex; align-items: center; justify-content: center;
-  font-size: 24px; cursor: pointer;
-  transition: background 0.12s;
+  font-size: 38px; font-weight: 900; color: #1a1a2e;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 4px rgba(78,205,196,0.25);
+  transition: transform 0.12s, background 0.12s;
   z-index: 100;
+  line-height: 1;
 }
-.back-btn:active { background: rgba(255,255,255,0.3); }
+.back-btn:active { transform: scale(0.9); background: #a8e6cf; }
+@media (min-width: 768px) {
+  .back-btn { width: 88px; height: 88px; font-size: 46px; top: 20px; left: 20px; }
+}
 
 /* Row / column flex helpers */
 .row { display: flex; flex-direction: row; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; }

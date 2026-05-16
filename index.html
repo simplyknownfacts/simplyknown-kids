@@ -115,8 +115,9 @@
       renderProfiles();
     }
 
-    // Backfill: existing profiles with no youtube array (pre-Videos feature)
-    (function _backfillYoutube() {
+    // Default YouTube channels — applied ONCE per profile.
+    // youtubeInitialized=true is set after first apply, so parent deletions stick.
+    (function _seedYoutubeOnce() {
       const list = getProfiles();
       let changed = false;
       const defaultsByName = {
@@ -130,13 +131,15 @@
           { emoji:'🎵',  label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
         ],
       };
+      // Any other name: give Super Simple Songs as a safe default
+      const FALLBACK_DEFAULT = [
+        { emoji:'🎵', label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
+      ];
       for (const p of list) {
-        if (!Array.isArray(p.youtube) || p.youtube.length === 0) {
-          if (defaultsByName[p.name]) {
-            p.youtube = defaultsByName[p.name];
-            changed = true;
-          }
-        }
+        if (p.youtubeInitialized) continue; // parent has touched the list, leave alone
+        p.youtube = defaultsByName[p.name] || FALLBACK_DEFAULT;
+        p.youtubeInitialized = true;
+        changed = true;
       }
       if (changed) saveProfiles(list);
     })();

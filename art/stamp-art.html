@@ -23,6 +23,14 @@
     }
     .stamp-chip:active { transform:scale(0.85); }
     .stamp-chip.active { border-color:white; background:rgba(255,255,255,0.25); }
+    /* Larger chips on tablets */
+    @media (min-width: 768px) {
+      .stamp-chip { width:96px; height:96px; font-size:52px; border-radius:22px; border-width:4px; }
+      .scene-chip { width:96px; height:96px; font-size:42px; }
+      .scene-sep { height:72px; }
+      .scene-label { font-size:14px; }
+      #stampbar { padding:16px; gap:14px; }
+    }
     /* Theme selector: visually separated, different shape + color */
     .scene-sep {
       width: 2px; height: 48px;

@@ -92,9 +92,15 @@
 
       if (!channels.length) {
         subtitle.textContent = '';
-        grid.outerHTML = `<div class="empty-state">
-          No channels yet for ${profile.name}.<br>
-          A grown-up can add channels in Parent Settings.
+        grid.outerHTML = `<div class="empty-state" style="font-size:17px;line-height:1.6;padding:80px 30px;">
+          <div style="font-size:60px;margin-bottom:16px;">📺</div>
+          <div style="color:white;font-weight:800;font-size:20px;margin-bottom:12px;">
+            No YouTube channels yet
+          </div>
+          <div style="color:rgba(255,255,255,0.65);">
+            A grown-up can add channels in:<br><br>
+            <strong style="color:white;">⚙️ Parent Settings → 📺 YouTube Channels</strong>
+          </div>
         </div>`;
         return;
       }
