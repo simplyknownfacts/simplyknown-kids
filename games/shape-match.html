@@ -9,6 +9,13 @@
     body { background: linear-gradient(160deg, #1a1a2e, #16213e); }
     svg.shape { overflow: visible; cursor: grab; touch-action: none; }
     svg.shape:active { cursor: grabbing; }
+    /* Push the (title + hint + shapes) block to the top half so that targets
+       (position:fixed below, calculated from shapesBottom) live in the bottom
+       half. Prevents the source shape from overlapping a drop target. */
+    .screen {
+      justify-content: flex-start !important;
+      padding-top: calc(90px + env(safe-area-inset-top));
+    }
     .shapes-row {
       display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
     }

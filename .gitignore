@@ -9,6 +9,19 @@ node_modules/
 CLAUDE.md
 .wrangler/
 workers/*/node_modules/
+.playwright-mcp/
+# QA screenshots (Playwright sweep artifacts)
+shape-*.png
+animals-*.png
+count-*.png
+hello-colors-*.png
+home-*.png
+paint-*.png
+splash-*.png
+stamp-*.png
+tap-pop-*.png
+tappop-*.png
+videos-*.png
 secrets/
 *_key.txt
 *_secret.txt

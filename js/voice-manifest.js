@@ -63,6 +63,22 @@ const COUNT_NOUNS = [
   'balloon', 'balloons', 'apple', 'apples', 'dog', 'dogs', 'star', 'stars',
 ];
 
+// Kid-specific greetings. Names listed here get pre-generated greeting MP3s
+// so the app speaks their actual name in the curated voice. Add a new kid's
+// name here, re-run scripts/generate-voices.mjs, ship.
+const KID_NAMES = ['Noah', 'Leah'];
+
+// "Tap the blue blueberry" style prompts — used when Hello Colors is in
+// strict-thing mode (specific blueberry, not generic "blue thing").
+const COLOR_THING_PROMPTS = [];
+const COLOR_THING_NEAR_MISS = []; // "That's blue, but not a blueberry. Tap the blue blueberry."
+Object.keys(COLOR_THINGS).forEach(c => {
+  COLOR_THINGS[c].forEach(t => {
+    COLOR_THING_PROMPTS.push(`Tap the ${c} ${t}!`);
+    COLOR_THING_NEAR_MISS.push(`That's ${c}, but not a ${t}. Tap the ${c} ${t}.`);
+  });
+});
+
 // Build full phrase list
 const _phrases = [];
 COLOR_NAMES.forEach(c => _phrases.push(c));
@@ -73,9 +89,15 @@ COLOR_NAMES.forEach(c => {
   });
 });
 COLOR_NAMES.forEach(c => _phrases.push(`Tap the ${c} thing!`));
+COLOR_THING_PROMPTS.forEach(p => _phrases.push(p));
+COLOR_THING_NEAR_MISS.forEach(p => _phrases.push(p));
 SHAPE_NAMES.forEach(s => _phrases.push(s));
 ANIMAL_PHRASES.forEach(p => _phrases.push(p));
 _phrases.push('Try again!');
+KID_NAMES.forEach(n => {
+  _phrases.push(`Hi ${n}!`);
+  _phrases.push(`Hi ${n}! Let's play!`);
+});
 
 // Numbers 1-50 spoken as digits
 const _numbers = [];

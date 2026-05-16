@@ -9,6 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#1a1a2e">
   <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="manifest" href="manifest.json">
   <title>SimplyKnown Kids — Home</title>
   <link rel="stylesheet" href="css/style.css">
@@ -132,17 +133,20 @@
     if (profile) {
       document.getElementById('childAvatar').textContent = profile.avatar;
       const t = tierForAge(getAgeMonths(profile.birthday));
-      document.getElementById('greeting').textContent =
-        t <= 2 ? `Hi ${profile.name}! Let's play! 👋`
-               : `Hi ${profile.name}! 👋`;
+      const greetText = t <= 4 ? `Hi ${profile.name}! Let's play!`
+                                : `Hi ${profile.name}!`;
+      document.getElementById('greeting').textContent = greetText + ' 👋';
       document.getElementById('screen').style.background =
         `linear-gradient(160deg, ${profile.color} 0%, ${profile.color}88 100%)`;
       // Listen tile only when Yoto is connected
       if (window.yoto && yoto.isConfigured() && yoto.isConnected()) {
         document.getElementById('listenTile').style.display = '';
       }
-      // Mascot welcomes the child (once per day per profile)
+      // Mascot welcomes the child (once per day per profile). After the
+      // mascot's generic "Welcome!" video, speak the kid's name in their
+      // chosen voice (pre-generated for known names, browser TTS fallback).
       if (window.mascot) setTimeout(() => mascot.play('welcome'), 600);
+      setTimeout(() => speak(greetText), 3000);
     } else {
       goProfiles();
     }

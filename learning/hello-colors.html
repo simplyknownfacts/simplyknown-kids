@@ -108,34 +108,70 @@
         screen.onclick = () => { colorIdx++; nextRound(); };
 
       } else {
-        // Quiz: one thing from each of 4 random colors — tap the right one
+        // Quiz: alternates between two prompts on each round:
+        //   • "Tap the BLUE thing!" — decoys are different colors (current)
+        //   • "Tap the BLUE BLUEBERRY!" — strict; decoys can be same-color
+        //     other things, which trigger a "that's blue, but not a blueberry"
+        //     correction (custom near-miss hint).
         label.style.display = 'none';
         bg.style.background = '#1a1a2e';
-        const shuffled = [...COLORS].sort(() => Math.random() - 0.5).slice(0, 4);
-        const answerIdx = Math.floor(Math.random() * shuffled.length);
-        const target = shuffled[answerIdx];
+        const strict = Math.random() < 0.5; // half the rounds use strict-thing mode
+        const targetColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+        const targetThing = targetColor.things[Math.floor(Math.random() * targetColor.things.length)];
 
-        quizLbl.textContent = `Tap the ${target.name} thing!`;
-        setTimeout(() => speak(`Tap the ${target.name} thing!`), 300);
+        // Build a 4-card lineup.
+        // - Strict mode: target + 1 same-color-different-thing + 2 different-colors
+        // - Color mode: target + 3 different-colors (existing behavior)
+        const lineup = [{ color: targetColor, thing: targetThing, isAnswer: true }];
+        if (strict) {
+          // same-color decoy
+          const sameColorOthers = targetColor.things.filter(t => t.n !== targetThing.n);
+          if (sameColorOthers.length) {
+            lineup.push({
+              color: targetColor,
+              thing: sameColorOthers[Math.floor(Math.random() * sameColorOthers.length)],
+              isAnswer: false, sameColor: true,
+            });
+          }
+        }
+        const otherColors = COLORS.filter(c => c.name !== targetColor.name).sort(() => Math.random() - 0.5);
+        while (lineup.length < 4) {
+          const c = otherColors[lineup.length - 1];
+          lineup.push({
+            color: c,
+            thing: c.things[Math.floor(Math.random() * c.things.length)],
+            isAnswer: false, sameColor: false,
+          });
+        }
+        lineup.sort(() => Math.random() - 0.5);
 
-        shuffled.forEach((color, i) => {
-          const t = color.things[Math.floor(Math.random() * color.things.length)];
+        const promptText = strict
+          ? `Tap the ${targetColor.name} ${targetThing.n}!`
+          : `Tap the ${targetColor.name} thing!`;
+        quizLbl.textContent = promptText;
+        setTimeout(() => speak(promptText), 300);
+
+        lineup.forEach(slot => {
           const card = document.createElement('div');
           card.className = 'thing-card pop-in';
-          card.innerHTML = `<span class="thing-emoji">${t.e}</span><span class="thing-name">${t.n}</span>`;
-          card.addEventListener('click', () => {
-            if (i === answerIdx) {
+          card.innerHTML = `<span class="thing-emoji">${slot.thing.e}</span><span class="thing-name">${slot.thing.n}</span>`;
+          card.addEventListener('pointerdown', () => {
+            if (slot.isAnswer) {
               playSuccess();
-              speak(`Yes! ${t.n} is ${color.name}!`);
-              bg.style.background = color.hex;
+              speak(`Yes! ${slot.thing.n} is ${slot.color.name}!`);
+              bg.style.background = slot.color.hex;
               label.style.display = 'block';
-              label.textContent = color.name;
+              label.textContent = slot.color.name;
               autoTimer = setTimeout(nextRound, 1800);
             } else {
               playBoop();
               card.classList.add('wrong');
               setTimeout(() => card.classList.remove('wrong'), 400);
-              speak('Try again!');
+              if (strict && slot.sameColor) {
+                speak(`That's ${targetColor.name}, but not a ${targetThing.n}. Tap the ${targetColor.name} ${targetThing.n}.`);
+              } else {
+                speak('Try again!');
+              }
             }
           });
           thingsRow.appendChild(card);
