@@ -278,6 +278,17 @@ async function klingLipSync(videoId, audioPath, outPath) {
 }
 
 // Idle loop generation (Kling image-to-video, no audio, ~$0.20 per 5s std clip).
+// Base resting clip per mascot — what they do when no action is playing.
+// Subtle motion only: breathing, blinking, ears twitching. Loops continuously.
+const BASE_IDLES = {
+  dog:     { key: 'idle_base', prompt: 'The dog sits calmly in a resting pose, chest gently rising and falling with slow breathing, tongue hanging slightly out of mouth, blinking peacefully, occasional small ear twitch, very subtle minimal motion only, looking at camera.' },
+  tiger:   { key: 'idle_base', prompt: 'The tiger cub sits calmly in resting pose, chest gently rising and falling with slow breathing, eyes blinking slowly, ears flicking occasionally, content peaceful expression, very subtle minimal motion only.' },
+  giraffe: { key: 'idle_base', prompt: 'The giraffe stands calmly in resting pose, long neck still with the tiniest gentle sway, long eyelashes blinking softly, ears flicking occasionally, very subtle breathing motion only.' },
+  panda:   { key: 'idle_base', prompt: 'The panda sits calmly in resting pose, chest gently breathing slowly, blinking softly, ears twitch once in a while, content and peaceful, very subtle minimal motion.' },
+  orca:    { key: 'idle_base', prompt: 'The orca whale floats peacefully in water, gentle slow tail flick keeping it in place, body slightly rising and falling with calm breathing, eyes blinking slowly, subtle underwater bubble drift.' },
+  eagle:   { key: 'idle_base', prompt: 'The eagle perches calmly on its branch, chest rising and falling with gentle breathing, head making tiny subtle turns, eyes blinking, very still and majestic, minimal motion only.' },
+};
+
 const UNIVERSAL_IDLES = [
   { key: 'idle_wave',    prompt: 'The character waves one paw at the camera with a friendly smile, gentle swaying motion, looking happy and welcoming, idle pose, neutral background.' },
   { key: 'idle_bubbles', prompt: 'The character blows colorful soap bubbles from a small bubble wand, bubbles drift up around them, happy expression, gentle bobbing motion, idle pose.' },
@@ -325,7 +336,8 @@ const SPECIES_IDLES = {
 };
 
 function _idleSetFor(mascotId) {
-  return [...UNIVERSAL_IDLES, ...(SPECIES_IDLES[mascotId] || [])];
+  const base = BASE_IDLES[mascotId] ? [BASE_IDLES[mascotId]] : [];
+  return [...base, ...UNIVERSAL_IDLES, ...(SPECIES_IDLES[mascotId] || [])];
 }
 
 async function klingImage2VideoIdle(imagePath, prompt, outPath) {

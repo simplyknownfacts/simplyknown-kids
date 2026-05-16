@@ -1,23 +1,17 @@
-// Mascot widget — plays per-profile lip-synced video clips at scripted moments
-// and stays on the page playing random idle loops between clips.
+// Mascot widget — base idle loop + random action interrupts.
 //
-// Usage:
-//   <script src="js/mascot.js"></script>
-//   mascot.play('welcome');     // plays clip then transitions to idle loop
-//   mascot.show();              // just shows mascot in idle loop (no speaking)
-//
-// Profile shape:
-//   profile.mascot = { id: 'tiger' }   // null = no mascot
-//
-// Clip paths:
-//   /mascots/<id>/video/<voice>_<key>.mp4   (speaking)
-//   /mascots/<id>/idle/<key>.mp4            (silent loop)
+// Flow:
+//   - On show: play base idle on loop (subtle breathing/sitting)
+//   - Every 5-15s random: interrupt with a random action gesture, then return to base
+//   - speak: play speaking clip, then return to base
+//   - Tap mascot: nothing (disabled per user request)
 
 const MASCOT_AVAILABLE = ['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle'];
 const MASCOT_LABELS = {
   dog: '🐶 Dog', tiger: '🐯 Tiger', giraffe: '🦒 Giraffe',
   panda: '🐼 Panda', orca: '🐳 Orca', eagle: '🦅 Eagle',
 };
+
 const UNIVERSAL_IDLES = ['idle_wave', 'idle_bubbles', 'idle_book', 'idle_popcorn'];
 const SPECIES_IDLES = {
   dog:     ['idle_tail', 'idle_scratch', 'idle_sniff', 'idle_pant'],
@@ -27,12 +21,18 @@ const SPECIES_IDLES = {
   orca:    ['idle_flip', 'idle_breach', 'idle_splash', 'idle_swim'],
   eagle:   ['idle_flap', 'idle_preen', 'idle_alert', 'idle_call'],
 };
-function _idleKeys(mascotId) {
+function _actionKeys(mascotId) {
   return [...UNIVERSAL_IDLES, ...(SPECIES_IDLES[mascotId] || [])];
 }
 
 let _mascotEl = null;
-let _state = 'hidden'; // 'hidden' | 'speaking' | 'idle'
+let _actionTimer = null;
+let _lastAction = null;
+let _state = 'hidden';
+
+function _activeProfile() {
+  return (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
+}
 
 function _ensureEl() {
   if (_mascotEl) return _mascotEl;
@@ -49,7 +49,6 @@ function _ensureEl() {
     transition: transform 0.3s, opacity 0.3s;
     animation: mascotBob 4s ease-in-out infinite;
   `;
-  // Bob keyframes (one-time css inject)
   if (!document.getElementById('mascotBobKf')) {
     const style = document.createElement('style');
     style.id = 'mascotBobKf';
@@ -66,43 +65,36 @@ function _ensureEl() {
   vid.muted = false; vid.playsInline = true; vid.autoplay = false;
   vid.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
   wrap.appendChild(vid);
-  // Tap mascot to replay welcome (doesn't hide)
-  wrap.addEventListener('click', () => {
-    const p = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
-    if (p && p.mascot && p.mascot.id) play('welcome');
-  });
+  // Tap mascot: no-op per user request
   document.body.appendChild(wrap);
   _mascotEl = wrap;
   return wrap;
 }
 
-function _activeProfile() {
-  return (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
+function _src(mascotId, voice, key) {
+  if (key === 'BASE') return `${rootPath()}mascots/${mascotId}/idle/idle_base.mp4`;
+  if (key.startsWith('idle_')) return `${rootPath()}mascots/${mascotId}/idle/${key}.mp4`;
+  return `${rootPath()}mascots/${mascotId}/video/${voice}_${key}.mp4`;
 }
 
-function _pickIdle(mascotId, exclude) {
-  const keys = _idleKeys(mascotId);
-  let pool = exclude ? keys.filter(k => k !== exclude) : keys;
-  if (!pool.length) pool = keys;
-  return pool[Math.floor(Math.random() * pool.length)];
+function _scheduleNextAction() {
+  clearTimeout(_actionTimer);
+  // Random 5-15 seconds before next action gesture interrupts the base
+  const delay = 5000 + Math.random() * 10000;
+  _actionTimer = setTimeout(_playAction, delay);
 }
 
-let _lastIdle = null;
-function _loadIdleLoop() {
+function _playBase() {
   const p = _activeProfile();
   if (!p || !p.mascot || !p.mascot.id) return;
   const wrap = _ensureEl();
   const vid = wrap.querySelector('video');
-  const idleKey = _pickIdle(p.mascot.id, _lastIdle);
-  _lastIdle = idleKey;
-  const src = `${rootPath()}mascots/${p.mascot.id}/idle/${idleKey}.mp4`;
   vid.muted = true;
-  vid.loop = false; // play once, then pick a new random idle
-  vid.src = src;
-  // When this idle ends, transition to another random idle (variety, not a single loop)
-  vid.onended = () => _loadIdleLoop();
+  vid.loop = true; // base genuinely loops
+  vid.src = _src(p.mascot.id, null, 'BASE');
+  vid.onended = null;
   vid.onerror = () => {
-    // Fallback: show static master image if idle clip missing
+    // Fallback: static master image if base clip missing
     vid.style.display = 'none';
     if (!wrap.querySelector('img.mascot-still')) {
       const img = document.createElement('img');
@@ -115,8 +107,7 @@ function _loadIdleLoop() {
   vid.style.display = '';
   const still = wrap.querySelector('img.mascot-still');
   if (still) still.remove();
-  _state = 'idle';
-  // Show with fade-in if hidden
+  _state = 'base';
   if (wrap.style.display === 'none') {
     wrap.style.display = 'flex';
     wrap.style.opacity = '0';
@@ -127,10 +118,30 @@ function _loadIdleLoop() {
     });
   }
   vid.play().catch(() => {});
+  _scheduleNextAction();
 }
 
-function _shouldPlay(profileId, key) {
-  // Welcome plays every time. Category intros once per session. Cheers always.
+function _playAction() {
+  const p = _activeProfile();
+  if (!p || !p.mascot || !p.mascot.id) return;
+  if (_state !== 'base') { _scheduleNextAction(); return; } // skip if speaking
+  const wrap = _ensureEl();
+  const vid = wrap.querySelector('video');
+  const keys = _actionKeys(p.mascot.id);
+  let pool = _lastAction ? keys.filter(k => k !== _lastAction) : keys;
+  if (!pool.length) pool = keys;
+  const key = pool[Math.floor(Math.random() * pool.length)];
+  _lastAction = key;
+  vid.muted = true;
+  vid.loop = false;
+  vid.src = _src(p.mascot.id, null, key);
+  vid.onended = () => _playBase(); // when action finishes, return to base
+  vid.onerror = () => _playBase();
+  _state = 'action';
+  vid.play().catch(() => _playBase());
+}
+
+function _shouldSpeak(profileId, key) {
   if (key === 'welcome') return true;
   if (key.endsWith('_intro')) {
     const k = `vb_mascot_${profileId}/${key}`;
@@ -143,27 +154,24 @@ function _shouldPlay(profileId, key) {
 function play(key) {
   const profile = _activeProfile();
   if (!profile || !profile.mascot || !profile.mascot.id) return;
-  if (!_shouldPlay(profile.id, key)) {
-    _loadIdleLoop();
+  if (!_shouldSpeak(profile.id, key)) {
+    if (_state === 'hidden') _playBase();
     return;
   }
   const voice = profile.mascot.voice || profile.voice || 'girl';
-  const src = `${rootPath()}mascots/${profile.mascot.id}/video/${voice}_${key}.mp4`;
-
   const wrap = _ensureEl();
   const vid = wrap.querySelector('video');
+  clearTimeout(_actionTimer);
   vid.muted = false;
   vid.loop = false;
-  vid.src = src;
-  vid.onerror = () => _loadIdleLoop(); // missing clip → fallback
-  vid.onended = () => _loadIdleLoop();
-  vid.style.display = '';
+  vid.src = _src(profile.mascot.id, voice, key);
+  vid.onerror = () => _playBase();
+  vid.onended = () => _playBase();
   const still = wrap.querySelector('img.mascot-still');
   if (still) still.remove();
-
+  vid.style.display = '';
   _state = 'speaking';
   wrap.style.display = 'flex';
-  // Animate in
   wrap.style.opacity = '0';
   wrap.style.transform = 'scale(0.5)';
   requestAnimationFrame(() => {
@@ -174,12 +182,13 @@ function play(key) {
 }
 
 function show() {
-  // Idle-only display, no speech
-  _loadIdleLoop();
+  // Just show + start base loop, no speech
+  _playBase();
 }
 
 function hide() {
   if (!_mascotEl) return;
+  clearTimeout(_actionTimer);
   const vid = _mascotEl.querySelector('video');
   if (vid) { vid.pause(); vid.src = ''; }
   _mascotEl.style.opacity = '0';

@@ -82,7 +82,9 @@
       const hint = document.getElementById('hint');
       shapesRow.innerHTML = ''; targetsRow.innerHTML = '';
 
-      const count = tier <= 4 ? 1 : tier <= 5 ? 2 : tier <= 6 ? 4 : 6;
+      // Tap-to-identify mode (!dragOn): always 1 shape (single shape named on tap).
+      // Drag mode: start at 2, scale up with tier so kid has to choose the right target.
+      const count = !dragOn ? 1 : (tier <= 4 ? 2 : tier <= 5 ? 3 : tier <= 6 ? 4 : 6);
       const selected = [...SHAPES].sort(() => Math.random() - 0.5).slice(0, count);
 
       if (!dragOn) {
@@ -100,7 +102,7 @@
         return;
       }
 
-      hint.textContent = count === 1 ? '👆 Drag the shape into the box below!' : '👆 Drag each shape to its matching box!';
+      hint.textContent = '👆 Drag each shape to its matching box!';
       let matched = 0;
 
       // Arrow separator between shapes and targets
