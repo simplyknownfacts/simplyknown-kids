@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Boy Voice Picker</title>
+  <title>Boy Voice — Liam pitched</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body { font-family: system-ui; background: #1a1a2e; color: white; padding: 24px; max-width: 600px; margin: 0 auto; }
@@ -11,43 +11,30 @@
     audio { width: 100%; }
     .name { font-size: 16px; font-weight: 800; color: #4ECDC4; }
     .desc { color: #aaa; font-size: 13px; }
-    .ok { color: #a8e6cf; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>🎙️ Boy Voice Picker</h1>
-  <p class="label">Girl voice (Sarah +3 semi) <span class="ok">approved</span>. Picking a higher-pitch boy voice now. All samples below speak the welcome line.</p>
+  <h1>🎙️ Liam Pitched</h1>
+  <p class="label">All three are Liam saying "Welcome to your play space! Click what you want to do today!" — original vs +3 semitones vs +5 semitones.</p>
 
   <div class="row">
-    <div class="name">Josh (current)</div>
-    <div class="desc">Adult male, deep, mature — what we want to replace</div>
-    <audio src="voice-test/boy_welcome_adult.mp3?v=2" controls></audio>
+    <div class="name">Liam — original</div>
+    <div class="desc">Energetic young adult, no pitch change</div>
+    <audio src="voice-test/boy_liam.mp3?v=3" controls></audio>
   </div>
 
   <div class="row">
-    <div class="name">Josh +5 semitones</div>
-    <div class="desc">Same Josh, pitched up — sounds drawn out, you didn't like this</div>
-    <audio src="voice-test/boy_welcome_kid.mp3?v=2" controls></audio>
+    <div class="name">Liam +3 semitones</div>
+    <div class="desc">Same shift we used for Sarah</div>
+    <audio src="voice-test/boy_liam_p3.mp3?v=3" controls></audio>
   </div>
 
   <div class="row">
-    <div class="name">Liam (TX3LPaxmHKxFdv7VOQHJ)</div>
-    <div class="desc">"Energetic, Social Media Creator" — young, confident, upbeat American</div>
-    <audio src="voice-test/boy_liam.mp3?v=2" controls></audio>
+    <div class="name">Liam +5 semitones</div>
+    <div class="desc">Pitched further up — more child-sounding</div>
+    <audio src="voice-test/boy_liam_p5.mp3?v=3" controls></audio>
   </div>
 
-  <div class="row">
-    <div class="name">Charlee (cQIBhnciTWugZAxX52uW)</div>
-    <div class="desc">"Playful Fantasy Character" — young, upbeat, Latin American accent</div>
-    <audio src="voice-test/boy_charlee.mp3?v=2" controls></audio>
-  </div>
-
-  <div class="row">
-    <div class="name">Charlie (IKne3meq5aSn9XLyUdCD)</div>
-    <div class="desc">"Deep, Confident, Energetic" — labeled hyped but probably still deep</div>
-    <audio src="voice-test/boy_charlie.mp3?v=2" controls></audio>
-  </div>
-
-  <p class="label">Pick one. I'll regen all 60 boy mascot clips (~$1.20). If none of these are right, tell me what to try.</p>
+  <p class="label">Pick which level. If +5 is right (or some other amount), I'll regen all 60 boy mascot clips (~$1.20) with that voice + that pitch.</p>
 </body>
 </html>
