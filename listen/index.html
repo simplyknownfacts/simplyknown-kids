@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>SimplyKnown Kids — Listen</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #2d1b5e, #1a1a4e); overflow-y: auto; }
+    .listen-screen { min-height: 100vh; padding: 80px 24px 100px; }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 20px; max-width: 720px; margin: 24px auto;
+    }
+    .card-tile {
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 16px 12px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      cursor: pointer;
+    }
+    .card-tile:active { background: rgba(255,255,255,0.18); }
+    .card-cover {
+      width: 100%; aspect-ratio: 1;
+      border-radius: 16px; background: rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 56px; overflow: hidden;
+    }
+    .card-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .card-title {
+      color: white; font-weight: 800; font-size: 15px; text-align: center;
+      line-height: 1.25;
+    }
+    .empty {
+      color: rgba(255,255,255,0.65); font-size: 16px; line-height: 1.6;
+      padding: 80px 30px; text-align: center;
+    }
+    .empty .big { font-size:60px; margin-bottom:14px; }
+    #player {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+      background: rgba(10,10,30,0.95); backdrop-filter: blur(10px);
+      border-top: 2px solid rgba(78,205,196,0.4);
+      display: none; align-items: center; gap: 12px;
+      z-index: 100;
+    }
+    #player.active { display: flex; }
+    #player .cover-mini { width: 56px; height: 56px; border-radius: 12px; background: rgba(255,255,255,0.1); overflow: hidden; flex-shrink: 0; display:flex; align-items:center; justify-content:center; font-size:30px; }
+    #player .cover-mini img { width:100%; height:100%; object-fit:cover; }
+    #player .info { flex: 1; min-width: 0; }
+    #player .info .now { color: white; font-weight: 800; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #player .info .chap { color: rgba(255,255,255,0.6); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #player .btn-pp {
+      width: 56px; height: 56px; border-radius: 50%; border: none;
+      background: #4ECDC4; color: #1a1a2e; font-size: 26px; cursor: pointer; flex-shrink:0;
+    }
+    .chapters-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+      padding: 20px;
+    }
+    .chapters-panel {
+      background: #1a1a2e; border-radius: 18px 18px 0 0; padding: 18px;
+      max-width: 520px; width: 100%; max-height: 75vh; overflow-y: auto;
+      color: white;
+    }
+    .chapters-panel h3 { margin: 0 0 12px; font-size: 18px; }
+    .chap-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px; border-radius: 12px; cursor: pointer;
+      background: rgba(255,255,255,0.05); margin-bottom: 8px;
+    }
+    .chap-row:active { background: rgba(78,205,196,0.25); }
+    .chap-row .num { width:28px; height:28px; border-radius:50%; background:#4ECDC4; color:#1a1a2e; font-weight:900; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+    .chap-row .t { flex:1; font-weight:700; font-size:14px; }
+    .chap-close { width:100%; padding:14px; border-radius:12px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.2); color:white; font-weight:800; font-size:15px; margin-top:8px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="listen-screen">
+    <div class="title">🎧 Listen</div>
+    <div class="subtitle" id="subtitle"></div>
+    <div id="grid" class="cards-grid"></div>
+  </div>
+
+  <div id="player">
+    <div class="cover-mini" id="playerCover">🎧</div>
+    <div class="info">
+      <div class="now" id="playerTitle">—</div>
+      <div class="chap" id="playerChap"></div>
+    </div>
+    <audio id="audio" preload="auto"></audio>
+    <button class="btn-pp" id="playPause" aria-label="Play/Pause">▶</button>
+  </div>
+
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/mascot.js"></script>
+  <script src="../js/yoto-config.js"></script>
+  <script src="../js/yoto.js"></script>
+  <script>
+    (async function() {
+      const profile = getActiveProfile();
+      if (!profile) { goProfiles(); return; }
+      renderBackBtn('../home.html');
+
+      const grid = document.getElementById('grid');
+      const subtitle = document.getElementById('subtitle');
+
+      if (!yoto.isConfigured()) {
+        grid.outerHTML = `<div class="empty">
+          <div class="big">🎧</div>
+          <div style="color:white;font-weight:800;font-size:20px;margin-bottom:10px;">Listen tab not set up yet</div>
+          <div>A grown-up needs to add a Yoto client ID in:<br>
+            <strong style="color:white;">⚙️ Parent Settings → 🎧 Yoto</strong>
+          </div>
+        </div>`;
+        return;
+      }
+
+      if (!yoto.isConnected()) {
+        grid.outerHTML = `<div class="empty">
+          <div class="big">🎧</div>
+          <div style="color:white;font-weight:800;font-size:20px;margin-bottom:10px;">Not connected to Yoto</div>
+          <div>A grown-up can connect in:<br>
+            <strong style="color:white;">⚙️ Parent Settings → 🎧 Yoto</strong>
+          </div>
+        </div>`;
+        return;
+      }
+
+      subtitle.textContent = `${profile.name}'s tapes`;
+      const r = await yoto.listContent();
+      if (r.error) {
+        grid.outerHTML = `<div class="empty">
+          <div class="big">⚠️</div>
+          <div style="color:white;font-weight:800;font-size:18px;margin-bottom:10px;">Couldn't load Yoto library</div>
+          <div style="font-size:13px;">${r.error}</div>
+        </div>`;
+        return;
+      }
+      if (!r.cards.length) {
+        grid.outerHTML = `<div class="empty">
+          <div class="big">🎧</div>
+          <div style="color:white;font-weight:800;">No cards in your Yoto library yet.</div>
+        </div>`;
+        return;
+      }
+
+      r.cards.forEach(c => {
+        const tile = document.createElement('div');
+        tile.className = 'card-tile';
+        const coverUrl = (c.metadata && c.metadata.cover && c.metadata.cover.imageL) || c.coverImage || c.cover || null;
+        const title = (c.metadata && c.metadata.title) || c.title || 'Untitled';
+        tile.innerHTML = `
+          <div class="card-cover">${coverUrl ? `<img src="${coverUrl}" alt="">` : '🎧'}</div>
+          <div class="card-title">${title}</div>
+        `;
+        tile.addEventListener('pointerdown', () => openCard(c.cardId || c.id));
+        grid.appendChild(tile);
+      });
+
+      // ───── Playback ──────────────────────────────────────────────
+      const audio = document.getElementById('audio');
+      const playerEl = document.getElementById('player');
+      const playerCover = document.getElementById('playerCover');
+      const playerTitle = document.getElementById('playerTitle');
+      const playerChap = document.getElementById('playerChap');
+      const playPauseBtn = document.getElementById('playPause');
+
+      let currentCard = null;
+      let currentChapters = [];
+      let currentIdx = 0;
+
+      playPauseBtn.addEventListener('pointerdown', () => {
+        if (audio.paused) { audio.play().catch(()=>{}); playPauseBtn.textContent = '⏸'; }
+        else { audio.pause(); playPauseBtn.textContent = '▶'; }
+      });
+      audio.addEventListener('ended', () => {
+        if (currentIdx + 1 < currentChapters.length) playChapter(currentIdx + 1);
+        else { playPauseBtn.textContent = '▶'; }
+      });
+
+      async function openCard(cardId) {
+        const r2 = await yoto.getCard(cardId);
+        if (r2.error) { alert('Could not load card: ' + r2.error); return; }
+        const card = r2.card;
+        currentCard = card;
+        // Flatten chapters → tracks. Card content shape: card.content.chapters or card.chapters
+        const chapters = (card.content && card.content.chapters) || card.chapters || [];
+        if (!chapters.length) { alert('No chapters on this card.'); return; }
+        currentChapters = chapters;
+
+        // If only one chapter, just start playing. Otherwise let kid pick.
+        if (chapters.length === 1) { playChapter(0); return; }
+        showChapterPicker(card, chapters);
+      }
+
+      function showChapterPicker(card, chapters) {
+        const ov = document.createElement('div');
+        ov.className = 'chapters-overlay';
+        ov.innerHTML = `<div class="chapters-panel">
+          <h3>${(card.metadata && card.metadata.title) || 'Pick a chapter'}</h3>
+          <div id="chapList"></div>
+          <button class="chap-close">Close</button>
+        </div>`;
+        ov.querySelector('.chap-close').addEventListener('pointerdown', () => ov.remove());
+        const list = ov.querySelector('#chapList');
+        chapters.forEach((ch, i) => {
+          const row = document.createElement('div');
+          row.className = 'chap-row';
+          row.innerHTML = `<div class="num">${i+1}</div><div class="t">${ch.title || ch.name || ('Chapter ' + (i+1))}</div>`;
+          row.addEventListener('pointerdown', () => { ov.remove(); playChapter(i); });
+          list.appendChild(row);
+        });
+        document.body.appendChild(ov);
+      }
+
+      async function playChapter(idx) {
+        currentIdx = idx;
+        const ch = currentChapters[idx];
+        // Try to find a playable track within the chapter
+        const tracks = ch.tracks || (ch.track ? [ch.track] : []);
+        const track = tracks[0] || ch;
+        const url = await yoto.getStreamUrl(track);
+        if (!url) { alert('Could not get stream URL for this chapter.'); return; }
+        audio.src = url;
+        audio.play().catch(()=>{});
+        playPauseBtn.textContent = '⏸';
+        playerEl.classList.add('active');
+        const card = currentCard;
+        const coverUrl = (card.metadata && card.metadata.cover && card.metadata.cover.imageL) || card.coverImage || null;
+        playerCover.innerHTML = coverUrl ? `<img src="${coverUrl}" alt="">` : '🎧';
+        playerTitle.textContent = (card.metadata && card.metadata.title) || 'Playing';
+        playerChap.textContent = ch.title || ch.name || ('Chapter ' + (idx + 1));
+      }
+    })();
+  </script>
+</body>
+</html>

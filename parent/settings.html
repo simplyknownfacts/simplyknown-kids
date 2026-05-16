@@ -156,6 +156,12 @@
     </div>
     <div id="mascotSection"></div>
 
+    <h2>🎧 Yoto</h2>
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+      Connect your Yoto account to let the child play family recordings (MYO cards) and purchased Yoto stories from the Listen tab.
+    </div>
+    <div id="yotoSection"></div>
+
     <h2>📺 YouTube Channels</h2>
     <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
       Paste a channel URL (e.g. https://www.youtube.com/@msrachel or .../channel/UC...).
@@ -188,6 +194,8 @@
   <script src="../js/app.js"></script>
   <script src="../js/mascot.js"></script>
   <script src="../js/sync.js"></script>
+  <script src="../js/yoto-config.js"></script>
+  <script src="../js/yoto.js"></script>
   <script>
     const PIN_KEY = 'vb_pin';            // stores JSON {hash,salt} now; legacy = raw 4 digits
     const RECOVERY_KEY = 'vb_recovery';   // stores JSON {hash,salt} for recovery phrase
@@ -313,6 +321,7 @@
       buildVoiceSection();
       buildMascotSection();
       buildYoutubeSection();
+      buildYotoSection();
       buildSyncSection();
       _refreshRecoveryStatus();
       if (new URLSearchParams(window.location.search).get('action') === 'add') {
@@ -467,6 +476,67 @@
       localStorage.setItem('vb_mascot_plays', JSON.stringify(plays));
       if (window.mascot) window.mascot.play('welcome');
       if (prev) localStorage.setItem('vb_active_id', prev);
+    }
+
+    function buildYotoSection() {
+      const section = document.getElementById('yotoSection');
+      if (!window.yoto) { section.innerHTML = ''; return; }
+      const configured = yoto.isConfigured();
+      const connected = yoto.isConnected();
+      let html = '<div class="card">';
+      if (!configured) {
+        const savedId = localStorage.getItem('vb_yoto_client_id') || '';
+        html += `
+          <div style="color:rgba(255,255,255,0.7);font-size:13px;line-height:1.5;margin-bottom:10px;">
+            <strong style="color:white;">Step 1:</strong> apply at <a href="https://yoto.dev" target="_blank" style="color:#4ECDC4;">yoto.dev</a> for browser-auth API access.<br>
+            <strong style="color:white;">Step 2:</strong> when Yoto sends a <code>client_id</code>, paste it below.
+          </div>
+          <label style="display:block;font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:4px;">Yoto Client ID</label>
+          <input type="text" id="yotoClientIdInput" placeholder="paste client_id here" value="${savedId.replace(/"/g, '&quot;')}">
+          <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="saveYotoClientId()">Save Client ID</button>
+          <div id="yotoMsg" style="color:#FF6B6B;font-size:12px;margin-top:8px;min-height:14px;"></div>
+        `;
+      } else if (!connected) {
+        html += `
+          <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:12px;">
+            Client ID configured. Tap below to sign in with your Yoto account.
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="window.yoto.connect()">🎧 Connect Yoto Account</button>
+          <button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;" onclick="clearYotoClientId()">Change client ID</button>
+        `;
+      } else {
+        html += `
+          <div style="color:#a8e6cf;font-weight:800;margin-bottom:6px;">✓ Connected to Yoto</div>
+          <div style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:12px;">
+            Family recordings + your Yoto library now appear in the kid's Listen tab.
+          </div>
+          <button class="btn btn-ghost" style="width:100%;" onclick="disconnectYoto()">Disconnect</button>
+        `;
+      }
+      html += '</div>';
+      section.innerHTML = html;
+    }
+
+    function saveYotoClientId() {
+      const input = document.getElementById('yotoClientIdInput');
+      const id = input.value.trim();
+      const msg = document.getElementById('yotoMsg');
+      if (!id || id.length < 6) { msg.textContent = 'Client ID looks wrong — paste the value from Yoto.'; return; }
+      localStorage.setItem('vb_yoto_client_id', id);
+      msg.style.color = '#a8e6cf';
+      msg.textContent = '✓ Saved. Reloading…';
+      setTimeout(() => location.reload(), 800);
+    }
+    function clearYotoClientId() {
+      if (!confirm('Clear the Yoto client ID? You can paste a new one after.')) return;
+      localStorage.removeItem('vb_yoto_client_id');
+      yoto.disconnect();
+      location.reload();
+    }
+    function disconnectYoto() {
+      if (!confirm('Disconnect from Yoto? The child will lose access to your Yoto library until you reconnect.')) return;
+      yoto.disconnect();
+      buildYotoSection();
     }
 
     function buildSyncSection() {
