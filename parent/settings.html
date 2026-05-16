@@ -653,7 +653,9 @@
 
     function setupMode() {
       pinSetupStep = 1; pinFirst = ''; pinEntry = '';
-      document.getElementById('pinPrompt').textContent = 'Choose a new 4-digit PIN';
+      document.getElementById('pinPrompt').textContent = localStorage.getItem(PIN_KEY)
+        ? 'Choose a new 4-digit PIN'
+        : 'First time — choose a parent PIN';
       showPinGate();
       buildPinPad();
       const origCheck = checkPin;
@@ -868,8 +870,11 @@
     }
 
     // ── Init ──────────────────────────────────────────────────────────────────
+    // Always require PIN before entering settings. If no PIN is set on this
+    // device yet, force the parent to create one (one-time setup) — prevents
+    // a kid from getting into settings by tapping "+ Add child" on a fresh device.
     if (!localStorage.getItem(PIN_KEY)) {
-      showMain();
+      setupMode();
     } else {
       showPinGate();
     }
