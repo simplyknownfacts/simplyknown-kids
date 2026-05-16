@@ -163,6 +163,20 @@
     </div>
     <div id="youtubeSection"></div>
 
+    <h2>🖥️ Fullscreen</h2>
+    <div class="card">
+      <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:12px;line-height:1.5;">
+        To hide the browser address bar permanently, <strong>install as an app</strong>:<br>
+        <strong>iPhone / iPad:</strong> Safari → Share button → "Add to Home Screen"<br>
+        <strong>Android Chrome:</strong> Menu (⋮) → "Install app" or "Add to Home Screen"<br>
+        Then open the app from your home screen — no browser bar.
+      </div>
+      <button class="btn btn-ghost" style="width:100%;" onclick="goFullscreen()">⛶ Try Fullscreen Now</button>
+      <div id="fsHint" style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:8px;display:none;">
+        Fullscreen API isn't supported on this device. Install as an app for a no-chrome experience.
+      </div>
+    </div>
+
     <h2>🔐 Change PIN</h2>
     <div class="card">
       <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
@@ -445,6 +459,18 @@
       localStorage.setItem('vb_mascot_plays', JSON.stringify(plays));
       if (window.mascot) window.mascot.play('welcome');
       if (prev) localStorage.setItem('vb_active_id', prev);
+    }
+
+    function goFullscreen() {
+      const el = document.documentElement;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+      if (req) {
+        req.call(el).catch(() => {
+          document.getElementById('fsHint').style.display = 'block';
+        });
+      } else {
+        document.getElementById('fsHint').style.display = 'block';
+      }
     }
 
     function buildVoiceSection() {

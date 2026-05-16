@@ -6,7 +6,7 @@
   <title>Stamp Art</title>
   <link rel="stylesheet" href="../css/style.css">
   <style>
-    #canvas { position:fixed; inset:0; }
+    #canvas { position:fixed; inset:0; touch-action:none; }
     #stampbar {
       position:fixed; bottom:0; left:0; right:0;
       display:none; gap:10px; justify-content:center; align-items:center;
@@ -23,6 +23,30 @@
     }
     .stamp-chip:active { transform:scale(0.85); }
     .stamp-chip.active { border-color:white; background:rgba(255,255,255,0.25); }
+    /* Theme selector: visually separated, different shape + color */
+    .scene-sep {
+      width: 2px; height: 48px;
+      background: rgba(255,255,255,0.35);
+      margin: 0 6px;
+      flex-shrink: 0;
+    }
+    .scene-label {
+      color: rgba(255,255,255,0.65);
+      font-size: 11px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-right: 4px;
+    }
+    .scene-chip {
+      width:60px; height:60px; border-radius:50%; /* round vs square stamps */
+      background: linear-gradient(135deg, #4ECDC4, #45B7D1);
+      border:3px solid rgba(255,255,255,0.5);
+      font-size:28px; cursor:pointer; color:white;
+      display:flex; align-items:center; justify-content:center;
+      transition:transform 0.1s;
+      box-shadow: 0 2px 12px rgba(78,205,196,0.4);
+    }
+    .scene-chip:active { transform:scale(0.85); }
+    .scene-chip.active { border-color:white; box-shadow: 0 0 0 3px white, 0 2px 12px rgba(78,205,196,0.6); }
   </style>
 </head>
 <body>
@@ -102,10 +126,20 @@
         });
 
         if (showThemes) {
-          ['farm','ocean','space'].forEach(key => {
+          const sep = document.createElement('div');
+          sep.className = 'scene-sep';
+          bar.appendChild(sep);
+          const lbl = document.createElement('div');
+          lbl.className = 'scene-label';
+          lbl.textContent = 'Scene';
+          bar.appendChild(lbl);
+          const themeKeys = ['default','farm','ocean','space'];
+          const themeIcons = { default:'✨', farm:'🏡', ocean:'🌊', space:'🚀' };
+          const currentKey = Object.keys(THEMES).find(k => THEMES[k] === theme);
+          themeKeys.forEach(key => {
             const chip = document.createElement('div');
-            chip.className = 'stamp-chip';
-            chip.textContent = key === 'farm' ? '🏡' : key === 'ocean' ? '🌊' : '🚀';
+            chip.className = 'scene-chip' + (key === currentKey ? ' active' : '');
+            chip.textContent = themeIcons[key];
             chip.title = key;
             chip.addEventListener('click', () => {
               theme = THEMES[key];
