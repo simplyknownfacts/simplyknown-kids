@@ -35,6 +35,8 @@ let _actionTimer = null;
 let _lastAction = null;
 let _state = 'hidden';
 let _frontIdx = 0;
+let _lastSfxAt = 0;
+const SFX_COOLDOWN_MS = 15000;
 
 function _activeProfile() {
   return (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
@@ -94,16 +96,21 @@ function _onMascotTap() {
   if (_state === 'speaking') return; // don't interrupt active speech
   const p = _activeProfile();
   if (!p || !p.mascot || !p.mascot.id) return;
-  // Play the species signature sound in parallel
-  const sfxFile = MASCOT_SOUND_FILE[p.mascot.id];
-  if (sfxFile) {
-    try {
-      const a = new Audio(`${rootPath()}audio/sounds/${sfxFile}`);
-      a.volume = 0.7;
-      a.play().catch(() => {});
-    } catch {}
+  // Play the species signature sound — but only if we haven't played it
+  // recently. Toddlers tap-tap-tap, and a bark every half second is noise.
+  const now = Date.now();
+  if (now - _lastSfxAt >= SFX_COOLDOWN_MS) {
+    const sfxFile = MASCOT_SOUND_FILE[p.mascot.id];
+    if (sfxFile) {
+      try {
+        const a = new Audio(`${rootPath()}audio/sounds/${sfxFile}`);
+        a.volume = 0.7;
+        a.play().catch(() => {});
+        _lastSfxAt = now;
+      } catch {}
+    }
   }
-  // Cycle to a new random action (different from the last one)
+  // Cycle to a new random action (different from the last one) — every tap.
   clearTimeout(_actionTimer);
   _state = 'base'; // pretend base so _playAction will run
   _playAction();
