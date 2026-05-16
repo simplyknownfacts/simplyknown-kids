@@ -10,8 +10,20 @@
     #stampbar {
       position:fixed; bottom:0; left:0; right:0;
       display:none; gap:10px; justify-content:center; align-items:center;
-      padding:10px; background:rgba(0,0,0,0.4); backdrop-filter:blur(8px); z-index:10;
+      padding:10px 10px calc(10px + env(safe-area-inset-bottom)) 10px;
+      background:rgba(0,0,0,0.4); backdrop-filter:blur(8px); z-index:10;
       flex-wrap:wrap;
+    }
+    /* Landscape tablets: bar moves to right side (vertical column) so it doesn't eat play area */
+    @media (orientation: landscape) and (min-width: 768px) {
+      #stampbar {
+        flex-direction:column; flex-wrap:nowrap;
+        top:0; right:0; bottom:0; left:auto;
+        width:auto; max-width:140px; height:100vh;
+        padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) 12px;
+        overflow-y:auto; gap:14px;
+      }
+      .scene-sep { width:60px; height:2px; margin:6px 0; }
     }
     .stamp-chip {
       width:60px; height:60px; border-radius:16px;
