@@ -35,16 +35,26 @@ const MASCOTS = {
 };
 
 const PHRASES = [
-  { key: 'welcome',     text: 'Welcome to your play space! Click what you want to do today!' },
-  { key: 'games_intro', text: "Let's play some games!" },
-  { key: 'learn_intro', text: "Let's learn something new!" },
-  { key: 'art_intro',   text: "Let's make some art!" },
-  { key: 'watch_intro', text: "Let's watch some videos!" },
-  { key: 'cheer_great', text: 'Great job!' },
-  { key: 'cheer_didit', text: 'You did it!' },
-  { key: 'cheer_awesome', text: 'Awesome!' },
-  { key: 'cheer_yay',   text: 'Yay!' },
-  { key: 'goodbye',     text: 'See you next time!' },
+  { key: 'welcome',     text: 'Welcome to your play space! Click what you want to do today!',
+    motion: 'The character waves both arms in a friendly greeting, smiles warmly, body bounces with excitement, gestures outward to invite the viewer in.' },
+  { key: 'games_intro', text: "Let's play some games!",
+    motion: 'The character points enthusiastically with one paw, then jumps in place with arms up in excitement, big smile.' },
+  { key: 'learn_intro', text: "Let's learn something new!",
+    motion: 'The character taps its head with a paw as if thinking, then raises a paw with finger pointing up in a "lightbulb" gesture, eyes wide with curiosity.' },
+  { key: 'art_intro',   text: "Let's make some art!",
+    motion: 'The character mimes painting with one paw in the air, swaying side to side, looking creative and playful, paws moving like holding a paintbrush.' },
+  { key: 'watch_intro', text: "Let's watch some videos!",
+    motion: 'The character points forward with both paws as if at a TV, eyes wide and sparkling, head tilts with anticipation.' },
+  { key: 'cheer_great', text: 'Great job!',
+    motion: 'The character claps paws together quickly, jumps up and down with joy, huge celebrating smile.' },
+  { key: 'cheer_didit', text: 'You did it!',
+    motion: 'The character throws both arms up in the air triumphantly, leans forward proudly, beaming celebration.' },
+  { key: 'cheer_awesome', text: 'Awesome!',
+    motion: 'The character points at the viewer with one paw and gives a thumbs-up with the other, big enthusiastic grin.' },
+  { key: 'cheer_yay',   text: 'Yay!',
+    motion: 'The character jumps in place with arms raised, spins slightly, pure joy and excitement.' },
+  { key: 'goodbye',     text: 'See you next time!',
+    motion: 'The character waves one paw goodbye, blows a small kiss with the other, gentle smile and a slight bow.' },
 ];
 
 const VOICES = {
@@ -108,7 +118,7 @@ async function genVoice(text, voiceId, outPath) {
   return outPath;
 }
 
-async function replicateLipSync(imagePath, audioPath, outPath) {
+async function replicateLipSync(imagePath, audioPath, outPath, motionPrompt) {
   // Wav2Lip via Replicate — works on cartoon faces (no human-detection requirement).
   const key = process.env.REPLICATE_API_TOKEN;
   if (!key) throw new Error('REPLICATE_API_TOKEN missing');
@@ -131,7 +141,15 @@ async function replicateLipSync(imagePath, audioPath, outPath) {
   const create = await fetch('https://api.replicate.com/v1/predictions', {
     method: 'POST',
     headers: { Authorization: `Token ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ version: versionId, input: { image: faceUri, audio: audioUri } }),
+    body: JSON.stringify({
+      version: versionId,
+      input: {
+        image: faceUri,
+        audio: audioUri,
+        video_prompt: motionPrompt || 'The character is talking expressively with friendly gestures.',
+        disable_prompt_upsampling: false,
+      },
+    }),
   });
   if (!create.ok) throw new Error(`Replicate create ${create.status}: ${await create.text()}`);
   const prediction = await create.json();
@@ -294,7 +312,7 @@ for (const voice of voicesToRun) {
         await genVoice(p.text, VOICES[voice], audioPath);
         console.log(`  voice ok`);
       }
-      await replicateLipSync(imagePath, audioPath, videoPath);
+      await replicateLipSync(imagePath, audioPath, videoPath, p.motion);
       console.log(`\n  video ok (${(fs.statSync(videoPath).size / 1024 / 1024).toFixed(1)} MB)`);
       done++;
     } catch (e) {
