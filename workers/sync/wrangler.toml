@@ -1,15 +1,16 @@
 name = "simplyknown-kids-sync"
 main = "src/index.js"
 compatibility_date = "2026-05-16"
+workers_dev = true
 
-# CORS / allowed origins for the kids app
 [vars]
 ALLOWED_ORIGIN = "https://kids.simplyknown.co"
 
-# KV namespace — fill in id after running `npx wrangler kv namespace create SYNC_KV`
-[[kv_namespaces]]
-binding = "SYNC_KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+# D1 database — created via Cloudflare API on 2026-05-16
+[[d1_databases]]
+binding = "DB"
+database_name = "sync"
+database_id = "5306dec6-cab7-43fd-8bbb-9fe25dccfa6d"
 
-# Optional: Resend API key for v2 email reset. Set with:
-#   npx wrangler secret put RESEND_API_KEY
+# Production URL: https://simplyknown-kids-sync.simplyknownfacts.workers.dev
+# Deployed via direct Cloudflare API call (token lacked KV scope, has D1 + Workers scopes).
