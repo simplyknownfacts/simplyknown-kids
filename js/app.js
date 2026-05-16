@@ -54,7 +54,8 @@ function goProfiles(){ goTo(rootPath() + 'index.html'); }
 function rootPath() {
   const p = window.location.pathname;
   return (p.includes('/games/') || p.includes('/learning/') ||
-          p.includes('/art/')   || p.includes('/parent/'))
+          p.includes('/art/')   || p.includes('/parent/')  ||
+          p.includes('/videos/') || p.includes('/listen/'))
     ? '../' : './';
 }
 

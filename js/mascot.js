@@ -82,7 +82,8 @@ function _ensureEl() {
     wrap.appendChild(vid);
   }
   // Tap mascot: cycle to a new random action + play the species sound effect.
-  wrap.addEventListener('click', _onMascotTap);
+  // pointerdown beats click on toddler taps (no 300ms delay, no shrink-target miss).
+  wrap.addEventListener('pointerdown', _onMascotTap);
   document.body.appendChild(wrap);
   _mascotEl = wrap;
   _frontIdx = 0;

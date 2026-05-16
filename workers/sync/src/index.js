@@ -159,7 +159,7 @@ async function handleYTFeed(req) {
     return jsonResp({ error: 'bad channel id' }, 400);
   }
   const cache = caches.default;
-  const cacheKey = new Request('https://yt-feed-cache.invalid/v3/' + channelId);
+  const cacheKey = new Request('https://yt-feed-cache.invalid/v4/' + channelId);
   const cached = await cache.match(cacheKey);
   if (cached && !url.searchParams.get('nocache')) return cached;
 

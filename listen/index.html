@@ -102,6 +102,7 @@
   <script src="../js/mascot.js"></script>
   <script src="../js/yoto-config.js"></script>
   <script src="../js/yoto.js"></script>
+  <script src="../js/yoto-player.js"></script>
   <script>
     (async function() {
       const profile = getActiveProfile();
@@ -234,10 +235,32 @@
         playerEl.classList.add('active');
         const card = currentCard;
         const coverUrl = (card.metadata && card.metadata.cover && card.metadata.cover.imageL) || card.coverImage || null;
+        const cardTitle = (card.metadata && card.metadata.title) || 'Playing';
+        const chapTitle = ch.title || ch.name || ('Chapter ' + (idx + 1));
         playerCover.innerHTML = coverUrl ? `<img src="${coverUrl}" alt="">` : '🎧';
-        playerTitle.textContent = (card.metadata && card.metadata.title) || 'Playing';
-        playerChap.textContent = ch.title || ch.name || ('Chapter ' + (idx + 1));
+        playerTitle.textContent = cardTitle;
+        playerChap.textContent = chapTitle;
+        // Publish to the global Yoto state so other pages can rehydrate the mini-player.
+        if (window.yotoPlayer) {
+          window.yotoPlayer.publish({
+            src: url, position: 0, playing: true,
+            title: cardTitle + ' — ' + chapTitle,
+            cover: coverUrl || null,
+          });
+        }
       }
+      // Keep the global state in sync with the in-page player (so navigating
+      // away mid-track resumes at the right spot).
+      audio.addEventListener('timeupdate', () => {
+        const s = window.yotoPlayer && window.yotoPlayer.getState();
+        if (!s) return;
+        s.position = audio.currentTime;
+        s.playing = !audio.paused;
+        window.yotoPlayer.publish(s);
+      });
+      audio.addEventListener('ended', () => {
+        if (currentIdx + 1 >= currentChapters.length && window.yotoPlayer) window.yotoPlayer.clear();
+      });
     })();
   </script>
 </body>

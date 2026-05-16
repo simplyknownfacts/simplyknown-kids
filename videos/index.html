@@ -66,10 +66,7 @@
 
   <div id="playerWrap">
     <button id="playerBack" aria-label="Back">←</button>
-    <iframe id="playerFrame"
-            allow="autoplay; encrypted-media; picture-in-picture"
-            sandbox="allow-scripts allow-same-origin allow-presentation"
-            referrerpolicy="no-referrer"></iframe>
+    <div id="playerHost" style="flex:1;width:100%;"></div>
     <div class="yt-cover-tr"></div>
     <div class="yt-cover-br"></div>
   </div>
@@ -78,6 +75,7 @@
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
   <script src="../js/mascot.js"></script>
   <script>
     if (window.mascot) setTimeout(() => mascot.play('watch_intro'), 400);
@@ -120,30 +118,72 @@
 
       const FEED_WORKER = 'https://simplyknown-kids-sync.simplyknownfacts.workers.dev/yt-feed';
 
+      // Load the YouTube IFrame Player API once
+      let ytApiReady = new Promise(resolve => {
+        if (window.YT && window.YT.Player) return resolve();
+        window.onYouTubeIframeAPIReady = () => resolve();
+        const s = document.createElement('script');
+        s.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(s);
+      });
+
+      let _player = null;
+      let _queue = [];   // ordered list of video IDs to try
+      let _idx = 0;
+
+      function _tryNext() {
+        _idx++;
+        if (_idx >= _queue.length) {
+          // Out of options — kid sees a friendly message in the player area
+          if (_player) { try { _player.destroy(); } catch {} _player = null; }
+          document.getElementById('playerHost').innerHTML =
+            '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:24px;font-size:18px;">All caught up! Tap ← to pick another show.</div>';
+          return;
+        }
+        _player.loadVideoById(_queue[_idx]);
+      }
+
       async function openChannel(ch) {
-        const frame = document.getElementById('playerFrame');
         const wrap = document.getElementById('playerWrap');
-        frame.src = 'about:blank';
+        const host = document.getElementById('playerHost');
+        host.innerHTML = '<div id="ytTarget" style="width:100%;height:100%;"></div>';
         wrap.classList.add('active');
+        let ids = [];
         try {
           const res = await fetch(`${FEED_WORKER}?channel=${ch.channelId}`);
           const data = await res.json();
           if (data && data.videos && data.videos.length) {
-            const ids = data.videos.map(v => v.id);
-            const first = ids[0];
-            const rest = ids.slice(1, 25).join(','); // queue up to 24 more
-            frame.src = `https://www.youtube-nocookie.com/embed/${first}?autoplay=1&modestbranding=1&rel=0&playsinline=1&playlist=${rest}`;
-            return;
+            ids = data.videos.map(v => v.id);
           }
         } catch (e) {}
-        // Fallback to old uploads-playlist embed if the feed is unavailable
-        const uploadsId = 'UU' + ch.channelId.slice(2);
-        frame.src = `https://www.youtube-nocookie.com/embed/videoseries?list=${uploadsId}&autoplay=1&modestbranding=1&rel=0&playsinline=1`;
+        if (!ids.length) {
+          host.innerHTML = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:24px;font-size:18px;">Couldn\'t load shows right now. Tap ← and try again.</div>';
+          return;
+        }
+        _queue = ids;
+        _idx = 0;
+        await ytApiReady;
+        if (_player) { try { _player.destroy(); } catch {} _player = null; }
+        _player = new YT.Player('ytTarget', {
+          host: 'https://www.youtube-nocookie.com',
+          videoId: _queue[0],
+          playerVars: {
+            autoplay: 1, modestbranding: 1, rel: 0, playsinline: 1,
+            controls: 1, fs: 0, iv_load_policy: 3,
+          },
+          events: {
+            // Auto-skip on error codes: 2 (bad id), 5 (HTML5 player), 100 (removed),
+            // 101 / 150 / 153 (embed not allowed).
+            onError: () => _tryNext(),
+            // Auto-advance to next show when current ends.
+            onStateChange: e => { if (e.data === YT.PlayerState.ENDED) _tryNext(); },
+          },
+        });
       }
 
-      document.getElementById('playerBack').addEventListener('click', () => {
-        const frame = document.getElementById('playerFrame');
-        frame.src = ''; // stop playback
+      document.getElementById('playerBack').addEventListener('pointerdown', () => {
+        if (_player) { try { _player.stopVideo(); _player.destroy(); } catch {} _player = null; }
+        document.getElementById('playerHost').innerHTML = '';
         document.getElementById('playerWrap').classList.remove('active');
       });
     })();
