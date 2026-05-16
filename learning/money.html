@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Money Matters</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #3d5a3d, #1f3a1f); }
+    .coin {
+      width: 130px; height: 130px; border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-weight: 900; color: #1a1a2e; cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4), inset 0 -4px 0 rgba(0,0,0,0.15);
+      transition: transform 0.12s;
+      gap: 2px;
+    }
+    .coin:active { transform: scale(0.92); }
+    .coin.matched { box-shadow: 0 6px 18px rgba(0,0,0,0.4), inset 0 -4px 0 rgba(0,0,0,0.15), 0 0 0 4px #a8e6cf; }
+    .coin.wrong { animation: shake 0.3s; }
+    .coin.penny    { background: radial-gradient(circle at 35% 30%, #d97a4a, #8b3a1f); color: white; }
+    .coin.nickel   { background: radial-gradient(circle at 35% 30%, #c0c0c0, #888); }
+    .coin.dime     { width: 100px; height: 100px;
+                     background: radial-gradient(circle at 35% 30%, #d4d4d4, #999); font-size: 14px; }
+    .coin.quarter  { width: 150px; height: 150px;
+                     background: radial-gradient(circle at 35% 30%, #d4d4d4, #909090); }
+    .coin .name { font-size: 16px; }
+    .coin .cents { font-size: 13px; opacity: 0.7; }
+    .coin-row { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; align-items: center; }
+    .prompt-big {
+      font-size: clamp(36px, 8vw, 64px); font-weight: 900; color: #FFD93D;
+      text-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    }
+    .num-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .num-btn {
+      min-width: 80px; min-height: 70px; padding: 12px 18px; border-radius: 18px;
+      background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.25);
+      color: white; font-size: 24px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.12s;
+    }
+    .num-btn:active { transform: scale(0.9); }
+    .num-btn.wrong { animation: shake 0.3s; background: rgba(255,107,107,0.3); }
+    @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  </style>
+</head>
+<body>
+  <div class="screen" id="stage" style="gap:24px;">
+    <div class="title">💰 Money Matters</div>
+    <div class="subtitle" id="hint"></div>
+    <div id="body" class="col" style="gap:24px;"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
+  <script src="../js/game-settings.js"></script>
+  <script>
+    (function() {
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); return; }
+    const tier = getActivityTier(profile, 'money');
+    renderBackBtn('index.html');
+    gameSettings.attach('money');
+
+    const COINS = [
+      { id:'penny',   name:'Penny',   cents:1,  cls:'penny' },
+      { id:'nickel',  name:'Nickel',  cents:5,  cls:'nickel' },
+      { id:'dime',    name:'Dime',    cents:10, cls:'dime' },
+      { id:'quarter', name:'Quarter', cents:25, cls:'quarter' },
+    ];
+
+    function makeCoin(c, opts) {
+      const div = document.createElement('div');
+      div.className = `coin ${c.cls}`;
+      div.dataset.id = c.id;
+      const showLabel = !opts || opts.label !== false;
+      div.innerHTML = showLabel
+        ? `<span class="name">${c.name}</span><span class="cents">${c.cents}¢</span>`
+        : '';
+      return div;
+    }
+
+    const bodyEl = document.getElementById('body');
+    const hint   = document.getElementById('hint');
+    let roundTimer = null;
+    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+
+    function nextRound() {
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+
+      if (tier <= 5) {
+        // Identify the named coin: "Tap the Quarter"
+        const target = COINS[Math.floor(Math.random() * COINS.length)];
+        hint.textContent = `Tap the ${target.name}!`;
+        setTimeout(() => speak(`Tap the ${target.name}.`), 400);
+        const row = document.createElement('div'); row.className = 'coin-row';
+        [...COINS].sort(() => Math.random() - 0.5).forEach(c => {
+          const coin = makeCoin(c, { label: false });
+          coin.addEventListener('pointerdown', () => {
+            if (c.id === target.id) {
+              coin.classList.add('matched');
+              playSuccess();
+              speak(`Yes! ${c.name} is ${c.cents} cents.`);
+              roundTimer = setTimeout(nextRound, 2000);
+            } else {
+              coin.classList.add('wrong');
+              playBoop();
+              setTimeout(() => coin.classList.remove('wrong'), 350);
+            }
+          });
+          row.appendChild(coin);
+        });
+        bodyEl.appendChild(row);
+
+      } else {
+        // Count up a small pile of coins. "How much?" answer choices.
+        // Tier 6: 1-3 coins, max ~50¢. Tier 7+: up to 4 coins, max ~1.00.
+        const maxCoins = tier <= 6 ? 3 : 4;
+        const numCoins = 1 + Math.floor(Math.random() * (maxCoins - 1));
+        const pile = [];
+        let total = 0;
+        for (let i = 0; i < numCoins; i++) {
+          const c = COINS[Math.floor(Math.random() * (tier <= 6 ? 3 : COINS.length))];
+          pile.push(c); total += c.cents;
+        }
+        hint.textContent = 'How much money?';
+        setTimeout(() => speak('How much money is here?'), 400);
+        const row = document.createElement('div'); row.className = 'coin-row';
+        pile.forEach(c => row.appendChild(makeCoin(c, { label: false })));
+        bodyEl.appendChild(row);
+
+        // Answer choices: total + 3 close distractors
+        const choices = new Set([total]);
+        while (choices.size < 4) {
+          const r = Math.max(1, total + (Math.floor(Math.random() * 10) - 5));
+          if (r !== total) choices.add(r);
+        }
+        const numRow = document.createElement('div'); numRow.className = 'num-row';
+        [...choices].sort((a,b) => a-b).forEach(n => {
+          const btn = document.createElement('div');
+          btn.className = 'num-btn'; btn.textContent = `${n}¢`;
+          btn.addEventListener('pointerdown', () => {
+            if (n === total) {
+              playSuccess();
+              speak(`Yes! ${total} cents.`);
+              btn.style.background = 'rgba(168,230,207,0.5)';
+              roundTimer = setTimeout(nextRound, 2000);
+            } else {
+              btn.classList.add('wrong');
+              playBoop();
+              setTimeout(() => btn.classList.remove('wrong'), 350);
+            }
+          });
+          numRow.appendChild(btn);
+        });
+        bodyEl.appendChild(numRow);
+      }
+    }
+    nextRound();
+    })();
+  </script>
+</body>
+</html>

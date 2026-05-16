@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Body Parts</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #e6896e, #a35535); }
+    .figure {
+      position: relative;
+      width: min(340px, 80vw); aspect-ratio: 1/1.6;
+      margin: 0 auto;
+    }
+    .figure svg { width: 100%; height: 100%; display: block; }
+    .hit {
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+    .hit:hover { filter: brightness(1.15); }
+    .hit.flash { animation: flash 0.6s ease; }
+    .hit.wrong { animation: shake 0.3s; }
+    @keyframes flash { 0%,100% { filter: none; } 50% { filter: brightness(1.4) drop-shadow(0 0 12px #FFD93D); } }
+    @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    .prompt-big {
+      font-size: clamp(24px, 6vw, 40px); font-weight: 900;
+      color: white; text-shadow: 0 4px 14px rgba(0,0,0,0.4); text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="screen" id="stage" style="gap:18px;">
+    <div class="title">👤 Body Parts</div>
+    <div class="prompt-big" id="hint"></div>
+    <div class="figure" id="figure"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
+  <script src="../js/game-settings.js"></script>
+  <script>
+    (function() {
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); return; }
+    const tier = getActivityTier(profile, 'body-parts');
+    renderBackBtn('index.html');
+    gameSettings.attach('body-parts');
+
+    // Simple cartoon child SVG (viewBox 0 0 200 320) with named hit zones.
+    // Each part has data-name; "extra" parts only shown at higher tiers.
+    const figureSvg = `
+      <svg viewBox="0 0 200 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body -->
+        <ellipse cx="100" cy="180" rx="56" ry="70" fill="#4ECDC4" stroke="#1a3a5e" stroke-width="3"/>
+        <!-- Arms -->
+        <ellipse class="hit" data-name="arm" cx="42" cy="170" rx="14" ry="44" fill="#f4c896" stroke="#1a3a5e" stroke-width="3" transform="rotate(-15 42 170)"/>
+        <ellipse class="hit" data-name="arm" cx="158" cy="170" rx="14" ry="44" fill="#f4c896" stroke="#1a3a5e" stroke-width="3" transform="rotate(15 158 170)"/>
+        <!-- Hands -->
+        <circle class="hit" data-name="hand" cx="30" cy="210" r="16" fill="#f4c896" stroke="#1a3a5e" stroke-width="3"/>
+        <circle class="hit" data-name="hand" cx="170" cy="210" r="16" fill="#f4c896" stroke="#1a3a5e" stroke-width="3"/>
+        <!-- Legs -->
+        <rect class="hit" data-name="leg" x="74" y="250" width="22" height="60" rx="10" fill="#3b6ea5" stroke="#1a3a5e" stroke-width="3"/>
+        <rect class="hit" data-name="leg" x="104" y="250" width="22" height="60" rx="10" fill="#3b6ea5" stroke="#1a3a5e" stroke-width="3"/>
+        <!-- Feet -->
+        <ellipse class="hit" data-name="foot" cx="85" cy="312" rx="16" ry="8" fill="#222"/>
+        <ellipse class="hit" data-name="foot" cx="115" cy="312" rx="16" ry="8" fill="#222"/>
+        <!-- Head -->
+        <circle cx="100" cy="76" r="50" fill="#f4c896" stroke="#1a3a5e" stroke-width="3"/>
+        <!-- Hair -->
+        <path class="hit" data-name="hair" d="M55,55 Q100,5 145,55 Q140,40 100,32 Q60,40 55,55 Z" fill="#5d3a1a" stroke="#1a3a5e" stroke-width="2"/>
+        <!-- Ears -->
+        <circle class="hit" data-name="ear" cx="52" cy="78" r="9" fill="#f4c896" stroke="#1a3a5e" stroke-width="3"/>
+        <circle class="hit" data-name="ear" cx="148" cy="78" r="9" fill="#f4c896" stroke="#1a3a5e" stroke-width="3"/>
+        <!-- Eyes -->
+        <circle class="hit" data-name="eye" cx="82" cy="72" r="7" fill="#1a3a5e"/>
+        <circle class="hit" data-name="eye" cx="118" cy="72" r="7" fill="#1a3a5e"/>
+        <!-- Nose -->
+        <ellipse class="hit" data-name="nose" cx="100" cy="88" rx="6" ry="9" fill="#d4a072" stroke="#1a3a5e" stroke-width="2"/>
+        <!-- Mouth -->
+        <path class="hit" data-name="mouth" d="M85,105 Q100,118 115,105" stroke="#a04040" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <!-- Belly (button) -->
+        <circle class="hit" data-name="belly" cx="100" cy="195" r="6" fill="#d4a072"/>
+      </svg>
+    `;
+    const figure = document.getElementById('figure');
+    figure.innerHTML = figureSvg;
+
+    // What's available per tier
+    const TODDLER_PARTS = ['eye','nose','mouth','ear','hand','foot'];
+    const ALL_PARTS = ['eye','nose','mouth','ear','hand','foot','arm','leg','hair','belly'];
+    const partList = tier <= 4 ? TODDLER_PARTS : ALL_PARTS;
+    const PRONOUN = (p) => ({ eye:'eyes', ear:'ears', hand:'hands', foot:'feet', arm:'arms', leg:'legs' }[p] || p);
+
+    const hint = document.getElementById('hint');
+    let target = null;
+    let roundTimer = null;
+    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+
+    function nextRound() {
+      clearTimeout(roundTimer);
+      target = partList[Math.floor(Math.random() * partList.length)];
+      const prompt = tier <= 2 ? `Where's the ${target}?` : `Tap the ${PRONOUN(target)}!`;
+      hint.textContent = prompt;
+      setTimeout(() => speak(prompt), 400);
+      figure.querySelectorAll('.hit').forEach(el => {
+        el.classList.remove('flash','wrong');
+      });
+    }
+
+    figure.querySelectorAll('.hit').forEach(el => {
+      el.addEventListener('pointerdown', () => {
+        const name = el.dataset.name;
+        if (name === target) {
+          el.classList.add('flash');
+          playSuccess();
+          speak(`Yes! That's the ${PRONOUN(target)}.`);
+          roundTimer = setTimeout(nextRound, 1800);
+        } else {
+          el.classList.add('wrong');
+          playBoop();
+          setTimeout(() => el.classList.remove('wrong'), 350);
+          // Tier ≤ 3 gives a hint by naming what was tapped
+          if (tier <= 3) speak(`That's the ${PRONOUN(name)}.`);
+        }
+      });
+    });
+
+    nextRound();
+    })();
+  </script>
+</body>
+</html>

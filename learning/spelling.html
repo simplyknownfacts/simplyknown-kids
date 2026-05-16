@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Spelling Bee</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #b8860b, #6e530a); }
+    .pic-big { font-size: clamp(100px, 22vw, 180px); line-height: 1;
+               text-shadow: 0 6px 24px rgba(0,0,0,0.4); }
+    .word-choices {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px; max-width: 540px;
+    }
+    .word-card {
+      padding: 18px 14px; border-radius: 16px;
+      background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.25);
+      color: white; font-size: 26px; font-weight: 900;
+      text-align: center; cursor: pointer; transition: transform 0.12s;
+      letter-spacing: 2px;
+    }
+    .word-card:active { transform: scale(0.94); }
+    .word-card.matched { background: #a8e6cf; color: #1a1a2e; border-color: white; }
+    .word-card.wrong { animation: shake 0.3s; background: rgba(255,107,107,0.3); }
+    .spelled-slot {
+      width: 56px; height: 68px; border-radius: 12px;
+      border: 3px dashed rgba(255,255,255,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; font-weight: 900; color: white;
+    }
+    .spelled-slot.filled { border-style: solid; background: rgba(168,230,207,0.3); }
+    .letter-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+      gap: 10px; max-width: 540px;
+    }
+    .letter-tile {
+      aspect-ratio: 1; min-height: 56px; border-radius: 14px;
+      background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.25);
+      color: white; font-size: 26px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.1s;
+    }
+    .letter-tile:active { transform: scale(0.9); }
+    .letter-tile.wrong { animation: shake 0.3s; }
+    @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  </style>
+</head>
+<body>
+  <div class="screen" id="stage" style="gap:24px;">
+    <div class="title">🐝 Spelling Bee</div>
+    <div class="subtitle" id="hint"></div>
+    <div id="body" class="col" style="gap:24px;"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
+  <script src="../js/game-settings.js"></script>
+  <script>
+    (function() {
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); return; }
+    const tier = getActivityTier(profile, 'spelling');
+    renderBackBtn('index.html');
+    gameSettings.attach('spelling');
+
+    const WORDS = [
+      {w:'CAT',e:'🐱'},{w:'DOG',e:'🐶'},{w:'PIG',e:'🐷'},{w:'SUN',e:'☀️'},
+      {w:'BUG',e:'🐛'},{w:'HAT',e:'🎩'},{w:'BAT',e:'🦇'},{w:'CUP',e:'🥤'},
+      {w:'BUS',e:'🚌'},{w:'EGG',e:'🥚'},{w:'BEE',e:'🐝'},{w:'COW',e:'🐮'},
+    ];
+    const LONGER = [
+      {w:'FISH',e:'🐟'},{w:'STAR',e:'⭐'},{w:'MOON',e:'🌙'},{w:'BIRD',e:'🐦'},
+      {w:'CAKE',e:'🍰'},{w:'TREE',e:'🌳'},{w:'BOOK',e:'📖'},{w:'BALL',e:'⚽'},
+    ];
+    const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+    const bodyEl = document.getElementById('body');
+    const hint   = document.getElementById('hint');
+    let roundTimer = null;
+    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+
+    function nextRound() {
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+
+      if (tier <= 5) {
+        // Multiple choice: show picture, tap the matching word from 3-4 choices
+        const target = WORDS[Math.floor(Math.random() * WORDS.length)];
+        hint.textContent = 'Tap the word that matches the picture!';
+        const pic = document.createElement('div'); pic.className = 'pic-big';
+        pic.textContent = target.e;
+        bodyEl.appendChild(pic);
+
+        const choices = new Set([target.w]);
+        while (choices.size < 4) {
+          choices.add(WORDS[Math.floor(Math.random() * WORDS.length)].w);
+        }
+        const grid = document.createElement('div'); grid.className = 'word-choices';
+        [...choices].sort(() => Math.random() - 0.5).forEach(w => {
+          const card = document.createElement('div');
+          card.className = 'word-card'; card.textContent = w;
+          card.addEventListener('pointerdown', () => {
+            if (w === target.w) {
+              card.classList.add('matched');
+              playSuccess();
+              speak(target.w);
+              roundTimer = setTimeout(nextRound, 1800);
+            } else {
+              card.classList.add('wrong');
+              playBoop();
+              setTimeout(() => card.classList.remove('wrong'), 350);
+            }
+          });
+          grid.appendChild(card);
+        });
+        bodyEl.appendChild(grid);
+        setTimeout(() => speak(target.w), 400);
+
+      } else {
+        // Tier 6+: spell the word — tap letters in order from a bank
+        const pool = tier >= 7 ? [...WORDS, ...LONGER] : WORDS;
+        const target = pool[Math.floor(Math.random() * pool.length)];
+        hint.textContent = `Spell it!`;
+        const pic = document.createElement('div'); pic.className = 'pic-big';
+        pic.textContent = target.e;
+        bodyEl.appendChild(pic);
+
+        const slotRow = document.createElement('div'); slotRow.className = 'row';
+        const slots = [];
+        for (const ch of target.w) {
+          const s = document.createElement('div'); s.className = 'spelled-slot';
+          s.dataset.target = ch;
+          slotRow.appendChild(s); slots.push(s);
+        }
+        bodyEl.appendChild(slotRow);
+
+        const bank = new Set(target.w.split(''));
+        while (bank.size < target.w.length + 4) bank.add(ALPHA[Math.floor(Math.random() * 26)]);
+        const grid = document.createElement('div'); grid.className = 'letter-grid';
+        [...bank].sort(() => Math.random() - 0.5).forEach(L => {
+          const tile = document.createElement('div');
+          tile.className = 'letter-tile'; tile.textContent = L;
+          tile.addEventListener('pointerdown', () => {
+            const nextEmpty = slots.findIndex(s => !s.textContent);
+            if (nextEmpty === -1) return;
+            if (slots[nextEmpty].dataset.target === L) {
+              slots[nextEmpty].textContent = L;
+              slots[nextEmpty].classList.add('filled');
+              speak(L);
+              if (slots.every(s => s.textContent)) {
+                playSuccess();
+                setTimeout(() => speak(target.w), 400);
+                roundTimer = setTimeout(nextRound, 2400);
+              }
+            } else {
+              tile.classList.add('wrong');
+              playBoop();
+              setTimeout(() => tile.classList.remove('wrong'), 350);
+            }
+          });
+          grid.appendChild(tile);
+        });
+        bodyEl.appendChild(grid);
+        setTimeout(() => speak(`Spell ${target.w}!`), 400);
+      }
+    }
+    nextRound();
+    })();
+  </script>
+</body>
+</html>

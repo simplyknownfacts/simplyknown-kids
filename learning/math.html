@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Math Mountain</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #2d8659, #1a5a3a); }
+    .eq-row {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      justify-content: center; font-size: clamp(48px, 12vw, 96px); font-weight: 900;
+      color: white; text-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+    .pile {
+      display: inline-flex; flex-wrap: wrap; gap: 6px;
+      max-width: 220px; padding: 10px; border-radius: 16px;
+      background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
+      align-items: center; justify-content: center;
+    }
+    .pile .item { font-size: clamp(32px, 7vw, 56px); line-height: 1; }
+    .op { font-size: clamp(48px, 10vw, 80px); color: #FFD93D; }
+    .answer-box {
+      min-width: 110px; min-height: 80px; border-radius: 16px;
+      border: 4px dashed rgba(255,255,255,0.5);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: clamp(48px, 10vw, 80px); font-weight: 900; color: white;
+    }
+    .answer-box.filled { border-style: solid; background: rgba(168,230,207,0.3); }
+    .num-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .num-btn {
+      min-width: 70px; min-height: 70px; padding: 12px 16px; border-radius: 18px;
+      background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.25);
+      color: white; font-size: 28px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.12s;
+    }
+    .num-btn:active { transform: scale(0.9); }
+    .num-btn.wrong { animation: shake 0.3s; background: rgba(255,107,107,0.4); }
+    @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  </style>
+</head>
+<body>
+  <div class="screen" id="stage" style="gap:24px;">
+    <div class="title">➕ Math Mountain</div>
+    <div class="subtitle" id="hint"></div>
+    <div id="body" class="col" style="gap:24px;"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
+  <script src="../js/game-settings.js"></script>
+  <script>
+    (function() {
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); return; }
+    const tier = getActivityTier(profile, 'math');
+    renderBackBtn('index.html');
+    gameSettings.attach('math');
+
+    const ITEMS = ['🍎','🍌','🚗','⭐','🐱','🎈','🍦','🦋'];
+    const bodyEl = document.getElementById('body');
+    const hint   = document.getElementById('hint');
+    let roundTimer = null;
+    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+
+    function pile(n, emoji) {
+      const div = document.createElement('div');
+      div.className = 'pile';
+      for (let i = 0; i < n; i++) {
+        const s = document.createElement('span');
+        s.className = 'item'; s.textContent = emoji;
+        div.appendChild(s);
+      }
+      return div;
+    }
+
+    function nextRound() {
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+      const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+
+      let op, a, b, ans, maxRand;
+      if (tier <= 4) {
+        // Visual addition with tiny numbers, show both piles, kid taps result count
+        op = '+'; a = 1 + Math.floor(Math.random() * 3); b = 1 + Math.floor(Math.random() * 3);
+        ans = a + b; maxRand = 7;
+      } else if (tier <= 5) {
+        op = '+'; a = 1 + Math.floor(Math.random() * 5); b = 1 + Math.floor(Math.random() * 5);
+        ans = a + b; maxRand = 12;
+      } else if (tier <= 6) {
+        // Mix add + subtract
+        const sub = Math.random() < 0.5;
+        if (sub) {
+          a = 3 + Math.floor(Math.random() * 7); b = 1 + Math.floor(Math.random() * (a-1));
+          op = '−'; ans = a - b;
+        } else {
+          a = 1 + Math.floor(Math.random() * 8); b = 1 + Math.floor(Math.random() * 8);
+          op = '+'; ans = a + b;
+        }
+        maxRand = 18;
+      } else {
+        // Tier 7+: bigger numbers, allow multiplication for tier 8
+        const choice = Math.random();
+        if (tier >= 8 && choice < 0.33) {
+          a = 2 + Math.floor(Math.random() * 4); b = 2 + Math.floor(Math.random() * 4);
+          op = '×'; ans = a * b;
+        } else if (choice < 0.66) {
+          a = 5 + Math.floor(Math.random() * 16); b = 1 + Math.floor(Math.random() * (a-1));
+          op = '−'; ans = a - b;
+        } else {
+          a = 5 + Math.floor(Math.random() * 16); b = 1 + Math.floor(Math.random() * 16);
+          op = '+'; ans = a + b;
+        }
+        maxRand = Math.max(20, ans + 5);
+      }
+
+      hint.textContent = tier <= 5 ? 'How many in all?' : (op === '−' ? 'How many are left?' : 'What\'s the answer?');
+
+      const eq = document.createElement('div'); eq.className = 'eq-row';
+      // Show visual piles only at lower tiers
+      if (tier <= 6) {
+        eq.appendChild(pile(a, item));
+        const opEl = document.createElement('span'); opEl.className = 'op'; opEl.textContent = op;
+        eq.appendChild(opEl);
+        eq.appendChild(pile(b, item));
+      } else {
+        const numA = document.createElement('span'); numA.textContent = a;
+        const opEl = document.createElement('span'); opEl.className = 'op'; opEl.textContent = op;
+        const numB = document.createElement('span'); numB.textContent = b;
+        eq.appendChild(numA); eq.appendChild(opEl); eq.appendChild(numB);
+      }
+      const eqEl = document.createElement('span'); eqEl.className = 'op'; eqEl.textContent = '=';
+      eq.appendChild(eqEl);
+      const box = document.createElement('div'); box.className = 'answer-box';
+      eq.appendChild(box);
+      bodyEl.appendChild(eq);
+
+      // Speak the equation
+      const opWord = op === '+' ? 'plus' : op === '−' ? 'minus' : 'times';
+      setTimeout(() => speak(`${a} ${opWord} ${b}?`), 400);
+
+      // Number choices: target + 3 plausible distractors
+      const choices = new Set([ans]);
+      while (choices.size < 4) {
+        const r = Math.max(0, Math.min(maxRand, ans + Math.floor((Math.random() - 0.5) * 8)));
+        if (r !== ans) choices.add(r);
+      }
+      const numRow = document.createElement('div'); numRow.className = 'num-row';
+      [...choices].sort(() => Math.random() - 0.5).forEach(n => {
+        const btn = document.createElement('div');
+        btn.className = 'num-btn'; btn.textContent = n;
+        btn.addEventListener('pointerdown', () => {
+          if (n === ans) {
+            box.textContent = ans; box.classList.add('filled');
+            playSuccess();
+            speak(`${a} ${opWord} ${b} equals ${ans}!`);
+            roundTimer = setTimeout(nextRound, 2200);
+          } else {
+            btn.classList.add('wrong');
+            playBoop();
+            setTimeout(() => btn.classList.remove('wrong'), 350);
+          }
+        });
+        numRow.appendChild(btn);
+      });
+      bodyEl.appendChild(numRow);
+    }
+    nextRound();
+    })();
+  </script>
+</body>
+</html>

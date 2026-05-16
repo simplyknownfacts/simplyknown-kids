@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Days of the Week</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #2d5a87, #1a3a5e); }
+    .day-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; max-width: 760px; }
+    .day-tile {
+      min-width: 110px; padding: 18px 14px; border-radius: 18px;
+      background: rgba(255,255,255,0.12); border: 3px solid rgba(255,255,255,0.2);
+      color: white; font-weight: 900; font-size: 17px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      cursor: pointer; transition: transform 0.12s;
+    }
+    .day-tile:active { transform: scale(0.92); }
+    .day-tile.today  { border-color: #FFD93D; background: rgba(255,217,61,0.2); }
+    .day-tile.matched{ border-color: #a8e6cf; background: rgba(168,230,207,0.25); }
+    .day-tile.wrong  { animation: shake 0.3s; }
+    .day-emoji { font-size: 38px; line-height: 1; }
+    @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  </style>
+</head>
+<body>
+  <div class="screen" id="stage" style="gap:24px;">
+    <div class="title">📅 Days of the Week</div>
+    <div class="subtitle" id="hint"></div>
+    <div id="body" class="col" style="gap:24px;"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
+  <script src="../js/game-settings.js"></script>
+  <script>
+    (function() {
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); return; }
+    const tier = getActivityTier(profile, 'days');
+    renderBackBtn('index.html');
+    gameSettings.attach('days');
+
+    const DAYS = [
+      { n:'Sunday',    e:'🌞' },
+      { n:'Monday',    e:'😴' },
+      { n:'Tuesday',   e:'🚌' },
+      { n:'Wednesday', e:'🐪' },
+      { n:'Thursday',  e:'⚡' },
+      { n:'Friday',    e:'🎉' },
+      { n:'Saturday',  e:'🛌' },
+    ];
+    const todayIdx = new Date().getDay(); // 0 = Sun
+
+    const bodyEl = document.getElementById('body');
+    const hint   = document.getElementById('hint');
+    let roundTimer = null;
+    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+
+    function nextRound() {
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+
+      if (tier <= 4) {
+        // Tap each day to hear its name. Today is highlighted.
+        hint.textContent = '👆 Tap a day to hear it!';
+        const row = document.createElement('div'); row.className = 'day-row';
+        DAYS.forEach((d, i) => {
+          const tile = document.createElement('div');
+          tile.className = 'day-tile' + (i === todayIdx ? ' today' : '');
+          tile.innerHTML = `<span class="day-emoji">${d.e}</span><span>${d.n}</span>${i === todayIdx ? '<span style="font-size:11px;opacity:0.8;">TODAY</span>' : ''}`;
+          tile.addEventListener('pointerdown', () => {
+            speak(i === todayIdx ? `Today is ${d.n}!` : d.n);
+            playChime();
+          });
+          row.appendChild(tile);
+        });
+        bodyEl.appendChild(row);
+        setTimeout(() => speak(`Today is ${DAYS[todayIdx].n}!`), 400);
+
+      } else if (tier <= 6) {
+        // "What comes after Monday?" / "What was yesterday?"
+        const isAfter = Math.random() < 0.5;
+        const baseIdx = Math.floor(Math.random() * 7);
+        const target  = isAfter ? (baseIdx + 1) % 7 : (baseIdx + 6) % 7;
+        const promptText = isAfter
+          ? `What day comes after ${DAYS[baseIdx].n}?`
+          : `What day comes before ${DAYS[baseIdx].n}?`;
+        hint.textContent = promptText;
+        setTimeout(() => speak(promptText), 400);
+        const row = document.createElement('div'); row.className = 'day-row';
+        DAYS.forEach((d, i) => {
+          const tile = document.createElement('div');
+          tile.className = 'day-tile';
+          tile.innerHTML = `<span class="day-emoji">${d.e}</span><span>${d.n}</span>`;
+          tile.addEventListener('pointerdown', () => {
+            if (i === target) {
+              tile.classList.add('matched');
+              playSuccess();
+              speak(`Yes! ${d.n}.`);
+              roundTimer = setTimeout(nextRound, 1800);
+            } else {
+              tile.classList.add('wrong');
+              playBoop();
+              setTimeout(() => tile.classList.remove('wrong'), 350);
+              speak('Try again!');
+            }
+          });
+          row.appendChild(tile);
+        });
+        bodyEl.appendChild(row);
+
+      } else {
+        // School age: ordinal questions — "What's the 3rd day?" / "How many days until Friday?"
+        const ordinals = ['first','second','third','fourth','fifth','sixth','seventh'];
+        const useOrdinal = Math.random() < 0.5;
+        let promptText, target;
+        if (useOrdinal) {
+          target = Math.floor(Math.random() * 7);
+          promptText = `Tap the ${ordinals[target]} day of the week.`;
+        } else {
+          target = Math.floor(Math.random() * 7);
+          const diff = (target - todayIdx + 7) % 7;
+          promptText = diff === 0
+            ? 'Tap today.'
+            : `What day is ${diff} day${diff === 1 ? '' : 's'} from today?`;
+        }
+        hint.textContent = promptText;
+        setTimeout(() => speak(promptText), 400);
+        const row = document.createElement('div'); row.className = 'day-row';
+        DAYS.forEach((d, i) => {
+          const tile = document.createElement('div');
+          tile.className = 'day-tile';
+          tile.innerHTML = `<span class="day-emoji">${d.e}</span><span>${d.n}</span>`;
+          tile.addEventListener('pointerdown', () => {
+            if (i === target) {
+              tile.classList.add('matched');
+              playSuccess();
+              speak(`Yes! ${d.n}.`);
+              roundTimer = setTimeout(nextRound, 1800);
+            } else {
+              tile.classList.add('wrong');
+              playBoop();
+              setTimeout(() => tile.classList.remove('wrong'), 350);
+              speak('Try again!');
+            }
+          });
+          row.appendChild(tile);
+        });
+        bodyEl.appendChild(row);
+      }
+    }
+    nextRound();
+    })();
+  </script>
+</body>
+</html>

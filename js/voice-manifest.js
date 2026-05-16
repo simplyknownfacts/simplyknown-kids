@@ -100,6 +100,41 @@ KID_NAMES.forEach(n => {
   _phrases.push(`Hi ${n}! Welcome to your play space.`);
 });
 
+// New learning activities — atomic clips for repeated taps
+// ABCs: every letter
+'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(L => _phrases.push(L));
+// Days of week + "today is X"
+const _DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+_DAYS.forEach(d => { _phrases.push(d); _phrases.push(`Today is ${d}!`); _phrases.push(`Yes! ${d}.`); });
+// Coins
+['Penny','Nickel','Dime','Quarter'].forEach(c => {
+  _phrases.push(c);
+  _phrases.push(`Tap the ${c}.`);
+});
+// Body parts (plural form spoken to kids)
+const _BODY = ['eyes','ears','hands','feet','nose','mouth','arms','legs','hair','belly'];
+_BODY.forEach(p => {
+  _phrases.push(`Tap the ${p}!`);
+  _phrases.push(`Yes! That's the ${p}.`);
+  _phrases.push(`That's the ${p}.`);
+});
+_phrases.push(`Where's the nose?`);
+_phrases.push(`Where's the mouth?`);
+_phrases.push(`Where's the eyes?`);
+// Math
+_phrases.push('plus'); _phrases.push('minus'); _phrases.push('times'); _phrases.push('equals');
+_phrases.push('How many in all?');
+_phrases.push('How many are left?');
+_phrases.push(`What's the answer?`);
+// Spelling words (short, recur often)
+['CAT','DOG','PIG','SUN','EGG','HAT','BAT','BUG','CUP','BUS','BEE','COW',
+ 'FISH','STAR','MOON','BIRD','CAKE','TREE','BOOK','BALL'].forEach(w => {
+  _phrases.push(w);
+  _phrases.push(`Spell ${w}!`);
+});
+// Money
+_phrases.push('How much money is here?');
+
 // Numbers 1-50 spoken as digits
 const _numbers = [];
 for (let i = 1; i <= 50; i++) _numbers.push(String(i));

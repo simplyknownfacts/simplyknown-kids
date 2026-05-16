@@ -30,6 +30,29 @@ const ACTIVITY_FEATURES = [
   { id:'count-along',   name:'Count Along',   features:[
     { key:'quizMode',      label:'How-many quiz mode' },
   ]},
+  { id:'abcs',          name:'ABCs',          features:[
+    { key:'wordHints',     label:'Show "A is for Apple" word hints' },
+    { key:'spellMode',     label:'Spell short words (advanced)' },
+  ]},
+  { id:'days',          name:'Days of the Week', features:[
+    { key:'quizMode',      label:'Quiz mode (what comes after Monday?)' },
+  ]},
+  { id:'math',          name:'Math Mountain', features:[
+    { key:'subtract',      label:'Include subtraction' },
+    { key:'multiply',      label:'Include multiplication (advanced)' },
+  ]},
+  { id:'spelling',      name:'Spelling Bee',  features:[
+    { key:'spellMode',     label:'Spell from letter bank (advanced)' },
+  ]},
+  { id:'money',         name:'Money Matters', features:[
+    { key:'countMode',     label:'Count coin totals (advanced)' },
+  ]},
+  { id:'body-parts',    name:'Body Parts',    features:[
+    { key:'allParts',      label:'Include extra parts (hair, belly, etc.)' },
+  ]},
+  { id:'color-in',      name:'Color In',      features:[
+    { key:'extraPics',     label:'Show more coloring pages' },
+  ]},
 ];
 
 function getProfiles() {

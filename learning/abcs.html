@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>ABCs</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: linear-gradient(160deg, #6a4c93, #3a2c5e); }
+    .letter-big {
+      font-size: clamp(140px, 36vw, 280px); font-weight: 900;
+      color: white; line-height: 1; text-shadow: 0 6px 24px rgba(0,0,0,0.4);
+    }
+    .word-row {
+      display: flex; align-items: center; gap: 18px;
+      font-size: clamp(28px, 6vw, 48px); font-weight: 900; color: white;
+    }
+    .word-emoji { font-size: clamp(70px, 14vw, 110px); }
+    .letter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+      gap: 10px; max-width: 540px; padding: 16px;
+    }
+    .letter-tile {
+      aspect-ratio: 1; min-height: 56px; border-radius: 14px;
+      background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.25);
+      color: white; font-size: 28px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.1s;
+    }
+    .letter-tile:active { transform: scale(0.9); }
+    .letter-tile.matched { background: #a8e6cf; color: #1a1a2e; border-color: white; }
+    .letter-tile.wrong { animation: shake 0.3s; }
+    .spelled-slot {
+      width: 60px; height: 70px; border-radius: 12px;
+      border: 3px dashed rgba(255,255,255,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; font-weight: 900; color: white;
+    }
+    .spelled-slot.filled { border-style: solid; background: rgba(168,230,207,0.3); }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)}
+    }
+  </style>
+</head>
+<body>
+  <div class="screen" id="stage" style="gap:24px;">
+    <div class="title">🔤 ABCs</div>
+    <div class="subtitle" id="hint"></div>
+    <div id="body" class="col" style="gap:24px;"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
+  <script src="../js/game-settings.js"></script>
+  <script>
+    (function() {
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); return; }
+    const tier = getActivityTier(profile, 'abcs');
+    renderBackBtn('index.html');
+    gameSettings.attach('abcs');
+
+    const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    // Letter → starts-with word + emoji (kid-recognizable)
+    const STARTS = {
+      A:{w:'Apple',e:'🍎'},   B:{w:'Ball',e:'⚽'},    C:{w:'Cat',e:'🐱'},
+      D:{w:'Dog',e:'🐶'},     E:{w:'Egg',e:'🥚'},    F:{w:'Fish',e:'🐟'},
+      G:{w:'Grapes',e:'🍇'},  H:{w:'Hat',e:'🎩'},    I:{w:'Ice cream',e:'🍦'},
+      J:{w:'Jam',e:'🍓'},     K:{w:'Kite',e:'🪁'},   L:{w:'Lion',e:'🦁'},
+      M:{w:'Moon',e:'🌙'},    N:{w:'Nest',e:'🪺'},   O:{w:'Orange',e:'🍊'},
+      P:{w:'Pig',e:'🐷'},     Q:{w:'Queen',e:'👸'},  R:{w:'Rainbow',e:'🌈'},
+      S:{w:'Sun',e:'☀️'},     T:{w:'Tiger',e:'🐯'},  U:{w:'Umbrella',e:'☂️'},
+      V:{w:'Van',e:'🚐'},     W:{w:'Whale',e:'🐳'},  X:{w:'Xylophone',e:'🪘'},
+      Y:{w:'Yo-yo',e:'🪀'},   Z:{w:'Zebra',e:'🦓'},
+    };
+    // Simple 3-letter words to spell at higher tiers (subset using letters above)
+    const SPELL_WORDS = [
+      {w:'CAT',e:'🐱'},{w:'DOG',e:'🐶'},{w:'PIG',e:'🐷'},{w:'SUN',e:'☀️'},
+      {w:'EGG',e:'🥚'},{w:'HAT',e:'🎩'},{w:'BAT',e:'🦇'},{w:'BUG',e:'🐛'},
+    ];
+
+    const bodyEl = document.getElementById('body');
+    const hint   = document.getElementById('hint');
+    let idx = 0;
+    let roundTimer = null;
+    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+
+    function nextRound() {
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+
+      if (tier <= 3) {
+        // Tap-to-hear: show one letter big, tap to hear it. Tap big letter to advance.
+        const letter = ALPHABET[idx % 26];
+        hint.textContent = '👆 Tap the letter!';
+        const big = document.createElement('div');
+        big.className = 'letter-big'; big.textContent = letter;
+        big.style.cursor = 'pointer';
+        big.addEventListener('pointerdown', () => {
+          speak(letter);
+          playChime();
+          roundTimer = setTimeout(() => { idx++; nextRound(); }, 1500);
+        });
+        bodyEl.appendChild(big);
+        speak(letter);
+
+      } else if (tier <= 5) {
+        // Letter + "starts with X" word. Tap letter to hear letter + word.
+        const letter = ALPHABET[idx % 26];
+        const s = STARTS[letter];
+        hint.textContent = '👆 Tap to hear!';
+        const big = document.createElement('div');
+        big.className = 'letter-big'; big.textContent = letter;
+        bodyEl.appendChild(big);
+        const row = document.createElement('div'); row.className = 'word-row';
+        row.innerHTML = `<span class="word-emoji">${s.e}</span><span>${s.w}</span>`;
+        bodyEl.appendChild(row);
+        const tap = () => {
+          speak(`${letter} is for ${s.w}.`);
+          playChime();
+          roundTimer = setTimeout(() => { idx++; nextRound(); }, 2400);
+        };
+        big.addEventListener('pointerdown', tap);
+        row.addEventListener('pointerdown', tap);
+        setTimeout(() => speak(`${letter} is for ${s.w}.`), 400);
+
+      } else if (tier <= 6) {
+        // Quiz: show a word + emoji, tap the letter it starts with from 4 choices
+        const letters = [...ALPHABET].sort(() => Math.random() - 0.5).slice(0, 7);
+        const target = letters[Math.floor(Math.random() * letters.length)];
+        const s = STARTS[target];
+        hint.textContent = `What letter starts this word?`;
+        const row = document.createElement('div'); row.className = 'word-row';
+        row.innerHTML = `<span class="word-emoji">${s.e}</span><span>${s.w}</span>`;
+        bodyEl.appendChild(row);
+        setTimeout(() => speak(`What letter starts ${s.w}?`), 400);
+
+        const grid = document.createElement('div'); grid.className = 'letter-grid';
+        letters.forEach(L => {
+          const tile = document.createElement('div');
+          tile.className = 'letter-tile'; tile.textContent = L;
+          tile.addEventListener('pointerdown', () => {
+            if (L === target) {
+              tile.classList.add('matched');
+              playSuccess();
+              speak(`${L}! ${s.w}!`);
+              roundTimer = setTimeout(nextRound, 1800);
+            } else {
+              tile.classList.add('wrong');
+              playBoop();
+              setTimeout(() => tile.classList.remove('wrong'), 350);
+            }
+          });
+          grid.appendChild(tile);
+        });
+        bodyEl.appendChild(grid);
+
+      } else {
+        // Spell mode: show picture + first letter outline, tap letters in order
+        const word = SPELL_WORDS[Math.floor(Math.random() * SPELL_WORDS.length)];
+        hint.textContent = `Spell ${word.w.toLowerCase()}!`;
+        const picRow = document.createElement('div'); picRow.className = 'word-row';
+        picRow.innerHTML = `<span class="word-emoji">${word.e}</span>`;
+        bodyEl.appendChild(picRow);
+
+        const slotRow = document.createElement('div'); slotRow.className = 'row';
+        const slots = [];
+        for (const ch of word.w) {
+          const s = document.createElement('div');
+          s.className = 'spelled-slot'; s.dataset.target = ch;
+          slotRow.appendChild(s); slots.push(s);
+        }
+        bodyEl.appendChild(slotRow);
+
+        // Letter bank: include the target letters plus 3 random distractors
+        const bank = new Set(word.w.split(''));
+        while (bank.size < word.w.length + 3) bank.add(ALPHABET[Math.floor(Math.random()*26)]);
+        const grid = document.createElement('div'); grid.className = 'letter-grid';
+        [...bank].sort(() => Math.random() - 0.5).forEach(L => {
+          const tile = document.createElement('div');
+          tile.className = 'letter-tile'; tile.textContent = L;
+          tile.addEventListener('pointerdown', () => {
+            const nextEmpty = slots.findIndex(s => !s.textContent);
+            if (nextEmpty === -1) return;
+            if (slots[nextEmpty].dataset.target === L) {
+              slots[nextEmpty].textContent = L;
+              slots[nextEmpty].classList.add('filled');
+              speak(L);
+              if (slots.every(s => s.textContent)) {
+                playSuccess();
+                setTimeout(() => speak(word.w), 400);
+                roundTimer = setTimeout(nextRound, 2400);
+              }
+            } else {
+              tile.classList.add('wrong');
+              playBoop();
+              setTimeout(() => tile.classList.remove('wrong'), 350);
+            }
+          });
+          grid.appendChild(tile);
+        });
+        bodyEl.appendChild(grid);
+        setTimeout(() => speak(`Spell ${word.w}!`), 400);
+      }
+    }
+    nextRound();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Color In</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body { background: #1a1a2e; }
+    .stage { position: fixed; inset: 0; display: flex; flex-direction: column; }
+    .pic-wrap {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 80px 20px 16px;
+    }
+    .pic-wrap svg { width: 100%; height: 100%; max-width: 720px; max-height: calc(100vh - 220px); }
+    .region {
+      stroke: #1a1a2e; stroke-width: 4; stroke-linejoin: round;
+      cursor: pointer; transition: filter 0.15s;
+      fill: white;
+    }
+    .region:active { filter: brightness(0.9); }
+    .outline { fill: none; stroke: #1a1a2e; stroke-width: 4; pointer-events: none; }
+    #toolbar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; flex-wrap: wrap;
+      padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); z-index: 10;
+    }
+    @media (orientation: landscape) and (min-width: 768px) {
+      #toolbar {
+        flex-direction: column; flex-wrap: wrap; align-content: flex-start;
+        top: 0; right: 0; bottom: 0; left: auto;
+        width: auto; max-width: 200px; height: 100vh;
+        padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) 12px;
+        gap: 14px;
+      }
+      .pic-wrap { padding-right: 220px; }
+    }
+    .pip {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.3); cursor: pointer;
+      transition: border-color 0.1s, box-shadow 0.1s;
+    }
+    .pip.active { border-color: white; box-shadow: 0 0 0 4px white; }
+    .tool-btn {
+      padding: 10px 16px; border-radius: 16px;
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.25);
+      color: white; font-weight: 800; font-size: 14px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="pic-wrap" id="picWrap"></div>
+  </div>
+  <div id="toolbar"></div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
+  <script src="../js/game-settings.js"></script>
+  <script>
+    (function() {
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); return; }
+    const tier = getActivityTier(profile, 'color-in');
+    renderBackBtn('index.html');
+    // gear attached after the toolbar is built (in renderToolbar)
+
+    const COLORS = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#7CFC00','#FFFFFF','#444444'];
+    let active = COLORS[0];
+
+    // Each picture is a list of SVG paths. Pre-defined regions, fill white,
+    // become whatever color is tapped. Outline drawn last so it's always
+    // visible on top.
+    const PICTURES = [
+      {
+        name: 'Apple', viewBox: '0 0 200 200',
+        regions: [
+          // body of apple (two halves to allow two-tone fill)
+          { d: 'M100,50 Q40,50 40,120 Q40,180 100,180 Q100,150 100,50 Z' },
+          { d: 'M100,50 Q160,50 160,120 Q160,180 100,180 Q100,150 100,50 Z' },
+          // leaf
+          { d: 'M105,50 Q140,15 160,40 Q140,55 105,50 Z' },
+          // stem
+          { d: 'M98,55 Q98,30 115,28 Q108,40 102,55 Z' },
+        ],
+      },
+      {
+        name: 'Butterfly', viewBox: '0 0 200 200',
+        regions: [
+          // body
+          { d: 'M95,60 L95,150 Q100,160 105,150 L105,60 Q100,52 95,60 Z' },
+          // upper-left wing
+          { d: 'M95,80 Q40,40 30,90 Q40,120 95,110 Z' },
+          // lower-left wing
+          { d: 'M95,110 Q40,120 35,165 Q70,170 95,140 Z' },
+          // upper-right wing
+          { d: 'M105,80 Q160,40 170,90 Q160,120 105,110 Z' },
+          // lower-right wing
+          { d: 'M105,110 Q160,120 165,165 Q130,170 105,140 Z' },
+        ],
+      },
+      {
+        name: 'Fish', viewBox: '0 0 200 200',
+        regions: [
+          // body
+          { d: 'M40,100 Q70,40 140,60 Q170,80 170,100 Q170,120 140,140 Q70,160 40,100 Z' },
+          // tail
+          { d: 'M30,100 L0,60 L10,100 L0,140 Z' },
+          // top fin
+          { d: 'M90,55 Q110,30 130,60 Q110,55 90,55 Z' },
+          // bottom fin
+          { d: 'M90,145 Q110,170 130,140 Q110,145 90,145 Z' },
+          // eye (kid taps to color)
+          { d: 'M140,90 a8,8 0 1,1 16,0 a8,8 0 1,1 -16,0 Z' },
+        ],
+      },
+      {
+        name: 'Star', viewBox: '0 0 200 200',
+        regions: [
+          { d: 'M100,20 L120,75 L180,80 L135,118 L150,178 L100,148 L50,178 L65,118 L20,80 L80,75 Z' },
+        ],
+      },
+      {
+        name: 'House', viewBox: '0 0 200 200',
+        regions: [
+          // roof
+          { d: 'M30,100 L100,40 L170,100 Z' },
+          // wall
+          { d: 'M50,100 L150,100 L150,180 L50,180 Z' },
+          // door
+          { d: 'M85,180 L85,135 Q85,125 100,125 Q115,125 115,135 L115,180 Z' },
+          // window
+          { d: 'M65,120 L95,120 L95,150 L65,150 Z' },
+          // window 2
+          { d: 'M120,120 L140,120 L140,140 L120,140 Z' },
+        ],
+      },
+    ];
+
+    let picIdx = 0;
+    const picWrap = document.getElementById('picWrap');
+    const toolbar = document.getElementById('toolbar');
+
+    function renderPic() {
+      const pic = PICTURES[picIdx % PICTURES.length];
+      const svg = `<svg viewBox="${pic.viewBox}" xmlns="http://www.w3.org/2000/svg">
+        ${pic.regions.map((r, i) => `<path class="region" data-i="${i}" d="${r.d}" fill="white"/>`).join('')}
+        ${pic.regions.map(r => `<path class="outline" d="${r.d}"/>`).join('')}
+      </svg>`;
+      picWrap.innerHTML = svg;
+      picWrap.querySelectorAll('.region').forEach(el => {
+        el.addEventListener('pointerdown', () => {
+          el.setAttribute('fill', active);
+          playChime();
+        });
+      });
+    }
+
+    function renderToolbar() {
+      toolbar.innerHTML = '';
+      COLORS.forEach((c, i) => {
+        const pip = document.createElement('div');
+        pip.className = 'pip' + (i === 0 ? ' active' : '');
+        pip.style.background = c;
+        pip.addEventListener('pointerdown', () => {
+          active = c;
+          toolbar.querySelectorAll('.pip').forEach(p => p.classList.remove('active'));
+          pip.classList.add('active');
+        });
+        toolbar.appendChild(pip);
+      });
+      const next = document.createElement('button');
+      next.className = 'tool-btn'; next.textContent = '✨ New';
+      next.addEventListener('pointerdown', () => { picIdx++; renderPic(); });
+      toolbar.appendChild(next);
+      const clear = document.createElement('button');
+      clear.className = 'tool-btn'; clear.textContent = '🧽 Clear';
+      clear.addEventListener('pointerdown', () => {
+        picWrap.querySelectorAll('.region').forEach(r => r.setAttribute('fill', 'white'));
+      });
+      toolbar.appendChild(clear);
+      // Re-attach gear AFTER buttons so it sits at the end (order:999 covers it too)
+      gameSettings.attach('color-in', { container: '#toolbar' });
+    }
+
+    renderToolbar();
+    renderPic();
+    })();
+  </script>
+</body>
+</html>

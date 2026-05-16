@@ -1,4 +1,4 @@
-const CACHE = 'vb-v41';
+const CACHE = 'vb-v42';
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
@@ -7,8 +7,10 @@ const ASSETS = [
   './games/index.html', './games/tap-pop.html', './games/shape-match.html',
   './learning/index.html', './learning/hello-colors.html',
   './learning/animal-sounds.html', './learning/count-along.html',
+  './learning/abcs.html', './learning/days.html', './learning/math.html',
+  './learning/spelling.html', './learning/money.html', './learning/body-parts.html',
   './art/index.html', './art/color-splash.html',
-  './art/finger-paint.html', './art/stamp-art.html',
+  './art/finger-paint.html', './art/stamp-art.html', './art/color-in.html',
   './videos/index.html',
   './listen/index.html',
   './yoto-callback.html',
