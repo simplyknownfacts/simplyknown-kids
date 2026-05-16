@@ -1,3 +1,30 @@
+// Zoom defense — toddlers triggering pinch/wheel-zoom shouldn't break the
+// layout. Viewport meta user-scalable=no is ignored on modern iOS, and a
+// Chrome PWA on desktop still honors Ctrl+wheel and Ctrl+=. Trap the routes
+// kids can stumble into.
+(function _blockZoom() {
+  // iOS Safari pinch
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
+    document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
+  // Desktop Chrome / Edge: Ctrl + wheel
+  window.addEventListener('wheel', e => {
+    if (e.ctrlKey || e.metaKey) e.preventDefault();
+  }, { passive: false });
+  // Desktop keyboard: Ctrl+=, Ctrl+-, Ctrl+0
+  window.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && ['=', '+', '-', '_', '0'].includes(e.key)) {
+      e.preventDefault();
+    }
+  });
+  // Double-tap zoom on Safari (kid taps too fast).
+  let _lastTap = 0;
+  document.addEventListener('touchend', e => {
+    const now = Date.now();
+    if (now - _lastTap < 350) e.preventDefault();
+    _lastTap = now;
+  }, { passive: false });
+})();
+
 // Idle detection — pauses all <video> elements after 3 min of no input, so the
 // device's screen-off timer can kick in. On Android, an actively-playing video
 // keeps the screen awake; pausing releases that lock.
