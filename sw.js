@@ -1,8 +1,8 @@
-const CACHE = 'vb-v15';
+const CACHE = 'vb-v16';
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
-  './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js',
+  './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',
   './games/index.html', './games/tap-pop.html', './games/shape-match.html',
   './learning/index.html', './learning/hello-colors.html',
   './learning/animal-sounds.html', './learning/count-along.html',

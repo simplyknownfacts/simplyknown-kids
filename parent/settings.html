@@ -163,6 +163,13 @@
     </div>
     <div id="youtubeSection"></div>
 
+    <h2>☁️ Cloud Sync</h2>
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+      Sign in once with email + password to sync child profiles across tablets.
+      Voice picks, mascots, YouTube channels, and feature toggles all sync.
+    </div>
+    <div id="syncSection"></div>
+
     <h2>🖥️ Fullscreen</h2>
     <div class="card">
       <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:12px;line-height:1.5;">
@@ -194,6 +201,7 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/mascot.js"></script>
+  <script src="../js/sync.js"></script>
   <script>
     const PIN_KEY = 'vb_pin';            // stores JSON {hash,salt} now; legacy = raw 4 digits
     const RECOVERY_KEY = 'vb_recovery';   // stores JSON {hash,salt} for recovery phrase
@@ -319,6 +327,7 @@
       buildVoiceSection();
       buildMascotSection();
       buildYoutubeSection();
+      buildSyncSection();
       _refreshRecoveryStatus();
       if (new URLSearchParams(window.location.search).get('action') === 'add') {
         setTimeout(() => showAddForm(), 100);
@@ -459,6 +468,101 @@
       localStorage.setItem('vb_mascot_plays', JSON.stringify(plays));
       if (window.mascot) window.mascot.play('welcome');
       if (prev) localStorage.setItem('vb_active_id', prev);
+    }
+
+    function buildSyncSection() {
+      const section = document.getElementById('syncSection');
+      const s = window.cloudSync ? window.cloudSync.status() : { email: null };
+      const lastPush = s.lastPush ? new Date(s.lastPush).toLocaleString() : 'never';
+      if (s.email && s.syncKey) {
+        section.innerHTML = `
+          <div class="card">
+            <div style="color:white;font-weight:800;margin-bottom:6px;">✓ Signed in</div>
+            <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:4px;">${s.email}</div>
+            <div style="color:rgba(255,255,255,0.5);font-size:12px;margin-bottom:12px;">Last upload: ${lastPush}</div>
+            <div class="row-between" style="gap:8px;">
+              <button class="btn btn-primary" style="flex:1;" onclick="syncPushBtn()">↑ Push to cloud</button>
+              <button class="btn btn-ghost" style="flex:1;" onclick="syncPullBtn()">↓ Pull from cloud</button>
+            </div>
+            <button class="btn btn-ghost" style="margin-top:8px;width:100%;font-size:13px;" onclick="syncSignout()">Sign out</button>
+            <div id="syncMsg" style="color:#a8e6cf;font-size:12px;margin-top:8px;min-height:14px;"></div>
+          </div>
+        `;
+      } else {
+        section.innerHTML = `
+          <div class="card">
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <button class="btn btn-primary" style="flex:1;" onclick="syncMode('signin')">Sign in</button>
+              <button class="btn btn-ghost" style="flex:1;" onclick="syncMode('signup')">Create account</button>
+            </div>
+            <div id="syncForm" style="display:none;">
+              <label style="display:block;margin-top:10px;">Email</label>
+              <input type="text" id="syncEmail" placeholder="parent@example.com" autocomplete="email">
+              <label style="display:block;margin-top:8px;">Password</label>
+              <input type="password" id="syncPassword" placeholder="8+ characters" autocomplete="current-password">
+              <button class="btn btn-primary" style="margin-top:10px;width:100%;" id="syncSubmit">Continue</button>
+              <div id="syncMsg" style="color:#FF6B6B;font-size:12px;margin-top:8px;min-height:14px;"></div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    let _syncMode = null;
+    function syncMode(mode) {
+      _syncMode = mode;
+      document.getElementById('syncForm').style.display = 'block';
+      document.getElementById('syncSubmit').textContent = mode === 'signup' ? 'Create account & sync' : 'Sign in';
+      document.getElementById('syncSubmit').onclick = syncSubmit;
+      document.getElementById('syncMsg').textContent = '';
+    }
+
+    async function syncSubmit() {
+      const email = document.getElementById('syncEmail').value.trim();
+      const password = document.getElementById('syncPassword').value;
+      const msg = document.getElementById('syncMsg');
+      msg.style.color = '#FF6B6B';
+      msg.textContent = 'Working…';
+      const fn = _syncMode === 'signup' ? window.cloudSync.signup : window.cloudSync.signin;
+      const r = await fn(email, password);
+      if (!r.ok) { msg.textContent = r.error || 'Failed'; return; }
+      if (_syncMode === 'signin' && r.lastSync) {
+        msg.style.color = '#a8e6cf';
+        msg.textContent = 'Signed in. Tap "Pull from cloud" to load profiles from another device.';
+      } else {
+        msg.style.color = '#a8e6cf';
+        msg.textContent = 'Signed in & current profiles uploaded.';
+      }
+      setTimeout(buildSyncSection, 1500);
+    }
+
+    async function syncPushBtn() {
+      const msg = document.getElementById('syncMsg');
+      msg.style.color = '#a8e6cf';
+      msg.textContent = 'Uploading…';
+      const r = await window.cloudSync.push();
+      msg.textContent = r.ok ? '✓ Pushed' : ('✗ ' + r.error);
+      if (r.ok) setTimeout(buildSyncSection, 1500);
+    }
+
+    async function syncPullBtn() {
+      if (!confirm('This will replace the profiles on THIS device with what is in the cloud. Continue?')) return;
+      const msg = document.getElementById('syncMsg');
+      msg.style.color = '#a8e6cf';
+      msg.textContent = 'Downloading…';
+      const r = await window.cloudSync.pull();
+      if (r.ok) {
+        msg.textContent = '✓ Pulled. Refreshing…';
+        setTimeout(() => location.reload(), 800);
+      } else {
+        msg.style.color = '#FF6B6B';
+        msg.textContent = '✗ ' + r.error;
+      }
+    }
+
+    async function syncSignout() {
+      await window.cloudSync.signout();
+      buildSyncSection();
     }
 
     function goFullscreen() {
