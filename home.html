@@ -36,7 +36,7 @@
         <div class="icon">🎨</div>
         <div class="label" style="color:#a86cdb;">ART</div>
       </div>
-      <div class="section-btn" id="watchTile" onclick="go('videos/index.html')" style="display:none;">
+      <div class="section-btn" id="watchTile" onclick="go('videos/index.html')">
         <div class="icon">📺</div>
         <div class="label" style="color:#FFD93D;">WATCH</div>
       </div>
@@ -63,10 +63,6 @@
                : `Hi ${profile.name}! 👋`;
       document.getElementById('screen').style.background =
         `linear-gradient(160deg, ${profile.color} 0%, ${profile.color}88 100%)`;
-      // Show WATCH tile only if this profile has at least one channel configured
-      if (Array.isArray(profile.youtube) && profile.youtube.length > 0) {
-        document.getElementById('watchTile').style.display = '';
-      }
       // Mascot welcomes the child (once per day per profile)
       if (window.mascot) setTimeout(() => mascot.play('welcome'), 600);
     } else {
