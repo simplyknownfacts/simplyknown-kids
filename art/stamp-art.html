@@ -89,7 +89,7 @@
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'stamp-art');
     renderBackBtn('index.html');
-    gameSettings.attach('stamp-art');
+    gameSettings.attach('stamp-art', { container: '#stampbar' });
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');

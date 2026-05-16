@@ -54,7 +54,7 @@
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'finger-paint');
     renderBackBtn('index.html');
-    gameSettings.attach('finger-paint');
+    gameSettings.attach('finger-paint', { container: '#toolbar' });
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');

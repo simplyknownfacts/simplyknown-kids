@@ -20,28 +20,51 @@
     return ACTIVITY_FEATURES.find(a => a.id === activityId);
   }
 
-  function attach(activityId) {
+  function attach(activityId, opts) {
     const activity = _findActivity(activityId);
     if (!activity || !activity.features || !activity.features.length) return;
+
+    // If a container is provided, drop the gear inside it as a relative-position
+    // child — pages with their own toolbar (finger-paint, stamp-art, color-splash)
+    // do this so the toolbar layout positions the gear automatically and there's
+    // no overlap with palette/Clear in either orientation.
+    const containerSel = opts && opts.container;
+    const container = containerSel
+      ? (typeof containerSel === 'string' ? document.querySelector(containerSel) : containerSel)
+      : null;
 
     const gear = document.createElement('button');
     gear.id = 'gameSettingsGear';
     gear.title = 'Game settings';
     gear.textContent = '⚙️';
-    gear.style.cssText = `
-      position: fixed;
-      bottom: calc(14px + env(safe-area-inset-bottom));
-      right: calc(14px + env(safe-area-inset-right));
-      width: 48px; height: 48px; border-radius: 50%;
-      background: rgba(0,0,0,0.5); color: white;
-      border: 2px solid rgba(255,255,255,0.4);
-      font-size: 22px; cursor: pointer; z-index: 9000;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      opacity: 0.7;
-    `;
-    gear.addEventListener('click', () => _openOverlay(activity));
-    document.body.appendChild(gear);
+    if (container) {
+      gear.style.cssText = `
+        width: 48px; height: 48px; border-radius: 50%;
+        background: rgba(0,0,0,0.5); color: white;
+        border: 2px solid rgba(255,255,255,0.4);
+        font-size: 22px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        opacity: 0.7;
+        order: 999;
+      `;
+      container.appendChild(gear);
+    } else {
+      gear.style.cssText = `
+        position: fixed;
+        bottom: calc(14px + env(safe-area-inset-bottom));
+        right: calc(14px + env(safe-area-inset-right));
+        width: 48px; height: 48px; border-radius: 50%;
+        background: rgba(0,0,0,0.5); color: white;
+        border: 2px solid rgba(255,255,255,0.4);
+        font-size: 22px; cursor: pointer; z-index: 9000;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        opacity: 0.7;
+      `;
+      document.body.appendChild(gear);
+    }
+    gear.addEventListener('pointerdown', () => _openOverlay(activity));
   }
 
   function _openOverlay(activity) {

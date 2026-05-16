@@ -136,27 +136,41 @@
       const minY = reserveTop + TARGET / 2;
       const maxY = vh - reserveBottom - TARGET / 2;
 
-      const placed = []; // {x, y} centers in px relative to targetsRow
-      function pickSpot() {
-        for (let attempt = 0; attempt < 60; attempt++) {
-          const x = minX + Math.random() * Math.max(0, maxX - minX);
-          const y = minY + Math.random() * Math.max(0, maxY - minY);
-          const tooClose = placed.some(p => Math.hypot(p.x - x, p.y - y) < TARGET + MARGIN);
-          if (!tooClose) { placed.push({ x, y }); return { x, y }; }
-        }
-        // Fallback: stack vertically in center
-        const x = (minX + maxX) / 2;
-        const y = minY + placed.length * (TARGET + MARGIN);
-        placed.push({ x, y });
+      // Deterministic grid placement: figure out how many columns fit, then
+      // spread targets evenly across rows. This prevents the overlap that
+      // happened on narrow phones where random scatter couldn't find clear
+      // spots. A small jitter on each cell keeps it from feeling robotic.
+      const safeW = Math.max(0, maxX - minX);
+      const safeH = Math.max(0, maxY - minY);
+      const cellSpan = TARGET + MARGIN;
+      const cols = Math.max(1, Math.min(shuffledTargets.length,
+                                        Math.floor((safeW + MARGIN) / cellSpan) || 1));
+      const rows = Math.ceil(shuffledTargets.length / cols);
+      // Available widths/heights split evenly across cells
+      const colStep = cols > 1 ? safeW / (cols - 1) : 0;
+      const rowStep = rows > 1 ? Math.min(safeH / (rows - 1), cellSpan + 20) : 0;
+      // Center the grid block vertically inside the safe area
+      const gridH = rowStep * (rows - 1);
+      const yOrigin = minY + (safeH - gridH) / 2;
+      const jitter = 8;
+      const positions = shuffledTargets.map((_, i) => {
+        const r = Math.floor(i / cols);
+        const c = i % cols;
+        // Last row may be partial — center its cells
+        const colsInRow = (r === rows - 1) ? (shuffledTargets.length - r * cols) : cols;
+        const rowColStep = colsInRow > 1 ? safeW / (colsInRow - 1) : 0;
+        const rowXOrigin = colsInRow > 1 ? minX : (minX + maxX) / 2;
+        const x = rowXOrigin + c * rowColStep + (Math.random() - 0.5) * jitter;
+        const y = yOrigin + r * rowStep + (Math.random() - 0.5) * jitter;
         return { x, y };
-      }
+      });
 
-      shuffledTargets.forEach(s => {
+      shuffledTargets.forEach((s, i) => {
         const div = document.createElement('div');
         div.className = 'target';
         div.dataset.shape = s.name;
-        const spot = pickSpot();
-        // pickSpot returns center coordinates; translate to top-left for position:fixed
+        const spot = positions[i];
+        // center coordinates; translate to top-left for position:fixed
         div.style.left = (spot.x - TARGET / 2) + 'px';
         div.style.top  = (spot.y - TARGET / 2) + 'px';
         div.style.color = s.color;
