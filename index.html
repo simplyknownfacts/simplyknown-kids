@@ -115,9 +115,11 @@
       renderProfiles();
     }
 
-    // Default YouTube channels — applied ONCE per profile.
-    // youtubeInitialized=true is set after first apply, so parent deletions stick.
-    (function _seedYoutubeOnce() {
+    // YouTube channel seed — self-healing.
+    // - First time: applies name-based defaults.
+    // - Subsequent loads: merges in any canonical defaults that are missing AND not in
+    //   p.youtubeRemoved (parent explicitly deleted = stays gone).
+    (function _seedYoutube() {
       const list = getProfiles();
       let changed = false;
       const defaultsByName = {
@@ -131,15 +133,27 @@
           { emoji:'🎵',  label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
         ],
       };
-      // Any other name: give Super Simple Songs as a safe default
       const FALLBACK_DEFAULT = [
         { emoji:'🎵', label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
       ];
       for (const p of list) {
-        if (p.youtubeInitialized) continue; // parent has touched the list, leave alone
-        p.youtube = defaultsByName[p.name] || FALLBACK_DEFAULT;
-        p.youtubeInitialized = true;
-        changed = true;
+        const namedDefaults = defaultsByName[p.name];
+        if (!p.youtubeInitialized) {
+          p.youtube = namedDefaults || FALLBACK_DEFAULT;
+          p.youtubeInitialized = true;
+          changed = true;
+          continue;
+        }
+        // Already initialized — heal missing canonical defaults that weren't explicitly removed.
+        if (namedDefaults) {
+          const removed = new Set(p.youtubeRemoved || []);
+          const existing = new Set((p.youtube || []).map(c => c.channelId));
+          const missing = namedDefaults.filter(d => !existing.has(d.channelId) && !removed.has(d.channelId));
+          if (missing.length) {
+            p.youtube = [...(p.youtube || []), ...missing];
+            changed = true;
+          }
+        }
       }
       if (changed) saveProfiles(list);
     })();

@@ -118,15 +118,27 @@
         grid.appendChild(tile);
       });
 
-      function openChannel(ch) {
+      const FEED_WORKER = 'https://simplyknown-kids-sync.simplyknownfacts.workers.dev/yt-feed';
+
+      async function openChannel(ch) {
         const frame = document.getElementById('playerFrame');
         const wrap = document.getElementById('playerWrap');
-        // Embed the channel's uploads playlist (channel IDs starting with UC → playlist UU + rest).
-        // Plays through videos in order. rel=0 limits cross-channel recommendations.
-        const uploadsId = 'UU' + ch.channelId.slice(2);
-        const src = `https://www.youtube-nocookie.com/embed/videoseries?list=${uploadsId}&autoplay=1&modestbranding=1&rel=0&playsinline=1`;
-        frame.src = src;
+        frame.src = 'about:blank';
         wrap.classList.add('active');
+        try {
+          const res = await fetch(`${FEED_WORKER}?channel=${ch.channelId}`);
+          const data = await res.json();
+          if (data && data.videos && data.videos.length) {
+            const ids = data.videos.map(v => v.id);
+            const first = ids[0];
+            const rest = ids.slice(1, 25).join(','); // queue up to 24 more
+            frame.src = `https://www.youtube-nocookie.com/embed/${first}?autoplay=1&modestbranding=1&rel=0&playsinline=1&playlist=${rest}`;
+            return;
+          }
+        } catch (e) {}
+        // Fallback to old uploads-playlist embed if the feed is unavailable
+        const uploadsId = 'UU' + ch.channelId.slice(2);
+        frame.src = `https://www.youtube-nocookie.com/embed/videoseries?list=${uploadsId}&autoplay=1&modestbranding=1&rel=0&playsinline=1`;
       }
 
       document.getElementById('playerBack').addEventListener('click', () => {

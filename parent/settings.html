@@ -409,16 +409,28 @@
       const profile = getProfiles().find(p => p.id === profileId);
       profile.youtube = profile.youtube || [];
       profile.youtube.push({ emoji, label, channelId });
-      updateProfile(profileId, { youtube: profile.youtube, youtubeInitialized: true });
+      // If this channel was previously removed, take it off the removed list so it doesn't fight the seed.
+      const removedList = (profile.youtubeRemoved || []).filter(id => id !== channelId);
+      updateProfile(profileId, {
+        youtube: profile.youtube,
+        youtubeInitialized: true,
+        youtubeRemoved: removedList,
+      });
       buildYoutubeSection();
     }
 
     function removeYoutubeChannel(profileId, index) {
       const profile = getProfiles().find(p => p.id === profileId);
       if (!profile || !profile.youtube) return;
+      const removedChannel = profile.youtube[index];
       profile.youtube.splice(index, 1);
-      // Mark initialized so deletions stick (won't be re-seeded on next page load)
-      updateProfile(profileId, { youtube: profile.youtube, youtubeInitialized: true });
+      // Track removed channel so the self-healing seed won't re-add it.
+      const removedList = Array.from(new Set([...(profile.youtubeRemoved || []), removedChannel && removedChannel.channelId].filter(Boolean)));
+      updateProfile(profileId, {
+        youtube: profile.youtube,
+        youtubeInitialized: true,
+        youtubeRemoved: removedList,
+      });
       buildYoutubeSection();
     }
 

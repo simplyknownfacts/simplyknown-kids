@@ -150,6 +150,44 @@ async function handleReset() {
   return jsonResp({ message: 'Email-based password reset is not yet enabled. Contact the app owner for help.' }, 202);
 }
 
+// YouTube RSS feed proxy — fetches a channel's videos.xml (no API key needed) and returns video IDs.
+// Result is cached for 10 minutes via Cache API so we don't hammer YouTube.
+async function handleYTFeed(req) {
+  const url = new URL(req.url);
+  const channelId = url.searchParams.get('channel');
+  if (!channelId || !/^UC[A-Za-z0-9_-]+$/.test(channelId)) {
+    return jsonResp({ error: 'bad channel id' }, 400);
+  }
+  const cache = caches.default;
+  const cacheKey = new Request('https://yt-feed-cache.invalid/' + channelId);
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+
+  const ytUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+  const ytRes = await fetch(ytUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/atom+xml, application/xml, text/xml, */*',
+    },
+  });
+  if (!ytRes.ok) return jsonResp({ error: 'feed fetch failed: ' + ytRes.status }, 502);
+  const xml = await ytRes.text();
+  const ids = [...xml.matchAll(/<yt:videoId>([^<]+)<\/yt:videoId>/g)].map(m => m[1]);
+  const titles = [...xml.matchAll(/<entry>[\s\S]*?<title>([^<]+)<\/title>/g)].map(m => m[1]);
+  const videos = ids.slice(0, 25).map((id, i) => ({ id, title: titles[i] || '' }));
+  const debug = url.searchParams.get('debug');
+  const body = JSON.stringify(debug ? { videos, sample: xml.slice(0, 400), len: xml.length } : { videos });
+  const resp = new Response(body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=600',
+    },
+  });
+  await cache.put(cacheKey, resp.clone());
+  return resp;
+}
+
 export default {
   async fetch(req, env) {
     const origin = env.ALLOWED_ORIGIN || '*';
@@ -166,6 +204,7 @@ export default {
         case '/pull':    response = await handlePull(req, env); break;
         case '/signout': response = await handleSignout(req, env); break;
         case '/reset':   response = await handleReset(); break;
+        case '/yt-feed': response = await handleYTFeed(req); break;
         case '/health':  response = jsonResp({ ok: true }); break;
         default:         response = err('not found', 404);
       }
