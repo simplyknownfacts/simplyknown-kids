@@ -211,4 +211,17 @@ function hide() {
   _state = 'hidden';
 }
 
+// Respect global idle/active events from app.js — stop scheduling actions when idle,
+// resume base loop when the user comes back.
+document.addEventListener('vb:idle', () => {
+  clearTimeout(_actionTimer);
+  _videos().forEach(v => { try { v.pause(); } catch {} });
+});
+document.addEventListener('vb:active', () => {
+  if (_state === 'base' || _state === 'action') {
+    _videos().forEach(v => { try { v.play().catch(() => {}); } catch {} });
+    if (_state === 'base') _scheduleNextAction();
+  }
+});
+
 window.mascot = { play, show, hide, available: MASCOT_AVAILABLE, labels: MASCOT_LABELS };

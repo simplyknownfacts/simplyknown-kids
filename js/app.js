@@ -1,3 +1,35 @@
+// Idle detection — pauses all <video> elements after 3 min of no input, so the
+// device's screen-off timer can kick in. On Android, an actively-playing video
+// keeps the screen awake; pausing releases that lock.
+(function _idleSleep() {
+  const IDLE_MS = 3 * 60 * 1000;
+  let timer = null;
+  let asleep = false;
+  function wake() {
+    if (asleep) {
+      asleep = false;
+      document.dispatchEvent(new CustomEvent('vb:active'));
+    }
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      asleep = true;
+      document.querySelectorAll('video').forEach(v => { try { v.pause(); } catch {} });
+      document.dispatchEvent(new CustomEvent('vb:idle'));
+    }, IDLE_MS);
+  }
+  ['pointerdown', 'touchstart', 'keydown', 'mousemove'].forEach(ev =>
+    document.addEventListener(ev, wake, { passive: true, capture: true }));
+  // Pause immediately when the tab is hidden (saves battery if app is backgrounded)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      document.querySelectorAll('video').forEach(v => { try { v.pause(); } catch {} });
+    } else {
+      wake();
+    }
+  });
+  wake();
+})();
+
 // Block pinch-zoom and double-tap-zoom (iOS Safari ignores meta viewport user-scalable=no).
 // Parent settings opts out by setting body.dataset.allowZoom = '1'.
 (function _lockGestures() {
