@@ -95,21 +95,11 @@
     <div class="pin-pad" id="pinPad"></div>
     <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px;align-items:center;">
       <button class="btn btn-ghost" onclick="setupMode()">Set up new PIN</button>
-      <button class="btn btn-ghost" id="forgotPinBtn" onclick="forgotPinFlow()" style="display:none;">Forgot PIN? Use recovery phrase</button>
-    </div>
-  </div>
-
-  <!-- Recovery prompt overlay -->
-  <div id="recoveryOverlay" class="settings-screen" style="display:none;text-align:center;">
-    <div class="title" style="margin-bottom:8px;">🔑 Recovery phrase</div>
-    <div class="subtitle" id="recoveryPrompt" style="margin-bottom:12px;"></div>
-    <div class="card" style="max-width:420px;margin:0 auto;">
-      <input type="password" id="recoveryInput" placeholder="Enter recovery phrase" autocomplete="off">
-      <div class="row-between" style="margin-top:14px;">
-        <button class="btn btn-primary" onclick="submitRecovery()">Continue</button>
-        <button class="btn btn-ghost" onclick="cancelRecovery()">Cancel</button>
+      <div style="color:rgba(255,255,255,0.55);font-size:12px;text-align:center;max-width:280px;line-height:1.5;margin-top:6px;">
+        Forgot your PIN? Email
+        <a href="mailto:simplyknownfacts@gmail.com" style="color:#4ECDC4;font-weight:700;">simplyknownfacts@gmail.com</a>
+        for help resetting.
       </div>
-      <div id="recoveryMsg" style="color:#FF6B6B;font-size:13px;font-weight:700;margin-top:10px;min-height:18px;"></div>
     </div>
   </div>
 
@@ -191,12 +181,11 @@
     <h2>🔐 Change PIN</h2>
     <div class="card">
       <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
-    </div>
-
-    <h2>🔑 Recovery phrase</h2>
-    <div class="card">
-      <div id="recoveryStatus" style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:10px;"></div>
-      <button class="btn btn-ghost" style="width:100%;" onclick="promptSetRecovery()">Set / change recovery phrase</button>
+      <div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:10px;line-height:1.5;">
+        Forgot your PIN? Email
+        <a href="mailto:simplyknownfacts@gmail.com" style="color:#4ECDC4;font-weight:700;">simplyknownfacts@gmail.com</a>
+        for help resetting.
+      </div>
     </div>
   </div>
 
@@ -210,8 +199,9 @@
   <script src="../js/yoto.js"></script>
   <script>
     const PIN_KEY = 'vb_pin';            // stores JSON {hash,salt} now; legacy = raw 4 digits
-    const RECOVERY_KEY = 'vb_recovery';   // stores JSON {hash,salt} for recovery phrase
     const LOCKOUT_KEY = 'vb_pin_lockout'; // stores JSON {attempts,lockedUntil}
+    // Recovery phrase was removed — drop any stale hash so it doesn't sit in storage
+    localStorage.removeItem('vb_recovery');
     const AVATARS = ['🐻','🐸','🐱','🐶','🐼','🦊','🐰','🐯','🐧','🦋','🌸','⭐'];
     const COLORS  = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#a8e6cf'];
 
@@ -219,7 +209,6 @@
     let selectedColor  = COLORS[0];
     let pinEntry = '';
     let pinSetupStep = 0, pinFirst = '';
-    let recoveryMode = null; // null | 'unlock' | 'set'
     let lockoutTimer = null;
 
     // ── Hashing (Web Crypto SHA-256 with per-PIN salt) ────────────────────────
@@ -284,10 +273,6 @@
     function showPinGate() {
       document.getElementById('pinGate').style.display = 'block';
       document.getElementById('mainSettings').style.display = 'none';
-      document.getElementById('recoveryOverlay').style.display = 'none';
-      // Show "Forgot PIN?" only if a recovery phrase is set
-      const forgotBtn = document.getElementById('forgotPinBtn');
-      if (forgotBtn) forgotBtn.style.display = localStorage.getItem(RECOVERY_KEY) ? '' : 'none';
       buildPinPad();
       updateDots();
       _refreshLockoutUI();
@@ -326,7 +311,6 @@
     function showMain() {
       document.getElementById('pinGate').style.display = 'none';
       document.getElementById('mainSettings').style.display = 'block';
-      document.getElementById('recoveryOverlay').style.display = 'none';
       renderProfiles();
       buildAddForm();
       buildFeaturesTable();
@@ -337,18 +321,9 @@
       buildColoringSection();
       buildYotoSection();
       buildSyncSection();
-      _refreshRecoveryStatus();
       if (new URLSearchParams(window.location.search).get('action') === 'add') {
         setTimeout(() => showAddForm(), 100);
       }
-    }
-
-    function _refreshRecoveryStatus() {
-      const el = document.getElementById('recoveryStatus');
-      if (!el) return;
-      el.textContent = localStorage.getItem(RECOVERY_KEY)
-        ? '✓ A recovery phrase is set. Use it from the PIN gate if you forget the PIN.'
-        : '⚠ No recovery phrase set. Without one, a forgotten PIN can only be cleared by wiping browser storage.';
     }
 
     function _parseChannelId(input) {
@@ -622,64 +597,66 @@
         img.src = url;
       });
     }
-    // Canvas-based edge detection. Result: a high-contrast line drawing on
-    // white. Runs entirely client-side, ~100ms per photo.
+    // Color-dodge pencil-sketch technique. Way cleaner than raw Sobel:
+    //   1) grayscale the photo
+    //   2) grayscale + invert + heavy blur a second copy
+    //   3) blend (1) with (2) using globalCompositeOperation 'color-dodge'
+    //      — flat regions go pure white; edges stay dark
+    //   4) hard threshold → bold black-on-white lines (no noise)
+    // CSS filters give us GPU-accelerated grayscale/invert/blur, so this
+    // runs in roughly the same time as the old version.
     function _photoToLineArt(img) {
-      // Resize so the long side is COLORING_MAX_DIM
       const ratio = Math.min(COLORING_MAX_DIM / img.width, COLORING_MAX_DIM / img.height, 1);
       const w = Math.round(img.width * ratio);
       const h = Math.round(img.height * ratio);
+
+      // Canvas A: grayscale photo
+      const a = document.createElement('canvas');
+      a.width = w; a.height = h;
+      const actx = a.getContext('2d');
+      actx.filter = 'grayscale(1) contrast(1.1)';
+      actx.drawImage(img, 0, 0, w, h);
+
+      // Canvas B: grayscale + invert + heavy blur of the same photo
+      const b = document.createElement('canvas');
+      b.width = w; b.height = h;
+      const bctx = b.getContext('2d');
+      // blur radius scales with image size — bigger image = stronger blur
+      const blurRadius = Math.max(8, Math.round(Math.min(w, h) / 30));
+      bctx.filter = `grayscale(1) invert(1) blur(${blurRadius}px)`;
+      bctx.drawImage(img, 0, 0, w, h);
+
+      // Output: dodge-blend A with B → pencil sketch
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
       const ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      const src = ctx.getImageData(0, 0, w, h);
-      const gray = new Uint8ClampedArray(w * h);
-      for (let i = 0, j = 0; i < src.data.length; i += 4, j++) {
-        // luminance
-        gray[j] = (src.data[i] * 0.299 + src.data[i+1] * 0.587 + src.data[i+2] * 0.114) | 0;
+      ctx.drawImage(a, 0, 0);
+      ctx.globalCompositeOperation = 'color-dodge';
+      ctx.drawImage(b, 0, 0);
+      ctx.globalCompositeOperation = 'source-over';
+
+      // Threshold to bold black/white only — kills greys that look "blurry"
+      const data = ctx.getImageData(0, 0, w, h);
+      const d = data.data;
+      const THRESHOLD = 215;
+      for (let i = 0; i < d.length; i += 4) {
+        const v = d[i] < THRESHOLD ? 0 : 255;
+        d[i] = d[i+1] = d[i+2] = v;
+        d[i+3] = 255;
       }
-      // Sobel edge magnitude
-      const out = new Uint8ClampedArray(w * h);
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          const i = y * w + x;
-          const gx =
-            -gray[i - w - 1] -2*gray[i - 1] -gray[i + w - 1]
-            + gray[i - w + 1] +2*gray[i + 1] +gray[i + w + 1];
-          const gy =
-            -gray[i - w - 1] -2*gray[i - w] -gray[i - w + 1]
-            + gray[i + w - 1] +2*gray[i + w] +gray[i + w + 1];
-          out[i] = Math.min(255, Math.hypot(gx, gy));
-        }
-      }
-      // Threshold → bold black lines on white, with a small dilation pass so
-      // thin edges become readable line strokes.
-      const THRESHOLD = 60;
-      const dst = ctx.createImageData(w, h);
-      for (let i = 0; i < out.length; i++) {
-        const on = out[i] > THRESHOLD;
-        const v = on ? 0 : 255;
-        const j = i * 4;
-        dst.data[j] = dst.data[j+1] = dst.data[j+2] = v;
-        dst.data[j+3] = 255;
-      }
-      // Dilate: any white pixel adjacent to a black pixel becomes gray (so lines
-      // feel hand-drawn rather than pixelated).
-      const dilated = new Uint8ClampedArray(dst.data);
+      // Single dilation pass so thin lines become legible 2-px strokes
+      const orig = new Uint8ClampedArray(d);
       for (let y = 1; y < h - 1; y++) {
         for (let x = 1; x < w - 1; x++) {
           const j = (y * w + x) * 4;
-          if (dst.data[j] === 0) continue;
-          const neighbors = [j - 4, j + 4, j - w*4, j + w*4];
-          if (neighbors.some(n => dst.data[n] === 0)) {
-            dilated[j] = dilated[j+1] = dilated[j+2] = 30;
+          if (orig[j] === 0) continue;
+          if (orig[j - 4] === 0 || orig[j + 4] === 0 ||
+              orig[j - w*4] === 0 || orig[j + w*4] === 0) {
+            d[j] = d[j+1] = d[j+2] = 0;
           }
         }
       }
-      dst.data.set(dilated);
-      ctx.putImageData(dst, 0, 0);
-      // Return as a PNG data URL we can save in localStorage.
+      ctx.putImageData(data, 0, 0);
       return c.toDataURL('image/png');
     }
 
@@ -906,13 +883,7 @@
           await _storeHashed(pinEntry, PIN_KEY);
         }
         _clearLockout();
-        // Prompt to set recovery phrase if missing
-        if (!localStorage.getItem(RECOVERY_KEY)) {
-          showMain();
-          setTimeout(promptSetRecovery, 250);
-        } else {
-          showMain();
-        }
+        showMain();
       } else {
         const l = _recordFailedAttempt();
         pinEntry = ''; updateDots();
@@ -945,12 +916,7 @@
             await _storeHashed(pinEntry, PIN_KEY);
             _clearLockout();
             window.checkPin = origCheck;
-            if (!localStorage.getItem(RECOVERY_KEY)) {
-              showMain();
-              setTimeout(promptSetRecovery, 250);
-            } else {
-              showMain();
-            }
+            showMain();
           } else {
             document.getElementById('pinPrompt').textContent = "Didn't match — start over";
             pinEntry = ''; pinSetupStep = 1; pinFirst = '';
@@ -958,58 +924,6 @@
           }
         }
       };
-    }
-
-    // ── Recovery phrase ───────────────────────────────────────────────────────
-    function _showRecoveryOverlay(promptText) {
-      document.getElementById('pinGate').style.display = 'none';
-      document.getElementById('mainSettings').style.display = 'none';
-      document.getElementById('recoveryOverlay').style.display = 'block';
-      document.getElementById('recoveryPrompt').textContent = promptText;
-      document.getElementById('recoveryInput').value = '';
-      document.getElementById('recoveryMsg').textContent = '';
-      setTimeout(() => document.getElementById('recoveryInput').focus(), 50);
-    }
-    function forgotPinFlow() {
-      if (!localStorage.getItem(RECOVERY_KEY)) {
-        document.getElementById('pinPrompt').textContent = 'No recovery phrase set';
-        return;
-      }
-      recoveryMode = 'unlock';
-      _showRecoveryOverlay('Enter your recovery phrase to reset the PIN and lockout.');
-    }
-    function promptSetRecovery() {
-      recoveryMode = 'set';
-      _showRecoveryOverlay('Set a recovery phrase (12+ chars). Save it in a password manager — it is the only way to reset the PIN without clearing browser storage.');
-    }
-    async function submitRecovery() {
-      const val = document.getElementById('recoveryInput').value;
-      const msg = document.getElementById('recoveryMsg');
-      if (recoveryMode === 'set') {
-        if (!val || val.length < 12) {
-          msg.textContent = 'Recovery phrase must be at least 12 characters.';
-          return;
-        }
-        await _storeHashed(val, RECOVERY_KEY);
-        recoveryMode = null;
-        showMain();
-      } else if (recoveryMode === 'unlock') {
-        const ok = await _matchesStored(val, RECOVERY_KEY);
-        if (!ok) { msg.textContent = 'Incorrect recovery phrase.'; return; }
-        // Clear PIN + lockout, drop user into setupMode to choose a fresh PIN
-        localStorage.removeItem(PIN_KEY);
-        _clearLockout();
-        recoveryMode = null;
-        setupMode();
-      }
-    }
-    function cancelRecovery() {
-      recoveryMode = null;
-      if (localStorage.getItem(PIN_KEY)) {
-        showPinGate();
-      } else {
-        showMain();
-      }
     }
 
     // ── Profile Management ────────────────────────────────────────────────────
