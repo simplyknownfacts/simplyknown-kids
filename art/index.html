@@ -26,23 +26,10 @@
 <body>
   <div class="screen">
     <div class="title">🎨 Art</div>
-    <div class="cards-row">
-      <div class="activity-card" onclick="go('color-splash.html')">
-        <div class="icon">💥</div>
-        <div class="label">Color Splash</div>
-      </div>
-      <div class="activity-card" onclick="go('finger-paint.html')">
-        <div class="icon">🖌️</div>
-        <div class="label">Finger Paint</div>
-      </div>
-      <div class="activity-card" onclick="go('stamp-art.html')">
-        <div class="icon">⭐</div>
-        <div class="label">Stamp Art</div>
-      </div>
-      <div class="activity-card" onclick="go('color-in.html')">
-        <div class="icon">🖍️</div>
-        <div class="label">Color In</div>
-      </div>
+    <div class="cards-row" id="cardsRow"></div>
+    <div id="emptyMsg" style="display:none;color:rgba(255,255,255,0.75);font-size:15px;text-align:center;padding:24px;">
+      No art activities are turned on for this child yet.<br>
+      A grown-up can enable them in ⚙️ Parent Settings → Activities.
     </div>
   </div>
   <script src="../js/tiers.js"></script>
@@ -54,7 +41,24 @@
   <script>
     function go(page) { playChime(); goTo(page); }
     renderBackBtn('../home.html');
-    if (!getActiveProfile()) goProfiles();
+    const profile = getActiveProfile();
+    if (!profile) goProfiles();
+    const row = document.getElementById('cardsRow');
+    const visible = ACTIVITY_FEATURES
+      .filter(a => a.section === 'art')
+      .filter(a => isActivityVisible(profile, a.id));
+    if (!visible.length) {
+      row.style.display = 'none';
+      document.getElementById('emptyMsg').style.display = 'block';
+    } else {
+      visible.forEach(a => {
+        const card = document.createElement('div');
+        card.className = 'activity-card';
+        card.onclick = () => go(a.file);
+        card.innerHTML = `<div class="icon">${a.icon}</div><div class="label">${a.name}</div>`;
+        row.appendChild(card);
+      });
+    }
     if (window.mascot) setTimeout(() => mascot.play('art_intro'), 400);
   </script>
 </body>

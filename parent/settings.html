@@ -139,6 +139,12 @@
       </div>
     </div>
 
+    <h2>🎯 Activities Available</h2>
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+      Pick which games show up on each child's home. Defaults follow each kid's age — younger kids only see age-appropriate games. Override anything here.
+    </div>
+    <div id="activitiesSection"></div>
+
     <h2>🎮 Activity Features</h2>
     <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
       Check to unlock features for each child regardless of age tier.
@@ -326,6 +332,7 @@
       buildFeaturesTable();
       buildVoiceSection();
       buildMascotSection();
+      buildActivitiesSection();
       buildYoutubeSection();
       buildColoringSection();
       buildYotoSection();
@@ -483,6 +490,58 @@
       localStorage.setItem('vb_mascot_plays', JSON.stringify(plays));
       if (window.mascot) window.mascot.play('welcome');
       if (prev) localStorage.setItem('vb_active_id', prev);
+    }
+
+    // ─── Per-activity visibility (one row per game × per child) ─────────────
+    function buildActivitiesSection() {
+      const section = document.getElementById('activitiesSection');
+      const profiles = getProfiles();
+      if (!profiles.length) {
+        section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
+        return;
+      }
+      const sections = [
+        { id:'games', name:'🎮 Games' },
+        { id:'learn', name:'📚 Learn' },
+        { id:'art',   name:'🎨 Art' },
+      ];
+      let html = '<div class="card" style="overflow-x:auto;">';
+      sections.forEach(sec => {
+        const acts = ACTIVITY_FEATURES.filter(a => a.section === sec.id);
+        if (!acts.length) return;
+        html += `<h3 style="margin:0 0 8px;color:rgba(255,255,255,0.8);font-size:15px;">${sec.name}</h3>`;
+        html += `<table style="width:100%;border-collapse:collapse;margin-bottom:18px;">
+          <thead><tr>
+            <th style="text-align:left;padding:6px 8px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;">Activity</th>
+            <th style="text-align:left;padding:6px 8px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;">Age</th>
+            ${profiles.map(p => `<th style="text-align:center;padding:6px 8px;color:rgba(255,255,255,0.9);font-size:13px;font-weight:800;">${p.avatar || ''} ${p.name}</th>`).join('')}
+          </tr></thead><tbody>`;
+        acts.forEach(a => {
+          const ageChip = typeof tierAgeRange === 'function'
+            ? `<span style="display:inline-block;font-size:11px;font-weight:700;background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);padding:1px 8px;border-radius:999px;">${tierAgeRange(a.minTier)}+</span>`
+            : '';
+          html += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:8px;color:white;font-weight:700;font-size:14px;">${a.icon} ${a.name}</td>
+            <td style="padding:8px;">${ageChip}</td>
+            ${profiles.map(p => {
+              const checked = isActivityVisible(p, a.id);
+              return `<td style="padding:8px;text-align:center;">
+                <input type="checkbox" class="act-vis" data-pid="${p.id}" data-aid="${a.id}"
+                       ${checked ? 'checked' : ''}
+                       style="width:22px;height:22px;accent-color:#4ECDC4;cursor:pointer;">
+              </td>`;
+            }).join('')}
+          </tr>`;
+        });
+        html += '</tbody></table>';
+      });
+      html += '</div>';
+      section.innerHTML = html;
+      section.querySelectorAll('.act-vis').forEach(cb => {
+        cb.addEventListener('change', () => {
+          setActivityVisible(cb.dataset.pid, cb.dataset.aid, cb.checked);
+        });
+      });
     }
 
     // ─── Coloring Pages (upload photos → line-art) ──────────────────────────

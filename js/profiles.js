@@ -1,59 +1,65 @@
 const _PROFILES_KEY = 'vb_profiles';
 const _ACTIVE_KEY   = 'vb_active_id';
 
-// minTier maps to the tier where this feature is age-appropriate. Used to
-// render "Recommended: <age range>+" hints in Parent Settings. Tier numbers
-// match TIERS in js/tiers.js (1=0-12mo Sensory, ..., 8=7+ yr Grade 2+).
+// minTier on each entry = the tier where this is age-appropriate. Used to:
+//   - render "<age range>+" chips next to feature toggles in settings
+//   - decide if a whole activity shows on a kid's home by default
+//     (parent can still toggle it on/off)
+// Activity-level `section` is the home category: 'games' | 'learn' | 'art'.
+// `minTier` at the activity level = the kid's tier needed for this game to
+// appear by default. Parent can override per-child in Parent Settings.
 const ACTIVITY_FEATURES = [
-  { id:'stamp-art',     name:'Stamp Art',     features:[
-    { key:'stampPalette',  label:'Stamp picker',                            minTier:2 },
-    { key:'themeSwitcher', label:'Theme switcher (farm/ocean/space)',       minTier:4 },
-  ]},
-  { id:'finger-paint',  name:'Finger Paint',  features:[
-    { key:'colorPalette',  label:'Color palette',                           minTier:2 },
-    { key:'eraser',        label:'Eraser tool',                             minTier:4 },
-  ]},
-  { id:'color-splash',  name:'Color Splash',  features:[
-    { key:'colorPicker',   label:'Color picker',                            minTier:2 },
-    { key:'clearButton',   label:'Clear button',                            minTier:3 },
-  ]},
-  { id:'tap-pop',       name:'Tap & Pop',     features:[
+  { id:'tap-pop',       name:'Tap & Pop',        icon:'🫧', file:'tap-pop.html',     section:'games', minTier:1, features:[
     { key:'scoreCounter',  label:'Score counter',                           minTier:4 },
     { key:'floatMode',     label:'Floating bubbles (race mode)',            minTier:3 },
   ]},
-  { id:'shape-match',   name:'Shape Match',   features:[
+  { id:'shape-match',   name:'Shape Match',      icon:'🔷', file:'shape-match.html', section:'games', minTier:2, features:[
     { key:'dragMode',      label:'Drag-to-match mode',                      minTier:2 },
   ]},
-  { id:'hello-colors',  name:'Hello Colors',  features:[
+
+  { id:'hello-colors',  name:'Hello Colors',     icon:'🌈', file:'hello-colors.html',  section:'learn', minTier:1, features:[
     { key:'colorQuiz',     label:'Color quiz mode',                         minTier:4 },
   ]},
-  { id:'animal-sounds', name:'Animal Sounds', features:[
+  { id:'animal-sounds', name:'Animal Sounds',    icon:'🐘', file:'animal-sounds.html', section:'learn', minTier:1, features:[
     { key:'quizMode',      label:'Sound quiz mode',                         minTier:4 },
   ]},
-  { id:'count-along',   name:'Count Along',   features:[
+  { id:'count-along',   name:'Count Along',      icon:'🔢', file:'count-along.html',   section:'learn', minTier:2, features:[
     { key:'quizMode',      label:'How-many quiz mode',                      minTier:4 },
   ]},
-  { id:'abcs',          name:'ABCs',          features:[
+  { id:'abcs',          name:'ABCs',             icon:'🔤', file:'abcs.html',          section:'learn', minTier:2, features:[
     { key:'wordHints',     label:'Show "A is for Apple" word hints',        minTier:3 },
     { key:'spellMode',     label:'Spell short words',                       minTier:6 },
   ]},
-  { id:'days',          name:'Days of the Week', features:[
+  { id:'days',          name:'Days',             icon:'📅', file:'days.html',          section:'learn', minTier:3, features:[
     { key:'quizMode',      label:'Quiz mode (what comes after Monday?)',    minTier:5 },
   ]},
-  { id:'math',          name:'Math Mountain', features:[
+  { id:'math',          name:'Math Mountain',    icon:'➕', file:'math.html',          section:'learn', minTier:4, features:[
     { key:'subtract',      label:'Include subtraction',                     minTier:5 },
     { key:'multiply',      label:'Include multiplication',                  minTier:8 },
   ]},
-  { id:'spelling',      name:'Spelling Bee',  features:[
+  { id:'spelling',      name:'Spelling Bee',     icon:'🐝', file:'spelling.html',      section:'learn', minTier:4, features:[
     { key:'spellMode',     label:'Spell from letter bank',                  minTier:6 },
   ]},
-  { id:'money',         name:'Money Matters', features:[
+  { id:'money',         name:'Money',            icon:'💰', file:'money.html',         section:'learn', minTier:4, features:[
     { key:'countMode',     label:'Count coin + bill totals',                minTier:6 },
   ]},
-  { id:'body-parts',    name:'Body Parts',    features:[
+  { id:'body-parts',    name:'Body Parts',       icon:'👤', file:'body-parts.html',    section:'learn', minTier:2, features:[
     { key:'allParts',      label:'Include extra parts (hair, belly, etc.)', minTier:4 },
   ]},
-  { id:'color-in',      name:'Color In',      features:[
+
+  { id:'stamp-art',     name:'Stamp Art',     icon:'⭐',  file:'stamp-art.html',    section:'art', minTier:1, features:[
+    { key:'stampPalette',  label:'Stamp picker',                            minTier:2 },
+    { key:'themeSwitcher', label:'Theme switcher (farm/ocean/space)',       minTier:4 },
+  ]},
+  { id:'finger-paint',  name:'Finger Paint',  icon:'🖌️', file:'finger-paint.html', section:'art', minTier:1, features:[
+    { key:'colorPalette',  label:'Color palette',                           minTier:2 },
+    { key:'eraser',        label:'Eraser tool',                             minTier:4 },
+  ]},
+  { id:'color-splash',  name:'Color Splash',  icon:'💥',  file:'color-splash.html', section:'art', minTier:1, features:[
+    { key:'colorPicker',   label:'Color picker',                            minTier:2 },
+    { key:'clearButton',   label:'Clear button',                            minTier:3 },
+  ]},
+  { id:'color-in',      name:'Color In',      icon:'🖍️', file:'color-in.html',     section:'art', minTier:2, features:[
     { key:'extraPics',     label:'Show more coloring pages',                minTier:2 },
   ]},
 ];
@@ -146,4 +152,27 @@ function setProfileFeature(profileId, activityId, featureKey, enabled) {
   profile.features[activityId] = profile.features[activityId] || {};
   profile.features[activityId][featureKey] = enabled;
   updateProfile(profileId, { features: profile.features });
+}
+
+// Activity visibility — should this game show on the kid's home?
+// Decision order:
+//   1) explicit per-profile override in profile.activitiesVisible[activityId]
+//   2) default: kid's tier >= activity.minTier
+function isActivityVisible(profile, activityId) {
+  const override = profile.activitiesVisible && profile.activitiesVisible[activityId];
+  if (override === true || override === false) return override;
+  const activity = (typeof ACTIVITY_FEATURES !== 'undefined')
+    ? ACTIVITY_FEATURES.find(a => a.id === activityId) : null;
+  const minTier = (activity && activity.minTier) || 1;
+  const kidTier = tierForAge(getAgeMonths(profile.birthday));
+  return kidTier >= minTier;
+}
+
+function setActivityVisible(profileId, activityId, visible) {
+  const profile = getProfiles().find(p => p.id === profileId);
+  if (!profile) return;
+  profile.activitiesVisible = profile.activitiesVisible || {};
+  if (visible === null) delete profile.activitiesVisible[activityId];
+  else profile.activitiesVisible[activityId] = visible;
+  updateProfile(profileId, { activitiesVisible: profile.activitiesVisible });
 }
