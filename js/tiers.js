@@ -1,12 +1,15 @@
+// 8 developmental tiers, age-keyed in months. Labels match Scott's reorg
+// (0-12mo Sensory, 12-24mo Explore, etc.) so parents see meaningful names in
+// settings. ageRange is a human-friendly string for UI labels.
 const TIERS = [
-  { tier: 1, label: 'Watch',     minMonths: 0,   maxMonths: 6   },
-  { tier: 2, label: 'Discovery', minMonths: 6,   maxMonths: 12  },
-  { tier: 3, label: 'Tap',       minMonths: 12,  maxMonths: 18  },
-  { tier: 4, label: 'Drag',      minMonths: 18,  maxMonths: 24  },
-  { tier: 5, label: 'Games',     minMonths: 24,  maxMonths: 36  },
-  { tier: 6, label: 'Learning',  minMonths: 36,  maxMonths: 48  },
-  { tier: 7, label: 'Advanced',  minMonths: 48,  maxMonths: 60  },
-  { tier: 8, label: 'School',    minMonths: 60,  maxMonths: 9999},
+  { tier: 1, label: 'Sensory',      ageRange: '0-12 mo',  minMonths: 0,   maxMonths: 12  },
+  { tier: 2, label: 'Explore',      ageRange: '1-2 yr',   minMonths: 12,  maxMonths: 24  },
+  { tier: 3, label: 'Match',        ageRange: '2-3 yr',   minMonths: 24,  maxMonths: 36  },
+  { tier: 4, label: 'Pre-K',        ageRange: '3-4 yr',   minMonths: 36,  maxMonths: 48  },
+  { tier: 5, label: 'Pre-K+',       ageRange: '4-5 yr',   minMonths: 48,  maxMonths: 60  },
+  { tier: 6, label: 'Kindergarten', ageRange: '5-6 yr',   minMonths: 60,  maxMonths: 72  },
+  { tier: 7, label: 'Grade 1',      ageRange: '6-7 yr',   minMonths: 72,  maxMonths: 84  },
+  { tier: 8, label: 'Grade 2+',     ageRange: '7+ yr',    minMonths: 84,  maxMonths: 9999},
 ];
 
 function getAgeMonths(birthday) {
@@ -24,5 +27,9 @@ function tierForAge(ageMonths) {
 }
 
 function tierLabel(tier) {
-  return (TIERS.find(t => t.tier === tier) || {}).label || 'School';
+  return (TIERS.find(t => t.tier === tier) || {}).label || 'Grade 2+';
+}
+
+function tierAgeRange(tier) {
+  return (TIERS.find(t => t.tier === tier) || {}).ageRange || '7+ yr';
 }

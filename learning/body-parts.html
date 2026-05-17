@@ -6,27 +6,31 @@
   <title>Body Parts</title>
   <link rel="stylesheet" href="../css/style.css">
   <style>
-    body { background: linear-gradient(160deg, #e6896e, #a35535); }
+    body { background: linear-gradient(160deg, #b89b80, #6e533c); }
     .screen { justify-content: flex-start !important;
               padding-top: calc(70px + env(safe-area-inset-top));
               padding-bottom: 200px;
               overflow-y: auto; }
-
     .figure {
       position: relative;
-      width: min(340px, 80vw); aspect-ratio: 1/1.6;
+      width: min(360px, 86vw); aspect-ratio: 1/1.7;
       margin: 0 auto;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
     }
     .figure svg { width: 100%; height: 100%; display: block; }
-    .hit {
-      cursor: pointer;
-      transition: filter 0.15s;
+    .hit { cursor: pointer; transition: filter 0.15s; }
+    .hit:hover { filter: brightness(1.12); }
+    .hit.flash {
+      animation: flash 0.7s ease;
     }
-    .hit:hover { filter: brightness(1.15); }
-    .hit.flash { animation: flash 0.6s ease; }
     .hit.wrong { animation: shake 0.3s; }
-    @keyframes flash { 0%,100% { filter: none; } 50% { filter: brightness(1.4) drop-shadow(0 0 12px #FFD93D); } }
-    @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    @keyframes flash {
+      0%, 100% { filter: none; }
+      40% { filter: drop-shadow(0 0 14px #FFD93D) brightness(1.3); }
+    }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+    }
     .prompt-big {
       font-size: clamp(24px, 6vw, 40px); font-weight: 900;
       color: white; text-shadow: 0 4px 14px rgba(0,0,0,0.4); text-align: center;
@@ -53,59 +57,164 @@
     renderBackBtn('index.html');
     gameSettings.attach('body-parts');
 
-    // Simple cartoon child SVG (viewBox 0 0 200 320) with named hit zones.
-    // Each part has data-name; "extra" parts only shown at higher tiers.
+    // Anatomically-proportioned cartoon kid. Head is ~1/4 of body height,
+    // arms reach mid-thigh, hands have visible thumbs, eyes have whites +
+    // pupils, hair has a real fringe. ViewBox 0 0 240 408 (1 : 1.7).
+    // SKIN = #f4c896, SHIRT = #4ECDC4, PANTS = #3b6ea5, HAIR = #5d3a1a.
     const figureSvg = `
-      <svg viewBox="0 0 200 320" xmlns="http://www.w3.org/2000/svg">
-        <!-- Body -->
-        <ellipse cx="100" cy="180" rx="56" ry="70" fill="#4ECDC4" stroke="#1a3a5e" stroke-width="3"/>
-        <!-- Arms -->
-        <ellipse class="hit" data-name="arm" cx="42" cy="170" rx="14" ry="44" fill="#f4c896" stroke="#1a3a5e" stroke-width="3" transform="rotate(-15 42 170)"/>
-        <ellipse class="hit" data-name="arm" cx="158" cy="170" rx="14" ry="44" fill="#f4c896" stroke="#1a3a5e" stroke-width="3" transform="rotate(15 158 170)"/>
-        <!-- Hands -->
-        <circle class="hit" data-name="hand" cx="30" cy="210" r="16" fill="#f4c896" stroke="#1a3a5e" stroke-width="3"/>
-        <circle class="hit" data-name="hand" cx="170" cy="210" r="16" fill="#f4c896" stroke="#1a3a5e" stroke-width="3"/>
-        <!-- Legs -->
-        <rect class="hit" data-name="leg" x="74" y="250" width="22" height="60" rx="10" fill="#3b6ea5" stroke="#1a3a5e" stroke-width="3"/>
-        <rect class="hit" data-name="leg" x="104" y="250" width="22" height="60" rx="10" fill="#3b6ea5" stroke="#1a3a5e" stroke-width="3"/>
-        <!-- Feet -->
-        <ellipse class="hit" data-name="foot" cx="85" cy="312" rx="16" ry="8" fill="#222"/>
-        <ellipse class="hit" data-name="foot" cx="115" cy="312" rx="16" ry="8" fill="#222"/>
-        <!-- Head -->
-        <circle cx="100" cy="76" r="50" fill="#f4c896" stroke="#1a3a5e" stroke-width="3"/>
-        <!-- Hair -->
-        <path class="hit" data-name="hair" d="M55,55 Q100,5 145,55 Q140,40 100,32 Q60,40 55,55 Z" fill="#5d3a1a" stroke="#1a3a5e" stroke-width="2"/>
-        <!-- Ears -->
-        <circle class="hit" data-name="ear" cx="52" cy="78" r="9" fill="#f4c896" stroke="#1a3a5e" stroke-width="3"/>
-        <circle class="hit" data-name="ear" cx="148" cy="78" r="9" fill="#f4c896" stroke="#1a3a5e" stroke-width="3"/>
-        <!-- Eyes -->
-        <circle class="hit" data-name="eye" cx="82" cy="72" r="7" fill="#1a3a5e"/>
-        <circle class="hit" data-name="eye" cx="118" cy="72" r="7" fill="#1a3a5e"/>
-        <!-- Nose -->
-        <ellipse class="hit" data-name="nose" cx="100" cy="88" rx="6" ry="9" fill="#d4a072" stroke="#1a3a5e" stroke-width="2"/>
-        <!-- Mouth -->
-        <path class="hit" data-name="mouth" d="M85,105 Q100,118 115,105" stroke="#a04040" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <!-- Belly (button) -->
-        <circle class="hit" data-name="belly" cx="100" cy="195" r="6" fill="#d4a072"/>
+      <svg viewBox="0 0 240 408" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="cheek" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stop-color="#ff9999" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#ff9999" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Neck -->
+        <path d="M104,118 Q104,142 100,158 L140,158 Q136,142 136,118 Z"
+              fill="#f4c896" stroke="#5b3a1f" stroke-width="2.5"/>
+
+        <!-- Shirt (torso) -->
+        <path class="hit" data-name="shirt"
+              d="M68,164 Q60,160 60,180 L60,290 Q60,300 70,302 L170,302 Q180,300 180,290 L180,180 Q180,160 172,164 L150,158 Q120,170 90,158 Z"
+              fill="#4ECDC4" stroke="#1a3a5e" stroke-width="3"/>
+
+        <!-- Left ARM (kid's left = viewer right) -->
+        <path class="hit" data-name="arm"
+              d="M174,168 Q198,178 202,222 Q200,260 192,278 L172,278 Q176,250 174,222 Q172,200 168,176 Z"
+              fill="#f4c896" stroke="#5b3a1f" stroke-width="3"/>
+        <!-- Right ARM -->
+        <path class="hit" data-name="arm"
+              d="M66,168 Q42,178 38,222 Q40,260 48,278 L68,278 Q64,250 66,222 Q68,200 72,176 Z"
+              fill="#f4c896" stroke="#5b3a1f" stroke-width="3"/>
+
+        <!-- Left HAND -->
+        <g class="hit" data-name="hand">
+          <ellipse cx="186" cy="296" rx="17" ry="14" fill="#f4c896" stroke="#5b3a1f" stroke-width="3"/>
+          <!-- thumb -->
+          <ellipse cx="172" cy="288" rx="5" ry="8" fill="#f4c896" stroke="#5b3a1f" stroke-width="2" transform="rotate(-30 172 288)"/>
+          <!-- finger lines -->
+          <path d="M188,303 L188,309 M194,304 L195,310 M180,302 L179,308 M183,303 L182,310"
+                fill="none" stroke="#5b3a1f" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+        <!-- Right HAND -->
+        <g class="hit" data-name="hand">
+          <ellipse cx="54" cy="296" rx="17" ry="14" fill="#f4c896" stroke="#5b3a1f" stroke-width="3"/>
+          <ellipse cx="68" cy="288" rx="5" ry="8" fill="#f4c896" stroke="#5b3a1f" stroke-width="2" transform="rotate(30 68 288)"/>
+          <path d="M52,303 L52,309 M46,304 L45,310 M60,302 L61,308 M57,303 L58,310"
+                fill="none" stroke="#5b3a1f" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+
+        <!-- LEFT LEG -->
+        <path class="hit" data-name="leg"
+              d="M124,304 Q126,330 130,360 L150,360 Q156,330 156,304 Z"
+              fill="#3b6ea5" stroke="#1a3a5e" stroke-width="3"/>
+        <!-- RIGHT LEG -->
+        <path class="hit" data-name="leg"
+              d="M84,304 Q84,330 90,360 L110,360 Q114,330 116,304 Z"
+              fill="#3b6ea5" stroke="#1a3a5e" stroke-width="3"/>
+
+        <!-- LEFT FOOT (shoe) -->
+        <path class="hit" data-name="foot"
+              d="M126,360 L154,360 Q172,360 172,378 Q172,394 158,394 L122,394 Q116,394 116,386 Z"
+              fill="#3a3a3a" stroke="#1a1a1a" stroke-width="2.5"/>
+        <!-- RIGHT FOOT -->
+        <path class="hit" data-name="foot"
+              d="M86,360 L114,360 Q120,386 114,394 L78,394 Q64,394 64,378 Q64,360 86,360 Z"
+              fill="#3a3a3a" stroke="#1a1a1a" stroke-width="2.5"/>
+
+        <!-- HEAD (slightly squarish kid head) -->
+        <path class="hit" data-name="head-bg"
+              d="M70,72 Q70,32 120,28 Q170,32 170,72 L170,108 Q170,128 158,134 Q120,140 82,134 Q70,128 70,108 Z"
+              fill="#f4c896" stroke="#5b3a1f" stroke-width="3"/>
+
+        <!-- HAIR (top + sides + fringe) -->
+        <path class="hit" data-name="hair"
+              d="M68,72 Q66,30 120,22 Q174,30 172,72 Q170,52 158,42 Q145,40 138,52 Q130,40 120,42 Q110,40 102,52 Q95,40 82,42 Q70,52 68,72 Z
+                 M68,72 L68,88 Q72,82 80,80 L80,72 Z
+                 M172,72 L172,88 Q168,82 160,80 L160,72 Z"
+              fill="#5d3a1a" stroke="#3a230f" stroke-width="2"/>
+        <!-- Fringe bangs over forehead -->
+        <path class="hit" data-name="hair"
+              d="M90,52 Q105,68 115,58 Q120,72 130,58 Q140,68 150,52 Q145,72 130,76 Q115,80 100,76 Q92,68 90,52 Z"
+              fill="#5d3a1a" stroke="#3a230f" stroke-width="1.5"/>
+
+        <!-- Cheeks (overlay, non-tappable so don't steal eye clicks) -->
+        <ellipse cx="90" cy="100" rx="9" ry="6" fill="url(#cheek)" pointer-events="none"/>
+        <ellipse cx="150" cy="100" rx="9" ry="6" fill="url(#cheek)" pointer-events="none"/>
+
+        <!-- EARS -->
+        <g class="hit" data-name="ear">
+          <path d="M66,84 Q56,84 56,98 Q56,114 68,114 Z"
+                fill="#f4c896" stroke="#5b3a1f" stroke-width="2.5"/>
+          <path d="M62,92 Q60,98 62,108" fill="none" stroke="#5b3a1f" stroke-width="1.5"/>
+        </g>
+        <g class="hit" data-name="ear">
+          <path d="M174,84 Q184,84 184,98 Q184,114 172,114 Z"
+                fill="#f4c896" stroke="#5b3a1f" stroke-width="2.5"/>
+          <path d="M178,92 Q180,98 178,108" fill="none" stroke="#5b3a1f" stroke-width="1.5"/>
+        </g>
+
+        <!-- EYES (whites + pupils + highlights) -->
+        <g class="hit" data-name="eye">
+          <ellipse cx="100" cy="88" rx="10" ry="11" fill="white" stroke="#5b3a1f" stroke-width="2"/>
+          <circle cx="101" cy="89" r="5" fill="#3a4a8a"/>
+          <circle cx="101" cy="89" r="2.2" fill="#1a1a2e"/>
+          <circle cx="103" cy="86" r="1.5" fill="white"/>
+        </g>
+        <g class="hit" data-name="eye">
+          <ellipse cx="140" cy="88" rx="10" ry="11" fill="white" stroke="#5b3a1f" stroke-width="2"/>
+          <circle cx="141" cy="89" r="5" fill="#3a4a8a"/>
+          <circle cx="141" cy="89" r="2.2" fill="#1a1a2e"/>
+          <circle cx="143" cy="86" r="1.5" fill="white"/>
+        </g>
+
+        <!-- EYEBROWS (non-tappable detail) -->
+        <path d="M90,74 Q100,70 110,74" fill="none" stroke="#3a230f" stroke-width="2.5" stroke-linecap="round" pointer-events="none"/>
+        <path d="M130,74 Q140,70 150,74" fill="none" stroke="#3a230f" stroke-width="2.5" stroke-linecap="round" pointer-events="none"/>
+
+        <!-- NOSE -->
+        <path class="hit" data-name="nose"
+              d="M120,100 Q116,108 116,112 Q120,118 124,118 Q124,118 124,112 Q124,108 120,100 Z"
+              fill="#e0a87a" stroke="#5b3a1f" stroke-width="2"/>
+
+        <!-- MOUTH (smile, fillable lip area) -->
+        <path class="hit" data-name="mouth"
+              d="M104,122 Q120,134 136,122 Q132,132 120,134 Q108,132 104,122 Z"
+              fill="#c25a5a" stroke="#5b3a1f" stroke-width="2"/>
+        <!-- teeth hint -->
+        <path d="M110,124 Q120,128 130,124" fill="none" stroke="white" stroke-width="2" pointer-events="none"/>
+
+        <!-- BELLY (small button on shirt) -->
+        <circle class="hit" data-name="belly" cx="120" cy="240" r="6"
+                fill="#3aa49d" stroke="#1a3a5e" stroke-width="2"/>
       </svg>
     `;
     const figure = document.getElementById('figure');
     figure.innerHTML = figureSvg;
 
-    // What's available per tier
+    // What's available per tier. With the new tier scheme, tier 4 = Pre-K (3-4y).
     const TODDLER_PARTS = ['eye','nose','mouth','ear','hand','foot'];
     const ALL_PARTS = ['eye','nose','mouth','ear','hand','foot','arm','leg','hair','belly'];
-    const partList = tier <= 4 ? TODDLER_PARTS : ALL_PARTS;
-    const PRONOUN = (p) => ({ eye:'eyes', ear:'ears', hand:'hands', foot:'feet', arm:'arms', leg:'legs' }[p] || p);
+    const allOn = tier >= 4 || getProfileFeature(profile, 'body-parts', 'allParts');
+    const partList = allOn ? ALL_PARTS : TODDLER_PARTS;
+    const PRONOUN = (p) => ({
+      eye:'eyes', ear:'ears', hand:'hands', foot:'feet', arm:'arms', leg:'legs',
+    }[p] || p);
 
     const hint = document.getElementById('hint');
     let target = null;
+    let lastTarget = null;
     let roundTimer = null;
     window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
 
     function nextRound() {
       clearTimeout(roundTimer);
-      target = partList[Math.floor(Math.random() * partList.length)];
+      // Never repeat the last part
+      let pool = partList.filter(p => p !== lastTarget);
+      if (!pool.length) pool = partList;
+      target = pool[Math.floor(Math.random() * pool.length)];
+      lastTarget = target;
       const prompt = tier <= 2 ? `Where's the ${target}?` : `Tap the ${PRONOUN(target)}!`;
       hint.textContent = prompt;
       setTimeout(() => speak(prompt), 400);
@@ -116,7 +225,9 @@
 
     figure.querySelectorAll('.hit').forEach(el => {
       el.addEventListener('pointerdown', () => {
-        const name = el.dataset.name;
+        let name = el.dataset.name;
+        // The head background isn't a "part" the kid should tap — treat as wrong
+        if (name === 'head-bg' || name === 'shirt') name = '_';
         if (name === target) {
           el.classList.add('flash');
           playSuccess();
@@ -126,8 +237,7 @@
           el.classList.add('wrong');
           playBoop();
           setTimeout(() => el.classList.remove('wrong'), 350);
-          // Tier ≤ 3 gives a hint by naming what was tapped
-          if (tier <= 3) speak(`That's the ${PRONOUN(name)}.`);
+          if (tier <= 3 && name !== '_') speak(`That's the ${PRONOUN(name)}.`);
         }
       });
     });

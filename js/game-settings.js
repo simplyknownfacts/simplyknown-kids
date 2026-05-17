@@ -240,10 +240,15 @@
         </div>`;
       activity.features.forEach(f => {
         const on = !!(p.features && p.features[activity.id] && p.features[activity.id][f.key]);
+        const ageChip = f.minTier && typeof tierAgeRange === 'function'
+          ? `<span style="display:inline-block;margin-left:6px;font-size:11px;font-weight:700;
+                background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);
+                padding:1px 8px;border-radius:999px;">${tierAgeRange(f.minTier)}+</span>`
+          : '';
         html += `<label style="display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer;">
           <input type="checkbox" data-pid="${p.id}" data-fk="${f.key}" ${on ? 'checked' : ''}
                  style="width:20px;height:20px;accent-color:#4ECDC4;cursor:pointer;">
-          <span style="font-size:14px;color:rgba(255,255,255,0.85);">${f.label}</span>
+          <span style="font-size:14px;color:rgba(255,255,255,0.85);">${f.label}${ageChip}</span>
         </label>`;
       });
       html += `</div>`;

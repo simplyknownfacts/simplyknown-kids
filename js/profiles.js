@@ -1,57 +1,60 @@
 const _PROFILES_KEY = 'vb_profiles';
 const _ACTIVE_KEY   = 'vb_active_id';
 
+// minTier maps to the tier where this feature is age-appropriate. Used to
+// render "Recommended: <age range>+" hints in Parent Settings. Tier numbers
+// match TIERS in js/tiers.js (1=0-12mo Sensory, ..., 8=7+ yr Grade 2+).
 const ACTIVITY_FEATURES = [
   { id:'stamp-art',     name:'Stamp Art',     features:[
-    { key:'stampPalette',  label:'Stamp picker' },
-    { key:'themeSwitcher', label:'Theme switcher (farm/ocean/space)' },
+    { key:'stampPalette',  label:'Stamp picker',                            minTier:2 },
+    { key:'themeSwitcher', label:'Theme switcher (farm/ocean/space)',       minTier:4 },
   ]},
   { id:'finger-paint',  name:'Finger Paint',  features:[
-    { key:'colorPalette',  label:'Color palette' },
-    { key:'eraser',        label:'Eraser tool' },
+    { key:'colorPalette',  label:'Color palette',                           minTier:2 },
+    { key:'eraser',        label:'Eraser tool',                             minTier:4 },
   ]},
   { id:'color-splash',  name:'Color Splash',  features:[
-    { key:'colorPicker',   label:'Color picker' },
-    { key:'clearButton',   label:'Clear button' },
+    { key:'colorPicker',   label:'Color picker',                            minTier:2 },
+    { key:'clearButton',   label:'Clear button',                            minTier:3 },
   ]},
   { id:'tap-pop',       name:'Tap & Pop',     features:[
-    { key:'scoreCounter',  label:'Score counter' },
-    { key:'floatMode',     label:'Floating bubbles (race mode)' },
+    { key:'scoreCounter',  label:'Score counter',                           minTier:4 },
+    { key:'floatMode',     label:'Floating bubbles (race mode)',            minTier:3 },
   ]},
   { id:'shape-match',   name:'Shape Match',   features:[
-    { key:'dragMode',      label:'Drag-to-match mode' },
+    { key:'dragMode',      label:'Drag-to-match mode',                      minTier:2 },
   ]},
   { id:'hello-colors',  name:'Hello Colors',  features:[
-    { key:'colorQuiz',     label:'Color quiz mode' },
+    { key:'colorQuiz',     label:'Color quiz mode',                         minTier:4 },
   ]},
   { id:'animal-sounds', name:'Animal Sounds', features:[
-    { key:'quizMode',      label:'Sound quiz mode' },
+    { key:'quizMode',      label:'Sound quiz mode',                         minTier:4 },
   ]},
   { id:'count-along',   name:'Count Along',   features:[
-    { key:'quizMode',      label:'How-many quiz mode' },
+    { key:'quizMode',      label:'How-many quiz mode',                      minTier:4 },
   ]},
   { id:'abcs',          name:'ABCs',          features:[
-    { key:'wordHints',     label:'Show "A is for Apple" word hints' },
-    { key:'spellMode',     label:'Spell short words (advanced)' },
+    { key:'wordHints',     label:'Show "A is for Apple" word hints',        minTier:3 },
+    { key:'spellMode',     label:'Spell short words',                       minTier:6 },
   ]},
   { id:'days',          name:'Days of the Week', features:[
-    { key:'quizMode',      label:'Quiz mode (what comes after Monday?)' },
+    { key:'quizMode',      label:'Quiz mode (what comes after Monday?)',    minTier:5 },
   ]},
   { id:'math',          name:'Math Mountain', features:[
-    { key:'subtract',      label:'Include subtraction' },
-    { key:'multiply',      label:'Include multiplication (advanced)' },
+    { key:'subtract',      label:'Include subtraction',                     minTier:5 },
+    { key:'multiply',      label:'Include multiplication',                  minTier:8 },
   ]},
   { id:'spelling',      name:'Spelling Bee',  features:[
-    { key:'spellMode',     label:'Spell from letter bank (advanced)' },
+    { key:'spellMode',     label:'Spell from letter bank',                  minTier:6 },
   ]},
   { id:'money',         name:'Money Matters', features:[
-    { key:'countMode',     label:'Count coin totals (advanced)' },
+    { key:'countMode',     label:'Count coin + bill totals',                minTier:6 },
   ]},
   { id:'body-parts',    name:'Body Parts',    features:[
-    { key:'allParts',      label:'Include extra parts (hair, belly, etc.)' },
+    { key:'allParts',      label:'Include extra parts (hair, belly, etc.)', minTier:4 },
   ]},
   { id:'color-in',      name:'Color In',      features:[
-    { key:'extraPics',     label:'Show more coloring pages' },
+    { key:'extraPics',     label:'Show more coloring pages',                minTier:2 },
   ]},
 ];
 
