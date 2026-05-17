@@ -7,6 +7,10 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     #bg { position:fixed; inset:0; transition: background 0.8s ease; }
+    .screen { justify-content: flex-start !important;
+              padding-top: calc(70px + env(safe-area-inset-top));
+              padding-bottom: 200px;
+              overflow-y: auto; }
     .color-label {
       font-size: clamp(48px, 14vw, 100px);
       font-weight: 900; color: white;

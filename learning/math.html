@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     body { background: linear-gradient(160deg, #2d8659, #1a5a3a); }
+    .screen { justify-content: flex-start !important;
+              padding-top: calc(70px + env(safe-area-inset-top));
+              padding-bottom: 200px;
+              overflow-y: auto; }
+
     .eq-row {
       display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
       justify-content: center; font-size: clamp(48px, 12vw, 96px); font-weight: 900;

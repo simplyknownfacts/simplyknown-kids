@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     body { background: linear-gradient(160deg, #2d5a87, #1a3a5e); }
+    .screen { justify-content: flex-start !important;
+              padding-top: calc(70px + env(safe-area-inset-top));
+              padding-bottom: 200px;
+              overflow-y: auto; }
+
     .day-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; max-width: 760px; }
     .day-tile {
       min-width: 110px; padding: 18px 14px; border-radius: 18px;

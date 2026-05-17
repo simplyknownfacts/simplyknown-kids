@@ -7,8 +7,26 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     body { background: linear-gradient(160deg, #4ECDC4 0%, #45B7D1 100%); }
-    .cards-row { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-    .activity-card { width: 140px; height: 140px; }
+    /* Top-aligned so the mascot in the bottom-right doesn't overlap tiles */
+    .screen {
+      justify-content: flex-start !important;
+      padding-top: calc(90px + env(safe-area-inset-top));
+      padding-bottom: 200px; /* room for mascot */
+      overflow-y: auto;
+    }
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px; max-width: 720px; width: 100%;
+      justify-content: center;
+    }
+    /* Every tile is identical — no shrinking, no growing */
+    .activity-card {
+      width: 100% !important; height: 130px !important;
+      aspect-ratio: 1;
+    }
+    .activity-card .icon { font-size: 50px; }
+    .activity-card .label { font-size: 13px; }
   </style>
 </head>
 <body>

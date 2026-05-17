@@ -7,33 +7,24 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     body { background: linear-gradient(160deg, #3d5a3d, #1f3a1f); }
-    .coin {
-      width: 130px; height: 130px; border-radius: 50%;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-weight: 900; color: #1a1a2e; cursor: pointer;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.4), inset 0 -4px 0 rgba(0,0,0,0.15);
-      transition: transform 0.12s;
-      gap: 2px;
+    .screen {
+      justify-content: flex-start !important;
+      padding: calc(70px + env(safe-area-inset-top)) 12px 200px;
+      overflow-y: auto; gap: 18px;
     }
-    .coin:active { transform: scale(0.92); }
-    .coin.matched { box-shadow: 0 6px 18px rgba(0,0,0,0.4), inset 0 -4px 0 rgba(0,0,0,0.15), 0 0 0 4px #a8e6cf; }
-    .coin.wrong { animation: shake 0.3s; }
-    .coin.penny    { background: radial-gradient(circle at 35% 30%, #d97a4a, #8b3a1f); color: white; }
-    .coin.nickel   { background: radial-gradient(circle at 35% 30%, #c0c0c0, #888); }
-    .coin.dime     { width: 100px; height: 100px;
-                     background: radial-gradient(circle at 35% 30%, #d4d4d4, #999); font-size: 14px; }
-    .coin.quarter  { width: 150px; height: 150px;
-                     background: radial-gradient(circle at 35% 30%, #d4d4d4, #909090); }
-    .coin .name { font-size: 16px; }
-    .coin .cents { font-size: 13px; opacity: 0.7; }
-    .coin-row { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; align-items: center; }
-    .prompt-big {
-      font-size: clamp(36px, 8vw, 64px); font-weight: 900; color: #FFD93D;
-      text-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    .money-row {
+      display: flex; gap: 14px; flex-wrap: wrap;
+      justify-content: center; align-items: center;
+      max-width: 720px;
     }
+    .coin-svg, .bill-svg { cursor: pointer; transition: transform 0.12s;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,0.5)); }
+    .coin-svg:active, .bill-svg:active { transform: scale(0.92); }
+    .coin-svg.matched, .bill-svg.matched { filter: drop-shadow(0 6px 14px rgba(0,0,0,0.5)) drop-shadow(0 0 8px #a8e6cf); }
+    .coin-svg.wrong, .bill-svg.wrong { animation: shake 0.3s; }
     .num-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
     .num-btn {
-      min-width: 80px; min-height: 70px; padding: 12px 18px; border-radius: 18px;
+      min-width: 90px; min-height: 70px; padding: 12px 18px; border-radius: 18px;
       background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.25);
       color: white; font-size: 24px; font-weight: 900;
       display: flex; align-items: center; justify-content: center;
@@ -45,10 +36,10 @@
   </style>
 </head>
 <body>
-  <div class="screen" id="stage" style="gap:24px;">
-    <div class="title">💰 Money Matters</div>
+  <div class="screen" id="stage">
+    <div class="title">💰 Money</div>
     <div class="subtitle" id="hint"></div>
-    <div id="body" class="col" style="gap:24px;"></div>
+    <div id="body" class="col" style="gap:20px; width:100%; align-items:center;"></div>
   </div>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
@@ -64,22 +55,98 @@
     renderBackBtn('index.html');
     gameSettings.attach('money');
 
-    const COINS = [
-      { id:'penny',   name:'Penny',   cents:1,  cls:'penny' },
-      { id:'nickel',  name:'Nickel',  cents:5,  cls:'nickel' },
-      { id:'dime',    name:'Dime',    cents:10, cls:'dime' },
-      { id:'quarter', name:'Quarter', cents:25, cls:'quarter' },
+    // Real-world relative sizes (dime smallest, quarter biggest among coins).
+    // Diameters (px) on phones; bills are rectangles.
+    // Real diameters: dime 17.9, penny 19.05, nickel 21.2, quarter 24.3
+    const MONEY = [
+      { id:'penny',   name:'Penny',   cents:1,   kind:'coin', size:96 },
+      { id:'nickel',  name:'Nickel',  cents:5,   kind:'coin', size:108 },
+      { id:'dime',    name:'Dime',    cents:10,  kind:'coin', size:88 },
+      { id:'quarter', name:'Quarter', cents:25,  kind:'coin', size:122 },
+      { id:'dollar',  name:'Dollar Bill',     cents:100,  kind:'bill', w:170, h:74,  color:'#7fa57a', label:'$1'   },
+      { id:'five',    name:'Five Dollar Bill', cents:500,  kind:'bill', w:180, h:78,  color:'#c9a87a', label:'$5'   },
+      { id:'ten',     name:'Ten Dollar Bill',  cents:1000, kind:'bill', w:190, h:82,  color:'#c4a06a', label:'$10'  },
     ];
 
-    function makeCoin(c, opts) {
-      const div = document.createElement('div');
-      div.className = `coin ${c.cls}`;
-      div.dataset.id = c.id;
-      const showLabel = !opts || opts.label !== false;
-      div.innerHTML = showLabel
-        ? `<span class="name">${c.name}</span><span class="cents">${c.cents}¢</span>`
-        : '';
-      return div;
+    // Build an SVG that LOOKS like the real coin: metallic gradient, embossed
+    // edge ring, a portrait silhouette, and "X CENTS" text. Big enough for
+    // toddlers to read but with enough detail to feel real.
+    function makeCoin(c) {
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg');
+      const s = c.size;
+      svg.setAttribute('viewBox', '0 0 100 100');
+      svg.setAttribute('width', s); svg.setAttribute('height', s);
+      svg.classList.add('coin-svg');
+      svg.dataset.id = c.id;
+      // Penny = copper, others = silver
+      const isPenny = c.id === 'penny';
+      const grad = `coingrad_${c.id}`;
+      svg.innerHTML = `
+        <defs>
+          <radialGradient id="${grad}" cx="0.35" cy="0.3" r="0.85">
+            ${isPenny
+              ? '<stop offset="0%" stop-color="#f4b58e"/><stop offset="60%" stop-color="#c97a4a"/><stop offset="100%" stop-color="#7a3d1c"/>'
+              : '<stop offset="0%" stop-color="#f4f4f4"/><stop offset="60%" stop-color="#bcbcbc"/><stop offset="100%" stop-color="#666"/>'}
+          </radialGradient>
+        </defs>
+        <!-- coin disk -->
+        <circle cx="50" cy="50" r="48" fill="url(#${grad})" stroke="#3a3a3a" stroke-width="2"/>
+        <!-- inner ring -->
+        <circle cx="50" cy="50" r="42" fill="none" stroke="${isPenny ? '#6b3417' : '#555'}" stroke-width="1" stroke-dasharray="1,1.2"/>
+        <!-- portrait silhouette (simple side-profile head) -->
+        <g transform="translate(50,52)" fill="${isPenny ? '#5e2a10' : '#3a3a3a'}">
+          <ellipse cx="0" cy="-4" rx="10" ry="13"/>
+          <path d="M-10,4 Q-8,10 -2,10 L8,10 Q14,4 12,-2 Q8,4 0,4 Q-6,4 -10,4 Z"/>
+        </g>
+        <!-- value text top arc -->
+        <text x="50" y="22" text-anchor="middle" font-size="9" font-weight="900"
+              fill="${isPenny ? '#5e2a10' : '#222'}" font-family="serif" letter-spacing="0.5">
+          ${c.cents === 1 ? 'ONE CENT' : c.cents === 5 ? 'FIVE CENTS' : c.cents === 10 ? 'TEN CENTS' : 'QUARTER'}
+        </text>
+        <!-- value at bottom -->
+        <text x="50" y="90" text-anchor="middle" font-size="14" font-weight="900"
+              fill="${isPenny ? '#5e2a10' : '#222'}" font-family="serif">${c.cents}¢</text>
+      `;
+      return svg;
+    }
+
+    function makeBill(b) {
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', '0 0 200 90');
+      svg.setAttribute('width', b.w); svg.setAttribute('height', b.h);
+      svg.classList.add('bill-svg');
+      svg.dataset.id = b.id;
+      svg.innerHTML = `
+        <rect x="2" y="2" width="196" height="86" rx="6" fill="${b.color}" stroke="#2c3d2c" stroke-width="2"/>
+        <rect x="8" y="8" width="184" height="74" rx="4" fill="none" stroke="#2c3d2c" stroke-width="1"/>
+        <!-- center oval portrait -->
+        <ellipse cx="100" cy="45" rx="22" ry="28" fill="rgba(255,255,255,0.55)" stroke="#2c3d2c" stroke-width="1"/>
+        <g transform="translate(100,45)" fill="#2c3d2c">
+          <ellipse cx="0" cy="-6" rx="8" ry="10"/>
+          <path d="M-9,3 Q-7,11 0,11 Q7,11 9,3 Q4,6 0,5 Q-4,6 -9,3 Z"/>
+        </g>
+        <!-- corner numerals -->
+        <text x="20" y="28" font-size="18" font-weight="900" fill="#2c3d2c" font-family="serif">${b.label}</text>
+        <text x="180" y="68" text-anchor="end" font-size="18" font-weight="900" fill="#2c3d2c" font-family="serif">${b.label}</text>
+        <text x="20" y="68" font-size="10" font-weight="700" fill="#2c3d2c" font-family="serif">${b.label}</text>
+        <text x="180" y="28" text-anchor="end" font-size="10" font-weight="700" fill="#2c3d2c" font-family="serif">${b.label}</text>
+      `;
+      return svg;
+    }
+
+    function makeMoney(m) {
+      return m.kind === 'coin' ? makeCoin(m) : makeBill(m);
+    }
+
+    function moneyLabel(cents) {
+      if (cents >= 100) {
+        const dollars = Math.floor(cents / 100);
+        const rem = cents % 100;
+        return rem === 0 ? `$${dollars}` : `$${dollars}.${String(rem).padStart(2, '0')}`;
+      }
+      return `${cents}¢`;
     }
 
     const bodyEl = document.getElementById('body');
@@ -90,61 +157,68 @@
     function nextRound() {
       bodyEl.innerHTML = ''; clearTimeout(roundTimer);
 
+      // Pool by tier
+      const pool = tier <= 4
+        ? MONEY.filter(m => ['penny','nickel','dime','quarter'].includes(m.id))
+        : tier <= 6
+          ? MONEY.filter(m => m.id !== 'ten')
+          : MONEY;
+
       if (tier <= 5) {
-        // Identify the named coin: "Tap the Quarter"
-        const target = COINS[Math.floor(Math.random() * COINS.length)];
+        // Identify the named coin/bill
+        const target = pool[Math.floor(Math.random() * pool.length)];
         hint.textContent = `Tap the ${target.name}!`;
-        setTimeout(() => speak(`Tap the ${target.name}.`), 400);
-        const row = document.createElement('div'); row.className = 'coin-row';
-        [...COINS].sort(() => Math.random() - 0.5).forEach(c => {
-          const coin = makeCoin(c, { label: false });
-          coin.addEventListener('pointerdown', () => {
-            if (c.id === target.id) {
-              coin.classList.add('matched');
+        setTimeout(() => speak(`Tap the ${target.name}.`), 300);
+        const row = document.createElement('div'); row.className = 'money-row';
+        [...pool].sort(() => Math.random() - 0.5).forEach(m => {
+          const node = makeMoney(m);
+          node.addEventListener('pointerdown', () => {
+            if (m.id === target.id) {
+              node.classList.add('matched');
               playSuccess();
-              speak(`Yes! ${c.name} is ${c.cents} cents.`);
-              roundTimer = setTimeout(nextRound, 2000);
+              speak(`Yes! That's the ${m.name}.`);
+              roundTimer = setTimeout(nextRound, 1800);
             } else {
-              coin.classList.add('wrong');
+              node.classList.add('wrong');
               playBoop();
-              setTimeout(() => coin.classList.remove('wrong'), 350);
+              setTimeout(() => node.classList.remove('wrong'), 350);
             }
           });
-          row.appendChild(coin);
+          row.appendChild(node);
         });
         bodyEl.appendChild(row);
 
       } else {
-        // Count up a small pile of coins. "How much?" answer choices.
-        // Tier 6: 1-3 coins, max ~50¢. Tier 7+: up to 4 coins, max ~1.00.
-        const maxCoins = tier <= 6 ? 3 : 4;
-        const numCoins = 1 + Math.floor(Math.random() * (maxCoins - 1));
+        // Count the pile, tap the total
+        const maxItems = tier <= 6 ? 3 : 4;
+        const numItems = 1 + Math.floor(Math.random() * (maxItems - 1));
         const pile = [];
         let total = 0;
-        for (let i = 0; i < numCoins; i++) {
-          const c = COINS[Math.floor(Math.random() * (tier <= 6 ? 3 : COINS.length))];
-          pile.push(c); total += c.cents;
+        for (let i = 0; i < numItems; i++) {
+          const m = pool[Math.floor(Math.random() * pool.length)];
+          pile.push(m); total += m.cents;
         }
         hint.textContent = 'How much money?';
-        setTimeout(() => speak('How much money is here?'), 400);
-        const row = document.createElement('div'); row.className = 'coin-row';
-        pile.forEach(c => row.appendChild(makeCoin(c, { label: false })));
+        setTimeout(() => speak('How much money is here?'), 300);
+        const row = document.createElement('div'); row.className = 'money-row';
+        pile.forEach(m => row.appendChild(makeMoney(m)));
         bodyEl.appendChild(row);
 
-        // Answer choices: total + 3 close distractors
+        // Build 4 answer choices: the right one + 3 distractors
         const choices = new Set([total]);
+        const step = total < 100 ? 5 : 50;
         while (choices.size < 4) {
-          const r = Math.max(1, total + (Math.floor(Math.random() * 10) - 5));
+          const r = Math.max(1, total + (Math.floor(Math.random() * 6) - 3) * step);
           if (r !== total) choices.add(r);
         }
         const numRow = document.createElement('div'); numRow.className = 'num-row';
         [...choices].sort((a,b) => a-b).forEach(n => {
           const btn = document.createElement('div');
-          btn.className = 'num-btn'; btn.textContent = `${n}¢`;
+          btn.className = 'num-btn'; btn.textContent = moneyLabel(n);
           btn.addEventListener('pointerdown', () => {
             if (n === total) {
               playSuccess();
-              speak(`Yes! ${total} cents.`);
+              speak(`Yes! ${moneyLabel(total)}.`);
               btn.style.background = 'rgba(168,230,207,0.5)';
               roundTimer = setTimeout(nextRound, 2000);
             } else {

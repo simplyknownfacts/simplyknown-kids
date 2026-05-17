@@ -7,11 +7,18 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     body { background: linear-gradient(160deg, #b8860b, #6e530a); }
-    .pic-big { font-size: clamp(100px, 22vw, 180px); line-height: 1;
+    .screen {
+      justify-content: flex-start !important;
+      padding: calc(70px + env(safe-area-inset-top)) 12px 200px;
+      overflow-y: auto; gap: 18px;
+    }
+    .pic-big { font-size: clamp(80px, 18vw, 140px); line-height: 1;
                text-shadow: 0 6px 24px rgba(0,0,0,0.4); }
     .word-choices {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 12px; max-width: 540px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px; width: 100%; max-width: 480px;
+      box-sizing: border-box; padding: 0 4px;
     }
     .word-card {
       padding: 18px 14px; border-radius: 16px;

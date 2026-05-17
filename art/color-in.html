@@ -6,26 +6,32 @@
   <title>Color In</title>
   <link rel="stylesheet" href="../css/style.css">
   <style>
-    body { background: #1a1a2e; }
+    body { background: #f4f0e6; }
     .stage { position: fixed; inset: 0; display: flex; flex-direction: column; }
     .pic-wrap {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      padding: 80px 20px 16px;
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 80px 16px 120px;
     }
-    .pic-wrap svg { width: 100%; height: 100%; max-width: 720px; max-height: calc(100vh - 220px); }
+    .pic-wrap svg { width: 100%; height: 100%; max-height: calc(100vh - 200px); }
+    /* Coloring book look: thick black outlines, white fill until tapped */
     .region {
-      stroke: #1a1a2e; stroke-width: 4; stroke-linejoin: round;
+      stroke: #1a1a2e; stroke-width: 5; stroke-linejoin: round;
+      stroke-linecap: round;
       cursor: pointer; transition: filter 0.15s;
-      fill: white;
+      fill: #ffffff;
     }
     .region:active { filter: brightness(0.9); }
-    .outline { fill: none; stroke: #1a1a2e; stroke-width: 4; pointer-events: none; }
+    .detail {
+      fill: none; stroke: #1a1a2e; stroke-width: 4; stroke-linejoin: round;
+      stroke-linecap: round; pointer-events: none;
+    }
     #toolbar {
       position: fixed; bottom: 0; left: 0; right: 0;
       display: flex; align-items: center; justify-content: center;
       gap: 10px; flex-wrap: wrap;
       padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
-      background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); z-index: 10;
+      background: rgba(10,10,40,0.85); backdrop-filter: blur(8px); z-index: 10;
     }
     @media (orientation: landscape) and (min-width: 768px) {
       #toolbar {
@@ -35,24 +41,34 @@
         padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) 12px;
         gap: 14px;
       }
-      .pic-wrap { padding-right: 220px; }
+      .pic-wrap { padding-right: 220px; padding-bottom: 16px; }
     }
     .pip {
-      width: 56px; height: 56px; border-radius: 50%;
-      border: 4px solid rgba(255,255,255,0.3); cursor: pointer;
+      width: 52px; height: 52px; border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.45); cursor: pointer;
       transition: border-color 0.1s, box-shadow 0.1s;
     }
-    .pip.active { border-color: white; box-shadow: 0 0 0 4px white; }
+    .pip.active { border-color: white; box-shadow: 0 0 0 3px white; }
     .tool-btn {
       padding: 10px 16px; border-radius: 16px;
-      background: rgba(255,255,255,0.15);
-      border: 2px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.18);
+      border: 2px solid rgba(255,255,255,0.3);
       color: white; font-weight: 800; font-size: 14px; cursor: pointer;
+    }
+    .scene-title {
+      position: fixed; top: calc(14px + env(safe-area-inset-top));
+      left: 50%; transform: translateX(-50%);
+      color: #1a1a2e; font-weight: 900; font-size: 18px;
+      background: rgba(255,255,255,0.85); padding: 6px 16px; border-radius: 20px;
+      z-index: 9; pointer-events: none;
+      max-width: calc(100vw - 220px); white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis;
     }
   </style>
 </head>
 <body>
   <div class="stage">
+    <div class="scene-title" id="title"></div>
     <div class="pic-wrap" id="picWrap"></div>
   </div>
   <div id="toolbar"></div>
@@ -68,93 +84,226 @@
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'color-in');
     renderBackBtn('index.html');
-    // gear attached after the toolbar is built (in renderToolbar)
 
-    const COLORS = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#7CFC00','#FFFFFF','#444444'];
+    const COLORS = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1',
+                    '#FF69B4','#7CFC00','#8B4513','#FFFFFF','#222222'];
     let active = COLORS[0];
 
-    // Each picture is a list of SVG paths. Pre-defined regions, fill white,
-    // become whatever color is tapped. Outline drawn last so it's always
-    // visible on top.
-    const PICTURES = [
+    // Coloring book scenes. Each region is a fillable shape; details are
+    // outline-only overlays (whiskers, eye dots, etc) that draw on top.
+    // viewBox 0 0 400 400.
+    const SCENES = [
       {
-        name: 'Apple', viewBox: '0 0 200 200',
+        name: 'Underwater Friends',
+        viewBox: '0 0 400 400',
         regions: [
-          // body of apple (two halves to allow two-tone fill)
-          { d: 'M100,50 Q40,50 40,120 Q40,180 100,180 Q100,150 100,50 Z' },
-          { d: 'M100,50 Q160,50 160,120 Q160,180 100,180 Q100,150 100,50 Z' },
-          // leaf
-          { d: 'M105,50 Q140,15 160,40 Q140,55 105,50 Z' },
-          // stem
-          { d: 'M98,55 Q98,30 115,28 Q108,40 102,55 Z' },
+          // ocean floor
+          { d: 'M0,330 Q100,310 200,335 Q300,360 400,330 L400,400 L0,400 Z' },
+          // big fish body
+          { d: 'M50,200 Q90,120 200,140 Q290,150 320,200 Q290,250 200,260 Q90,280 50,200 Z' },
+          // big fish tail
+          { d: 'M30,200 L0,150 L15,200 L0,250 Z' },
+          // big fish fin top
+          { d: 'M170,140 Q200,90 230,150 Q200,140 170,140 Z' },
+          // big fish eye area (white of eye)
+          { d: 'M260,180 a18,18 0 1,1 36,0 a18,18 0 1,1 -36,0 Z' },
+          // small fish body
+          { d: 'M250,290 Q280,260 340,275 Q370,280 380,295 Q370,310 340,315 Q280,320 250,290 Z' },
+          // small fish tail
+          { d: 'M240,290 L220,275 L228,290 L220,305 Z' },
+          // sun in water
+          { d: 'M80,80 a32,32 0 1,1 64,0 a32,32 0 1,1 -64,0 Z' },
+          // bubbles
+          { d: 'M340,80 a14,14 0 1,1 28,0 a14,14 0 1,1 -28,0 Z' },
+          { d: 'M360,120 a8,8 0 1,1 16,0 a8,8 0 1,1 -16,0 Z' },
+          // seaweed left
+          { d: 'M30,400 Q40,320 30,260 Q20,200 35,160 L45,160 Q60,200 50,260 Q60,320 50,400 Z' },
+          // seaweed right
+          { d: 'M360,400 Q370,330 355,280 Q345,240 360,200 L370,200 Q385,240 375,280 Q390,330 380,400 Z' },
+        ],
+        details: [
+          // big fish smile
+          { d: 'M70,225 Q90,240 110,225' },
+          // big fish eye pupil
+          { d: 'M278,180 a4,4 0 1,1 0,0.1' },
+          // small fish smile
+          { d: 'M270,295 Q285,303 305,295' },
+          // small fish eye
+          { d: 'M320,285 a3,3 0 1,1 0,0.1' },
         ],
       },
       {
-        name: 'Butterfly', viewBox: '0 0 200 200',
+        name: 'Princess Castle',
+        viewBox: '0 0 400 400',
         regions: [
-          // body
-          { d: 'M95,60 L95,150 Q100,160 105,150 L105,60 Q100,52 95,60 Z' },
-          // upper-left wing
-          { d: 'M95,80 Q40,40 30,90 Q40,120 95,110 Z' },
-          // lower-left wing
-          { d: 'M95,110 Q40,120 35,165 Q70,170 95,140 Z' },
-          // upper-right wing
-          { d: 'M105,80 Q160,40 170,90 Q160,120 105,110 Z' },
-          // lower-right wing
-          { d: 'M105,110 Q160,120 165,165 Q130,170 105,140 Z' },
-        ],
-      },
-      {
-        name: 'Fish', viewBox: '0 0 200 200',
-        regions: [
-          // body
-          { d: 'M40,100 Q70,40 140,60 Q170,80 170,100 Q170,120 140,140 Q70,160 40,100 Z' },
-          // tail
-          { d: 'M30,100 L0,60 L10,100 L0,140 Z' },
-          // top fin
-          { d: 'M90,55 Q110,30 130,60 Q110,55 90,55 Z' },
-          // bottom fin
-          { d: 'M90,145 Q110,170 130,140 Q110,145 90,145 Z' },
-          // eye (kid taps to color)
-          { d: 'M140,90 a8,8 0 1,1 16,0 a8,8 0 1,1 -16,0 Z' },
-        ],
-      },
-      {
-        name: 'Star', viewBox: '0 0 200 200',
-        regions: [
-          { d: 'M100,20 L120,75 L180,80 L135,118 L150,178 L100,148 L50,178 L65,118 L20,80 L80,75 Z' },
-        ],
-      },
-      {
-        name: 'House', viewBox: '0 0 200 200',
-        regions: [
-          // roof
-          { d: 'M30,100 L100,40 L170,100 Z' },
-          // wall
-          { d: 'M50,100 L150,100 L150,180 L50,180 Z' },
-          // door
-          { d: 'M85,180 L85,135 Q85,125 100,125 Q115,125 115,135 L115,180 Z' },
-          // window
-          { d: 'M65,120 L95,120 L95,150 L65,150 Z' },
+          // sky
+          { d: 'M0,0 L400,0 L400,330 L0,330 Z' },
+          // ground
+          { d: 'M0,330 L400,330 L400,400 L0,400 Z' },
+          // central tower body
+          { d: 'M150,330 L150,170 L250,170 L250,330 Z' },
+          // central tower roof
+          { d: 'M140,170 L200,90 L260,170 Z' },
+          // left tower
+          { d: 'M70,330 L70,200 L130,200 L130,330 Z' },
+          { d: 'M60,200 L100,140 L140,200 Z' },
+          // right tower
+          { d: 'M270,330 L270,200 L330,200 L330,330 Z' },
+          { d: 'M260,200 L300,140 L340,200 Z' },
+          // door (arched)
+          { d: 'M180,330 L180,270 Q180,240 200,240 Q220,240 220,270 L220,330 Z' },
+          // window 1
+          { d: 'M88,230 L112,230 L112,260 L88,260 Z' },
           // window 2
-          { d: 'M120,120 L140,120 L140,140 L120,140 Z' },
+          { d: 'M288,230 L312,230 L312,260 L288,260 Z' },
+          // window top
+          { d: 'M188,200 L212,200 L212,225 L188,225 Z' },
+          // flag pole flag (top center)
+          { d: 'M200,90 L200,40 L230,55 L200,70 Z' },
+          // cloud
+          { d: 'M40,80 Q30,60 50,55 Q55,40 75,45 Q90,35 105,55 Q120,65 100,80 Q60,90 40,80 Z' },
+          { d: 'M310,60 Q300,40 320,38 Q330,25 348,30 Q368,28 372,48 Q380,62 360,68 Q330,72 310,60 Z' },
+          // sun
+          { d: 'M340,110 a26,26 0 1,1 52,0 a26,26 0 1,1 -52,0 Z' },
         ],
+        details: [
+          // door cross-piece
+          { d: 'M200,240 L200,310' },
+          { d: 'M180,275 L220,275' },
+          // window crosses
+          { d: 'M100,230 L100,260 M88,245 L112,245' },
+          { d: 'M300,230 L300,260 M288,245 L312,245' },
+          { d: 'M200,200 L200,225 M188,213 L212,213' },
+        ],
+      },
+      {
+        name: 'Rocket Ship',
+        viewBox: '0 0 400 400',
+        regions: [
+          // dark sky
+          { d: 'M0,0 L400,0 L400,400 L0,400 Z' },
+          // rocket body
+          { d: 'M180,120 Q180,80 200,60 Q220,80 220,120 L220,290 L180,290 Z' },
+          // rocket window
+          { d: 'M200,140 a18,18 0 1,1 0.001,0 Z' },
+          // left fin
+          { d: 'M180,260 L130,310 L180,300 Z' },
+          // right fin
+          { d: 'M220,260 L270,310 L220,300 Z' },
+          // flame
+          { d: 'M180,290 Q200,360 220,290 Q210,330 200,310 Q190,330 180,290 Z' },
+          // planet
+          { d: 'M60,80 a40,40 0 1,1 80,0 a40,40 0 1,1 -80,0 Z' },
+          // planet ring
+          { d: 'M30,120 Q100,90 170,120 Q100,140 30,120 Z' },
+          // stars (small filled diamonds)
+          { d: 'M320,60 L325,70 L335,72 L325,75 L320,85 L315,75 L305,72 L315,70 Z' },
+          { d: 'M340,200 L344,208 L352,210 L344,212 L340,220 L336,212 L328,210 L336,208 Z' },
+          { d: 'M40,260 L44,268 L52,270 L44,272 L40,280 L36,272 L28,270 L36,268 Z' },
+          { d: 'M330,330 L334,338 L342,340 L334,342 L330,350 L326,342 L318,340 L326,338 Z' },
+        ],
+        details: [
+          // body line
+          { d: 'M180,200 L220,200' },
+          // window highlight
+          { d: 'M195,135 Q200,145 205,135' },
+        ],
+      },
+      {
+        name: 'Dinosaur',
+        viewBox: '0 0 400 400',
+        regions: [
+          // sky
+          { d: 'M0,0 L400,0 L400,280 L0,280 Z' },
+          // ground
+          { d: 'M0,280 Q200,260 400,280 L400,400 L0,400 Z' },
+          // dino body
+          { d: 'M120,250 Q90,210 130,180 Q160,160 220,165 Q280,170 300,210 Q310,250 280,275 L260,330 L240,330 L240,290 L180,290 L180,330 L160,330 L160,275 Q130,275 120,250 Z' },
+          // dino head
+          { d: 'M260,160 Q295,140 320,160 Q335,180 320,200 Q295,210 270,200 Q255,180 260,160 Z' },
+          // dino tail
+          { d: 'M120,220 Q70,200 30,180 Q60,210 80,220 Q105,235 120,240 Z' },
+          // dino back spikes
+          { d: 'M150,175 L160,155 L170,175 Z' },
+          { d: 'M190,165 L200,140 L210,165 Z' },
+          { d: 'M230,165 L240,140 L250,165 Z' },
+          // dino eye
+          { d: 'M298,170 a4,4 0 1,1 0,0.1 Z' },
+          // sun
+          { d: 'M60,80 a30,30 0 1,1 60,0 a30,30 0 1,1 -60,0 Z' },
+          // tree
+          { d: 'M330,290 L340,200 L350,200 L350,290 Z' },
+          { d: 'M320,210 Q345,160 380,200 Q360,230 320,210 Z' },
+        ],
+        details: [
+          // dino mouth
+          { d: 'M270,195 Q290,205 310,195' },
+        ],
+      },
+      {
+        name: 'Garden Flowers',
+        viewBox: '0 0 400 400',
+        regions: [
+          // sky
+          { d: 'M0,0 L400,0 L400,300 L0,300 Z' },
+          // ground
+          { d: 'M0,300 L400,300 L400,400 L0,400 Z' },
+          // flower 1 stem
+          { d: 'M95,400 L95,210 L105,210 L105,400 Z' },
+          // flower 1 leaves
+          { d: 'M105,290 Q150,275 160,310 Q130,315 105,300 Z' },
+          // flower 1 petals
+          { d: 'M75,170 a25,25 0 1,1 50,0 a25,25 0 1,1 -50,0 Z' },
+          { d: 'M50,200 a25,25 0 1,1 50,0 a25,25 0 1,1 -50,0 Z' },
+          { d: 'M100,200 a25,25 0 1,1 50,0 a25,25 0 1,1 -50,0 Z' },
+          { d: 'M75,230 a25,25 0 1,1 50,0 a25,25 0 1,1 -50,0 Z' },
+          // flower 1 center
+          { d: 'M85,195 a15,15 0 1,1 30,0 a15,15 0 1,1 -30,0 Z' },
+          // flower 2 stem
+          { d: 'M210,400 L210,170 L220,170 L220,400 Z' },
+          { d: 'M220,270 Q280,255 290,290 Q255,295 220,280 Z' },
+          // flower 2 petals (different shape)
+          { d: 'M195,130 a25,25 0 1,1 50,0 a25,25 0 1,1 -50,0 Z' },
+          { d: 'M170,160 a25,25 0 1,1 50,0 a25,25 0 1,1 -50,0 Z' },
+          { d: 'M220,160 a25,25 0 1,1 50,0 a25,25 0 1,1 -50,0 Z' },
+          { d: 'M195,190 a25,25 0 1,1 50,0 a25,25 0 1,1 -50,0 Z' },
+          { d: 'M205,155 a15,15 0 1,1 30,0 a15,15 0 1,1 -30,0 Z' },
+          // flower 3 (small)
+          { d: 'M320,400 L320,240 L328,240 L328,400 Z' },
+          { d: 'M308,210 a18,18 0 1,1 36,0 a18,18 0 1,1 -36,0 Z' },
+          { d: 'M290,230 a18,18 0 1,1 36,0 a18,18 0 1,1 -36,0 Z' },
+          { d: 'M326,230 a18,18 0 1,1 36,0 a18,18 0 1,1 -36,0 Z' },
+          { d: 'M308,250 a18,18 0 1,1 36,0 a18,18 0 1,1 -36,0 Z' },
+          { d: 'M315,228 a10,10 0 1,1 20,0 a10,10 0 1,1 -20,0 Z' },
+          // sun
+          { d: 'M340,70 a26,26 0 1,1 52,0 a26,26 0 1,1 -52,0 Z' },
+          // butterfly body
+          { d: 'M270,100 L270,140 Q272,144 274,140 L274,100 Z' },
+          // butterfly wings
+          { d: 'M270,108 Q240,90 235,118 Q240,135 270,128 Z' },
+          { d: 'M274,108 Q304,90 309,118 Q304,135 274,128 Z' },
+        ],
+        details: [],
       },
     ];
 
     let picIdx = 0;
     const picWrap = document.getElementById('picWrap');
     const toolbar = document.getElementById('toolbar');
+    const titleEl = document.getElementById('title');
 
     function renderPic() {
-      const pic = PICTURES[picIdx % PICTURES.length];
-      const svg = `<svg viewBox="${pic.viewBox}" xmlns="http://www.w3.org/2000/svg">
-        ${pic.regions.map((r, i) => `<path class="region" data-i="${i}" d="${r.d}" fill="white"/>`).join('')}
-        ${pic.regions.map(r => `<path class="outline" d="${r.d}"/>`).join('')}
-      </svg>`;
-      picWrap.innerHTML = svg;
+      const pic = SCENES[picIdx % SCENES.length];
+      titleEl.textContent = pic.name;
+      const regions = pic.regions.map((r, i) =>
+        `<path class="region" data-i="${i}" d="${r.d}"/>`).join('');
+      const details = (pic.details || []).map(d =>
+        `<path class="detail" d="${d.d}"/>`).join('');
+      picWrap.innerHTML =
+        `<svg viewBox="${pic.viewBox}" xmlns="http://www.w3.org/2000/svg">${regions}${details}</svg>`;
       picWrap.querySelectorAll('.region').forEach(el => {
-        el.addEventListener('pointerdown', () => {
+        el.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
           el.setAttribute('fill', active);
           playChime();
         });
@@ -184,7 +333,6 @@
         picWrap.querySelectorAll('.region').forEach(r => r.setAttribute('fill', 'white'));
       });
       toolbar.appendChild(clear);
-      // Re-attach gear AFTER buttons so it sits at the end (order:999 covers it too)
       gameSettings.attach('color-in', { container: '#toolbar' });
     }
 

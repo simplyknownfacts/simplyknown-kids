@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="../css/style.css">
   <style>
     body { background: linear-gradient(160deg, #e6896e, #a35535); }
+    .screen { justify-content: flex-start !important;
+              padding-top: calc(70px + env(safe-area-inset-top));
+              padding-bottom: 200px;
+              overflow-y: auto; }
+
     .figure {
       position: relative;
       width: min(340px, 80vw); aspect-ratio: 1/1.6;
