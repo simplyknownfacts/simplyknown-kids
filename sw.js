@@ -1,4 +1,4 @@
-const CACHE = 'vb-v44';
+const CACHE = 'vb-v45';
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
@@ -21,7 +21,13 @@ const ASSETS = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE).then(c => {
+      // cache: 'no-store' bypasses the HTTP cache. Without this, the SW
+      // precaches whatever the BROWSER had (often a 10-min stale GitHub Pages
+      // copy), and every release keeps users on old JS until that expires.
+      const reqs = ASSETS.map(u => new Request(u, { cache: 'no-store' }));
+      return c.addAll(reqs);
+    }).then(() => self.skipWaiting())
   );
 });
 
