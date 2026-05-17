@@ -597,66 +597,101 @@
         img.src = url;
       });
     }
-    // Color-dodge pencil-sketch technique. Way cleaner than raw Sobel:
-    //   1) grayscale the photo
-    //   2) grayscale + invert + heavy blur a second copy
-    //   3) blend (1) with (2) using globalCompositeOperation 'color-dodge'
-    //      — flat regions go pure white; edges stay dark
-    //   4) hard threshold → bold black-on-white lines (no noise)
-    // CSS filters give us GPU-accelerated grayscale/invert/blur, so this
-    // runs in roughly the same time as the old version.
+    // "Coloring book" pipeline — only major outlines, no noise:
+    //   1) downsample heavily (texture detail dies with the resolution)
+    //   2) posterize gray to 4 levels — flattens shading inside each region
+    //      so the algorithm doesn't see "edges" inside a single wall/window
+    //   3) Sobel edge detect on the posterized version → only boundaries
+    //      between flat regions survive
+    //   4) high threshold + morphological opening (erode then dilate) →
+    //      kills speckle dots, keeps long contour lines
+    //   5) dilate the survivors to make legible 2-3 px strokes
+    //   6) upsample back to display size
     function _photoToLineArt(img) {
-      const ratio = Math.min(COLORING_MAX_DIM / img.width, COLORING_MAX_DIM / img.height, 1);
+      // Work at a much smaller resolution. This is the biggest single lever
+      // for reducing noise — at 400×400 a square window in a photo becomes
+      // ~5 strong-edge pixels instead of 50 scribbly ones.
+      const WORK_DIM = 400;
+      const ratio = Math.min(WORK_DIM / img.width, WORK_DIM / img.height, 1);
       const w = Math.round(img.width * ratio);
       const h = Math.round(img.height * ratio);
 
-      // Canvas A: grayscale photo
-      const a = document.createElement('canvas');
-      a.width = w; a.height = h;
-      const actx = a.getContext('2d');
-      actx.filter = 'grayscale(1) contrast(1.1)';
-      actx.drawImage(img, 0, 0, w, h);
-
-      // Canvas B: grayscale + invert + heavy blur of the same photo
-      const b = document.createElement('canvas');
-      b.width = w; b.height = h;
-      const bctx = b.getContext('2d');
-      // blur radius scales with image size — bigger image = stronger blur
-      const blurRadius = Math.max(8, Math.round(Math.min(w, h) / 30));
-      bctx.filter = `grayscale(1) invert(1) blur(${blurRadius}px)`;
-      bctx.drawImage(img, 0, 0, w, h);
-
-      // Output: dodge-blend A with B → pencil sketch
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
       const ctx = c.getContext('2d');
-      ctx.drawImage(a, 0, 0);
-      ctx.globalCompositeOperation = 'color-dodge';
-      ctx.drawImage(b, 0, 0);
-      ctx.globalCompositeOperation = 'source-over';
+      // Pre-blur on draw — softens texture before we even look at pixels
+      ctx.filter = 'grayscale(1) contrast(1.2) blur(1.5px)';
+      ctx.drawImage(img, 0, 0, w, h);
+      ctx.filter = 'none';
 
-      // Threshold to bold black/white only — kills greys that look "blurry"
-      const data = ctx.getImageData(0, 0, w, h);
-      const d = data.data;
-      const THRESHOLD = 215;
-      for (let i = 0; i < d.length; i += 4) {
-        const v = d[i] < THRESHOLD ? 0 : 255;
-        d[i] = d[i+1] = d[i+2] = v;
-        d[i+3] = 255;
+      const src = ctx.getImageData(0, 0, w, h);
+      const gray = new Uint8ClampedArray(w * h);
+      // Posterize to 4 gray levels — collapses shading gradients
+      const LEVELS = 4;
+      const step = 256 / LEVELS;
+      for (let i = 0, j = 0; i < src.data.length; i += 4, j++) {
+        const g = src.data[i] * 0.299 + src.data[i+1] * 0.587 + src.data[i+2] * 0.114;
+        gray[j] = Math.floor(g / step) * step;
       }
-      // Single dilation pass so thin lines become legible 2-px strokes
-      const orig = new Uint8ClampedArray(d);
+
+      // Sobel — but on the posterized image, so it only fires on real region boundaries
+      const edges = new Uint8ClampedArray(w * h);
       for (let y = 1; y < h - 1; y++) {
         for (let x = 1; x < w - 1; x++) {
-          const j = (y * w + x) * 4;
-          if (orig[j] === 0) continue;
-          if (orig[j - 4] === 0 || orig[j + 4] === 0 ||
-              orig[j - w*4] === 0 || orig[j + w*4] === 0) {
-            d[j] = d[j+1] = d[j+2] = 0;
-          }
+          const i = y * w + x;
+          const gx =
+            -gray[i - w - 1] -2*gray[i - 1] -gray[i + w - 1]
+            +gray[i - w + 1] +2*gray[i + 1] +gray[i + w + 1];
+          const gy =
+            -gray[i - w - 1] -2*gray[i - w] -gray[i - w + 1]
+            +gray[i + w - 1] +2*gray[i + w] +gray[i + w + 1];
+          edges[i] = Math.min(255, Math.hypot(gx, gy));
         }
       }
-      ctx.putImageData(data, 0, 0);
+
+      // High threshold — only strong region boundaries survive
+      const THRESHOLD = 90;
+      const bin = new Uint8Array(w * h);
+      for (let i = 0; i < edges.length; i++) bin[i] = edges[i] > THRESHOLD ? 1 : 0;
+
+      // Morphological opening (erode then dilate) — kills isolated speckles
+      const eroded = new Uint8Array(w * h);
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          const i = y * w + x;
+          eroded[i] = (bin[i] && bin[i-1] && bin[i+1] && bin[i-w] && bin[i+w]) ? 1 : 0;
+        }
+      }
+      const opened = new Uint8Array(w * h);
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          const i = y * w + x;
+          opened[i] = (eroded[i] || eroded[i-1] || eroded[i+1] || eroded[i-w] || eroded[i+w]) ? 1 : 0;
+        }
+      }
+
+      // Dilate twice more to make survivors bold + legible
+      let cur = opened;
+      for (let pass = 0; pass < 2; pass++) {
+        const next = new Uint8Array(w * h);
+        for (let y = 1; y < h - 1; y++) {
+          for (let x = 1; x < w - 1; x++) {
+            const i = y * w + x;
+            next[i] = (cur[i] || cur[i-1] || cur[i+1] || cur[i-w] || cur[i+w]) ? 1 : 0;
+          }
+        }
+        cur = next;
+      }
+
+      // Write back as black/white
+      const dst = ctx.createImageData(w, h);
+      for (let i = 0; i < cur.length; i++) {
+        const v = cur[i] ? 0 : 255;
+        const j = i * 4;
+        dst.data[j] = dst.data[j+1] = dst.data[j+2] = v;
+        dst.data[j+3] = 255;
+      }
+      ctx.putImageData(dst, 0, 0);
       return c.toDataURL('image/png');
     }
 
