@@ -93,12 +93,74 @@
       if (_overlayReady && e.target === overlay) overlay.remove();
     });
 
-    // Show PIN gate first if PIN is set, else go straight to settings
+    // Show PIN gate first if PIN is set; if no PIN exists, force a one-time
+    // setup before any settings are revealed (otherwise a kid could open the
+    // gear on a fresh device and toggle their own tier settings).
     if (localStorage.getItem(PIN_KEY)) {
       _renderPinGate(overlay.querySelector('#gsContent'), () => _renderFeatures(overlay.querySelector('#gsContent'), activity, overlay));
     } else {
-      _renderFeatures(overlay.querySelector('#gsContent'), activity, overlay);
+      _renderPinSetup(overlay.querySelector('#gsContent'), () => _renderFeatures(overlay.querySelector('#gsContent'), activity, overlay));
     }
+  }
+
+  // First-time PIN setup. Same keypad UI, but the user enters the new PIN
+  // twice and we hash + salt it before storing.
+  function _renderPinSetup(host, onSuccess) {
+    let entry = '';
+    let confirming = false;
+    let firstPin = '';
+    function dots(filled) {
+      return Array.from({length: 4}, (_, i) =>
+        `<div style="width:14px;height:14px;border-radius:50%;background:${i < filled ? '#4ECDC4' : 'rgba(255,255,255,0.2)'};"></div>`
+      ).join('');
+    }
+    function keypad() {
+      const keys = [1,2,3,4,5,6,7,8,9,'',0,'⌫'];
+      return keys.map(k => {
+        if (k === '') return '<div></div>';
+        return `<button class="gs-key" data-k="${k}" style="aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:900;color:white;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);cursor:pointer;">${k}</button>`;
+      }).join('');
+    }
+    function render() {
+      host.innerHTML = `
+        <h2 style="margin:0 0 8px;">🔒 Set Parent PIN</h2>
+        <div style="color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:14px;line-height:1.4;">
+          ${confirming
+            ? 'Confirm your 4-digit PIN.'
+            : 'Pick a 4-digit PIN. You\'ll need this to change settings.'}
+        </div>
+        <div id="gsDots" style="display:flex;gap:10px;justify-content:center;margin:10px 0 14px;">${dots(entry.length)}</div>
+        <div id="gsMsg" style="color:#FF6B6B;font-size:13px;text-align:center;min-height:18px;margin-bottom:8px;"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto;">${keypad()}</div>
+        <button id="gsClose" style="margin-top:14px;width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,0.1);color:white;border:2px solid rgba(255,255,255,0.2);font-weight:800;cursor:pointer;">Cancel</button>
+      `;
+      host.querySelectorAll('.gs-key').forEach(b => {
+        b.onclick = async () => {
+          const k = b.dataset.k;
+          if (k === '⌫') entry = entry.slice(0, -1);
+          else if (entry.length < 4) entry += k;
+          host.querySelector('#gsDots').innerHTML = dots(entry.length);
+          if (entry.length === 4) {
+            if (!confirming) {
+              firstPin = entry; entry = ''; confirming = true;
+              setTimeout(render, 150);
+            } else if (entry === firstPin) {
+              // Hash + salt, store, proceed
+              const salt = Math.random().toString(36).slice(2) + Date.now().toString(36);
+              const hash = await _sha256Hex(salt + ':' + entry);
+              localStorage.setItem(PIN_KEY, JSON.stringify({ hash, salt }));
+              onSuccess();
+            } else {
+              host.querySelector('#gsMsg').textContent = 'PINs don\'t match. Start over.';
+              entry = ''; firstPin = ''; confirming = false;
+              setTimeout(render, 800);
+            }
+          }
+        };
+      });
+      host.querySelector('#gsClose').onclick = () => document.getElementById('gameSettingsOverlay')?.remove();
+    }
+    render();
   }
 
   function _renderPinGate(host, onSuccess) {
