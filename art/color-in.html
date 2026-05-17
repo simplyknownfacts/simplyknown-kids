@@ -14,8 +14,7 @@
       padding: 70px 12px 110px;
     }
     .pic-wrap svg { width: 100%; height: 100%; max-height: calc(100vh - 200px); }
-    /* The fill is set INLINE via element.style.fill — that wins over the
-       stylesheet, which would otherwise lock every region to white. */
+    /* Inline style.fill on each .region wins over this base color. */
     .region {
       stroke: #1a1a2e; stroke-width: 4; stroke-linejoin: round;
       stroke-linecap: round; cursor: pointer;
@@ -26,10 +25,7 @@
       fill: none; stroke: #1a1a2e; stroke-width: 3; stroke-linejoin: round;
       stroke-linecap: round; pointer-events: none;
     }
-    .detail-fill {
-      stroke: #1a1a2e; stroke-width: 3; stroke-linejoin: round;
-      stroke-linecap: round; pointer-events: none;
-    }
+    .dot { fill: #1a1a2e; pointer-events: none; }
     #toolbar {
       position: fixed; bottom: 0; left: 0; right: 0;
       display: flex; align-items: center; justify-content: center;
@@ -93,274 +89,218 @@
                     '#FF69B4','#7CFC00','#8B4513','#FFFFFF','#222222'];
     let active = COLORS[0];
 
-    // Coloring book scenes — viewBox 0 0 400 400. Each scene has many small
-    // regions so the kid has plenty to color. Details overlay drawn on top.
+    // Each scene is hand-authored SVG markup. Anything with class="region" is
+    // a tappable fillable area. Anything with class="detail" or class="dot"
+    // is overlay (smiles, pupils, etc.) drawn on top and not tappable.
     const SCENES = [
-      {
-        name: 'Smiling Sun',
-        viewBox: '0 0 400 400',
-        regions: [
-          // sun rays (8 triangles around center)
-          { d: 'M200,30 L215,80 L185,80 Z' },
-          { d: 'M340,80 L300,108 L280,82 Z' },
-          { d: 'M370,200 L320,215 L320,185 Z' },
-          { d: 'M340,320 L300,292 L280,318 Z' },
-          { d: 'M200,370 L215,320 L185,320 Z' },
-          { d: 'M60,320 L100,292 L120,318 Z' },
-          { d: 'M30,200 L80,215 L80,185 Z' },
-          { d: 'M60,80 L100,108 L120,82 Z' },
-          // sun body
-          { d: 'M200,90 a110,110 0 1,1 0.001,0 Z' },
-          // eyes (whites)
-          { d: 'M155,180 a18,22 0 1,1 0.001,0 Z' },
-          { d: 'M225,180 a18,22 0 1,1 0.001,0 Z' },
-          // cheeks
-          { d: 'M135,235 a12,8 0 1,1 0.001,0 Z' },
-          { d: 'M255,235 a12,8 0 1,1 0.001,0 Z' },
-          // mouth (filled smile)
-          { d: 'M150,230 Q200,290 250,230 Q200,260 150,230 Z' },
-        ],
-        details: [
-          // eye pupils
-          { d: 'M165,180 a5,6 0 1,1 0.001,0 Z', fillType: 'black' },
-          { d: 'M235,180 a5,6 0 1,1 0.001,0 Z', fillType: 'black' },
-          // nose dot
-          { d: 'M200,205 a4,4 0 1,1 0.001,0 Z', fillType: 'black' },
-        ],
-      },
-      {
-        name: 'Friendly Cat',
-        viewBox: '0 0 400 400',
-        regions: [
-          // ground
-          { d: 'M0,330 Q200,310 400,330 L400,400 L0,400 Z' },
-          // body
-          { d: 'M120,310 Q90,250 130,210 Q140,180 180,180 L240,180 Q280,180 290,210 Q330,250 300,310 L290,330 L130,330 Z' },
-          // tail (curl)
-          { d: 'M290,260 Q360,250 360,180 Q360,140 320,150 Q340,170 330,200 Q320,230 290,240 Z' },
-          // head
-          { d: 'M140,150 Q140,80 210,80 Q280,80 280,150 L280,200 Q210,220 140,200 Z' },
-          // left ear
-          { d: 'M140,110 L120,50 L170,90 Z' },
-          // right ear
-          { d: 'M280,110 L300,50 L250,90 Z' },
-          // inner ear left
-          { d: 'M150,100 L140,70 L165,90 Z' },
-          // inner ear right
-          { d: 'M270,100 L280,70 L255,90 Z' },
-          // eyes
-          { d: 'M180,140 a14,16 0 1,1 0.001,0 Z' },
-          { d: 'M240,140 a14,16 0 1,1 0.001,0 Z' },
-          // nose (triangle)
-          { d: 'M205,170 L225,170 L215,182 Z' },
-          // paws (4 little ovals at bottom)
-          { d: 'M135,320 a16,12 0 1,1 0.001,0 Z' },
-          { d: 'M175,320 a16,12 0 1,1 0.001,0 Z' },
-          { d: 'M245,320 a16,12 0 1,1 0.001,0 Z' },
-          { d: 'M285,320 a16,12 0 1,1 0.001,0 Z' },
-          // sun
-          { d: 'M340,60 a26,26 0 1,1 0.001,0 Z' },
-        ],
-        details: [
-          // pupils
-          { d: 'M186,140 a4,8 0 1,1 0.001,0 Z', fillType: 'black' },
-          { d: 'M246,140 a4,8 0 1,1 0.001,0 Z', fillType: 'black' },
-          // whiskers
-          { d: 'M150,180 L100,170' },
-          { d: 'M150,190 L100,195' },
-          { d: 'M270,180 L320,170' },
-          { d: 'M270,190 L320,195' },
-          // mouth
-          { d: 'M215,185 L215,195 M215,195 Q200,205 195,200 M215,195 Q230,205 235,200' },
-        ],
-      },
-      {
-        name: 'Big Truck',
-        viewBox: '0 0 400 400',
-        regions: [
-          // road
-          { d: 'M0,310 L400,310 L400,360 L0,360 Z' },
-          // cab back
-          { d: 'M40,170 L200,170 L200,310 L40,310 Z' },
-          // hood front
-          { d: 'M200,210 L260,210 L260,310 L200,310 Z' },
-          // bumper
-          { d: 'M40,300 L270,300 L270,320 L40,320 Z' },
-          // windshield
-          { d: 'M55,180 L185,180 L185,225 L55,225 Z' },
-          // grille
-          { d: 'M210,240 L255,240 L255,290 L210,290 Z' },
-          // door
-          { d: 'M85,235 L165,235 L165,300 L85,300 Z' },
-          // door handle
-          { d: 'M140,260 L160,260 L160,268 L140,268 Z' },
-          // wheel left outer
-          { d: 'M85,360 a36,36 0 1,1 0.001,0 Z' },
-          // wheel right outer
-          { d: 'M225,360 a36,36 0 1,1 0.001,0 Z' },
-          // wheel left hub
-          { d: 'M85,360 a14,14 0 1,1 0.001,0 Z' },
-          // wheel right hub
-          { d: 'M225,360 a14,14 0 1,1 0.001,0 Z' },
-          // headlight
-          { d: 'M240,225 a10,8 0 1,1 0.001,0 Z' },
-          // sun
-          { d: 'M330,70 a26,26 0 1,1 0.001,0 Z' },
-          // cloud
-          { d: 'M70,80 Q60,60 80,55 Q85,40 105,45 Q120,35 135,55 Q150,65 130,80 Q90,90 70,80 Z' },
-          // trailer rear
-          { d: 'M270,210 L370,210 L370,310 L270,310 Z' },
-          // trailer wheel
-          { d: 'M340,360 a32,32 0 1,1 0.001,0 Z' },
-          { d: 'M340,360 a12,12 0 1,1 0.001,0 Z' },
-        ],
-        details: [
-          { d: 'M120,180 L120,225' }, // windshield divider
-        ],
-      },
-      {
-        name: 'Castle in the Clouds',
-        viewBox: '0 0 400 400',
-        regions: [
-          // sky background
-          { d: 'M0,0 L400,0 L400,400 L0,400 Z' },
-          // ground
-          { d: 'M0,330 L400,330 L400,400 L0,400 Z' },
-          // left tower base
-          { d: 'M60,330 L60,180 L130,180 L130,330 Z' },
-          // left tower roof
-          { d: 'M50,180 L95,100 L140,180 Z' },
-          // center tower base
-          { d: 'M150,330 L150,140 L250,140 L250,330 Z' },
-          // center tower roof
-          { d: 'M140,140 L200,40 L260,140 Z' },
-          // right tower base
-          { d: 'M270,330 L270,180 L340,180 L340,330 Z' },
-          // right tower roof
-          { d: 'M260,180 L305,100 L350,180 Z' },
-          // gate door (arched)
-          { d: 'M180,330 L180,260 Q180,225 200,225 Q220,225 220,260 L220,330 Z' },
-          // gate bars (horizontal)
-          { d: 'M180,275 L220,275 L220,283 L180,283 Z' },
-          // window L
-          { d: 'M75,225 L100,225 L100,260 L75,260 Z' },
-          // window C-top
-          { d: 'M190,180 L210,180 L210,210 L190,210 Z' },
-          // window C-mid L
-          { d: 'M165,220 L185,220 L185,250 L165,250 Z' },
-          // window C-mid R
-          { d: 'M215,220 L235,220 L235,250 L215,250 Z' },
-          // window R
-          { d: 'M285,225 L310,225 L310,260 L285,260 Z' },
-          // flag pole
-          { d: 'M198,45 L202,45 L202,15 L198,15 Z' },
-          // flag
-          { d: 'M202,15 L240,25 L202,38 Z' },
-          // sun
-          { d: 'M340,60 a26,26 0 1,1 0.001,0 Z' },
-          // cloud 1
-          { d: 'M40,90 Q30,70 50,65 Q55,50 75,55 Q90,45 105,65 Q120,75 100,90 Q60,100 40,90 Z' },
-          // cloud 2
-          { d: 'M280,55 Q270,38 290,33 Q295,20 315,25 Q330,15 345,32 Q360,42 340,57 Q310,67 280,55 Z' },
-        ],
-        details: [
-          { d: 'M75,225 L100,260 M100,225 L75,260' }, // window L cross
-          { d: 'M285,225 L310,260 M310,225 L285,260' },
-          { d: 'M200,180 L200,210' },
-        ],
-      },
-      {
-        name: 'Underwater World',
-        viewBox: '0 0 400 400',
-        regions: [
-          // water bg
-          { d: 'M0,0 L400,0 L400,400 L0,400 Z' },
-          // ocean floor
-          { d: 'M0,330 Q60,310 120,335 Q200,360 280,335 Q340,310 400,330 L400,400 L0,400 Z' },
-          // big fish body
-          { d: 'M50,200 Q90,120 200,140 Q290,150 320,200 Q290,250 200,260 Q90,280 50,200 Z' },
-          // big fish tail
-          { d: 'M50,200 L10,150 L25,200 L10,250 Z' },
-          // big fish top fin
-          { d: 'M170,140 Q200,90 230,150 Q200,140 170,140 Z' },
-          // big fish bottom fin
-          { d: 'M170,260 Q200,310 230,250 Q200,260 170,260 Z' },
-          // big fish eye area
-          { d: 'M270,180 a16,16 0 1,1 0.001,0 Z' },
-          // big fish scale row 1
-          { d: 'M120,180 Q140,170 160,180 Q140,190 120,180 Z' },
-          { d: 'M165,170 Q185,160 205,170 Q185,180 165,170 Z' },
-          { d: 'M210,165 Q230,155 250,165 Q230,175 210,165 Z' },
-          // small fish body
-          { d: 'M250,290 Q280,260 340,275 Q370,280 380,295 Q370,310 340,315 Q280,320 250,290 Z' },
-          // small fish tail
-          { d: 'M250,290 L225,275 L233,290 L225,305 Z' },
-          // sun in water
-          { d: 'M80,80 a30,30 0 1,1 0.001,0 Z' },
-          // bubbles
-          { d: 'M340,80 a12,12 0 1,1 0.001,0 Z' },
-          { d: 'M360,115 a8,8 0 1,1 0.001,0 Z' },
-          { d: 'M345,140 a5,5 0 1,1 0.001,0 Z' },
-          // seaweed left
-          { d: 'M30,400 Q40,320 30,260 Q20,200 35,170 L48,170 Q63,200 53,260 Q63,320 48,400 Z' },
-          // seaweed right
-          { d: 'M360,400 Q370,330 355,280 Q345,240 360,200 L373,200 Q388,240 378,280 Q393,330 378,400 Z' },
-          // starfish
-          { d: 'M100,360 L108,378 L128,378 L114,388 L120,408 L100,396 L80,408 L86,388 L72,378 L92,378 Z' },
-          // coral
-          { d: 'M220,395 Q210,355 230,330 Q250,310 245,350 Q265,335 260,370 Q280,360 270,395 Z' },
-        ],
-        details: [
-          { d: 'M278,180 a5,5 0 1,1 0.001,0 Z', fillType: 'black' },
-          { d: 'M75,225 Q90,235 105,225' }, // big fish smile
-          { d: 'M270,295 Q285,303 305,295' },
-          { d: 'M328,285 a3,3 0 1,1 0.001,0 Z', fillType: 'black' },
-        ],
-      },
-      {
-        name: 'Birthday Cake',
-        viewBox: '0 0 400 400',
-        regions: [
-          // table
-          { d: 'M0,330 L400,330 L400,400 L0,400 Z' },
-          // bottom tier
-          { d: 'M70,330 L70,250 L330,250 L330,330 Z' },
-          // bottom frill
-          { d: 'M70,250 Q90,235 110,250 Q130,235 150,250 Q170,235 190,250 Q210,235 230,250 Q250,235 270,250 Q290,235 310,250 Q325,237 330,250 L330,260 L70,260 Z' },
-          // top tier
-          { d: 'M120,250 L120,180 L280,180 L280,250 Z' },
-          // top frill
-          { d: 'M120,180 Q140,168 160,180 Q180,168 200,180 Q220,168 240,180 Q260,168 280,180 L280,190 L120,190 Z' },
-          // candle holder (cylinder)
-          { d: 'M190,180 L210,180 L210,140 L190,140 Z' },
-          // candle flame
-          { d: 'M200,140 Q188,118 200,100 Q212,118 200,140 Z' },
-          // flame inner
-          { d: 'M200,128 Q193,116 200,108 Q207,116 200,128 Z' },
-          // plate
-          { d: 'M40,330 L360,330 L350,345 L50,345 Z' },
-          // sprinkles (small ovals)
-          { d: 'M150,215 a4,2 0 1,1 0.001,0 Z' },
-          { d: 'M200,225 a4,2 0 1,1 0.001,0 Z' },
-          { d: 'M245,210 a4,2 0 1,1 0.001,0 Z' },
-          { d: 'M100,290 a4,2 0 1,1 0.001,0 Z' },
-          { d: 'M250,290 a4,2 0 1,1 0.001,0 Z' },
-          { d: 'M180,295 a4,2 0 1,1 0.001,0 Z' },
-          { d: 'M300,290 a4,2 0 1,1 0.001,0 Z' },
-          // balloons (left)
-          { d: 'M50,80 a18,22 0 1,1 0.001,0 Z' },
-          { d: 'M85,55 a16,20 0 1,1 0.001,0 Z' },
-          // balloons (right)
-          { d: 'M340,80 a18,22 0 1,1 0.001,0 Z' },
-          { d: 'M305,55 a16,20 0 1,1 0.001,0 Z' },
-        ],
-        details: [
-          { d: 'M50,100 L60,160' }, // balloon strings
-          { d: 'M85,75 L80,160' },
-          { d: 'M340,100 L330,160' },
-          { d: 'M305,75 L310,160' },
-        ],
-      },
+      { name: 'Smiling Sun', svg: `
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- 8 sun rays around the disk -->
+          <polygon class="region" points="200,12 218,72 182,72"/>
+          <polygon class="region" points="350,52 308,98 286,68"/>
+          <polygon class="region" points="388,200 326,218 326,182"/>
+          <polygon class="region" points="350,348 308,302 286,332"/>
+          <polygon class="region" points="200,388 218,328 182,328"/>
+          <polygon class="region" points="50,348 92,302 114,332"/>
+          <polygon class="region" points="12,200 74,218 74,182"/>
+          <polygon class="region" points="50,52 92,98 114,68"/>
+          <!-- Sun disk -->
+          <circle class="region" cx="200" cy="200" r="105"/>
+          <!-- Eyes (whites) -->
+          <ellipse class="region" cx="165" cy="180" rx="20" ry="24"/>
+          <ellipse class="region" cx="235" cy="180" rx="20" ry="24"/>
+          <!-- Cheeks -->
+          <ellipse class="region" cx="135" cy="240" rx="14" ry="9"/>
+          <ellipse class="region" cx="265" cy="240" rx="14" ry="9"/>
+          <!-- Mouth (filled smile) -->
+          <path class="region" d="M150,235 Q200,295 250,235 Q200,265 150,235 Z"/>
+          <!-- Pupils + nose (details, not tappable) -->
+          <circle class="dot" cx="170" cy="184" r="6"/>
+          <circle class="dot" cx="240" cy="184" r="6"/>
+          <circle class="dot" cx="200" cy="215" r="5"/>
+        </svg>
+      ` },
+
+      { name: 'Friendly Cat', svg: `
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- ground -->
+          <path class="region" d="M0,340 Q200,320 400,340 L400,400 L0,400 Z"/>
+          <!-- tail (curl) -->
+          <path class="region" d="M290,265 Q360,255 358,180 Q355,140 318,150 Q340,170 332,205 Q322,235 290,245 Z"/>
+          <!-- body -->
+          <path class="region" d="M120,320 Q90,260 130,215 Q140,185 180,185 L240,185 Q280,185 290,215 Q330,260 300,320 Z"/>
+          <!-- legs/paws -->
+          <ellipse class="region" cx="145" cy="332" rx="20" ry="13"/>
+          <ellipse class="region" cx="190" cy="332" rx="20" ry="13"/>
+          <ellipse class="region" cx="230" cy="332" rx="20" ry="13"/>
+          <ellipse class="region" cx="275" cy="332" rx="20" ry="13"/>
+          <!-- head -->
+          <path class="region" d="M140,160 Q140,85 210,85 Q280,85 280,160 L280,210 Q210,225 140,210 Z"/>
+          <!-- ears -->
+          <polygon class="region" points="140,115 122,55 175,95"/>
+          <polygon class="region" points="280,115 298,55 245,95"/>
+          <!-- inner ears -->
+          <polygon class="region" points="150,105 142,75 168,92"/>
+          <polygon class="region" points="270,105 278,75 252,92"/>
+          <!-- eyes (whites) -->
+          <ellipse class="region" cx="180" cy="142" rx="16" ry="18"/>
+          <ellipse class="region" cx="240" cy="142" rx="16" ry="18"/>
+          <!-- nose -->
+          <polygon class="region" points="205,170 225,170 215,184"/>
+          <!-- pupils + whiskers + mouth (details) -->
+          <ellipse class="dot" cx="184" cy="142" rx="5" ry="9"/>
+          <ellipse class="dot" cx="244" cy="142" rx="5" ry="9"/>
+          <path class="detail" d="M150,180 L100,170 M150,190 L100,196 M270,180 L320,170 M270,190 L320,196"/>
+          <path class="detail" d="M215,184 L215,196 Q210,210 196,202 M215,196 Q220,210 234,202"/>
+        </svg>
+      ` },
+
+      { name: 'Big Truck', svg: `
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- sky -->
+          <rect class="region" x="0" y="0" width="400" height="320"/>
+          <!-- road -->
+          <rect class="region" x="0" y="320" width="400" height="80"/>
+          <!-- sun -->
+          <circle class="region" cx="60" cy="70" r="32"/>
+          <!-- cloud -->
+          <path class="region" d="M260,70 Q252,52 272,48 Q280,32 298,38 Q316,28 326,48 Q340,58 322,72 Q290,80 260,70 Z"/>
+          <!-- trailer box -->
+          <rect class="region" x="265" y="200" width="105" height="120"/>
+          <!-- cab back -->
+          <rect class="region" x="50" y="170" width="155" height="150"/>
+          <!-- hood -->
+          <rect class="region" x="205" y="220" width="55" height="100"/>
+          <!-- windshield -->
+          <rect class="region" x="65" y="180" width="125" height="55"/>
+          <!-- door -->
+          <rect class="region" x="90" y="245" width="80" height="65"/>
+          <!-- grille -->
+          <rect class="region" x="215" y="245" width="40" height="55"/>
+          <!-- headlight -->
+          <circle class="region" cx="248" cy="230" r="9"/>
+          <!-- wheels left/right (outer + hub) -->
+          <circle class="region" cx="100" cy="345" r="36"/>
+          <circle class="region" cx="100" cy="345" r="14"/>
+          <circle class="region" cx="225" cy="345" r="36"/>
+          <circle class="region" cx="225" cy="345" r="14"/>
+          <circle class="region" cx="335" cy="345" r="32"/>
+          <circle class="region" cx="335" cy="345" r="12"/>
+          <!-- details -->
+          <line class="detail" x1="128" y1="180" x2="128" y2="235"/>
+        </svg>
+      ` },
+
+      { name: 'Castle in the Clouds', svg: `
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- sky -->
+          <rect class="region" x="0" y="0" width="400" height="340"/>
+          <!-- ground -->
+          <rect class="region" x="0" y="340" width="400" height="60"/>
+          <!-- sun -->
+          <circle class="region" cx="345" cy="60" r="28"/>
+          <!-- clouds -->
+          <path class="region" d="M40,85 Q30,65 50,60 Q55,45 75,50 Q90,40 105,60 Q120,70 100,85 Q60,95 40,85 Z"/>
+          <path class="region" d="M250,55 Q240,38 260,33 Q265,20 285,25 Q300,15 315,32 Q330,42 310,57 Q280,67 250,55 Z"/>
+          <!-- left tower base + roof -->
+          <rect class="region" x="60" y="180" width="70" height="160"/>
+          <polygon class="region" points="50,180 95,100 140,180"/>
+          <!-- center tower base + roof -->
+          <rect class="region" x="150" y="140" width="100" height="200"/>
+          <polygon class="region" points="140,140 200,40 260,140"/>
+          <!-- right tower base + roof -->
+          <rect class="region" x="270" y="180" width="70" height="160"/>
+          <polygon class="region" points="260,180 305,100 350,180"/>
+          <!-- arched gate -->
+          <path class="region" d="M180,340 L180,260 Q180,225 200,225 Q220,225 220,260 L220,340 Z"/>
+          <!-- windows -->
+          <rect class="region" x="75" y="220" width="28" height="40"/>
+          <rect class="region" x="285" y="220" width="28" height="40"/>
+          <rect class="region" x="188" y="170" width="24" height="32"/>
+          <rect class="region" x="165" y="220" width="22" height="32"/>
+          <rect class="region" x="213" y="220" width="22" height="32"/>
+          <!-- flag pole + flag -->
+          <rect class="region" x="198" y="15" width="4" height="30"/>
+          <polygon class="region" points="202,15 240,25 202,38"/>
+          <!-- window cross details -->
+          <path class="detail" d="M75,220 L103,260 M103,220 L75,260 M285,220 L313,260 M313,220 L285,260 M200,170 L200,202 M188,186 L212,186"/>
+        </svg>
+      ` },
+
+      { name: 'Underwater World', svg: `
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- water -->
+          <rect class="region" x="0" y="0" width="400" height="400"/>
+          <!-- ocean floor -->
+          <path class="region" d="M0,340 Q80,320 160,340 Q240,360 320,340 Q380,328 400,340 L400,400 L0,400 Z"/>
+          <!-- sun glow -->
+          <circle class="region" cx="80" cy="70" r="30"/>
+          <!-- bubbles -->
+          <circle class="region" cx="340" cy="80" r="14"/>
+          <circle class="region" cx="362" cy="115" r="9"/>
+          <circle class="region" cx="350" cy="140" r="5"/>
+          <!-- big fish: tail, top fin, bottom fin, body -->
+          <polygon class="region" points="40,200 5,150 22,200 5,250"/>
+          <path class="region" d="M170,140 Q200,90 230,150 Q200,150 170,140 Z"/>
+          <path class="region" d="M170,260 Q200,310 230,250 Q200,260 170,260 Z"/>
+          <path class="region" d="M50,200 Q90,120 200,140 Q290,150 320,200 Q290,260 200,260 Q90,280 50,200 Z"/>
+          <!-- fish scales (small color spots) -->
+          <ellipse class="region" cx="140" cy="180" rx="18" ry="8"/>
+          <ellipse class="region" cx="180" cy="170" rx="18" ry="8"/>
+          <ellipse class="region" cx="220" cy="170" rx="18" ry="8"/>
+          <!-- big fish eye -->
+          <circle class="region" cx="275" cy="180" r="16"/>
+          <!-- small fish -->
+          <polygon class="region" points="245,290 220,275 230,290 220,305"/>
+          <path class="region" d="M250,290 Q280,260 340,275 Q375,280 385,295 Q375,310 340,315 Q280,320 250,290 Z"/>
+          <circle class="region" cx="335" cy="285" r="6"/>
+          <!-- seaweed -->
+          <path class="region" d="M30,400 Q40,320 30,260 Q20,200 35,170 L48,170 Q63,200 53,260 Q63,320 48,400 Z"/>
+          <path class="region" d="M360,400 Q370,330 355,280 Q345,240 360,200 L373,200 Q388,240 378,280 Q393,330 378,400 Z"/>
+          <!-- starfish -->
+          <polygon class="region" points="100,360 110,378 130,378 114,392 120,410 100,400 80,410 86,392 70,378 90,378"/>
+          <!-- coral -->
+          <path class="region" d="M220,395 Q210,355 230,330 Q250,310 245,350 Q265,335 260,370 Q280,360 270,395 Z"/>
+          <!-- details: smiles + pupils -->
+          <circle class="dot" cx="282" cy="180" r="5"/>
+          <circle class="dot" cx="338" cy="285" r="2.5"/>
+          <path class="detail" d="M70,225 Q90,238 110,225 M270,295 Q285,303 305,295"/>
+        </svg>
+      ` },
+
+      { name: 'Birthday Cake', svg: `
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- table -->
+          <rect class="region" x="0" y="340" width="400" height="60"/>
+          <!-- plate -->
+          <path class="region" d="M40,340 L360,340 L350,355 L50,355 Z"/>
+          <!-- bottom tier + frill -->
+          <rect class="region" x="70" y="260" width="260" height="80"/>
+          <path class="region" d="M70,260 Q90,245 110,260 Q130,245 150,260 Q170,245 190,260 Q210,245 230,260 Q250,245 270,260 Q290,245 310,260 Q325,247 330,260 L330,270 L70,270 Z"/>
+          <!-- top tier + frill -->
+          <rect class="region" x="120" y="190" width="160" height="70"/>
+          <path class="region" d="M120,190 Q140,178 160,190 Q180,178 200,190 Q220,178 240,190 Q260,178 280,190 L280,200 L120,200 Z"/>
+          <!-- candle + flame -->
+          <rect class="region" x="190" y="150" width="20" height="40"/>
+          <path class="region" d="M200,150 Q186,128 200,108 Q214,128 200,150 Z"/>
+          <path class="region" d="M200,138 Q193,126 200,118 Q207,126 200,138 Z"/>
+          <!-- balloons -->
+          <ellipse class="region" cx="50" cy="90" rx="20" ry="24"/>
+          <ellipse class="region" cx="85" cy="65" rx="18" ry="22"/>
+          <ellipse class="region" cx="340" cy="90" rx="20" ry="24"/>
+          <ellipse class="region" cx="305" cy="65" rx="18" ry="22"/>
+          <!-- sprinkles -->
+          <ellipse class="region" cx="150" cy="225" rx="5" ry="2.5"/>
+          <ellipse class="region" cx="200" cy="235" rx="5" ry="2.5"/>
+          <ellipse class="region" cx="245" cy="220" rx="5" ry="2.5"/>
+          <ellipse class="region" cx="100" cy="305" rx="5" ry="2.5"/>
+          <ellipse class="region" cx="180" cy="310" rx="5" ry="2.5"/>
+          <ellipse class="region" cx="250" cy="305" rx="5" ry="2.5"/>
+          <ellipse class="region" cx="300" cy="305" rx="5" ry="2.5"/>
+          <!-- strings -->
+          <path class="detail" d="M50,114 L60,180 M85,87 L80,180 M340,114 L330,180 M305,87 L310,180"/>
+        </svg>
+      ` },
     ];
 
     let picIdx = 0;
@@ -371,17 +311,12 @@
     function renderPic() {
       const pic = SCENES[picIdx % SCENES.length];
       titleEl.textContent = pic.name;
-      const regions = pic.regions.map((r, i) =>
-        `<path class="region" data-i="${i}" d="${r.d}" style="fill:#ffffff"/>`).join('');
-      const details = (pic.details || []).map(d => d.fillType === 'black'
-        ? `<path class="detail-fill" d="${d.d}" fill="#1a1a2e"/>`
-        : `<path class="detail" d="${d.d}"/>`).join('');
-      picWrap.innerHTML =
-        `<svg viewBox="${pic.viewBox}" xmlns="http://www.w3.org/2000/svg">${regions}${details}</svg>`;
+      picWrap.innerHTML = pic.svg;
       picWrap.querySelectorAll('.region').forEach(el => {
+        el.style.fill = '#ffffff';
         el.addEventListener('pointerdown', (e) => {
           e.stopPropagation();
-          // style.fill beats the CSS rule — setAttribute('fill') would lose to it
+          // style.fill beats CSS — setAttribute('fill') would lose to it
           el.style.fill = active;
           playChime();
         });
