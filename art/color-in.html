@@ -8,13 +8,36 @@
   <style>
     body { background: #f4f0e6; }
     .stage { position: fixed; inset: 0; display: flex; flex-direction: column; }
-    .pic-wrap {
-      flex: 1;
-      display: flex; align-items: center; justify-content: center;
+    /* Coloring book frame — gives the page a 3D book feel */
+    .book {
+      flex: 1; position: relative;
+      perspective: 1500px;
+      perspective-origin: 50% 50%;
       padding: 70px 12px 110px;
+      display: flex; align-items: center; justify-content: center;
     }
-    .pic-wrap svg { width: 100%; height: 100%; max-height: calc(100vh - 200px); }
-    /* Inline style.fill on each .region wins over this base color. */
+    .page {
+      position: absolute; top: 70px; bottom: 110px; left: 12px; right: 12px;
+      background: white; border-radius: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.05);
+      display: flex; align-items: center; justify-content: center;
+      transform-style: preserve-3d;
+      transform-origin: left center;
+      transition: transform 0.5s cubic-bezier(.55,.1,.25,1), opacity 0.3s;
+      backface-visibility: hidden;
+    }
+    .page.flipping { z-index: 10; }
+    .page.behind { transform: scale(0.97); opacity: 0.4; }
+    .page svg, .page canvas, .page img { width: 100%; height: 100%; max-height: 100%; }
+    /* Spine line on the left edge */
+    .book::before {
+      content: ''; position: absolute; top: 60px; bottom: 100px; left: 6px;
+      width: 6px; border-radius: 3px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.15), transparent);
+      pointer-events: none; z-index: 11;
+    }
+    /* Coloring layer */
+    .pic-svg { width: 100%; height: 100%; }
     .region {
       stroke: #1a1a2e; stroke-width: 4; stroke-linejoin: round;
       stroke-linecap: round; cursor: pointer;
@@ -26,6 +49,15 @@
       stroke-linecap: round; pointer-events: none;
     }
     .dot { fill: #1a1a2e; pointer-events: none; }
+    /* Photo coloring uses two stacked canvases */
+    .photo-page {
+      position: relative; width: 100%; height: 100%;
+      background: white;
+    }
+    .photo-page canvas { position: absolute; inset: 0; touch-action: none; }
+    .photo-lineart { z-index: 2; pointer-events: none; mix-blend-mode: multiply; }
+    .photo-paint   { z-index: 1; }
+
     #toolbar {
       position: fixed; bottom: 0; left: 0; right: 0;
       display: flex; align-items: center; justify-content: center;
@@ -41,7 +73,8 @@
         padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) 12px;
         gap: 14px;
       }
-      .pic-wrap { padding-right: 200px; padding-bottom: 16px; }
+      .book { padding-right: 200px; padding-bottom: 16px; }
+      .page { right: 200px; bottom: 16px; }
     }
     .pip {
       width: 46px; height: 46px; border-radius: 50%;
@@ -55,6 +88,22 @@
       border: 2px solid rgba(255,255,255,0.3);
       color: white; font-weight: 800; font-size: 13px; cursor: pointer;
     }
+    /* Page nav arrows (sit OUTSIDE the toolbar so kid can flip mid-coloring) */
+    .page-nav {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      width: 44px; height: 80px; border-radius: 12px;
+      background: rgba(10,10,40,0.5); color: white;
+      border: 2px solid rgba(255,255,255,0.3);
+      font-size: 24px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 8; opacity: 0.6;
+    }
+    .page-nav:active { opacity: 1; }
+    .page-nav.prev { left: 4px; }
+    .page-nav.next { right: 4px; }
+    @media (orientation: landscape) and (min-width: 768px) {
+      .page-nav.next { right: 204px; }
+    }
     .scene-title {
       position: fixed; top: calc(14px + env(safe-area-inset-top));
       left: 50%; transform: translateX(-50%);
@@ -64,12 +113,28 @@
       max-width: calc(100vw - 220px); white-space: nowrap; overflow: hidden;
       text-overflow: ellipsis;
     }
+    /* Page-turn animation */
+    @keyframes flipOut {
+      from { transform: rotateY(0deg); }
+      to   { transform: rotateY(-160deg); }
+    }
+    @keyframes flipIn {
+      from { transform: rotateY(160deg); }
+      to   { transform: rotateY(0deg); }
+    }
+    .page.flip-out { animation: flipOut 0.55s ease-in forwards; }
+    .page.flip-in  { animation: flipIn 0.55s ease-out forwards; }
   </style>
 </head>
 <body>
   <div class="stage">
     <div class="scene-title" id="title"></div>
-    <div class="pic-wrap" id="picWrap"></div>
+    <div class="book" id="book">
+      <div class="page" id="pageA"></div>
+      <div class="page" id="pageB" style="display:none;"></div>
+    </div>
+    <button class="page-nav prev" id="prevBtn" aria-label="Previous page">‹</button>
+    <button class="page-nav next" id="nextBtn" aria-label="Next page">›</button>
   </div>
   <div id="toolbar"></div>
   <script src="../js/tiers.js"></script>
@@ -82,20 +147,16 @@
     (function() {
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
-    const tier = getActivityTier(profile, 'color-in');
     renderBackBtn('index.html');
 
     const COLORS = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1',
                     '#FF69B4','#7CFC00','#8B4513','#FFFFFF','#222222'];
     let active = COLORS[0];
 
-    // Each scene is hand-authored SVG markup. Anything with class="region" is
-    // a tappable fillable area. Anything with class="detail" or class="dot"
-    // is overlay (smiles, pupils, etc.) drawn on top and not tappable.
-    const SCENES = [
+    // Built-in scenes (hand-authored SVG)
+    const BUILTIN_SCENES = [
       { name: 'Smiling Sun', svg: `
-        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-          <!-- 8 sun rays around the disk -->
+        <svg class="pic-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
           <polygon class="region" points="200,12 218,72 182,72"/>
           <polygon class="region" points="350,52 308,98 286,68"/>
           <polygon class="region" points="388,200 326,218 326,182"/>
@@ -104,192 +165,129 @@
           <polygon class="region" points="50,348 92,302 114,332"/>
           <polygon class="region" points="12,200 74,218 74,182"/>
           <polygon class="region" points="50,52 92,98 114,68"/>
-          <!-- Sun disk -->
           <circle class="region" cx="200" cy="200" r="105"/>
-          <!-- Eyes (whites) -->
           <ellipse class="region" cx="165" cy="180" rx="20" ry="24"/>
           <ellipse class="region" cx="235" cy="180" rx="20" ry="24"/>
-          <!-- Cheeks -->
           <ellipse class="region" cx="135" cy="240" rx="14" ry="9"/>
           <ellipse class="region" cx="265" cy="240" rx="14" ry="9"/>
-          <!-- Mouth (filled smile) -->
           <path class="region" d="M150,235 Q200,295 250,235 Q200,265 150,235 Z"/>
-          <!-- Pupils + nose (details, not tappable) -->
           <circle class="dot" cx="170" cy="184" r="6"/>
           <circle class="dot" cx="240" cy="184" r="6"/>
           <circle class="dot" cx="200" cy="215" r="5"/>
         </svg>
       ` },
-
       { name: 'Friendly Cat', svg: `
-        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-          <!-- ground -->
+        <svg class="pic-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
           <path class="region" d="M0,340 Q200,320 400,340 L400,400 L0,400 Z"/>
-          <!-- tail (curl) -->
           <path class="region" d="M290,265 Q360,255 358,180 Q355,140 318,150 Q340,170 332,205 Q322,235 290,245 Z"/>
-          <!-- body -->
           <path class="region" d="M120,320 Q90,260 130,215 Q140,185 180,185 L240,185 Q280,185 290,215 Q330,260 300,320 Z"/>
-          <!-- legs/paws -->
           <ellipse class="region" cx="145" cy="332" rx="20" ry="13"/>
           <ellipse class="region" cx="190" cy="332" rx="20" ry="13"/>
           <ellipse class="region" cx="230" cy="332" rx="20" ry="13"/>
           <ellipse class="region" cx="275" cy="332" rx="20" ry="13"/>
-          <!-- head -->
           <path class="region" d="M140,160 Q140,85 210,85 Q280,85 280,160 L280,210 Q210,225 140,210 Z"/>
-          <!-- ears -->
           <polygon class="region" points="140,115 122,55 175,95"/>
           <polygon class="region" points="280,115 298,55 245,95"/>
-          <!-- inner ears -->
           <polygon class="region" points="150,105 142,75 168,92"/>
           <polygon class="region" points="270,105 278,75 252,92"/>
-          <!-- eyes (whites) -->
           <ellipse class="region" cx="180" cy="142" rx="16" ry="18"/>
           <ellipse class="region" cx="240" cy="142" rx="16" ry="18"/>
-          <!-- nose -->
           <polygon class="region" points="205,170 225,170 215,184"/>
-          <!-- pupils + whiskers + mouth (details) -->
           <ellipse class="dot" cx="184" cy="142" rx="5" ry="9"/>
           <ellipse class="dot" cx="244" cy="142" rx="5" ry="9"/>
           <path class="detail" d="M150,180 L100,170 M150,190 L100,196 M270,180 L320,170 M270,190 L320,196"/>
           <path class="detail" d="M215,184 L215,196 Q210,210 196,202 M215,196 Q220,210 234,202"/>
         </svg>
       ` },
-
       { name: 'Big Truck', svg: `
-        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-          <!-- sky -->
+        <svg class="pic-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
           <rect class="region" x="0" y="0" width="400" height="320"/>
-          <!-- road -->
           <rect class="region" x="0" y="320" width="400" height="80"/>
-          <!-- sun -->
           <circle class="region" cx="60" cy="70" r="32"/>
-          <!-- cloud -->
           <path class="region" d="M260,70 Q252,52 272,48 Q280,32 298,38 Q316,28 326,48 Q340,58 322,72 Q290,80 260,70 Z"/>
-          <!-- trailer box -->
           <rect class="region" x="265" y="200" width="105" height="120"/>
-          <!-- cab back -->
           <rect class="region" x="50" y="170" width="155" height="150"/>
-          <!-- hood -->
           <rect class="region" x="205" y="220" width="55" height="100"/>
-          <!-- windshield -->
           <rect class="region" x="65" y="180" width="125" height="55"/>
-          <!-- door -->
           <rect class="region" x="90" y="245" width="80" height="65"/>
-          <!-- grille -->
           <rect class="region" x="215" y="245" width="40" height="55"/>
-          <!-- headlight -->
           <circle class="region" cx="248" cy="230" r="9"/>
-          <!-- wheels left/right (outer + hub) -->
           <circle class="region" cx="100" cy="345" r="36"/>
           <circle class="region" cx="100" cy="345" r="14"/>
           <circle class="region" cx="225" cy="345" r="36"/>
           <circle class="region" cx="225" cy="345" r="14"/>
           <circle class="region" cx="335" cy="345" r="32"/>
           <circle class="region" cx="335" cy="345" r="12"/>
-          <!-- details -->
           <line class="detail" x1="128" y1="180" x2="128" y2="235"/>
         </svg>
       ` },
-
       { name: 'Castle in the Clouds', svg: `
-        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-          <!-- sky -->
+        <svg class="pic-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
           <rect class="region" x="0" y="0" width="400" height="340"/>
-          <!-- ground -->
           <rect class="region" x="0" y="340" width="400" height="60"/>
-          <!-- sun -->
           <circle class="region" cx="345" cy="60" r="28"/>
-          <!-- clouds -->
           <path class="region" d="M40,85 Q30,65 50,60 Q55,45 75,50 Q90,40 105,60 Q120,70 100,85 Q60,95 40,85 Z"/>
           <path class="region" d="M250,55 Q240,38 260,33 Q265,20 285,25 Q300,15 315,32 Q330,42 310,57 Q280,67 250,55 Z"/>
-          <!-- left tower base + roof -->
           <rect class="region" x="60" y="180" width="70" height="160"/>
           <polygon class="region" points="50,180 95,100 140,180"/>
-          <!-- center tower base + roof -->
           <rect class="region" x="150" y="140" width="100" height="200"/>
           <polygon class="region" points="140,140 200,40 260,140"/>
-          <!-- right tower base + roof -->
           <rect class="region" x="270" y="180" width="70" height="160"/>
           <polygon class="region" points="260,180 305,100 350,180"/>
-          <!-- arched gate -->
           <path class="region" d="M180,340 L180,260 Q180,225 200,225 Q220,225 220,260 L220,340 Z"/>
-          <!-- windows -->
           <rect class="region" x="75" y="220" width="28" height="40"/>
           <rect class="region" x="285" y="220" width="28" height="40"/>
           <rect class="region" x="188" y="170" width="24" height="32"/>
           <rect class="region" x="165" y="220" width="22" height="32"/>
           <rect class="region" x="213" y="220" width="22" height="32"/>
-          <!-- flag pole + flag -->
           <rect class="region" x="198" y="15" width="4" height="30"/>
           <polygon class="region" points="202,15 240,25 202,38"/>
-          <!-- window cross details -->
           <path class="detail" d="M75,220 L103,260 M103,220 L75,260 M285,220 L313,260 M313,220 L285,260 M200,170 L200,202 M188,186 L212,186"/>
         </svg>
       ` },
-
       { name: 'Underwater World', svg: `
-        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-          <!-- water -->
+        <svg class="pic-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
           <rect class="region" x="0" y="0" width="400" height="400"/>
-          <!-- ocean floor -->
           <path class="region" d="M0,340 Q80,320 160,340 Q240,360 320,340 Q380,328 400,340 L400,400 L0,400 Z"/>
-          <!-- sun glow -->
           <circle class="region" cx="80" cy="70" r="30"/>
-          <!-- bubbles -->
           <circle class="region" cx="340" cy="80" r="14"/>
           <circle class="region" cx="362" cy="115" r="9"/>
           <circle class="region" cx="350" cy="140" r="5"/>
-          <!-- big fish: tail, top fin, bottom fin, body -->
           <polygon class="region" points="40,200 5,150 22,200 5,250"/>
           <path class="region" d="M170,140 Q200,90 230,150 Q200,150 170,140 Z"/>
           <path class="region" d="M170,260 Q200,310 230,250 Q200,260 170,260 Z"/>
           <path class="region" d="M50,200 Q90,120 200,140 Q290,150 320,200 Q290,260 200,260 Q90,280 50,200 Z"/>
-          <!-- fish scales (small color spots) -->
           <ellipse class="region" cx="140" cy="180" rx="18" ry="8"/>
           <ellipse class="region" cx="180" cy="170" rx="18" ry="8"/>
           <ellipse class="region" cx="220" cy="170" rx="18" ry="8"/>
-          <!-- big fish eye -->
           <circle class="region" cx="275" cy="180" r="16"/>
-          <!-- small fish -->
           <polygon class="region" points="245,290 220,275 230,290 220,305"/>
           <path class="region" d="M250,290 Q280,260 340,275 Q375,280 385,295 Q375,310 340,315 Q280,320 250,290 Z"/>
           <circle class="region" cx="335" cy="285" r="6"/>
-          <!-- seaweed -->
           <path class="region" d="M30,400 Q40,320 30,260 Q20,200 35,170 L48,170 Q63,200 53,260 Q63,320 48,400 Z"/>
           <path class="region" d="M360,400 Q370,330 355,280 Q345,240 360,200 L373,200 Q388,240 378,280 Q393,330 378,400 Z"/>
-          <!-- starfish -->
           <polygon class="region" points="100,360 110,378 130,378 114,392 120,410 100,400 80,410 86,392 70,378 90,378"/>
-          <!-- coral -->
           <path class="region" d="M220,395 Q210,355 230,330 Q250,310 245,350 Q265,335 260,370 Q280,360 270,395 Z"/>
-          <!-- details: smiles + pupils -->
           <circle class="dot" cx="282" cy="180" r="5"/>
           <circle class="dot" cx="338" cy="285" r="2.5"/>
           <path class="detail" d="M70,225 Q90,238 110,225 M270,295 Q285,303 305,295"/>
         </svg>
       ` },
-
       { name: 'Birthday Cake', svg: `
-        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-          <!-- table -->
+        <svg class="pic-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
           <rect class="region" x="0" y="340" width="400" height="60"/>
-          <!-- plate -->
           <path class="region" d="M40,340 L360,340 L350,355 L50,355 Z"/>
-          <!-- bottom tier + frill -->
           <rect class="region" x="70" y="260" width="260" height="80"/>
           <path class="region" d="M70,260 Q90,245 110,260 Q130,245 150,260 Q170,245 190,260 Q210,245 230,260 Q250,245 270,260 Q290,245 310,260 Q325,247 330,260 L330,270 L70,270 Z"/>
-          <!-- top tier + frill -->
           <rect class="region" x="120" y="190" width="160" height="70"/>
           <path class="region" d="M120,190 Q140,178 160,190 Q180,178 200,190 Q220,178 240,190 Q260,178 280,190 L280,200 L120,200 Z"/>
-          <!-- candle + flame -->
           <rect class="region" x="190" y="150" width="20" height="40"/>
           <path class="region" d="M200,150 Q186,128 200,108 Q214,128 200,150 Z"/>
           <path class="region" d="M200,138 Q193,126 200,118 Q207,126 200,138 Z"/>
-          <!-- balloons -->
           <ellipse class="region" cx="50" cy="90" rx="20" ry="24"/>
           <ellipse class="region" cx="85" cy="65" rx="18" ry="22"/>
           <ellipse class="region" cx="340" cy="90" rx="20" ry="24"/>
           <ellipse class="region" cx="305" cy="65" rx="18" ry="22"/>
-          <!-- sprinkles -->
           <ellipse class="region" cx="150" cy="225" rx="5" ry="2.5"/>
           <ellipse class="region" cx="200" cy="235" rx="5" ry="2.5"/>
           <ellipse class="region" cx="245" cy="220" rx="5" ry="2.5"/>
@@ -297,32 +295,164 @@
           <ellipse class="region" cx="180" cy="310" rx="5" ry="2.5"/>
           <ellipse class="region" cx="250" cy="305" rx="5" ry="2.5"/>
           <ellipse class="region" cx="300" cy="305" rx="5" ry="2.5"/>
-          <!-- strings -->
           <path class="detail" d="M50,114 L60,180 M85,87 L80,180 M340,114 L330,180 M305,87 L310,180"/>
         </svg>
       ` },
     ];
 
-    let picIdx = 0;
-    const picWrap = document.getElementById('picWrap');
-    const toolbar = document.getElementById('toolbar');
-    const titleEl = document.getElementById('title');
-
-    function renderPic() {
-      const pic = SCENES[picIdx % SCENES.length];
-      titleEl.textContent = pic.name;
-      picWrap.innerHTML = pic.svg;
-      picWrap.querySelectorAll('.region').forEach(el => {
-        el.style.fill = '#ffffff';
-        el.addEventListener('pointerdown', (e) => {
-          e.stopPropagation();
-          // style.fill beats CSS — setAttribute('fill') would lose to it
-          el.style.fill = active;
-          playChime();
-        });
-      });
+    function getUploadedPages() {
+      try { return JSON.parse(localStorage.getItem('vb_coloring_pages') || '[]'); }
+      catch { return []; }
     }
 
+    // Combined book: built-in scenes + uploaded photos
+    function buildBook() {
+      const uploaded = getUploadedPages().map(p => ({
+        name: p.name || 'My Photo',
+        kind: 'photo',
+        lineArt: p.lineArt,
+      }));
+      return [
+        ...BUILTIN_SCENES.map(s => ({ ...s, kind: 'svg' })),
+        ...uploaded,
+      ];
+    }
+
+    let pages = buildBook();
+    let pageIdx = 0;
+    let pageState = ['pageA', 'pageB']; // ids of the two stacked page elements
+    let currentPageEl = 'pageA';
+
+    const pageA = document.getElementById('pageA');
+    const pageB = document.getElementById('pageB');
+    const titleEl = document.getElementById('title');
+
+    // Render a page's content into a target page element
+    function renderPageInto(el, page) {
+      el.innerHTML = '';
+      if (page.kind === 'svg') {
+        el.innerHTML = page.svg;
+        el.querySelectorAll('.region').forEach(r => {
+          r.style.fill = '#ffffff';
+          r.addEventListener('pointerdown', e => {
+            e.stopPropagation();
+            r.style.fill = active;
+            playChime();
+          });
+        });
+      } else {
+        // Photo: stack a paint canvas + line-art canvas
+        const wrap = document.createElement('div');
+        wrap.className = 'photo-page';
+        const paint = document.createElement('canvas'); paint.className = 'photo-paint';
+        const lineart = document.createElement('canvas'); lineart.className = 'photo-lineart';
+        wrap.appendChild(paint); wrap.appendChild(lineart);
+        el.appendChild(wrap);
+        // Load the line-art image to know its native dimensions
+        const img = new Image();
+        img.onload = () => {
+          const rect = wrap.getBoundingClientRect();
+          // Fit image, preserve aspect
+          const ratio = Math.min(rect.width / img.width, rect.height / img.height);
+          const w = Math.round(img.width * ratio);
+          const h = Math.round(img.height * ratio);
+          paint.width = lineart.width = w;
+          paint.height = lineart.height = h;
+          // Center them
+          [paint, lineart].forEach(c => {
+            c.style.left = ((rect.width - w) / 2) + 'px';
+            c.style.top  = ((rect.height - h) / 2) + 'px';
+            c.style.width = w + 'px';
+            c.style.height = h + 'px';
+          });
+          // White paint background
+          const pctx = paint.getContext('2d');
+          pctx.fillStyle = '#ffffff';
+          pctx.fillRect(0, 0, w, h);
+          // Draw line art
+          lineart.getContext('2d').drawImage(img, 0, 0, w, h);
+          // Painting handlers
+          let drawing = false, lastX = 0, lastY = 0;
+          function pt(e) {
+            const r = paint.getBoundingClientRect();
+            return { x: (e.clientX - r.left) * (paint.width / r.width),
+                     y: (e.clientY - r.top) * (paint.height / r.height) };
+          }
+          paint.addEventListener('pointerdown', e => {
+            drawing = true; const p = pt(e); lastX = p.x; lastY = p.y;
+            paint.setPointerCapture(e.pointerId);
+            pctx.fillStyle = active;
+            pctx.beginPath(); pctx.arc(p.x, p.y, 18, 0, Math.PI*2); pctx.fill();
+          });
+          paint.addEventListener('pointermove', e => {
+            if (!drawing) return;
+            const p = pt(e);
+            pctx.strokeStyle = active;
+            pctx.lineWidth = 36; pctx.lineCap = 'round'; pctx.lineJoin = 'round';
+            pctx.beginPath(); pctx.moveTo(lastX, lastY); pctx.lineTo(p.x, p.y); pctx.stroke();
+            lastX = p.x; lastY = p.y;
+          });
+          paint.addEventListener('pointerup', () => { drawing = false; });
+          paint.addEventListener('pointercancel', () => { drawing = false; });
+        };
+        img.src = page.lineArt;
+      }
+    }
+
+    function setTitle(p) { titleEl.textContent = p.name; }
+
+    function showPage(idx, dir) {
+      // dir > 0 = forward (current flips out left, new comes in from right)
+      // dir < 0 = back; dir = 0 = initial / no animation
+      const front = document.getElementById(currentPageEl);
+      const back  = document.getElementById(currentPageEl === 'pageA' ? 'pageB' : 'pageA');
+      const page = pages[(idx + pages.length) % pages.length];
+      renderPageInto(back, page);
+      setTitle(page);
+      back.style.display = 'flex';
+      if (!dir) {
+        // initial render: hide back, show only front (re-use front for initial too)
+        renderPageInto(front, page);
+        back.style.display = 'none';
+        return;
+      }
+      // Animate front out
+      front.classList.remove('flip-in');
+      back.classList.remove('flip-out', 'flip-in');
+      back.style.zIndex = 9;
+      front.style.zIndex = 10;
+      if (dir > 0) {
+        front.classList.add('flip-out');
+        back.classList.add('flip-in');
+        back.style.transformOrigin = 'left center';
+        front.style.transformOrigin = 'left center';
+      } else {
+        // Reverse: front rotates +160 out (right-side flip)
+        front.style.transformOrigin = 'right center';
+        back.style.transformOrigin = 'right center';
+        front.style.animation = 'flipOut 0.55s ease-in forwards reverse';
+        back.style.animation = 'flipIn 0.55s ease-out forwards reverse';
+      }
+      setTimeout(() => {
+        front.style.display = 'none';
+        front.classList.remove('flip-out');
+        front.style.animation = '';
+        back.classList.remove('flip-in');
+        back.style.animation = '';
+        currentPageEl = (currentPageEl === 'pageA') ? 'pageB' : 'pageA';
+      }, 560);
+    }
+
+    function flipTo(idx, dir) {
+      pageIdx = (idx + pages.length) % pages.length;
+      showPage(pageIdx, dir);
+    }
+
+    document.getElementById('prevBtn').addEventListener('pointerdown', () => flipTo(pageIdx - 1, -1));
+    document.getElementById('nextBtn').addEventListener('pointerdown', () => flipTo(pageIdx + 1, +1));
+
+    // Toolbar
+    const toolbar = document.getElementById('toolbar');
     function renderToolbar() {
       toolbar.innerHTML = '';
       COLORS.forEach((c, i) => {
@@ -336,21 +466,24 @@
         });
         toolbar.appendChild(pip);
       });
-      const next = document.createElement('button');
-      next.className = 'tool-btn'; next.textContent = '✨ New';
-      next.addEventListener('pointerdown', () => { picIdx++; renderPic(); });
-      toolbar.appendChild(next);
       const clear = document.createElement('button');
       clear.className = 'tool-btn'; clear.textContent = '🧽 Clear';
       clear.addEventListener('pointerdown', () => {
-        picWrap.querySelectorAll('.region').forEach(r => { r.style.fill = '#ffffff'; });
+        const front = document.getElementById(currentPageEl);
+        front.querySelectorAll('.region').forEach(r => { r.style.fill = '#ffffff'; });
+        const paint = front.querySelector('canvas.photo-paint');
+        if (paint) {
+          const ctx = paint.getContext('2d');
+          ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, paint.width, paint.height);
+        }
       });
       toolbar.appendChild(clear);
       gameSettings.attach('color-in', { container: '#toolbar' });
     }
 
     renderToolbar();
-    renderPic();
+    // Initial page
+    showPage(0, 0);
     })();
   </script>
 </body>

@@ -156,6 +156,12 @@
     </div>
     <div id="mascotSection"></div>
 
+    <h2>🖍️ Coloring Pages</h2>
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+      Upload family photos to turn into coloring pages. The kid sees them in the Art → Color In activity, along with the built-in scenes. Up to 10 photos.
+    </div>
+    <div id="coloringSection"></div>
+
     <h2>🎧 Yoto</h2>
     <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
       Connect your Yoto account to let the child play family recordings (MYO cards) and purchased Yoto stories from the Listen tab.
@@ -321,6 +327,7 @@
       buildVoiceSection();
       buildMascotSection();
       buildYoutubeSection();
+      buildColoringSection();
       buildYotoSection();
       buildSyncSection();
       _refreshRecoveryStatus();
@@ -476,6 +483,145 @@
       localStorage.setItem('vb_mascot_plays', JSON.stringify(plays));
       if (window.mascot) window.mascot.play('welcome');
       if (prev) localStorage.setItem('vb_active_id', prev);
+    }
+
+    // ─── Coloring Pages (upload photos → line-art) ──────────────────────────
+    const COLORING_KEY = 'vb_coloring_pages';
+    const COLORING_MAX = 10;
+    const COLORING_MAX_DIM = 800; // resize uploaded photos so we don't blow localStorage
+    function getColoringPages() {
+      try { return JSON.parse(localStorage.getItem(COLORING_KEY) || '[]'); }
+      catch { return []; }
+    }
+    function saveColoringPages(list) {
+      localStorage.setItem(COLORING_KEY, JSON.stringify(list));
+    }
+    function buildColoringSection() {
+      const section = document.getElementById('coloringSection');
+      const pages = getColoringPages();
+      section.innerHTML = `
+        <div class="card">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <label class="btn" style="cursor:pointer;">
+              ＋ Upload photo
+              <input id="coloringUpload" type="file" accept="image/*" style="display:none;">
+            </label>
+            <span style="color:rgba(255,255,255,0.55); font-size:13px; align-self:center;">
+              ${pages.length}/${COLORING_MAX} pages
+            </span>
+          </div>
+          <div id="coloringList" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+                                        gap:10px; margin-top:14px;"></div>
+        </div>
+      `;
+      const list = section.querySelector('#coloringList');
+      pages.forEach((p, i) => {
+        const tile = document.createElement('div');
+        tile.style.cssText =
+          'background:#f4f0e6; border-radius:12px; overflow:hidden; position:relative; aspect-ratio:1;';
+        tile.innerHTML = `
+          <img src="${p.lineArt}" style="width:100%; height:100%; object-fit:contain;">
+          <button class="btn" data-i="${i}" style="position:absolute; top:6px; right:6px;
+                  width:32px; height:32px; border-radius:50%; padding:0; background:#FF6B6B;
+                  font-size:14px; font-weight:900;">✕</button>
+        `;
+        tile.querySelector('button').onclick = () => {
+          if (!confirm('Remove this coloring page?')) return;
+          const cur = getColoringPages();
+          cur.splice(i, 1);
+          saveColoringPages(cur);
+          buildColoringSection();
+        };
+        list.appendChild(tile);
+      });
+      section.querySelector('#coloringUpload').onchange = handleColoringUpload;
+    }
+    async function handleColoringUpload(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const pages = getColoringPages();
+      if (pages.length >= COLORING_MAX) {
+        alert(`Max ${COLORING_MAX} pages. Remove one first.`);
+        return;
+      }
+      const img = await _loadImage(URL.createObjectURL(file));
+      const lineArt = _photoToLineArt(img);
+      pages.push({
+        id: Date.now().toString(36),
+        name: file.name.replace(/\.[^.]+$/, '').slice(0, 30),
+        lineArt,
+        createdAt: Date.now(),
+      });
+      saveColoringPages(pages);
+      buildColoringSection();
+    }
+    function _loadImage(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+    // Canvas-based edge detection. Result: a high-contrast line drawing on
+    // white. Runs entirely client-side, ~100ms per photo.
+    function _photoToLineArt(img) {
+      // Resize so the long side is COLORING_MAX_DIM
+      const ratio = Math.min(COLORING_MAX_DIM / img.width, COLORING_MAX_DIM / img.height, 1);
+      const w = Math.round(img.width * ratio);
+      const h = Math.round(img.height * ratio);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const src = ctx.getImageData(0, 0, w, h);
+      const gray = new Uint8ClampedArray(w * h);
+      for (let i = 0, j = 0; i < src.data.length; i += 4, j++) {
+        // luminance
+        gray[j] = (src.data[i] * 0.299 + src.data[i+1] * 0.587 + src.data[i+2] * 0.114) | 0;
+      }
+      // Sobel edge magnitude
+      const out = new Uint8ClampedArray(w * h);
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          const i = y * w + x;
+          const gx =
+            -gray[i - w - 1] -2*gray[i - 1] -gray[i + w - 1]
+            + gray[i - w + 1] +2*gray[i + 1] +gray[i + w + 1];
+          const gy =
+            -gray[i - w - 1] -2*gray[i - w] -gray[i - w + 1]
+            + gray[i + w - 1] +2*gray[i + w] +gray[i + w + 1];
+          out[i] = Math.min(255, Math.hypot(gx, gy));
+        }
+      }
+      // Threshold → bold black lines on white, with a small dilation pass so
+      // thin edges become readable line strokes.
+      const THRESHOLD = 60;
+      const dst = ctx.createImageData(w, h);
+      for (let i = 0; i < out.length; i++) {
+        const on = out[i] > THRESHOLD;
+        const v = on ? 0 : 255;
+        const j = i * 4;
+        dst.data[j] = dst.data[j+1] = dst.data[j+2] = v;
+        dst.data[j+3] = 255;
+      }
+      // Dilate: any white pixel adjacent to a black pixel becomes gray (so lines
+      // feel hand-drawn rather than pixelated).
+      const dilated = new Uint8ClampedArray(dst.data);
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          const j = (y * w + x) * 4;
+          if (dst.data[j] === 0) continue;
+          const neighbors = [j - 4, j + 4, j - w*4, j + w*4];
+          if (neighbors.some(n => dst.data[n] === 0)) {
+            dilated[j] = dilated[j+1] = dilated[j+2] = 30;
+          }
+        }
+      }
+      dst.data.set(dilated);
+      ctx.putImageData(dst, 0, 0);
+      // Return as a PNG data URL we can save in localStorage.
+      return c.toDataURL('image/png');
     }
 
     function buildYotoSection() {
