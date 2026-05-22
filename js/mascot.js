@@ -60,16 +60,21 @@ function _ensureEl() {
   if (_mascotEl) return _mascotEl;
   const wrap = document.createElement('div');
   wrap.id = 'mascotWrap';
+  // No dark bubble / no white border / no hard shadow — mascot appears to
+  // "just be there". The cream baked-in video background is feathered out
+  // with a radial mask so it blends into the page edge softly.
   wrap.style.cssText = `
     position: fixed; bottom: 16px; right: 16px;
-    width: 180px; height: 180px; border-radius: 50%;
-    background: rgba(0,0,0,0.4); overflow: hidden;
+    width: 180px; height: 180px;
     display: none;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     z-index: 9999;
-    border: 4px solid rgba(255,255,255,0.6);
+    overflow: visible;
+    pointer-events: auto;
+    -webkit-mask: radial-gradient(circle at center, black 58%, transparent 78%);
+            mask: radial-gradient(circle at center, black 58%, transparent 78%);
     transition: transform 0.3s, opacity 0.3s;
     animation: mascotBob 4s ease-in-out infinite;
+    filter: drop-shadow(0 4px 18px rgba(0,0,0,0.18));
   `;
   if (!document.getElementById('mascotBobKf')) {
     const style = document.createElement('style');
@@ -79,12 +84,21 @@ function _ensureEl() {
         0%, 100% { transform: translateY(0) scale(1); }
         50% { transform: translateY(-6px) scale(1.02); }
       }
+      /* Smaller mascot on phone-sized viewports so it doesn't eat half the
+         screen. Position also pulls in slightly so it doesn't cover content. */
+      @media (max-width: 600px) {
+        #mascotWrap { width: 120px !important; height: 120px !important;
+                      bottom: 12px !important; right: 12px !important; }
+      }
+      /* Phone landscape — even smaller, content is squeezed vertically */
+      @media (max-height: 500px) and (orientation: landscape) {
+        #mascotWrap { width: 110px !important; height: 110px !important;
+                      bottom: 8px !important; right: 8px !important; }
+      }
     `;
     document.head.appendChild(style);
   }
   // Two stacked <video>s for crossfade — eliminates flash on src change.
-  // The wrap background sits BEHIND both videos, so during the fade overlap
-  // the dark border won't bleed through (matches the mascot bg color).
   for (let i = 0; i < 2; i++) {
     const vid = document.createElement('video');
     vid.className = 'mascot-vid';
@@ -96,7 +110,7 @@ function _ensureEl() {
       width: 100%; height: 100%; object-fit: cover;
       opacity: ${i === 0 ? 1 : 0};
       transition: opacity 0.4s ease;
-      background: rgba(0,0,0,0.4);
+      background: transparent;
     `;
     wrap.appendChild(vid);
   }
@@ -114,12 +128,13 @@ function _onMascotTap() {
   // mid-speech taps are ignored so animations always play to completion.
   if (_state !== 'base') return;
   const p = _activeProfile();
-  if (!p || !p.mascot || !p.mascot.id) return;
+  if (!p) return;
+  const mascotId = _mascotIdFor(p);
   // Play the species signature sound — but only if we haven't played it
   // recently. Toddlers tap-tap-tap, and a bark every half second is noise.
   const now = Date.now();
   if (now - _lastSfxAt >= SFX_COOLDOWN_MS) {
-    const sfxFile = MASCOT_SOUND_FILE[p.mascot.id];
+    const sfxFile = MASCOT_SOUND_FILE[mascotId];
     if (sfxFile) {
       try {
         const a = new Audio(`${rootPath()}audio/sounds/${sfxFile}`);
