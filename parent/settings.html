@@ -26,6 +26,25 @@
       max-width: 760px; margin: 0 auto;
       position: relative; z-index: 1;
     }
+    /* Phone landscape (~390px tall) — compress vertical padding + override
+       PIN key aspect-ratio so the pad fits without scrolling. */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .settings-screen { padding: 10px 24px 10px; }
+      .settings-screen > .title { font-size: 20px; margin-bottom: 0; }
+      #pinPrompt { font-size: 12px; }
+      .pin-display { margin: 4px 0; gap: 8px; }
+      .pin-dot { width: 12px; height: 12px; }
+      .pin-pad { gap: 6px; max-width: 240px; }
+      .pin-key {
+        aspect-ratio: auto;
+        height: 38px;
+        font-size: 18px;
+        border-radius: 14px;
+      }
+      h2 { font-size: 18px; margin: 14px 0 6px; }
+      /* "Set up new PIN" button + email help shrink too */
+      .settings-screen .btn-ghost { padding: 6px 14px; font-size: 12px; }
+    }
     .settings-screen > .title {
       font-family: var(--font-display); font-style: italic; font-weight: 600;
       font-size: clamp(36px, 6vw, 48px);

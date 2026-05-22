@@ -1,4 +1,4 @@
-const CACHE = 'vb-v58';  /* bumped: stamp-art landscape rail scrollable, phone-landscape uses bottom strip — invalidates v57 caches */
+const CACHE = 'vb-v59';  /* bumped: parent settings compact PIN pad on phone-landscape — invalidates v58 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
