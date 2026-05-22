@@ -1,4 +1,4 @@
-const CACHE = 'vb-v57';  /* bumped: hub/listen/channels scroll fix + parent settings PIN gate scroll — invalidates v56 caches */
+const CACHE = 'vb-v58';  /* bumped: stamp-art landscape rail scrollable, phone-landscape uses bottom strip — invalidates v57 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
