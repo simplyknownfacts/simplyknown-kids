@@ -22,7 +22,7 @@
 
   function attach(activityId, opts) {
     const activity = _findActivity(activityId);
-    if (!activity || !activity.features || !activity.features.length) return;
+    if (!activity) return;
 
     // If a container is provided, drop the gear inside it as a relative-position
     // child — pages with their own toolbar (finger-paint, stamp-art, color-splash)
@@ -230,31 +230,73 @@
       host.querySelector('#gsClose').onclick = () => overlay.remove();
       return;
     }
+
+    const tierDefs = (typeof TIERS !== 'undefined') ? TIERS : [];
+    const hasFeatures = activity.features && activity.features.length;
+
     let html = `<h2 style="margin:0 0 6px;">⚙️ ${activity.name} Settings</h2>
-      <div style="color:rgba(255,255,255,0.55);font-size:13px;margin-bottom:14px;">Toggle features per child. Changes save instantly.</div>`;
+      <div style="color:rgba(255,255,255,0.55);font-size:13px;margin-bottom:14px;">Set the level for each child. Changes take effect on reload.</div>`;
+
     profiles.forEach(p => {
+      const computedTier = (typeof tierForAge === 'function' && typeof getAgeMonths === 'function')
+        ? tierForAge(getAgeMonths(p.birthday)) : 1;
+      const override = (p.tierOverrides && p.tierOverrides[activity.id] != null)
+        ? p.tierOverrides[activity.id] : null;
+      const isCustom = override != null;
+
       html += `<div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px;margin-bottom:10px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
           <span style="font-size:22px;">${p.avatar || '🐾'}</span>
           <span style="font-weight:800;">${p.name}</span>
-        </div>`;
-      activity.features.forEach(f => {
-        const on = !!(p.features && p.features[activity.id] && p.features[activity.id][f.key]);
-        const ageChip = f.minTier && typeof tierAgeRange === 'function'
-          ? `<span style="display:inline-block;margin-left:6px;font-size:11px;font-weight:700;
-                background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);
-                padding:1px 8px;border-radius:999px;">${tierAgeRange(f.minTier)}+</span>`
-          : '';
-        html += `<label style="display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer;">
-          <input type="checkbox" data-pid="${p.id}" data-fk="${f.key}" ${on ? 'checked' : ''}
-                 style="width:20px;height:20px;accent-color:#4ECDC4;cursor:pointer;">
-          <span style="font-size:14px;color:rgba(255,255,255,0.85);">${f.label}${ageChip}</span>
-        </label>`;
-      });
+          <span style="margin-left:auto;font-size:11px;color:rgba(255,255,255,0.4);">${isCustom ? '✏️ custom' : '📅 from age'}</span>
+        </div>
+        <label style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.45);display:block;margin-bottom:5px;">Level</label>
+        <select data-pid="${p.id}" class="gs-tier-sel" style="
+          width:100%;padding:9px 12px;border-radius:10px;
+          background:rgba(255,255,255,0.1);color:white;
+          border:1px solid rgba(255,255,255,0.25);font-size:14px;cursor:pointer;
+          margin-bottom:${hasFeatures ? '12px' : '0'};
+        ">
+          <option value="auto" ${!isCustom ? 'selected' : ''} style="background:#1a1a2e;color:white;">
+            Auto — Tier ${computedTier}: ${(tierDefs.find(t=>t.tier===computedTier)||{}).label||''} (${(tierDefs.find(t=>t.tier===computedTier)||{}).ageRange||''})
+          </option>
+          ${tierDefs.map(t =>
+            `<option value="${t.tier}" ${override === t.tier ? 'selected' : ''} style="background:#1a1a2e;color:white;">
+              Tier ${t.tier}: ${t.label} (${t.ageRange})
+            </option>`
+          ).join('')}
+        </select>`;
+
+      if (hasFeatures) {
+        activity.features.forEach(f => {
+          const on = !!(p.features && p.features[activity.id] && p.features[activity.id][f.key]);
+          const ageChip = f.minTier && typeof tierAgeRange === 'function'
+            ? `<span style="display:inline-block;margin-left:6px;font-size:11px;font-weight:700;
+                  background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);
+                  padding:1px 8px;border-radius:999px;">${tierAgeRange(f.minTier)}+</span>`
+            : '';
+          html += `<label style="display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer;">
+            <input type="checkbox" data-pid="${p.id}" data-fk="${f.key}" ${on ? 'checked' : ''}
+                   style="width:20px;height:20px;accent-color:#4ECDC4;cursor:pointer;">
+            <span style="font-size:14px;color:rgba(255,255,255,0.85);">${f.label}${ageChip}</span>
+          </label>`;
+        });
+      }
       html += `</div>`;
     });
+
     html += `<button id="gsClose" style="width:100%;padding:14px;border-radius:12px;background:#4ECDC4;color:#1a1a2e;border:none;font-weight:800;font-size:16px;cursor:pointer;margin-top:8px;">Done</button>`;
     host.innerHTML = html;
+
+    host.querySelectorAll('select.gs-tier-sel').forEach(sel => {
+      sel.addEventListener('change', () => {
+        if (typeof setActivityTierOverride === 'function') {
+          const val = sel.value === 'auto' ? null : Number(sel.value);
+          setActivityTierOverride(sel.dataset.pid, activity.id, val);
+        }
+      });
+    });
+
     host.querySelectorAll('input[type=checkbox]').forEach(cb => {
       cb.addEventListener('change', () => {
         if (typeof setProfileFeature === 'function') {
@@ -262,9 +304,9 @@
         }
       });
     });
+
     host.querySelector('#gsClose').onclick = () => {
       overlay.remove();
-      // Force reload so the activity picks up the new settings
       location.reload();
     };
   }

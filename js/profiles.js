@@ -11,7 +11,6 @@ const _ACTIVE_KEY   = 'vb_active_id';
 const ACTIVITY_FEATURES = [
   { id:'tap-pop',       name:'Tap & Pop',        icon:'🫧', file:'tap-pop.html',     section:'games', minTier:1, features:[
     { key:'scoreCounter',  label:'Score counter',                           minTier:4 },
-    { key:'floatMode',     label:'Floating bubbles (race mode)',            minTier:3 },
   ]},
   { id:'shape-match',   name:'Shape Match',      icon:'🔷', file:'shape-match.html', section:'games', minTier:2, features:[
     { key:'dragMode',      label:'Drag-to-match mode',                      minTier:2 },

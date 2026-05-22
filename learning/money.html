@@ -55,6 +55,8 @@
     renderBackBtn('index.html');
     gameSettings.attach('money');
 
+    const countOn = tier >= 6 || getProfileFeature(profile, 'money', 'countMode');
+
     // Real-world relative sizes (dime smallest, quarter biggest among coins).
     // Diameters (px) on phones; bills are rectangles.
     // Real diameters: dime 17.9, penny 19.05, nickel 21.2, quarter 24.3
@@ -271,7 +273,7 @@
           ? MONEY.filter(m => m.id !== 'ten')
           : MONEY;
 
-      if (tier <= 5) {
+      if (!countOn) {
         // Identify the named coin/bill — never repeat the previous target
         const choosable = pool.filter(m => m.id !== lastTargetId);
         const target = choosable[Math.floor(Math.random() * choosable.length)];

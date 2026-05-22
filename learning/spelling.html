@@ -73,6 +73,8 @@
     renderBackBtn('index.html');
     gameSettings.attach('spelling');
 
+    const spellOn = tier >= 6 || getProfileFeature(profile, 'spelling', 'spellMode');
+
     const WORDS = [
       {w:'CAT',e:'🐱'},{w:'DOG',e:'🐶'},{w:'PIG',e:'🐷'},{w:'SUN',e:'☀️'},
       {w:'BUG',e:'🐛'},{w:'HAT',e:'🎩'},{w:'BAT',e:'🦇'},{w:'CUP',e:'🥤'},
@@ -92,7 +94,7 @@
     function nextRound() {
       bodyEl.innerHTML = ''; clearTimeout(roundTimer);
 
-      if (tier <= 5) {
+      if (!spellOn) {
         // Multiple choice: show picture, tap the matching word from 3-4 choices
         const target = WORDS[Math.floor(Math.random() * WORDS.length)];
         hint.textContent = 'Tap the word that matches the picture!';
