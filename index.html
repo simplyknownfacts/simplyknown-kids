@@ -16,10 +16,13 @@
   <style>
     /* Profile picker layout */
     .picker-screen {
-      width: 100vw; min-height: 100vh;
+      width: 100vw;
+      height: 100vh; height: 100dvh;   /* bounded so internal scroll engages */
       display: flex; flex-direction: column; align-items: center;
-      padding: 40px 24px 100px;
+      padding: 40px 24px 120px;        /* extra bottom clears .parent-hint */
       gap: 12px;
+      overflow-y: auto;                /* allow >N kids to scroll */
+      -webkit-overflow-scrolling: touch;
     }
     .picker-greeting {
       font-family: var(--font-hand);
@@ -81,11 +84,15 @@
       font-family: var(--font-ui);
     }
     .parent-hint {
-      position: fixed; bottom: calc(24px + env(safe-area-inset-bottom));
+      position: fixed; bottom: calc(16px + env(safe-area-inset-bottom));
       left: 0; right: 0; text-align: center;
       font-family: var(--font-ui); font-size: 11px;
       color: var(--text-soft); letter-spacing: 1.2px;
       pointer-events: none;
+      /* Translucent strip behind so it never disappears into bg or content */
+      padding: 8px 24px;
+      background: linear-gradient(to top, color-mix(in srgb, var(--bg-0) 85%, transparent) 30%, transparent);
+      backdrop-filter: blur(2px);
     }
   </style>
 </head>

@@ -13,6 +13,14 @@
       overflow-y: auto; overflow-x: hidden;
       color: var(--text);
     }
+    /* Dark scrim above the storybook sky so settings content is always readable. */
+    body[data-allow-zoom="1"]::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: rgba(11, 8, 32, 0.82);
+      z-index: 0;
+      pointer-events: none;
+    }
     .settings-screen {
       min-height: 100vh; padding: 80px 24px 60px;
       max-width: 760px; margin: 0 auto;
@@ -31,11 +39,22 @@
       display: flex; align-items: center; gap: 8px;
     }
     .card {
-      background: rgba(255,255,255,0.04);
+      background: rgba(28, 20, 58, 0.92);
       border-radius: 18px;
       padding: 18px;
       margin-bottom: 12px;
-      border: 1px solid var(--chip-border);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.30);
+    }
+    /* JS-rendered profile rows in #profilesList don't get .card automatically;
+       give every direct child the same chrome so names/tier text are legible. */
+    #profilesList > * {
+      background: rgba(28, 20, 58, 0.92);
+      border-radius: 18px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
     }
     .row-between { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     label {
@@ -71,9 +90,10 @@
       box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 40%, transparent);
     }
     .btn-danger  {
-      background: rgba(255,107,107,0.18);
-      color: #FF9DAA;
-      border: 1px solid rgba(255,107,107,0.4);
+      background: #B5333A;
+      color: #FFFFFF;
+      border: 1px solid #FF6B6B;
+      font-weight: 800;
     }
     .btn-ghost   {
       background: rgba(255,255,255,0.06);
