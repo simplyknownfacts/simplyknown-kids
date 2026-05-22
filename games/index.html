@@ -2,36 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Games</title>
   <link rel="stylesheet" href="../css/style.css">
   <style>
-    body { background: linear-gradient(160deg, #ff6b6b 0%, #ff9f43 100%); }
-    .screen {
-      justify-content: flex-start !important;
-      padding-top: calc(90px + env(safe-area-inset-top));
-      padding-bottom: 200px;
+    .hub-screen {
+      min-height: 100vh;
+      padding: calc(100px + env(safe-area-inset-top)) 24px 220px;
+      display: flex; flex-direction: column; align-items: center; gap: 22px;
       overflow-y: auto;
     }
-    .cards-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 16px; max-width: 420px; width: 100%;
+    .hub-title {
+      font-family: var(--font-display); font-style: italic; font-weight: 600;
+      font-size: clamp(40px, 7vw, 56px);
+      color: var(--text); text-align: center; letter-spacing: -0.5px;
     }
-    .activity-card { width: 100% !important; height: 130px !important; aspect-ratio: 1; }
-    .activity-card .icon { font-size: 50px; }
-    .activity-card .label { font-size: 13px; }
+    .cards-row { padding-bottom: 60px; }
+    .activity-card { aspect-ratio: 1; min-height: 140px; }
+    .empty-msg {
+      color: var(--text-soft); font-size: 15px; text-align: center;
+      padding: 24px; max-width: 320px; line-height: 1.5;
+    }
   </style>
 </head>
-<body>
-  <div class="screen">
-    <div class="title">🎮 Games</div>
+<body class="section-games" data-allow-zoom="0">
+  <div class="hub-screen">
+    <h1 class="hub-title">Games</h1>
     <div class="cards-row" id="cardsRow"></div>
-    <div id="emptyMsg" style="display:none;color:rgba(255,255,255,0.75);font-size:15px;text-align:center;padding:24px;">
+    <div class="empty-msg" id="emptyMsg" style="display:none;">
       No games are turned on for this child yet.<br>
       A grown-up can enable them in ⚙️ Parent Settings → Activities.
     </div>
   </div>
+
+  <script src="../js/atmosphere.js"></script>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>

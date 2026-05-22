@@ -7,93 +7,186 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SimplyKnown Kids">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#08061C">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="manifest" href="manifest.json">
   <title>SimplyKnown Kids</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="manifest" href="manifest.json">
   <style>
-    body { background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%); }
-    .profiles-row { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; }
-    .add-btn {
-      width: 80px; height: 80px; border-radius: 50%;
-      background: rgba(255,255,255,0.08);
-      border: 3px dashed rgba(255,255,255,0.25);
-      font-size: 32px; color: rgba(255,255,255,0.4);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: background 0.15s;
-      margin-top: 20px;
+    /* Profile picker layout */
+    .picker-screen {
+      width: 100vw; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 40px 24px 100px;
+      gap: 12px;
     }
-    .add-btn:active { background: rgba(255,255,255,0.18); }
-    .stars { position: fixed; inset: 0; pointer-events: none; }
+    .picker-greeting {
+      font-family: var(--font-hand);
+      font-size: 22px; color: var(--text-soft);
+      letter-spacing: 0.5px;
+      margin-bottom: 2px; opacity: 0.95;
+      text-align: center;
+    }
+    .picker-title {
+      font-family: var(--font-display);
+      font-style: italic; font-weight: 600;
+      font-size: clamp(34px, 6vw, 56px);
+      color: var(--text); letter-spacing: -0.5px;
+      margin-bottom: 24px; text-align: center;
+    }
+    html[data-tod="night"] .picker-title,
+    html[data-tod="evening"] .picker-title {
+      text-shadow: 0 4px 40px color-mix(in srgb, var(--accent) 35%, transparent),
+                   0 0 80px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+    .profiles-row {
+      display: flex; flex-wrap: wrap; gap: 38px 56px;
+      justify-content: center; align-items: flex-start;
+      margin-top: 20px; margin-bottom: 0;
+      padding-bottom: 96px; /* room for name + age label below each lantern */
+    }
+    .profile-stack {
+      display: flex; flex-direction: column; align-items: center;
+      animation: vbFloat 4s ease-in-out infinite;
+    }
+    .profile-stack:nth-child(2n) { animation-duration: 4.6s; animation-delay: -0.6s; }
+    .profile-stack:nth-child(3n) { animation-duration: 5.2s; animation-delay: -1.2s; }
+    .profile-string {
+      width: 1.5px; height: 50px;
+      background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--text) 35%, transparent));
+      margin-bottom: -8px;
+    }
+    .profile-stack:nth-child(odd)  .profile-string { height: 70px; }
+    .profile-stack:nth-child(3n)   .profile-string { height: 86px; }
+
+    /* "+ Add child" button */
+    .add-btn {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 28px; border-radius: 999px;
+      background: var(--chip-bg);
+      border: 1.5px dashed var(--chip-border);
+      cursor: pointer; margin-top: 12px;
+    }
+    .add-btn .plus {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--chip-bg);
+      border: 1.5px solid var(--chip-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; color: var(--text); opacity: 0.85;
+      line-height: 0;
+    }
+    .add-btn .label {
+      font-size: 15px; font-weight: 700; color: var(--text); opacity: 0.85;
+      font-family: var(--font-ui);
+    }
+    .parent-hint {
+      position: fixed; bottom: calc(24px + env(safe-area-inset-bottom));
+      left: 0; right: 0; text-align: center;
+      font-family: var(--font-ui); font-size: 11px;
+      color: var(--text-soft); letter-spacing: 1.2px;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
-  <canvas class="stars" id="stars"></canvas>
-  <div class="screen">
-    <div class="title">✨ Who's Playing? ✨</div>
+  <div class="picker-screen">
+    <div class="picker-greeting" id="greeting">At SimplyKnown</div>
+    <h1 class="picker-title" id="pickerTitle">Who's playing?</h1>
+
     <div class="profiles-row" id="profilesRow"></div>
-    <div class="add-btn" id="addBtn" title="Add child">＋</div>
-    <div class="subtitle" id="parentHint" style="margin-top:32px;font-size:12px;opacity:0.3;">
-      Tap ⚙️ to open Parent Settings (PIN required)
+
+    <div class="add-btn" id="addBtn" title="Add child">
+      <div class="plus">+</div>
+      <div class="label">Add a child</div>
     </div>
-    <div style="position:fixed;bottom:20px;right:20px;font-size:28px;cursor:pointer;opacity:0.3"
-         id="settingsGear">⚙️</div>
   </div>
 
+  <div class="parent-hint">
+    TAP ✦ IN THE CORNER TO OPEN PARENT SETTINGS · PIN REQUIRED
+  </div>
+
+  <button class="settings-gear" id="settingsGear" aria-label="Parent settings" title="Parent settings">
+    <svg viewBox="0 0 24 24"><path d="M12 2 L 13.5 9 L 20.5 10.5 L 13.5 12 L 12 20 L 10.5 12 L 3.5 10.5 L 10.5 9 Z" opacity="0.9"/><circle cx="12" cy="10.8" r="1.4" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+  </button>
+
+  <script src="js/atmosphere.js"></script>
   <script src="js/tiers.js"></script>
   <script src="js/profiles.js"></script>
   <script src="js/voice-manifest.js"></script>
   <script src="js/app.js"></script>
   <script src="js/sync.js"></script>
   <script>
-    // Starfield background
-    const canvas = document.getElementById('stars');
-    const sctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    for (let i = 0; i < 120; i++) {
-      sctx.beginPath();
-      sctx.arc(Math.random() * canvas.width, Math.random() * canvas.height,
-               Math.random() * 1.5, 0, Math.PI * 2);
-      sctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.6 + 0.1})`;
-      sctx.fill();
+    // Time-of-day greeting copy (runs after atmosphere.js has set data-tod)
+    function updateGreetingCopy() {
+      var tod = document.documentElement.getAttribute('data-tod') ||
+                (window.vbAtmosphere && window.vbAtmosphere.pickTOD && window.vbAtmosphere.pickTOD()) ||
+                'night';
+      var greet = {
+        morning:   'Good morning at SimplyKnown',
+        afternoon: 'This afternoon at SimplyKnown',
+        evening:   'Good evening at SimplyKnown',
+        night:     'Tonight at SimplyKnown',
+      }[tod];
+      var title = {
+        morning:   "Who's awake?",
+        afternoon: "Who's playing?",
+        evening:   "Who's joining us?",
+        night:     "Who's playing tonight?",
+      }[tod];
+      document.getElementById('greeting').textContent = greet;
+      document.getElementById('pickerTitle').textContent = title;
+    }
+    updateGreetingCopy();
+    // Run again after DOMContentLoaded in case atmosphere.js stamped data-tod
+    // between our two calls.
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateGreetingCopy);
     }
 
-    // Render profiles
     function renderProfiles() {
       const row = document.getElementById('profilesRow');
       row.innerHTML = '';
       getProfiles().forEach(p => {
         const ageMonths = getAgeMonths(p.birthday);
         const ageLabel = ageMonths < 24
-          ? `${ageMonths} months`
-          : `${Math.floor(ageMonths / 12)} yrs ${ageMonths % 12}mo`;
+          ? ageMonths + ' months'
+          : Math.floor(ageMonths / 12) + ' yrs ' + (ageMonths % 12) + 'mo';
+
+        // Lantern stack: hanging string → glowing lantern → name → age
+        const stack = document.createElement('div');
+        stack.className = 'profile-stack pop-in';
+
+        const string = document.createElement('div');
+        string.className = 'profile-string';
+        stack.appendChild(string);
+
         const btn = document.createElement('div');
-        btn.className = 'avatar-btn pop-in';
-        btn.style.background = `linear-gradient(135deg, ${p.color}, ${p.color}aa)`;
-        btn.style.boxShadow = `0 8px 28px ${p.color}55`;
-        btn.innerHTML = `
-          <span class="emoji">${p.avatar}</span>
-          <span class="name">${p.name}</span>
-          <span class="age-label">${ageLabel}</span>`;
+        btn.className = 'avatar-btn';
+        // Per-child glow + body color
+        btn.style.setProperty('--avatar-bg',
+          `radial-gradient(circle at 35% 30%, ${p.color}ff 0%, ${p.color} 60%, ${p.color}cc 100%)`);
+        btn.style.setProperty('--avatar-glow', `${p.color}cc`);
+        btn.innerHTML =
+          `<span class="emoji">${p.avatar}</span>` +
+          `<span class="name">${p.name}</span>` +
+          `<span class="age-label">${ageLabel}</span>`;
         btn.addEventListener('click', () => {
           playChime();
           setActiveProfile(p.id);
           goTo('home.html');
         });
-        row.appendChild(btn);
+        stack.appendChild(btn);
+
+        row.appendChild(stack);
       });
     }
     renderProfiles();
 
-    // Add child
     document.getElementById('addBtn').addEventListener('click', () => {
       goTo('parent/settings.html?action=add');
     });
 
-    // Parent settings — single tap, PIN gate handles auth
     document.getElementById('settingsGear').addEventListener('click', () => {
       goTo('parent/settings.html');
     });
@@ -117,10 +210,7 @@
       renderProfiles();
     }
 
-    // YouTube channel seed — self-healing.
-    // - First time: applies name-based defaults.
-    // - Subsequent loads: merges in any canonical defaults that are missing AND not in
-    //   p.youtubeRemoved (parent explicitly deleted = stays gone).
+    // YouTube channel seed — self-healing (preserved from original)
     (function _seedYoutube() {
       const list = getProfiles();
       let changed = false;
@@ -134,12 +224,8 @@
         { emoji:'🎵',  label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
       ];
       const defaultsByName = {
-        // Generic seed names
-        Baby:    BABY_DEFAULTS,
-        Toddler: TODDLER_DEFAULTS,
-        // Scott's family
-        Leah:    BABY_DEFAULTS,
-        Noah:    TODDLER_DEFAULTS,
+        Baby: BABY_DEFAULTS, Toddler: TODDLER_DEFAULTS,
+        Leah: BABY_DEFAULTS, Noah: TODDLER_DEFAULTS,
       };
       const FALLBACK_DEFAULT = [
         { emoji:'🎵', label:'Super Simple Songs', channelId:'UCLsooMJoIpl_7ux2jvdPB-Q' },
@@ -152,7 +238,6 @@
           changed = true;
           continue;
         }
-        // Already initialized — heal missing canonical defaults that weren't explicitly removed.
         if (namedDefaults) {
           const removed = new Set(p.youtubeRemoved || []);
           const existing = new Set((p.youtube || []).map(c => c.channelId));

@@ -1,153 +1,446 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
+/* ============================================================
+   SimplyKnown Kids — Storybook Nightlight design system
+   ------------------------------------------------------------
+   Class hooks the JS depends on are preserved:
+     .screen .title .subtitle  .avatar-btn  .section-btn
+     .activity-card  .back-btn  .row .col   .pop-in .float .pulse
+   Plus new helpers added for the storybook layer.
 
+   Time-of-day palettes are driven by `data-tod` on <html>,
+   set by js/atmosphere.js on every page. Override by setting
+   the attribute manually for testing (e.g. for a print page).
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500..700;1,6..72,500..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Caveat:wght@500;700&display=swap');
+
+/* ---------- Tokens ---------- */
 :root {
-  --font: 'Nunito', 'Comic Sans MS', cursive;
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-ui:      'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-hand:    'Caveat', 'Comic Sans MS', cursive;
+
+  /* Section accent hues — unchanged on purpose so existing code still maps */
+  --c-games:  #FF8FA8;
+  --c-learn:  #7FE6D2;
+  --c-art:    #C49BFF;
+  --c-watch:  #FFC56B;
+  --c-listen: #FF9F6B;
+
+  /* Generic "paper card" tones (overridden per-tod below if needed) */
+  --paper:       #FBF1D8;
+  --paper-deep:  #F0DDB0;
+  --ink:         #1A0F2E;
+
+  /* Sizing */
   --tap: 80px;
   --radius: 24px;
-  --c1: #c8b8f0; --c2: #b8d4f0; --c3: #a8e6cf; --c4: #FFD93D;
-  --c5: #FF9F43; --c6: #FF6B6B; --c7: #4ECDC4; --c8: #45B7D1;
+
+  /* Legacy variables kept so old inline code still resolves */
+  --font: var(--font-ui);
   --bg-dark: #1a1a2e;
   --white: #ffffff;
+  --c1: #c8b8f0; --c2: #b8d4f0; --c3: #a8e6cf; --c4: #FFD93D;
+  --c5: #FF9F43; --c6: #FF6B6B; --c7: #4ECDC4; --c8: #45B7D1;
 }
 
+/* ---------- Time-of-day palettes ---------- */
+/* Default = night (also used as fallback before atmosphere.js runs) */
+html, html[data-tod="night"] {
+  --bg-0: #08061C; --bg-1: #16113E; --bg-2: #251D63;
+  --hill-0: #0D0A28; --hill-1: #1A1448; --hill-2: #2A2068;
+  --orb-color: #FFF1C8;       /* moon */
+  --orb-rim:   #FFC56B;
+  --accent:    #FFC56B;       /* lantern/amber glow */
+  --accent-soft: #FFE3A8;
+  --text:        #FFF1C8;
+  --text-soft:   rgba(255,241,200,0.62);
+  --chip-bg:     rgba(255,241,200,0.08);
+  --chip-border: rgba(255,241,200,0.22);
+  --star:        #FFF7E0;
+  --paper-shadow: 0 24px 60px rgba(0,0,0,0.45), 0 6px 18px rgba(0,0,0,0.35);
+}
+html[data-tod="evening"] {
+  --bg-0: #3D1130; --bg-1: #6E2A4A; --bg-2: #FF9D5B;
+  --hill-0: #1A0822; --hill-1: #2E1338; --hill-2: #48205A;
+  --orb-color: #FFE39A;       /* low sun */
+  --orb-rim:   #FF8A55;
+  --accent:    #FFD27A;
+  --accent-soft: #FFE8B5;
+  --text:        #FFF1D6;
+  --text-soft:   rgba(255,241,214,0.7);
+  --chip-bg:     rgba(255,241,214,0.10);
+  --chip-border: rgba(255,241,214,0.22);
+  --star:        #FFF8E8;
+  --paper-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 6px 18px rgba(0,0,0,0.3);
+}
+html[data-tod="afternoon"] {
+  --bg-0: #D5EBFF; --bg-1: #A8D2FF; --bg-2: #6FB0FF;
+  --hill-0: #1F4A36; --hill-1: #2D6B4D; --hill-2: #4F8F6E;
+  --orb-color: #FFF6C8;       /* bright sun */
+  --orb-rim:   #FFC56B;
+  --accent:    #FFD06B;
+  --accent-soft: #FFE9B0;
+  --text:        #0F2540;
+  --text-soft:   rgba(15,37,64,0.66);
+  --chip-bg:     rgba(15,37,64,0.06);
+  --chip-border: rgba(15,37,64,0.18);
+  --star:        #FFFFFF;
+  --paper-shadow: 0 20px 50px rgba(20,30,55,0.20), 0 4px 12px rgba(20,30,55,0.15);
+}
+html[data-tod="morning"] {
+  --bg-0: #FFD2A3; --bg-1: #FFB4B8; --bg-2: #A4C8FF;
+  --hill-0: #3F4D6E; --hill-1: #5A6E92; --hill-2: #8AA2C0;
+  --orb-color: #FFF5D8;
+  --orb-rim:   #FFB347;
+  --accent:    #FFB347;
+  --accent-soft: #FFE3A8;
+  --text:        #2B1F3A;
+  --text-soft:   rgba(43,31,58,0.62);
+  --chip-bg:     rgba(43,31,58,0.06);
+  --chip-border: rgba(43,31,58,0.18);
+  --star:        #FFFFFF;
+  --paper-shadow: 0 20px 50px rgba(40,30,55,0.18), 0 4px 12px rgba(40,30,55,0.12);
+}
+
+/* ---------- Base / global ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  width: 100%; height: 100%; overflow: hidden;
-  font-family: var(--font);
-  background: var(--bg-dark);
-  /* pan-x pan-y allows scroll but blocks both pinch-zoom and double-tap zoom.
-     `manipulation` (the old value) still lets pinch through. */
+  width: 100%; height: 100%;
+  background: var(--bg-0);   /* atmosphere SVG paints on top */
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
   touch-action: pan-x pan-y;
   overscroll-behavior: none;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   position: fixed;
+  transition: background 1.2s ease;
 }
 
-/* Default for any element: same as body — block pinch + double-tap zoom. */
 * { touch-action: pan-x pan-y; }
 
-/* Parent settings opts in to scroll/zoom because the form is long */
+/* Parent settings opts in to scroll/zoom */
 body[data-allow-zoom="1"] {
   position: static;
   overflow: auto;
   touch-action: auto;
 }
 
+/* ---------- Atmosphere container (injected by atmosphere.js) ---------- */
+#vbSky {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  overflow: hidden;
+}
+#vbSky svg { width: 100%; height: 100%; display: block; }
+
+/* Anything above the sky needs a positive stacking context */
+.screen, .back-btn, #mascotWrap, .channels-screen,
+.listen-screen, .settings-screen,
+.picker-screen, .hub-screen, .home-screen,
+.parent-hint, .switch-link, .settings-gear,
+.avatar-pill, #player, .chapters-overlay,
+#playerWrap, #playerBack {
+  position: relative; z-index: 1;
+}
+/* Elements that need to stay fixed but above the sky */
+.back-btn, .settings-gear, .parent-hint, .switch-link,
+#player, #playerWrap, .chapters-overlay,
+#mascotWrap {
+  position: fixed;
+}
+
+/* ---------- Type ---------- */
+.title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(34px, 6.5vw, 56px);
+  letter-spacing: -0.5px;
+  color: var(--text);
+  text-align: center;
+  text-shadow: 0 2px 18px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+html[data-tod="morning"] .title,
+html[data-tod="afternoon"] .title {
+  text-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.subtitle {
+  font-family: var(--font-ui);
+  font-size: clamp(14px, 2.6vw, 18px);
+  color: var(--text-soft);
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.hand {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ---------- Screen layout ---------- */
 .screen {
   width: 100vw; height: 100vh;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 24px; gap: 20px;
+  padding: 24px; gap: 18px;
 }
 
-.title {
-  font-size: clamp(28px, 6vw, 48px);
-  font-weight: 900; color: var(--white);
-  text-shadow: 0 3px 12px rgba(0,0,0,0.3);
-  text-align: center;
-}
-
-.subtitle {
-  font-size: clamp(14px, 3vw, 20px);
-  color: rgba(255,255,255,0.6);
-  text-align: center;
-}
-
-/* Avatar bubble (profile chooser) */
+/* ---------- Avatar bubble (profile chooser) ---------- */
 .avatar-btn {
-  width: 120px; height: 120px;
-  border-radius: 50%;
-  border: 4px solid rgba(255,255,255,0.3);
+  /* Backwards-compat: the JS still creates these. We re-style them as
+     glowing lanterns. */
+  width: 150px; height: 170px;
+  border-radius: 44% 44% 50% 50% / 38% 38% 56% 56%;
+  border: none;
+  background: var(--avatar-bg, radial-gradient(circle at 35% 30%, #FFE3A8 0%, #FFC56B 60%, #E69A2F 100%));
+  box-shadow:
+    0 0 60px var(--avatar-glow, rgba(255,197,107,0.55)),
+    inset 0 -16px 30px rgba(0,0,0,0.18),
+    inset 0 4px 0 rgba(255,255,255,0.7);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
-  gap: 4px;
+  cursor: pointer; gap: 4px;
+  position: relative;
+  transition: transform 0.15s ease;
+  margin-top: 18px; /* leave room for top cap */
+  margin-bottom: 18px;
 }
-.avatar-btn:active { transform: scale(0.92); }
-.avatar-btn .emoji { font-size: 52px; line-height: 1; }
+.avatar-btn::before {
+  /* Top cap */
+  content: ""; position: absolute; top: -10px;
+  width: 60px; height: 14px; border-radius: 4px;
+  background: #3A2A18;
+}
+.avatar-btn::after {
+  /* Bottom cap + tassel */
+  content: ""; position: absolute; bottom: -12px;
+  width: 50px; height: 12px; border-radius: 4px;
+  background: #3A2A18;
+}
+.avatar-btn:active { transform: scale(0.94); }
+.avatar-btn .emoji {
+  font-size: 56px; line-height: 1; margin-top: -4px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+}
 .avatar-btn .name {
-  font-size: 14px; font-weight: 800;
-  color: var(--white); text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  position: absolute; bottom: -54px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-size: 26px; color: var(--text); letter-spacing: -0.2px;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 color-mix(in srgb, var(--paper) 60%, transparent),
+    0 2px 12px color-mix(in srgb, var(--bg-1) 50%, transparent);
 }
 .avatar-btn .age-label {
-  font-size: 11px; color: rgba(255,255,255,0.5);
+  position: absolute; bottom: -76px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; color: var(--text-soft);
+  font-weight: 700; white-space: nowrap; letter-spacing: 0.3px;
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--paper) 50%, transparent);
 }
 
-/* Big section button (home screen) */
+/* ---------- Section button (home portals) ---------- */
 .section-btn {
-  min-width: var(--tap); min-height: var(--tap);
-  border-radius: var(--radius);
-  background: rgba(255,255,255,0.92);
+  /* Paper card */
+  width: 150px; min-height: 170px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+  box-shadow: var(--paper-shadow);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  cursor: pointer; gap: 6px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  cursor: pointer; gap: 10px;
+  padding: 20px 14px 18px;
   transition: transform 0.12s ease;
-  padding: 16px 20px;
+  position: relative;
+  overflow: hidden;
 }
-.section-btn:active { transform: scale(0.93); }
-.section-btn .icon { font-size: 44px; line-height: 1; }
-.section-btn .label { font-size: 15px; font-weight: 900; letter-spacing: 1px; }
+.section-btn::before {
+  /* Top accent glow */
+  content: ""; position: absolute; top: -24px; left: -24px; right: -24px;
+  height: 60px;
+  background: radial-gradient(ellipse at 50% 0%, var(--section-hue, var(--accent))66 0%, transparent 70%);
+  pointer-events: none;
+}
+.section-btn::after {
+  /* Paper texture */
+  content: ""; position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(135deg, var(--ink) 0 1px, transparent 1px 4px);
+  opacity: 0.05; pointer-events: none;
+}
+.section-btn:active { transform: scale(0.94); }
+.section-btn .icon {
+  font-size: 50px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.section-btn .label {
+  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.2px;
+  color: var(--ink) !important;   /* override existing inline color hints */
+}
 
-/* Activity card (section hub) */
+/* ---------- Activity card (section hubs) ---------- */
 .activity-card {
-  min-width: var(--tap); min-height: var(--tap);
-  border-radius: var(--radius);
-  background: rgba(255,255,255,0.12);
-  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 22px;
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+  box-shadow: var(--paper-shadow);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  cursor: pointer; gap: 8px; padding: 20px;
-  transition: transform 0.12s ease, background 0.12s ease;
-  flex: 1;
+  cursor: pointer; gap: 10px; padding: 20px;
+  transition: transform 0.12s ease;
+  position: relative;
+  overflow: hidden;
+  border: none;
 }
-.activity-card:active { transform: scale(0.93); background: rgba(255,255,255,0.22); }
-.activity-card .icon { font-size: 40px; }
-.activity-card .label { font-size: 14px; font-weight: 800; color: var(--white); text-align: center; }
+.activity-card::before {
+  content: ""; position: absolute; top: -20px; left: -20px; right: -20px;
+  height: 50px;
+  background: radial-gradient(ellipse at 50% 0%, var(--section-hue, var(--accent))55 0%, transparent 70%);
+  pointer-events: none;
+}
+.activity-card:active { transform: scale(0.94); }
+.activity-card .icon  { font-size: 48px; line-height: 1; }
+.activity-card .label {
+  font-family: var(--font-display); font-style: italic; font-weight: 500;
+  font-size: 17px; color: var(--ink); text-align: center;
+}
 
-/* Back button */
+/* ---------- Back button ---------- */
 .back-btn {
-  position: fixed; top: 14px; left: 14px;
-  width: 72px; height: 72px;
+  position: fixed; top: calc(16px + env(safe-area-inset-top)); left: 16px;
+  width: 64px; height: 64px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.92);
-  border: 4px solid #4ECDC4;
+  background: radial-gradient(circle at 35% 35%, #FFF1C8 0%, var(--accent) 100%);
+  border: none;
   display: flex; align-items: center; justify-content: center;
-  font-size: 38px; font-weight: 900; color: #1a1a2e;
+  font-size: 32px; font-weight: 900; color: #1A0F2E;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 4px rgba(78,205,196,0.25);
-  transition: transform 0.12s, background 0.12s;
-  z-index: 100;
-  line-height: 1;
+  box-shadow:
+    0 8px 22px color-mix(in srgb, var(--accent) 50%, transparent),
+    inset 0 -4px 8px rgba(0,0,0,0.18),
+    inset 0 2px 0 rgba(255,255,255,0.7);
+  transition: transform 0.12s;
+  z-index: 100; line-height: 1;
 }
-.back-btn:active { transform: scale(0.9); background: #a8e6cf; }
+.back-btn:active { transform: scale(0.9); }
 @media (min-width: 768px) {
-  .back-btn { width: 88px; height: 88px; font-size: 46px; top: 20px; left: 20px; }
+  .back-btn { width: 76px; height: 76px; font-size: 38px; top: 24px; left: 24px; }
 }
 
-/* Row / column flex helpers */
+/* ---------- Row / column helpers ---------- */
 .row { display: flex; flex-direction: row; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; }
 .col { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 
-/* Animations */
+/* ---------- Section hub: cards-row grid ---------- */
+.cards-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 18px; max-width: 720px; width: 100%;
+  padding: 0 8px;
+}
+
+/* ---------- Chip / pill helper ---------- */
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 999px;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--text); font-weight: 600; font-size: 13px;
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- Settings gear ---------- */
+.settings-gear {
+  position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); right: 24px;
+  width: 36px; height: 36px;
+  opacity: 0.45;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 99;
+  transition: opacity 0.2s;
+  background: none; border: none;
+}
+.settings-gear svg { width: 28px; height: 28px; fill: var(--text); }
+.settings-gear:active { opacity: 0.9; }
+
+/* ---------- Animations (preserved + new) ---------- */
 @keyframes popIn {
-  0% { transform: scale(0); opacity: 0; }
-  70% { transform: scale(1.1); }
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.08); }
   100% { transform: scale(1); opacity: 1; }
 }
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+  50%      { transform: translateY(-12px); }
 }
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50%      { transform: scale(1.05); }
 }
+@keyframes vbTwinkle {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.3); }
+}
+@keyframes vbDrift0 { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(40px,-25px); } }
+@keyframes vbDrift1 { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-30px,20px); } }
+@keyframes vbDrift2 { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(25px,30px); } }
+@keyframes vbFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes vbSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
 .pop-in { animation: popIn 0.3s ease forwards; }
-.float { animation: float 3s ease-in-out infinite; }
-.pulse { animation: pulse 2s ease-in-out infinite; }
+.float  { animation: float  3s ease-in-out infinite; }
+.pulse  { animation: pulse  2s ease-in-out infinite; }
+
+/* ---------- Section-tinted body classes (used by hub pages) ---------- */
+body.section-games  { --section-hue: var(--c-games); }
+body.section-learn  { --section-hue: var(--c-learn); }
+body.section-art    { --section-hue: var(--c-art); }
+body.section-watch  { --section-hue: var(--c-watch); }
+body.section-listen { --section-hue: var(--c-listen); }
+
+/* Section tint is a soft overlay on top of the sky so each area still feels
+   distinct without breaking the time-of-day mood. */
+body.section-games::before,
+body.section-learn::before,
+body.section-art::before,
+body.section-watch::before,
+body.section-listen::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse at 50% 0%, var(--section-hue) 0%, transparent 55%);
+  opacity: 0.18;
+  mix-blend-mode: screen;
+}
+
+/* ---------- Reduced spacing on shorter viewports ---------- */
+@media (max-height: 700px) {
+  .avatar-btn { width: 120px; height: 140px; }
+  .avatar-btn .emoji { font-size: 46px; }
+  .avatar-btn .name { font-size: 22px; bottom: -46px; }
+  .avatar-btn .age-label { bottom: -66px; }
+}
+@media (max-height: 560px) {
+  .avatar-btn { width: 100px; height: 116px; }
+  .avatar-btn .emoji { font-size: 38px; }
+  .avatar-btn .name { font-size: 18px; bottom: -38px; }
+  .avatar-btn .age-label { bottom: -56px; font-size: 11px; }
+}
+
+/* ---------- Print / accessibility ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
