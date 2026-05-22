@@ -1,4 +1,4 @@
-const CACHE = 'vb-v52';  /* bumped: storybook redesign — invalidates v51 caches */
+const CACHE = 'vb-v53';  /* bumped: mascot bubble removed + viewport fixes — invalidates v52 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
