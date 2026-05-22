@@ -130,6 +130,30 @@ body[data-allow-zoom="1"] {
   position: static;
   overflow: auto;
   touch-action: auto;
+  height: auto;
+}
+/* When the body unlocks scrolling, the html must also un-lock — html, body
+   are both position:fixed + overflow:hidden above, which traps body scrolling
+   inside a 100% viewport. Without this, parent settings PIN gate clipped
+   below short landscape-phone viewports. */
+html:has(body[data-allow-zoom="1"]) {
+  position: static;
+  overflow: auto;
+  height: auto;
+}
+
+/* Hub / list screens need internal vertical scroll when content overflows.
+   Inline rules in each hub HTML use min-height:100vh which prevents the
+   overflow-y from ever engaging. These overrides bound the height so scroll
+   actually works on short viewports (phone-landscape, tablet-landscape with
+   tall hubs like Learning). */
+.hub-screen, .channels-screen, .listen-screen {
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ---------- Atmosphere container (injected by atmosphere.js) ---------- */
