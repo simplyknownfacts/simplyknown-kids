@@ -317,19 +317,27 @@
       document.getElementById('hiText').textContent = greet + ' ' + profile.name + ' ✦';
 
       const greetText = 'Hi ' + profile.name + '! Welcome to your play space.';
+      // Only speak the greeting if we have a pre-generated ElevenLabs clip for
+      // this kid's name. Without it, _voiceSpeak() falls back to robotic
+      // browser TTS — better to play just the mascot animation in silence than
+      // to break the curated-voice experience. To add a name: edit
+      // js/voice-manifest.js KID_NAMES and re-run scripts/generate-voices.mjs.
+      const hasGreetingClip = typeof VOICE_MANIFEST !== 'undefined'
+        && VOICE_MANIFEST.phraseHash
+        && VOICE_MANIFEST.phraseHash[greetText] !== undefined;
 
       // Listen tile only when Yoto is connected
       if (window.yoto && yoto.isConfigured() && yoto.isConnected()) {
         document.getElementById('listenTile').style.display = '';
       }
 
-      // Mascot — muted welcome animation + layered greeting
+      // Mascot — muted welcome animation + layered greeting (if clip exists)
       if (window.mascot) {
         setTimeout(() => {
           mascot.play('welcome', { muted: true });
-          setTimeout(() => speak(greetText), 250);
+          if (hasGreetingClip) setTimeout(() => speak(greetText), 250);
         }, 600);
-      } else {
+      } else if (hasGreetingClip) {
         setTimeout(() => speak(greetText), 600);
       }
     } else {
