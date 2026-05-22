@@ -42,6 +42,20 @@ function _activeProfile() {
   return (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
 }
 
+// Default companion when a profile hasn't been assigned a mascot yet (mascot: null).
+// Parents can override per-kid in Parent Settings → Mascot Buddy.
+const DEFAULT_MASCOT_ID = 'dog';
+
+function _mascotIdFor(profile) {
+  return (profile && profile.mascot && profile.mascot.id) || DEFAULT_MASCOT_ID;
+}
+
+function _mascotVoiceFor(profile) {
+  return (profile && profile.mascot && profile.mascot.voice)
+       || (profile && profile.voice)
+       || 'girl';
+}
+
 function _ensureEl() {
   if (_mascotEl) return _mascotEl;
   const wrap = document.createElement('div');
@@ -189,7 +203,8 @@ function _scheduleNextAction() {
 
 function _playBase() {
   const p = _activeProfile();
-  if (!p || !p.mascot || !p.mascot.id) return;
+  if (!p) return;
+  const mascotId = _mascotIdFor(p);
   const wrap = _ensureEl();
   _state = 'base';
   if (wrap.style.display === 'none') {
@@ -201,21 +216,22 @@ function _playBase() {
       wrap.style.transform = 'scale(1)';
     });
   }
-  _crossfadeTo(_src(p.mascot.id, null, 'BASE'), { muted: true, loop: true, onended: null });
+  _crossfadeTo(_src(mascotId, null, 'BASE'), { muted: true, loop: true, onended: null });
   _scheduleNextAction();
 }
 
 function _playAction() {
   const p = _activeProfile();
-  if (!p || !p.mascot || !p.mascot.id) return;
+  if (!p) return;
   if (_state !== 'base') { _scheduleNextAction(); return; }
-  const keys = _actionKeys(p.mascot.id);
+  const mascotId = _mascotIdFor(p);
+  const keys = _actionKeys(mascotId);
   let pool = _lastAction ? keys.filter(k => k !== _lastAction) : keys;
   if (!pool.length) pool = keys;
   const key = pool[Math.floor(Math.random() * pool.length)];
   _lastAction = key;
   _state = 'action';
-  _crossfadeTo(_src(p.mascot.id, null, key), { muted: true, loop: false, onended: () => _playBase() });
+  _crossfadeTo(_src(mascotId, null, key), { muted: true, loop: false, onended: () => _playBase() });
 }
 
 function _shouldSpeak(profileId, key) {
@@ -230,12 +246,13 @@ function _shouldSpeak(profileId, key) {
 
 function play(key, opts) {
   const profile = _activeProfile();
-  if (!profile || !profile.mascot || !profile.mascot.id) return;
+  if (!profile) return;
   if (!_shouldSpeak(profile.id, key)) {
     if (_state === 'hidden') _playBase();
     return;
   }
-  const voice = profile.mascot.voice || profile.voice || 'girl';
+  const mascotId = _mascotIdFor(profile);
+  const voice = _mascotVoiceFor(profile);
   const wrap = _ensureEl();
   clearTimeout(_actionTimer);
   _state = 'speaking';
@@ -249,7 +266,7 @@ function play(key, opts) {
   // Pass {muted:true} to use the mascot animation only — the page is
   // responsible for playing the matching audio (e.g. a per-kid greeting
   // pre-generated in voice-manifest).
-  _crossfadeTo(_src(profile.mascot.id, voice, key), {
+  _crossfadeTo(_src(mascotId, voice, key), {
     muted: !!(opts && opts.muted), loop: false, onended: () => _playBase(),
   });
 }
