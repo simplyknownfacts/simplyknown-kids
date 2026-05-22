@@ -3,35 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>SimplyKnown Kids — Videos</title>
+  <title>SimplyKnown Kids — Watch</title>
   <link rel="stylesheet" href="../css/style.css">
   <style>
-    body { background: linear-gradient(160deg, #2d1b5e, #1a1a4e); overflow-y: auto; }
-    .channels-screen { min-height: 100vh; padding: 80px 24px 60px; }
+    .channels-screen {
+      min-height: 100vh;
+      padding: calc(100px + env(safe-area-inset-top)) 24px 100px;
+      display: flex; flex-direction: column; align-items: center;
+      overflow-y: auto;
+    }
+    .hub-title {
+      font-family: var(--font-display); font-style: italic; font-weight: 600;
+      font-size: clamp(40px, 7vw, 56px);
+      color: var(--text); text-align: center; letter-spacing: -0.5px;
+    }
+    .hub-subtitle {
+      font-family: var(--font-hand); font-size: 22px;
+      color: var(--text-soft); margin-top: 4px; margin-bottom: 24px;
+      text-align: center;
+    }
     .channels-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 20px; max-width: 720px; margin: 24px auto;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 22px; max-width: 800px; width: 100%;
     }
     .channel-tile {
-      background: rgba(255,255,255,0.08);
-      border: 2px solid rgba(255,255,255,0.15);
-      border-radius: 24px;
-      padding: 24px 12px;
-      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      position: relative;
+      background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+      border-radius: 22px;
+      overflow: hidden;
       cursor: pointer;
-      transition: transform 0.15s, background 0.15s;
+      box-shadow: var(--paper-shadow);
+      transition: transform 0.15s;
     }
-    .channel-tile:active { transform: scale(0.94); }
-    .channel-tile .ct-emoji { font-size: 56px; line-height: 1; }
-    .channel-tile .ct-label { color:white; font-weight: 900; font-size: 16px; text-align:center; }
+    .channel-tile:active { transform: scale(0.96); }
+    .channel-tile .ct-screen {
+      height: 124px;
+      background: radial-gradient(circle at 50% 50%, var(--c-watch) 0%, color-mix(in srgb, var(--c-watch) 35%, var(--ink)) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 56px; position: relative;
+      box-shadow: inset 0 -8px 24px rgba(0,0,0,0.3);
+    }
+    .channel-tile .ct-screen::after {
+      content: ""; position: absolute; inset: 0;
+      background: repeating-linear-gradient(0deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 3px);
+      pointer-events: none;
+    }
+    .channel-tile .ct-info {
+      padding: 14px 18px; display: flex; align-items: center;
+      justify-content: space-between; gap: 10px;
+    }
+    .channel-tile .ct-label {
+      font-family: var(--font-display); font-style: italic; font-weight: 500;
+      font-size: 18px; color: var(--ink); letter-spacing: -0.2px;
+      line-height: 1.2;
+    }
+    .channel-tile .ct-play {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--c-watch);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink); font-size: 16px; font-weight: 900;
+      padding-left: 3px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+    }
     .empty-state {
-      color: rgba(255,255,255,0.5); font-size: 15px;
+      color: var(--text-soft); font-size: 15px;
       text-align: center; padding: 60px 20px; line-height: 1.5;
+      background: var(--chip-bg); border: 1px solid var(--chip-border);
+      border-radius: 22px; max-width: 460px;
     }
+
+    /* Fullscreen YT player */
     #playerWrap {
       position: fixed; inset: 0; background: #000;
-      display: none; flex-direction: column; z-index: 100;
+      display: none; flex-direction: column; z-index: 200;
     }
     #playerWrap.active { display: flex; }
     #playerFrame { flex: 1; width: 100%; border: 0; }
@@ -40,27 +86,17 @@
       background: rgba(0,0,0,0.6); color: white;
       border: 2px solid rgba(255,255,255,0.4);
       width: 56px; height: 56px; border-radius: 50%;
-      font-size: 24px; cursor: pointer; z-index: 102;
+      font-size: 24px; cursor: pointer; z-index: 202;
       display: flex; align-items: center; justify-content: center;
     }
-    /* Cover YouTube branding / "Watch on YouTube" link in bottom-right of player.
-       Belt + suspenders: sandbox blocks the click target's navigation too. */
-    .yt-cover-br {
-      position: absolute; right: 0; bottom: 0;
-      width: 160px; height: 56px; background: #000;
-      pointer-events: auto; z-index: 101;
-    }
-    .yt-cover-tr {
-      position: absolute; right: 0; top: 0;
-      width: 56px; height: 56px; background: #000;
-      pointer-events: auto; z-index: 101;
-    }
+    .yt-cover-br { position: absolute; right: 0; bottom: 0; width: 160px; height: 56px; background: #000; z-index: 201; }
+    .yt-cover-tr { position: absolute; right: 0; top: 0;    width: 56px;  height: 56px; background: #000; z-index: 201; }
   </style>
 </head>
-<body>
+<body class="section-watch">
   <div class="channels-screen" id="channelsScreen">
-    <div class="title">📺 Watch</div>
-    <div class="subtitle" id="subtitle"></div>
+    <h1 class="hub-title">Watch</h1>
+    <div class="hub-subtitle" id="subtitle"></div>
     <div class="channels-grid" id="channelsGrid"></div>
   </div>
 
@@ -71,6 +107,7 @@
     <div class="yt-cover-br"></div>
   </div>
 
+  <script src="../js/atmosphere.js"></script>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>
@@ -90,14 +127,13 @@
 
       if (!channels.length) {
         subtitle.textContent = '';
-        grid.outerHTML = `<div class="empty-state" style="font-size:17px;line-height:1.6;padding:80px 30px;">
+        grid.outerHTML = `<div class="empty-state">
           <div style="font-size:60px;margin-bottom:16px;">📺</div>
-          <div style="color:white;font-weight:800;font-size:20px;margin-bottom:12px;">
+          <div style="color:var(--text);font-family:var(--font-display);font-style:italic;font-size:24px;margin-bottom:12px;">
             No YouTube channels yet
           </div>
-          <div style="color:rgba(255,255,255,0.65);">
-            A grown-up can add channels in:<br><br>
-            <strong style="color:white;">⚙️ Parent Settings → 📺 YouTube Channels</strong>
+          <div>A grown-up can add channels in:<br><br>
+            <strong style="color:var(--text);">⚙️ Parent Settings → 📺 YouTube Channels</strong>
           </div>
         </div>`;
         return;
@@ -109,8 +145,11 @@
         const tile = document.createElement('div');
         tile.className = 'channel-tile';
         tile.innerHTML = `
-          <span class="ct-emoji">${ch.emoji || '📺'}</span>
-          <span class="ct-label">${ch.label}</span>
+          <div class="ct-screen">${ch.emoji || '📺'}</div>
+          <div class="ct-info">
+            <div class="ct-label">${ch.label}</div>
+            <div class="ct-play">▶</div>
+          </div>
         `;
         tile.addEventListener('click', () => openChannel(ch));
         grid.appendChild(tile);
@@ -118,7 +157,6 @@
 
       const FEED_WORKER = 'https://simplyknown-kids-sync.simplyknownfacts.workers.dev/yt-feed';
 
-      // Load the YouTube IFrame Player API once
       let ytApiReady = new Promise(resolve => {
         if (window.YT && window.YT.Player) return resolve();
         window.onYouTubeIframeAPIReady = () => resolve();
@@ -128,13 +166,12 @@
       });
 
       let _player = null;
-      let _queue = [];   // ordered list of video IDs to try
+      let _queue = [];
       let _idx = 0;
 
       function _tryNext() {
         _idx++;
         if (_idx >= _queue.length) {
-          // Out of options — kid sees a friendly message in the player area
           if (_player) { try { _player.destroy(); } catch {} _player = null; }
           document.getElementById('playerHost').innerHTML =
             '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:24px;font-size:18px;">All caught up! Tap ← to pick another show.</div>';
@@ -160,22 +197,15 @@
           host.innerHTML = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:24px;font-size:18px;">Couldn\'t load shows right now. Tap ← and try again.</div>';
           return;
         }
-        _queue = ids;
-        _idx = 0;
+        _queue = ids; _idx = 0;
         await ytApiReady;
         if (_player) { try { _player.destroy(); } catch {} _player = null; }
         _player = new YT.Player('ytTarget', {
           host: 'https://www.youtube-nocookie.com',
           videoId: _queue[0],
-          playerVars: {
-            autoplay: 1, modestbranding: 1, rel: 0, playsinline: 1,
-            controls: 1, fs: 0, iv_load_policy: 3,
-          },
+          playerVars: { autoplay: 1, modestbranding: 1, rel: 0, playsinline: 1, controls: 1, fs: 0, iv_load_policy: 3 },
           events: {
-            // Auto-skip on error codes: 2 (bad id), 5 (HTML5 player), 100 (removed),
-            // 101 / 150 / 153 (embed not allowed).
             onError: () => _tryNext(),
-            // Auto-advance to next show when current ends.
             onStateChange: e => { if (e.data === YT.PlayerState.ENDED) _tryNext(); },
           },
         });

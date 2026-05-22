@@ -65,6 +65,10 @@
     renderBackBtn('index.html');
     gameSettings.attach('math');
 
+    // Op availability: auto-on at age-recommended tier OR parent-opted-in via toggle
+    const subOn = tier >= 6 || getProfileFeature(profile, 'math', 'subtract');
+    const mulOn = tier >= 8 || getProfileFeature(profile, 'math', 'multiply');
+
     const ITEMS = ['🍎','🍌','🚗','⭐','🐱','🎈','🍦','🦋'];
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
@@ -82,50 +86,42 @@
       return div;
     }
 
+    function pickOp() {
+      const ops = ['+'];
+      if (subOn) ops.push('−');
+      if (mulOn) ops.push('×');
+      return ops[Math.floor(Math.random() * ops.length)];
+    }
+
     function nextRound() {
       bodyEl.innerHTML = ''; clearTimeout(roundTimer);
       const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
 
-      let op, a, b, ans, maxRand;
-      if (tier <= 4) {
-        // Visual addition with tiny numbers, show both piles, kid taps result count
-        op = '+'; a = 1 + Math.floor(Math.random() * 3); b = 1 + Math.floor(Math.random() * 3);
-        ans = a + b; maxRand = 7;
-      } else if (tier <= 5) {
-        op = '+'; a = 1 + Math.floor(Math.random() * 5); b = 1 + Math.floor(Math.random() * 5);
-        ans = a + b; maxRand = 12;
-      } else if (tier <= 6) {
-        // Mix add + subtract
-        const sub = Math.random() < 0.5;
-        if (sub) {
-          a = 3 + Math.floor(Math.random() * 7); b = 1 + Math.floor(Math.random() * (a-1));
-          op = '−'; ans = a - b;
-        } else {
-          a = 1 + Math.floor(Math.random() * 8); b = 1 + Math.floor(Math.random() * 8);
-          op = '+'; ans = a + b;
-        }
-        maxRand = 18;
-      } else {
-        // Tier 7+: bigger numbers, allow multiplication for tier 8
-        const choice = Math.random();
-        if (tier >= 8 && choice < 0.33) {
-          a = 2 + Math.floor(Math.random() * 4); b = 2 + Math.floor(Math.random() * 4);
-          op = '×'; ans = a * b;
-        } else if (choice < 0.66) {
-          a = 5 + Math.floor(Math.random() * 16); b = 1 + Math.floor(Math.random() * (a-1));
-          op = '−'; ans = a - b;
-        } else {
-          a = 5 + Math.floor(Math.random() * 16); b = 1 + Math.floor(Math.random() * 16);
-          op = '+'; ans = a + b;
-        }
-        maxRand = Math.max(20, ans + 5);
+      const op = pickOp();
+      let a, b, ans, maxRand;
+      if (op === '×') {
+        a = 2 + Math.floor(Math.random() * 4); b = 2 + Math.floor(Math.random() * 4);
+        ans = a * b; maxRand = Math.max(20, ans + 5);
+      } else if (op === '−') {
+        if (tier <= 5)      { a = 2 + Math.floor(Math.random() * 5);  b = 1 + Math.floor(Math.random() * (a-1)); maxRand = 10; }
+        else if (tier <= 6) { a = 3 + Math.floor(Math.random() * 7);  b = 1 + Math.floor(Math.random() * (a-1)); maxRand = 18; }
+        else                { a = 5 + Math.floor(Math.random() * 16); b = 1 + Math.floor(Math.random() * (a-1)); maxRand = Math.max(20, a + 5); }
+        ans = a - b;
+      } else { // +
+        if (tier <= 4)      { a = 1 + Math.floor(Math.random() * 3);  b = 1 + Math.floor(Math.random() * 3);  maxRand = 7;  }
+        else if (tier <= 5) { a = 1 + Math.floor(Math.random() * 5);  b = 1 + Math.floor(Math.random() * 5);  maxRand = 12; }
+        else if (tier <= 6) { a = 1 + Math.floor(Math.random() * 8);  b = 1 + Math.floor(Math.random() * 8);  maxRand = 18; }
+        else                { a = 5 + Math.floor(Math.random() * 16); b = 1 + Math.floor(Math.random() * 16); maxRand = Math.max(20, a + b + 5); }
+        ans = a + b;
       }
 
-      hint.textContent = tier <= 5 ? 'How many in all?' : (op === '−' ? 'How many are left?' : 'What\'s the answer?');
+      hint.textContent = op === '−' ? 'How many are left?'
+                       : op === '×' ? 'What\'s the answer?'
+                       : tier <= 5 ? 'How many in all?' : 'What\'s the answer?';
 
       const eq = document.createElement('div'); eq.className = 'eq-row';
-      // Show visual piles only at lower tiers
-      if (tier <= 6) {
+      // Visual piles at lower tiers (skip × — groups-of-objects gets confusing)
+      if (tier <= 6 && op !== '×') {
         eq.appendChild(pile(a, item));
         const opEl = document.createElement('span'); opEl.className = 'op'; opEl.textContent = op;
         eq.appendChild(opEl);

@@ -82,6 +82,9 @@
     renderBackBtn('index.html');
     gameSettings.attach('abcs');
 
+    const wordHintsOn = tier >= 3 || getProfileFeature(profile, 'abcs', 'wordHints');
+    const spellOn     = tier >= 7 || getProfileFeature(profile, 'abcs', 'spellMode');
+
     const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     // 4 kid-recognizable starts-with items per letter
     const STARTS = {
@@ -123,7 +126,7 @@
     function nextRound() {
       bodyEl.innerHTML = '';
 
-      if (tier >= 7) {
+      if (spellOn) {
         // Spell mode: pick a 3-letter word, tap letters from bank in order
         const word = SPELL_WORDS[Math.floor(Math.random() * SPELL_WORDS.length)];
         const hint = document.createElement('div'); hint.className = 'subtitle';
@@ -188,7 +191,9 @@
       const grid = document.createElement('div'); grid.className = 'starts-grid';
       items.forEach(item => {
         const tile = document.createElement('div'); tile.className = 'start-tile';
-        tile.innerHTML = `<span class="start-emoji">${item.e}</span><span class="start-name">${item.w}</span>`;
+        tile.innerHTML = wordHintsOn
+          ? `<span class="start-emoji">${item.e}</span><span class="start-name">${item.w}</span>`
+          : `<span class="start-emoji">${item.e}</span>`;
         tile.addEventListener('pointerdown', () => {
           speak(item.w);
           playChime();

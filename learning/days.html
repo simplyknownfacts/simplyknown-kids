@@ -48,6 +48,8 @@
     renderBackBtn('index.html');
     gameSettings.attach('days');
 
+    const quizOn = tier >= 5 || getProfileFeature(profile, 'days', 'quizMode');
+
     const DAYS = [
       { n:'Sunday',    e:'🌞' },
       { n:'Monday',    e:'😴' },
@@ -67,7 +69,7 @@
     function nextRound() {
       bodyEl.innerHTML = ''; clearTimeout(roundTimer);
 
-      if (tier <= 4) {
+      if (tier <= 4 && !quizOn) {
         // Tap each day to hear its name. Today is highlighted.
         hint.textContent = '👆 Tap a day to hear it!';
         const row = document.createElement('div'); row.className = 'day-row';
@@ -84,7 +86,7 @@
         bodyEl.appendChild(row);
         setTimeout(() => speak(`Today is ${DAYS[todayIdx].n}!`), 400);
 
-      } else if (tier <= 6) {
+      } else if (tier <= 6 || quizOn) {
         // "What comes after Monday?" / "What was yesterday?"
         const isAfter = Math.random() < 0.5;
         const baseIdx = Math.floor(Math.random() * 7);

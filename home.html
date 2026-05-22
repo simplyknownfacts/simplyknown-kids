@@ -7,56 +7,205 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SimplyKnown Kids">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#08061C">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="manifest" href="manifest.json">
   <title>SimplyKnown Kids — Home</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .section-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-    .section-btn { width: 140px; height: 140px; }
+    .home-screen {
+      width: 100vw; min-height: 100vh;
+      display: flex; flex-direction: column;
+      padding: 40px 28px 120px;
+      align-items: center;
+    }
+    .home-greeting {
+      width: 100%; max-width: 980px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 28px;
+      gap: 16px; flex-wrap: wrap;
+    }
+    .home-greeting .greet-text {
+      flex: 1; min-width: 240px;
+    }
+    .home-greeting .hand {
+      font-family: var(--font-hand); font-size: 26px;
+      color: var(--text-soft); letter-spacing: 0.5px;
+    }
+    .home-greeting .where {
+      font-family: var(--font-display); font-style: italic; font-weight: 600;
+      font-size: clamp(34px, 5.5vw, 50px);
+      color: var(--text); letter-spacing: -0.4px;
+      margin-top: 2px;
+    }
+    /* Avatar pill (top right) */
+    .avatar-pill {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px 10px 10px; border-radius: 999px;
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+    .avatar-pill .pill-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .avatar-pill .pill-name  { font-size: 15px; font-weight: 700; color: var(--text); }
+    .avatar-pill .pill-age   { font-size: 11px; color: var(--text-soft); }
+    .avatar-pill .pill-divider { width: 1px; height: 24px; background: var(--chip-border); margin: 0 4px; }
+    .avatar-pill .pill-switch { font-size: 11px; color: var(--text-soft); padding: 0 6px; }
+
+    /* Section portals */
+    .section-row {
+      display: flex; gap: 22px; justify-content: center;
+      flex-wrap: wrap; align-items: flex-end;
+      width: 100%; max-width: 980px;
+      margin-top: 24px;
+    }
+    .section-btn { width: 156px; min-height: 176px; }
+    .section-row > .section-btn:nth-child(odd)  { transform: translateY(0); }
+    .section-row > .section-btn:nth-child(even) { transform: translateY(16px); }
+
+    .switch-link {
+      position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); left: 24px;
+      font-size: 13px; color: var(--text-soft); cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .section-row { gap: 14px; }
+      .section-btn { width: calc(50% - 8px); min-height: 150px; }
+    }
   </style>
 </head>
 <body>
-  <div class="screen" id="screen">
-    <div class="row" style="gap:12px;">
-      <div id="childAvatar" style="font-size:40px;"></div>
-      <div class="title" id="greeting"></div>
+  <div class="screen home-screen" id="screen">
+    <div class="home-greeting">
+      <div class="greet-text">
+        <div class="hand" id="hiText">Hi ✦</div>
+        <div class="where">Where shall we go?</div>
+      </div>
+      <div class="avatar-pill" id="avatarPill" onclick="goProfiles()">
+        <div class="pill-avatar" id="pillAvatar">🦊</div>
+        <div>
+          <div class="pill-name" id="pillName">—</div>
+          <div class="pill-age"  id="pillAge">—</div>
+        </div>
+        <div class="pill-divider"></div>
+        <div class="pill-switch">switch ↻</div>
+      </div>
     </div>
+
     <div class="section-row">
-      <div class="section-btn" onclick="go('games/index.html')">
-        <div class="icon">🎮</div>
-        <div class="label" style="color:#FF6B6B;">GAMES</div>
+      <div class="section-btn" onclick="go('games/index.html')" style="--section-hue: var(--c-games);">
+        <div class="icon">
+          <!-- Gamepad -->
+          <svg viewBox="0 0 64 64" width="56" height="56">
+            <path d="M12 22 C 12 16, 18 14, 22 14 L 42 14 C 46 14, 52 16, 52 22 L 52 42 C 52 48, 46 50, 42 50 L 22 50 C 18 50, 12 48, 12 42 Z" fill="#3A1B4A"/>
+            <path d="M16 26 C 16 22, 20 20, 24 20 L 40 20 C 44 20, 48 22, 48 26 L 48 38 C 48 42, 44 44, 40 44 L 24 44 C 20 44, 16 42, 16 38 Z" fill="#FF8FA8"/>
+            <rect x="22" y="30" width="10" height="4" rx="1" fill="#3A1B4A"/>
+            <rect x="25" y="27" width="4" height="10" rx="1" fill="#3A1B4A"/>
+            <circle cx="40" cy="29" r="2.5" fill="#FFC56B"/>
+            <circle cx="44" cy="34" r="2.5" fill="#7FE6D2"/>
+            <circle cx="36" cy="34" r="2.5" fill="#FFF1C8"/>
+            <circle cx="40" cy="39" r="2.5" fill="#C49BFF"/>
+          </svg>
+        </div>
+        <div class="label">Games</div>
       </div>
-      <div class="section-btn" onclick="go('learning/index.html')">
-        <div class="icon">📚</div>
-        <div class="label" style="color:#4ECDC4;">LEARN</div>
+
+      <div class="section-btn" onclick="go('learning/index.html')" style="--section-hue: var(--c-learn);">
+        <div class="icon">
+          <!-- Book -->
+          <svg viewBox="0 0 64 64" width="56" height="56">
+            <path d="M6 18 L 30 22 L 30 52 L 6 48 Z" fill="#FBF1D8" stroke="#3A1B4A" stroke-width="1"/>
+            <path d="M58 18 L 34 22 L 34 52 L 58 48 Z" fill="#FBF1D8" stroke="#3A1B4A" stroke-width="1"/>
+            <path d="M30 22 L 32 22 L 34 22 L 34 52 L 32 52 L 30 52 Z" fill="#3A1B4A"/>
+            <line x1="12" y1="30" x2="26" y2="32" stroke="#7FE6D2" stroke-width="2" stroke-linecap="round"/>
+            <line x1="12" y1="36" x2="26" y2="38" stroke="#88BFFF" stroke-width="2" stroke-linecap="round"/>
+            <line x1="12" y1="42" x2="22" y2="44" stroke="#FF8FA8" stroke-width="2" stroke-linecap="round"/>
+            <line x1="38" y1="32" x2="52" y2="30" stroke="#FFC56B" stroke-width="2" stroke-linecap="round"/>
+            <line x1="38" y1="38" x2="52" y2="36" stroke="#7FE6D2" stroke-width="2" stroke-linecap="round"/>
+            <line x1="42" y1="44" x2="52" y2="42" stroke="#C49BFF" stroke-width="2" stroke-linecap="round"/>
+            <path d="M32 12 L 34 16 L 38 17 L 35 20 L 36 24 L 32 22 L 28 24 L 29 20 L 26 17 L 30 16 Z" fill="#FFC56B"/>
+          </svg>
+        </div>
+        <div class="label">Learn</div>
       </div>
-      <div class="section-btn" onclick="go('art/index.html')">
-        <div class="icon">🎨</div>
-        <div class="label" style="color:#a86cdb;">ART</div>
+
+      <div class="section-btn" onclick="go('art/index.html')" style="--section-hue: var(--c-art);">
+        <div class="icon">
+          <!-- Palette + brush -->
+          <svg viewBox="0 0 64 64" width="56" height="56">
+            <path d="M32 8 C 18 8, 8 18, 8 32 S 18 56, 32 56 C 36 56, 38 52, 36 48 C 34 44, 38 40, 42 42 C 50 44, 56 38, 56 30 C 56 18, 46 8, 32 8 Z" fill="#FBF1D8"/>
+            <circle cx="20" cy="24" r="4" fill="#FF8FA8"/>
+            <circle cx="32" cy="18" r="4" fill="#FFC56B"/>
+            <circle cx="44" cy="22" r="4" fill="#7FE6D2"/>
+            <circle cx="46" cy="34" r="4" fill="#88BFFF"/>
+            <circle cx="18" cy="36" r="4" fill="#C49BFF"/>
+            <g transform="translate(40 36) rotate(35)">
+              <rect x="0" y="-2" width="20" height="4" rx="1" fill="#5A4691"/>
+              <path d="M20 -3 L 28 -2 L 28 2 L 20 3 Z" fill="#FFC56B"/>
+              <path d="M28 -2 L 32 -1 L 32 1 L 28 2 Z" fill="#FF8FA8"/>
+            </g>
+          </svg>
+        </div>
+        <div class="label">Art</div>
       </div>
-      <div class="section-btn" id="watchTile" onclick="go('videos/index.html')">
-        <div class="icon">📺</div>
-        <div class="label" style="color:#FFD93D;">WATCH</div>
+
+      <div class="section-btn" id="watchTile" onclick="go('videos/index.html')" style="--section-hue: var(--c-watch);">
+        <div class="icon">
+          <!-- Vintage TV -->
+          <svg viewBox="0 0 64 64" width="56" height="56">
+            <rect x="6" y="12" width="52" height="38" rx="6" fill="#3A1B4A"/>
+            <rect x="10" y="16" width="44" height="30" rx="3" fill="#FFC56B"/>
+            <path d="M22 28 L 25 24 L 28 28 L 25 32 Z" fill="#FFF1C8" opacity="0.85"/>
+            <circle cx="40" cy="28" r="4" fill="#FF8FA8"/>
+            <path d="M14 38 Q 24 34, 34 38 T 50 38" stroke="#7FE6D2" stroke-width="2.5" fill="none"/>
+            <line x1="20" y1="12" x2="14" y2="4" stroke="#3A1B4A" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="44" y1="12" x2="50" y2="4" stroke="#3A1B4A" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="14" cy="4" r="2" fill="#FF8FA8"/>
+            <circle cx="50" cy="4" r="2" fill="#7FE6D2"/>
+            <rect x="16" y="50" width="6" height="6" rx="1" fill="#3A1B4A"/>
+            <rect x="42" y="50" width="6" height="6" rx="1" fill="#3A1B4A"/>
+          </svg>
+        </div>
+        <div class="label">Watch</div>
       </div>
-      <div class="section-btn" id="listenTile" onclick="go('listen/index.html')" style="display:none;">
-        <div class="icon">🎧</div>
-        <div class="label" style="color:#FF9F43;">LISTEN</div>
+
+      <div class="section-btn" id="listenTile" onclick="go('listen/index.html')" style="display:none; --section-hue: var(--c-listen);">
+        <div class="icon">
+          <!-- Headphones + notes -->
+          <svg viewBox="0 0 64 64" width="56" height="56">
+            <path d="M10 36 C 10 20, 22 10, 32 10 S 54 20, 54 36" stroke="#3A1B4A" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <rect x="6" y="34" width="14" height="22" rx="5" fill="#FF9F6B"/>
+            <rect x="44" y="34" width="14" height="22" rx="5" fill="#FF9F6B"/>
+            <rect x="9" y="38" width="8" height="14" rx="3" fill="#FBF1D8"/>
+            <rect x="47" y="38" width="8" height="14" rx="3" fill="#FBF1D8"/>
+            <circle cx="22" cy="22" r="3" fill="#FFC56B"/>
+            <line x1="25" y1="22" x2="25" y2="14" stroke="#FFC56B" stroke-width="2"/>
+            <circle cx="42" cy="20" r="3" fill="#7FE6D2"/>
+            <line x1="45" y1="20" x2="45" y2="12" stroke="#7FE6D2" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="label">Listen</div>
       </div>
-    </div>
-    <div class="subtitle" style="cursor:pointer;margin-top:8px;" onclick="goProfiles()">
-      ← switch child
     </div>
   </div>
-  <button id="exitBtn" onclick="exitApp()" aria-label="Exit app"
-    style="position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));left:calc(14px + env(safe-area-inset-left));
-           width:48px;height:48px;border-radius:50%;background:rgba(0,0,0,0.5);color:white;
-           border:2px solid rgba(255,255,255,0.4);font-size:20px;cursor:pointer;z-index:9000;
-           display:flex;align-items:center;justify-content:center;opacity:0.7;
-           box-shadow:0 4px 12px rgba(0,0,0,0.5);">🚪</button>
 
+  <div class="switch-link" onclick="goProfiles()">← switch child</div>
+
+  <button id="exitBtn" onclick="exitApp()" aria-label="Exit app"
+    style="position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));right:calc(14px + env(safe-area-inset-right));
+           width:48px;height:48px;border-radius:50%;background:var(--chip-bg);color:var(--text);
+           border:1px solid var(--chip-border);font-size:20px;cursor:pointer;z-index:90;
+           display:flex;align-items:center;justify-content:center;opacity:0.7;
+           backdrop-filter:blur(6px);">🚪</button>
+
+  <script src="js/atmosphere.js"></script>
   <script src="js/tiers.js"></script>
   <script src="js/profiles.js"></script>
   <script src="js/voice-manifest.js"></script>
@@ -75,7 +224,7 @@
     }
     async function _checkPin(entry) {
       const stored = localStorage.getItem('vb_pin');
-      if (!stored) return true; // no PIN set yet → allow
+      if (!stored) return true;
       try {
         const obj = JSON.parse(stored);
         if (obj.hash && obj.salt) return (await _sha256Hex(obj.salt + ':' + entry)) === obj.hash;
@@ -87,22 +236,22 @@
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
       let entry = '';
       function dots() {
-        return Array.from({length:4}, (_,i)=>`<div style="width:14px;height:14px;border-radius:50%;background:${i<entry.length?'#4ECDC4':'rgba(255,255,255,0.2)'};"></div>`).join('');
+        return Array.from({length:4}, (_,i)=>`<div style="width:14px;height:14px;border-radius:50%;background:${i<entry.length?'var(--accent)':'rgba(255,255,255,0.2)'};"></div>`).join('');
       }
       function keys() {
         return [1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k => k==='' ? '<div></div>' :
-          `<button data-k="${k}" style="aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:900;color:white;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);cursor:pointer;">${k}</button>`
+          `<button data-k="${k}" style="aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:900;color:white;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);cursor:pointer;font-family:var(--font-ui);">${k}</button>`
         ).join('');
       }
       function render() {
         overlay.innerHTML = `
-          <div style="background:#1a1a2e;border-radius:18px;padding:24px;max-width:340px;width:100%;color:white;text-align:center;">
-            <h2 style="margin:0 0 6px;">🚪 Close App</h2>
+          <div style="background:#1a1a2e;border-radius:18px;padding:24px;max-width:340px;width:100%;color:white;text-align:center;font-family:var(--font-ui);">
+            <h2 style="margin:0 0 6px;font-family:var(--font-display);font-style:italic;font-weight:500;">🚪 Close App</h2>
             <div style="color:rgba(255,255,255,0.6);font-size:14px;margin-bottom:12px;">Enter PIN to exit</div>
             <div id="exitDots" style="display:flex;gap:10px;justify-content:center;margin:10px 0 14px;">${dots()}</div>
             <div id="exitMsg" style="color:#FF6B6B;font-size:13px;min-height:18px;margin-bottom:8px;"></div>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto;">${keys()}</div>
-            <button id="exitCancel" style="margin-top:14px;width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,0.1);color:white;border:2px solid rgba(255,255,255,0.2);font-weight:800;cursor:pointer;">Cancel</button>
+            <button id="exitCancel" style="margin-top:14px;width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);font-weight:800;cursor:pointer;font-family:var(--font-ui);">Cancel</button>
           </div>`;
         overlay.querySelectorAll('button[data-k]').forEach(b => {
           b.onclick = async () => {
@@ -131,23 +280,39 @@
 
     const profile = getActiveProfile();
     if (profile) {
-      document.getElementById('childAvatar').textContent = profile.avatar;
-      const greetText = `Hi ${profile.name}! Welcome to your play space.`;
-      document.getElementById('greeting').textContent = `Hi ${profile.name}! 👋`;
-      document.getElementById('screen').style.background =
-        `linear-gradient(160deg, ${profile.color} 0%, ${profile.color}88 100%)`;
+      // Avatar pill
+      document.getElementById('pillAvatar').textContent = profile.avatar || '🌟';
+      document.getElementById('pillAvatar').style.background =
+        `radial-gradient(circle at 35% 35%, #fff8, ${profile.color}cc)`;
+      document.getElementById('pillAvatar').style.boxShadow =
+        `0 4px 12px ${profile.color}66`;
+      document.getElementById('pillName').textContent = profile.name;
+      const ageMonths = getAgeMonths(profile.birthday);
+      document.getElementById('pillAge').textContent = ageMonths < 24
+        ? ageMonths + ' months'
+        : Math.floor(ageMonths / 12) + ' yrs ' + (ageMonths % 12) + 'mo';
+
+      // Time-of-day greeting
+      const tod = document.documentElement.getAttribute('data-tod') || 'night';
+      const greet = {
+        morning:   'Good morning',
+        afternoon: 'Hi',
+        evening:   'Good evening',
+        night:     'Hi',
+      }[tod];
+      document.getElementById('hiText').textContent = greet + ' ' + profile.name + ' ✦';
+
+      const greetText = 'Hi ' + profile.name + '! Welcome to your play space.';
+
       // Listen tile only when Yoto is connected
       if (window.yoto && yoto.isConfigured() && yoto.isConnected()) {
         document.getElementById('listenTile').style.display = '';
       }
-      // Mascot plays its welcome animation MUTED so we can layer the
-      // personalized greeting on top — the dog/tiger/etc visually "says"
-      // the kid's name even though the lip-sync was baked for a different
-      // phrase. Single combined utterance, no overlap.
+
+      // Mascot — muted welcome animation + layered greeting
       if (window.mascot) {
         setTimeout(() => {
           mascot.play('welcome', { muted: true });
-          // Tiny lead so the audio starts as the mascot mouth opens.
           setTimeout(() => speak(greetText), 250);
         }, 600);
       } else {

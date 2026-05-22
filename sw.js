@@ -1,7 +1,8 @@
-const CACHE = 'vb-v51';
+const CACHE = 'vb-v52';  /* bumped: storybook redesign — invalidates v51 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
+  './js/atmosphere.js',
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',
   './js/yoto.js', './js/yoto-config.js', './js/yoto-player.js',
   './games/index.html', './games/tap-pop.html', './games/shape-match.html',
@@ -16,7 +17,7 @@ const ASSETS = [
   './yoto-callback.html',
   './parent/settings.html',
   './icon-192.png', './icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap'
+  'https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500..700;1,6..72,500..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Caveat:wght@500;700&display=swap'
 ];
 
 self.addEventListener('install', e => {
