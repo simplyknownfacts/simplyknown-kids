@@ -1,4 +1,4 @@
-const CACHE = 'vb-v53';  /* bumped: mascot bubble removed + viewport fixes — invalidates v52 caches */
+const CACHE = 'vb-v54';  /* bumped: mascot moved bottom-left, kid pill moved bottom-right — invalidates v53 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
