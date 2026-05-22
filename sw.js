@@ -1,4 +1,4 @@
-const CACHE = 'vb-v55';  /* bumped: tap-pop tier behavior rewrite (Scott spec) — invalidates v54 caches */
+const CACHE = 'vb-v56';  /* bumped: tap-pop shiny bubbles (3pt bonus) — invalidates v55 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
