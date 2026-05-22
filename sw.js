@@ -1,4 +1,4 @@
-const CACHE = 'vb-v56';  /* bumped: tap-pop shiny bubbles (3pt bonus) — invalidates v55 caches */
+const CACHE = 'vb-v57';  /* bumped: hub/listen/channels scroll fix + parent settings PIN gate scroll — invalidates v56 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
