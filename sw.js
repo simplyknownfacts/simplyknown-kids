@@ -1,4 +1,4 @@
-const CACHE = 'vb-v54';  /* bumped: mascot moved bottom-left, kid pill moved bottom-right — invalidates v53 caches */
+const CACHE = 'vb-v55';  /* bumped: tap-pop tier behavior rewrite (Scott spec) — invalidates v54 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
