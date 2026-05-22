@@ -15,10 +15,12 @@
   <link rel="stylesheet" href="css/style.css">
   <style>
     .home-screen {
-      width: 100vw; min-height: 100vh;
+      width: 100vw; height: 100vh; height: 100dvh;
       display: flex; flex-direction: column;
       padding: 40px 28px 120px;
       align-items: center;
+      overflow-y: auto;                    /* allow scroll if 5 portals show on short viewports */
+      -webkit-overflow-scrolling: touch;
     }
     .home-greeting {
       width: 100%; max-width: 980px;
@@ -78,6 +80,18 @@
     @media (max-width: 600px) {
       .section-row { gap: 14px; }
       .section-btn { width: calc(50% - 8px); min-height: 150px; }
+      /* Narrow screens: pill fits without divider+switch text — whole pill is still clickable */
+      .avatar-pill .pill-divider,
+      .avatar-pill .pill-switch { display: none; }
+      .avatar-pill { padding: 8px 12px 8px 8px; gap: 8px; }
+      .avatar-pill .pill-avatar { width: 36px; height: 36px; font-size: 20px; }
+    }
+    @media (max-height: 500px) and (orientation: landscape) {
+      /* Phone landscape — compress vertical chrome */
+      .home-screen { padding: 18px 28px 18px; }
+      .home-greeting { margin-bottom: 10px; }
+      .section-row { margin-top: 8px; }
+      .section-btn { min-height: 130px; }
     }
   </style>
 </head>
