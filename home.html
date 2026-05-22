@@ -24,7 +24,7 @@
     }
     .home-greeting {
       width: 100%; max-width: 980px;
-      display: flex; justify-content: space-between; align-items: flex-start;
+      display: flex; justify-content: flex-start; align-items: flex-start;
       margin-bottom: 28px;
       gap: 16px; flex-wrap: wrap;
     }
@@ -41,14 +41,20 @@
       color: var(--text); letter-spacing: -0.4px;
       margin-top: 2px;
     }
-    /* Avatar pill (top right) */
+    /* Avatar pill — bottom-right (single way to switch kid; replaces the
+       old "← switch child" link, which was redundant). */
     .avatar-pill {
+      position: fixed;
+      bottom: calc(72px + env(safe-area-inset-bottom));  /* above door + gear */
+      right: calc(14px + env(safe-area-inset-right));
       display: flex; align-items: center; gap: 12px;
       padding: 10px 16px 10px 10px; border-radius: 999px;
       background: var(--chip-bg);
       border: 1px solid var(--chip-border);
       backdrop-filter: blur(6px);
       cursor: pointer;
+      z-index: 95;  /* above gear (99) is fine — pill is bigger; door is 90 */
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
     }
     .avatar-pill .pill-avatar {
       width: 44px; height: 44px; border-radius: 50%;
@@ -70,12 +76,6 @@
     .section-btn { width: 156px; min-height: 176px; }
     .section-row > .section-btn:nth-child(odd)  { transform: translateY(0); }
     .section-row > .section-btn:nth-child(even) { transform: translateY(16px); }
-
-    .switch-link {
-      position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); left: 24px;
-      font-size: 13px; color: var(--text-soft); cursor: pointer;
-      display: flex; align-items: center; gap: 8px;
-    }
 
     @media (max-width: 600px) {
       .section-row { gap: 14px; }
@@ -102,15 +102,17 @@
         <div class="hand" id="hiText">Hi ✦</div>
         <div class="where">Where shall we go?</div>
       </div>
-      <div class="avatar-pill" id="avatarPill" onclick="goProfiles()">
-        <div class="pill-avatar" id="pillAvatar">🦊</div>
-        <div>
-          <div class="pill-name" id="pillName">—</div>
-          <div class="pill-age"  id="pillAge">—</div>
-        </div>
-        <div class="pill-divider"></div>
-        <div class="pill-switch">switch ↻</div>
+    </div>
+
+    <!-- Avatar pill — fixed bottom-right; whole pill tap = switch child -->
+    <div class="avatar-pill" id="avatarPill" onclick="goProfiles()" title="Switch child">
+      <div class="pill-avatar" id="pillAvatar">🦊</div>
+      <div>
+        <div class="pill-name" id="pillName">—</div>
+        <div class="pill-age"  id="pillAge">—</div>
       </div>
+      <div class="pill-divider"></div>
+      <div class="pill-switch">switch ↻</div>
     </div>
 
     <div class="section-row">
@@ -209,8 +211,6 @@
       </div>
     </div>
   </div>
-
-  <div class="switch-link" onclick="goProfiles()">← switch child</div>
 
   <button id="exitBtn" onclick="exitApp()" aria-label="Exit app"
     style="position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));right:calc(14px + env(safe-area-inset-right));

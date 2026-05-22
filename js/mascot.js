@@ -64,7 +64,7 @@ function _ensureEl() {
   // "just be there". The cream baked-in video background is feathered out
   // with a radial mask so it blends into the page edge softly.
   wrap.style.cssText = `
-    position: fixed; bottom: 16px; right: 16px;
+    position: fixed; bottom: 16px; left: 16px;
     width: 180px; height: 180px;
     display: none;
     z-index: 9999;
@@ -85,15 +85,15 @@ function _ensureEl() {
         50% { transform: translateY(-6px) scale(1.02); }
       }
       /* Smaller mascot on phone-sized viewports so it doesn't eat half the
-         screen. Position also pulls in slightly so it doesn't cover content. */
+         screen. Stays in the bottom-LEFT corner across all viewports. */
       @media (max-width: 600px) {
         #mascotWrap { width: 120px !important; height: 120px !important;
-                      bottom: 12px !important; right: 12px !important; }
+                      bottom: 12px !important; left: 12px !important; }
       }
       /* Phone landscape — even smaller, content is squeezed vertically */
       @media (max-height: 500px) and (orientation: landscape) {
         #mascotWrap { width: 110px !important; height: 110px !important;
-                      bottom: 8px !important; right: 8px !important; }
+                      bottom: 8px !important; left: 8px !important; }
       }
     `;
     document.head.appendChild(style);
