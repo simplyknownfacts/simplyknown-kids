@@ -9,20 +9,26 @@
     #canvas { position:fixed; inset:0; touch-action:none; }
     #stampbar {
       position:fixed; bottom:0; left:0; right:0;
-      display:none; gap:10px; justify-content:center; align-items:center;
+      display:none; gap:10px; align-items:center;
       padding:10px 10px calc(10px + env(safe-area-inset-bottom)) 10px;
       background:rgba(0,0,0,0.4); backdrop-filter:blur(8px); z-index:10;
-      flex-wrap:wrap;
+      /* Horizontal scroll instead of wrap so chips never clip off-screen on
+         narrow landscape phones. Center if everything fits. */
+      flex-wrap:nowrap; overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      justify-content:flex-start;
     }
-    /* Landscape tablets: bar moves to right side, wraps to multiple columns if needed (no scroll) */
-    @media (orientation: landscape) and (min-width: 768px) {
+    /* TRUE tablet landscape only: bar moves to right side as a scrollable rail.
+       Phone landscape (~844x390) falls back to the bottom strip above so we
+       don't lose vertical canvas space to a side panel. */
+    @media (orientation: landscape) and (min-width: 1024px) {
       #stampbar {
-        flex-direction:column; flex-wrap:wrap;
-        align-content:flex-start;
+        flex-direction:column; flex-wrap:nowrap;
+        align-content:flex-start; justify-content:flex-start;
         top:0; right:0; bottom:0; left:auto;
-        width:auto; max-width:320px; height:100vh;
+        width:auto; max-width:360px; height:100vh;
         padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) 12px;
-        overflow:hidden; gap:12px;
+        overflow-x:hidden; overflow-y:auto; gap:12px;
       }
       .scene-sep { width:60px; height:2px; margin:6px 0; flex-basis:100%; }
       .scene-label { flex-basis:100%; text-align:center; }
