@@ -1,4 +1,4 @@
-const CACHE = 'vb-v59';  /* bumped: parent settings compact PIN pad on phone-landscape — invalidates v58 caches */
+const CACHE = 'vb-v60';  /* bumped: parent settings scroll JS fallback + count-along audio fix — invalidates v59 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

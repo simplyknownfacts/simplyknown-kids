@@ -206,7 +206,20 @@
     }
   </style>
 </head>
-<body data-allow-zoom="1">
+<body data-allow-zoom="1" style="position:static;overflow:auto;height:auto;touch-action:auto;">
+<script>
+  // Belt-and-suspenders unlock for parent settings scroll. The :has() CSS
+  // rule in style.css should handle this, but some PWA contexts (older
+  // Chrome WebViews, stale cached CSS) don't apply it. Setting these inline
+  // guarantees scroll works the moment this page loads.
+  (function() {
+    var h = document.documentElement;
+    h.style.position = 'static';
+    h.style.overflow = 'auto';
+    h.style.height = 'auto';
+    h.style.width = '100%';
+  })();
+</script>
   <div class="back-btn" style="position:fixed;" onclick="goBack()">←</div>
 
   <!-- PIN Gate -->
