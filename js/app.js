@@ -183,30 +183,45 @@ function _matchClips(text) {
   return null;
 }
 
-let _audioQueue = Promise.resolve();
-let _currentAudio = null;
-let _speakGen = 0; // increments on cancel; in-flight chain checks this to bail
+// Single reusable Audio element. Previously each speak() created a new
+// Audio() — on rapid taps (count-along game, math drill, etc.) the elements
+// stacked up faster than cancel could pause them, producing lag + duplicate
+// playback. One element + immediate src reassignment is what mobile browsers
+// actually optimize for.
+let _audio = null;
+let _speakGen = 0; // bumps every cancel; in-flight chains check before each clip
+
+function _ensureAudio() {
+  if (!_audio) {
+    _audio = new Audio();
+    _audio.preload = 'auto';
+  }
+  return _audio;
+}
+
 function _playClip(voice, hash, gen) {
   return new Promise(resolve => {
     if (gen !== _speakGen) return resolve();
-    const audio = new Audio(`${rootPath()}audio/${voice}/${hash}.mp3`);
-    _currentAudio = audio;
-    audio.onended = audio.onerror = () => {
-      if (_currentAudio === audio) _currentAudio = null;
-      resolve();
-    };
-    audio.play().catch(() => resolve());
+    const a = _ensureAudio();
+    // Hard stop any in-flight playback before assigning the new src — without
+    // pause-first the previous clip can briefly bleed into the new one on
+    // mobile Chrome.
+    try { a.pause(); } catch {}
+    a.onended = a.onerror = null;  // clear stale handlers
+    a.src = `${rootPath()}audio/${voice}/${hash}.mp3`;
+    a.onended = () => { if (gen === _speakGen) resolve(); };
+    a.onerror = () => resolve();
+    // play() returns a promise that may reject if cancelSpeak fires mid-load.
+    a.play().catch(() => resolve());
   });
 }
 
 function cancelSpeak() {
   _speakGen++;
-  if (_currentAudio) {
-    try { _currentAudio.pause(); _currentAudio.src = ''; } catch {}
-    _currentAudio = null;
+  if (_audio) {
+    try { _audio.pause(); _audio.removeAttribute('src'); _audio.load(); } catch {}
   }
   if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch {} }
-  _audioQueue = Promise.resolve();
 }
 
 function _voiceSpeak(text, voice) {
@@ -214,12 +229,14 @@ function _voiceSpeak(text, voice) {
   if (!clips) return _browserSpeak(text);
   const hashes = clips.map(c => VOICE_MANIFEST.phraseHash[c]);
   const gen = _speakGen;
-  _audioQueue = _audioQueue.then(async () => {
+  // Fire-and-forget IIFE — no shared queue, so a new speak() never waits for
+  // the previous to clean up. The gen check inside _playClip aborts stale chains.
+  (async () => {
     for (const h of hashes) {
       if (gen !== _speakGen) return;
       await _playClip(voice, h, gen);
     }
-  });
+  })();
 }
 
 function _getActiveVoice() {
