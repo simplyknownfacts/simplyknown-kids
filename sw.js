@@ -1,4 +1,4 @@
-const CACHE = 'vb-v66';  /* bumped: tap-pop score always on + varied tier-3+ movement (engaging, age-scaled speeds) — invalidates v65 caches */
+const CACHE = 'vb-v67';  /* bumped: tap-pop shiny bubbles get twinkling surface sparkles — invalidates v66 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

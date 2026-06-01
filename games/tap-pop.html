@@ -291,6 +291,33 @@
         // Inner highlight
         ctx.beginPath(); ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.28, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fill();
+
+        // Twinkling sparkles ON the bubble surface — little 4-point glints that
+        // fade in and out at different rates so the gold bubble shimmers.
+        const SP = [
+          { dx: -0.30, dy: -0.30, rate: 4.2, ph: 0.0 },
+          { dx:  0.28, dy: -0.10, rate: 6.1, ph: 1.7 },
+          { dx:  0.05, dy:  0.32, rate: 5.0, ph: 3.1 },
+          { dx: -0.20, dy:  0.18, rate: 7.3, ph: 4.6 },
+        ];
+        for (const s of SP) {
+          const tw = 0.5 + 0.5 * Math.sin(tt * s.rate + s.ph); // 0..1 twinkle
+          if (tw < 0.15) continue;
+          const cx = b.x + s.dx * b.r;
+          const cy = b.y + s.dy * b.r;
+          const len = b.r * (0.14 + 0.16 * tw);
+          ctx.globalAlpha = (alpha ?? 1) * tw;
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 2;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(cx - len, cy); ctx.lineTo(cx + len, cy);
+          ctx.moveTo(cx, cy - len); ctx.lineTo(cx, cy + len);
+          ctx.stroke();
+          // tiny bright core
+          ctx.fillStyle = '#FFFDF0';
+          ctx.beginPath(); ctx.arc(cx, cy, b.r * 0.05 * (0.6 + tw), 0, Math.PI * 2); ctx.fill();
+        }
         ctx.globalAlpha = 1;
         return;
       }
