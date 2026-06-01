@@ -1,4 +1,4 @@
-const CACHE = 'vb-v64';  /* bumped: count-along stutter fix + bigger young-age icons (count-along, hello-colors) — invalidates v63 caches */
+const CACHE = 'vb-v65';  /* bumped: cloud sync — detect expired session + conflict chooser (no more silent overwrite) — invalidates v64 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
