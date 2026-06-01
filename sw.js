@@ -1,4 +1,4 @@
-const CACHE = 'vb-v61';  /* bumped: fix mouse-wheel scroll (single scroll container, body overflow visible) — invalidates v60 caches */
+const CACHE = 'vb-v62';  /* bumped: shape-match drag from tier 2, hello-colors tap-all-things — invalidates v61 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

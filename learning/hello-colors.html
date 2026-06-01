@@ -92,24 +92,42 @@
       clearTimeout(autoTimer);
 
       if (!quizOn) {
-        // Tap-to-advance for everyone: show all things for current color
+        // Tap-ALL-things mode: show every thing for the current color. The kid
+        // must tap each one (reveals + names it). Once all are tapped, we
+        // celebrate and advance to the next color automatically.
         const color = COLORS[colorIdx % COLORS.length];
         bg.style.background = color.hex;
         label.textContent = color.name;
         label.style.display = 'block';
+        let tappedCount = 0;
+        const total = color.things.length;
         color.things.forEach(t => {
           const card = document.createElement('div');
           card.className = 'thing-card pop-in';
           card.innerHTML = `<span class="thing-emoji">${t.e}</span><span class="thing-name">${t.n}</span>`;
           card.addEventListener('click', (e) => {
             e.stopPropagation();
+            if (card.classList.contains('revealed')) return; // count each thing once
             card.classList.add('revealed');
             speak(`${t.n}! ${color.name}.`);
+            tappedCount++;
+            if (tappedCount === total) {
+              // All things found — celebrate, then advance to the next color.
+              quizLbl.textContent = `🎉 You found all the ${color.name} things!`;
+              playSuccess();
+              autoTimer = setTimeout(() => { colorIdx++; nextRound(); }, 2000);
+            }
           });
           thingsRow.appendChild(card);
         });
-        quizLbl.textContent = '👆 Tap a thing or anywhere for the next color!';
-        screen.onclick = () => { colorIdx++; nextRound(); };
+        quizLbl.textContent = `👆 Tap all of the ${color.name} things for the next color!`;
+
+        // Sensory babies (tier 1) can't tap all 4 — gently auto-cycle colors
+        // so the screen keeps changing for them. Toddlers (tier 2-3) must tap.
+        if (tier <= 1) {
+          quizLbl.textContent = color.name;
+          autoTimer = setTimeout(() => { colorIdx++; nextRound(); }, 4000);
+        }
 
       } else {
         // Quiz: alternates between two prompts on each round:

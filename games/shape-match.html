@@ -61,7 +61,9 @@
     renderBackBtn('index.html');
     gameSettings.attach('shape-match');
 
-    const dragOn = tier >= 4 || getProfileFeature(profile, 'shape-match', 'dragMode');
+    // Drag-and-drop from toddler (tier 2) up. Only Sensory babies (tier 1)
+    // get the simpler single-shape tap-to-name mode.
+    const dragOn = tier >= 2 || getProfileFeature(profile, 'shape-match', 'dragMode');
     let shapeTimer = null;
     window.addEventListener('beforeunload', () => clearTimeout(shapeTimer));
 
