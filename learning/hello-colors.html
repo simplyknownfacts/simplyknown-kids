@@ -40,6 +40,11 @@
       0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)}
     }
     .thing-card.wrong { animation: shake 0.3s; }
+
+    /* Younger ages (tier <= 3): larger emoji + wider spacing. */
+    body.young-icons .thing-emoji { font-size: clamp(80px, 20vw, 130px); }
+    body.young-icons .things-row { gap: 36px; }
+    body.young-icons .thing-name { font-size: 20px; }
   </style>
 </head>
 <body>
@@ -60,6 +65,7 @@
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'hello-colors');
+    if (tier <= 3) document.body.classList.add('young-icons');
     renderBackBtn('index.html');
     gameSettings.attach('hello-colors');
 

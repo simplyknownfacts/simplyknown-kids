@@ -1,4 +1,4 @@
-const CACHE = 'vb-v63';  /* bumped: shape-match count scales with age (2 at toddler -> 6 at grade 2) — invalidates v62 caches */
+const CACHE = 'vb-v64';  /* bumped: count-along stutter fix + bigger young-age icons (count-along, hello-colors) — invalidates v63 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

@@ -45,6 +45,15 @@
       transition: transform 0.12s;
     }
     .num-btn:active { transform: scale(0.9); }
+
+    /* Younger ages (tier <= 3): bigger icons + more breathing room so small
+       fingers can hit them and the screen feels less cluttered. */
+    body.young-icons .dot {
+      width: 128px; height: 128px; font-size: 72px; border-width: 5px;
+    }
+    body.young-icons .row { gap: 28px 40px; }
+    body.young-icons .row.with-badges { row-gap: 56px; }
+    body.young-icons .count-badge { font-size: 22px; bottom: -32px; }
   </style>
 </head>
 <body>
@@ -64,6 +73,7 @@
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'count-along');
+    if (tier <= 3) document.body.classList.add('young-icons');
     renderBackBtn('index.html');
     gameSettings.attach('count-along');
 
@@ -134,14 +144,17 @@
             if (d.classList.contains('counted')) return;
             d.classList.add('counted');
             tapped++;
-            // Snappy: just the number on each tap, interrupt prior speech.
-            cancelSpeak();
-            speak(String(tapped));
             if (tapped === count) {
-              // After the last item: announce the total with the noun.
-              setTimeout(() => { cancelSpeak(); speak(countWord(count, thing)); }, 350);
+              // Final item: speak the total ("3 ducks") directly. Do NOT speak
+              // the bare number first — the old code spoke "3" then 350ms later
+              // "3 ducks", replaying the "3" clip and stuttering ("three…
+              // three ducks"). speak() already cancels any in-flight clip.
+              speak(countWord(count, thing));
               playSuccess();
               autoTimer = setTimeout(nextRound, 2200);
+            } else {
+              // Snappy: just the number on each tap, interrupting prior speech.
+              speak(String(tapped));
             }
           });
           row.appendChild(d);
