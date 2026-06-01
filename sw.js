@@ -1,4 +1,4 @@
-const CACHE = 'vb-v68';  /* bumped: shape-match shows on baby (tier 1) home — single-shape tap-to-name — invalidates v67 caches */
+const CACHE = 'vb-v69';  /* bumped: baby shape-match strong tap feedback (bounce+name+chime, pointerdown) — invalidates v68 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
