@@ -105,6 +105,26 @@ html[data-tod="morning"] {
 /* ---------- Base / global ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Accessibility: visible keyboard focus ring (was missing entirely — only
+   :active scale existed). Only shows for keyboard/switch users, invisible to
+   touch/mouse, so the kid experience is unchanged. */
+:focus-visible {
+  outline: 3px solid #FFD93D;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Accessibility: honor reduced-motion for DECORATIVE animation (floating
+   lanterns, mascot bob, pulse, sparkle). Game canvas motion is the core
+   mechanic and is left intact. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 html, body {
   width: 100%; height: 100%;
   background: var(--bg-0);   /* atmosphere SVG paints on top */

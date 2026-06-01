@@ -1,4 +1,4 @@
-const CACHE = 'vb-v70';  /* bumped: taste-skill greenlit polish — contrast, 100dvh, tactile press, young-age sizing (animal-sounds/abcs/body-parts) — invalidates v69 caches */
+const CACHE = 'vb-v71';  /* bumped: review fixes — XSS escaping, friendly sync errors, PIN msg, focus ring, reduced-motion, shape-match label — invalidates v70 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

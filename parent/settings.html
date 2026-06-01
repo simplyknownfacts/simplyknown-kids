@@ -357,6 +357,14 @@
     let pinSetupStep = 0, pinFirst = '';
     let lockoutTimer = null;
 
+    // Escape untrusted strings (profile names/avatars, YouTube labels — all
+    // round-trip through cloud sync) before injecting into innerHTML.
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     // ── Hashing (Web Crypto SHA-256 with per-PIN salt) ────────────────────────
     async function _sha256Hex(str) {
       const buf = new TextEncoder().encode(str);
@@ -496,16 +504,16 @@
         card.className = 'card';
         const list = (p.youtube || []).map((ch, i) => `
           <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:24px;">${ch.emoji || '📺'}</span>
-            <span style="color:white;font-weight:700;flex:1;">${ch.label}</span>
+            <span style="font-size:24px;">${esc(ch.emoji || '📺')}</span>
+            <span style="color:white;font-weight:700;flex:1;">${esc(ch.label)}</span>
             <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;"
                     onclick="removeYoutubeChannel('${p.id}', ${i})">Remove</button>
           </div>
         `).join('') || '<div style="color:rgba(255,255,255,0.4);font-size:13px;padding:8px 0;">No channels yet.</div>';
         card.innerHTML = `
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-            <span style="font-size:24px;">${p.avatar}</span>
-            <span style="color:white;font-weight:800;">${p.name}</span>
+            <span style="font-size:24px;">${esc(p.avatar)}</span>
+            <span style="color:white;font-weight:800;">${esc(p.name)}</span>
           </div>
           ${list}
           <div style="margin-top:14px;display:grid;grid-template-columns:60px 1fr;gap:8px;">
@@ -583,8 +591,8 @@
         ).join('');
         card.innerHTML = `
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-            <span style="font-size:24px;">${p.avatar}</span>
-            <span style="color:white;font-weight:800;">${p.name}</span>
+            <span style="font-size:24px;">${esc(p.avatar)}</span>
+            <span style="color:white;font-weight:800;">${esc(p.name)}</span>
           </div>
           <select id="mascot-${p.id}" style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,0.1);color:white;border:2px solid rgba(255,255,255,0.2);font-size:15px;">
             ${opts}
@@ -635,7 +643,7 @@
           <thead><tr>
             <th style="text-align:left;padding:6px 8px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;">Activity</th>
             <th style="text-align:left;padding:6px 8px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;">Age</th>
-            ${profiles.map(p => `<th style="text-align:center;padding:6px 8px;color:rgba(255,255,255,0.9);font-size:13px;font-weight:800;">${p.avatar || ''} ${p.name}</th>`).join('')}
+            ${profiles.map(p => `<th style="text-align:center;padding:6px 8px;color:rgba(255,255,255,0.9);font-size:13px;font-weight:800;">${esc(p.avatar || '')} ${esc(p.name)}</th>`).join('')}
           </tr></thead><tbody>`;
         acts.forEach(a => {
           const ageChip = typeof tierAgeRange === 'function'
@@ -982,7 +990,21 @@
       msg.textContent = 'Working…';
       const fn = _syncMode === 'signup' ? window.cloudSync.signup : window.cloudSync.signin;
       const r = await fn(email, password);
-      if (!r.ok) { msg.textContent = r.error || 'Failed'; return; }
+      if (!r.ok) {
+        // Translate raw server/error strings into plain-English for parents.
+        const raw = (r.error || '').toLowerCase();
+        let friendly;
+        if (raw.includes('invalid') || raw.includes('password') || raw.includes('credential') || raw.includes('401'))
+          friendly = 'That email or password didn\'t match. Please try again.';
+        else if (raw.includes('exists') || raw.includes('already'))
+          friendly = 'An account with that email already exists — try Sign in instead.';
+        else if (raw.includes('network') || raw.includes('fetch') || raw.includes('failed to'))
+          friendly = 'Couldn\'t reach the sync server. Check your internet and try again.';
+        else
+          friendly = 'Something went wrong signing in. Please try again.';
+        msg.textContent = friendly;
+        return;
+      }
       msg.style.color = '#a8e6cf';
       if (r.conflict) {
         // Cloud and this device have different kid lists — reload so sync.js's
@@ -1024,13 +1046,13 @@
           <label style="display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer;">
             <input type="radio" name="voice-${p.id}" value="${v.id}" ${current === v.id ? 'checked' : ''}
                    style="width:18px;height:18px;accent-color:#4ECDC4;">
-            <span style="color:white;font-weight:700;font-size:14px;">${v.label}</span>
+            <span style="color:white;font-weight:700;font-size:14px;">${esc(v.label)}</span>
           </label>
         `).join('');
         card.innerHTML = `
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-            <span style="font-size:24px;">${p.avatar}</span>
-            <span style="color:white;font-weight:800;">${p.name}</span>
+            <span style="font-size:24px;">${esc(p.avatar)}</span>
+            <span style="color:white;font-weight:800;">${esc(p.name)}</span>
           </div>
           ${opts}
           <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:8px 14px;"
@@ -1100,9 +1122,11 @@
         if (l.lockedUntil > Date.now()) {
           _refreshLockoutUI();
         } else {
+          // Attempts remaining before the next lockout (lockout fires every 5
+          // misses). Show a correct, non-confusing count.
           const left = 5 - (l.attempts % 5);
           document.getElementById('pinPrompt').textContent =
-            `Incorrect PIN — ${l.attempts >= 5 ? 10 - l.attempts : left} attempt${left===1?'':'s'} before lockout`;
+            `Incorrect PIN — ${left} attempt${left === 1 ? '' : 's'} before lockout`;
         }
       }
     }
@@ -1148,9 +1172,9 @@
         card.innerHTML = `
           <div class="row-between">
             <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:30px;">${p.avatar}</span>
+              <span style="font-size:30px;">${esc(p.avatar)}</span>
               <div>
-                <div style="color:white;font-weight:800;font-size:15px;">${p.name}</div>
+                <div style="color:white;font-weight:800;font-size:15px;">${esc(p.name)}</div>
                 <div style="color:rgba(255,255,255,0.5);font-size:12px;">${ageMonths}mo · Tier ${t}: ${tierLabel(t)}</div>
               </div>
             </div>
@@ -1234,8 +1258,8 @@
       profiles.forEach(p => {
         const th = document.createElement('th');
         th.innerHTML = `<div class="child-col-header">
-          <span class="ch-avatar">${p.avatar}</span>
-          <span class="ch-name">${p.name}</span>
+          <span class="ch-avatar">${esc(p.avatar)}</span>
+          <span class="ch-name">${esc(p.name)}</span>
         </div>`;
         hr.appendChild(th);
       });

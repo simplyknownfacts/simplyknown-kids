@@ -35,6 +35,15 @@ async function _request(path, opts) {
   return { ok: true, body };
 }
 
+// Escape untrusted strings before interpolating into innerHTML. Profile data
+// (name/avatar/birthday) round-trips through the cloud, so a poisoned or
+// compromised cloud record must not be able to inject markup/script.
+function _esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 // Stable signature of a profile set: sorted ids + each profile's name/birthday.
 // Used to decide whether cloud and local actually differ (a true conflict) vs
 // are the same set in a different order.
@@ -211,14 +220,14 @@ function _renderConflictOverlay() {
     'display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;' +
     'font-family:system-ui,sans-serif;';
   const rows = entries.map((e, i) => {
-    const ageBits = e.p.birthday ? ` · ${e.p.birthday}` : '';
+    const ageBits = e.p.birthday ? ` · ${_esc(e.p.birthday)}` : '';
     return `<label style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;` +
       `background:rgba(255,255,255,0.06);margin-bottom:8px;cursor:pointer;color:#fff;">` +
       `<input type="checkbox" data-i="${i}" checked style="width:22px;height:22px;flex-shrink:0;">` +
-      `<span style="font-size:28px;">${e.p.avatar || '🌟'}</span>` +
-      `<span style="flex:1;"><b>${e.p.name || 'Unnamed'}</b>` +
+      `<span style="font-size:28px;">${_esc(e.p.avatar || '🌟')}</span>` +
+      `<span style="flex:1;"><b>${_esc(e.p.name || 'Unnamed')}</b>` +
       `<span style="opacity:0.6;font-size:12px;">${ageBits}</span><br>` +
-      `<span style="font-size:11px;opacity:0.55;">${e.from.join(' + ')}</span></span></label>`;
+      `<span style="font-size:11px;opacity:0.55;">${_esc(e.from.join(' + '))}</span></span></label>`;
   }).join('');
   ov.innerHTML =
     `<div style="background:#1a1430;border-radius:20px;max-width:460px;width:100%;padding:24px;color:#fff;` +
