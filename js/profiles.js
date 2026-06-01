@@ -9,9 +9,7 @@ const _ACTIVE_KEY   = 'vb_active_id';
 // `minTier` at the activity level = the kid's tier needed for this game to
 // appear by default. Parent can override per-child in Parent Settings.
 const ACTIVITY_FEATURES = [
-  { id:'tap-pop',       name:'Tap & Pop',        icon:'🫧', file:'tap-pop.html',     section:'games', minTier:1, features:[
-    { key:'scoreCounter',  label:'Score counter',                           minTier:4 },
-  ]},
+  { id:'tap-pop',       name:'Tap & Pop',        icon:'🫧', file:'tap-pop.html',     section:'games', minTier:1, features:[] },
   { id:'shape-match',   name:'Shape Match',      icon:'🔷', file:'shape-match.html', section:'games', minTier:2, features:[
     { key:'dragMode',      label:'Drag-to-match mode',                      minTier:2 },
   ]},
