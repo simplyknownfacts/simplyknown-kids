@@ -35,6 +35,9 @@
       font-size: clamp(24px, 6vw, 40px); font-weight: 900;
       color: white; text-shadow: 0 4px 14px rgba(0,0,0,0.4); text-align: center;
     }
+    /* Younger ages (tier <= 3): bigger figure so small fingers hit parts. */
+    body.young-icons .figure { width: min(440px, 94vw); }
+    body.young-icons .prompt-big { font-size: clamp(28px, 7vw, 46px); }
   </style>
 </head>
 <body>
@@ -54,6 +57,7 @@
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'body-parts');
+    if (tier <= 3) document.body.classList.add('young-icons');
     renderBackBtn('index.html');
     gameSettings.attach('body-parts');
 

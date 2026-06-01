@@ -151,7 +151,7 @@ html:has(body[data-allow-zoom="1"]) {
    actually works on short viewports (phone-landscape, tablet-landscape with
    tall hubs like Learning). */
 .hub-screen, .channels-screen, .listen-screen {
-  height: 100vh !important;
+  height: 100vh !important;   /* fallback for browsers without dvh */
   height: 100dvh !important;
   max-height: 100vh !important;
   max-height: 100dvh !important;
@@ -216,7 +216,7 @@ html[data-tod="afternoon"] .title {
 
 /* ---------- Screen layout ---------- */
 .screen {
-  width: 100vw; height: 100vh;
+  width: 100vw; height: 100vh; height: 100dvh;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 24px; gap: 18px;
@@ -264,18 +264,29 @@ html[data-tod="afternoon"] .title {
   font-family: var(--font-display); font-style: italic; font-weight: 500;
   font-size: 26px; color: var(--text); letter-spacing: -0.2px;
   white-space: nowrap;
+  /* Dark halo added so the name stays legible over light morning/afternoon
+     sky palettes (not just the dark night theme). */
   text-shadow:
     0 1px 0 color-mix(in srgb, var(--paper) 60%, transparent),
+    0 1px 6px rgba(0,0,0,0.45),
     0 2px 12px color-mix(in srgb, var(--bg-1) 50%, transparent);
 }
 .avatar-btn .age-label {
   position: absolute; bottom: -76px; left: 50%; transform: translateX(-50%);
-  font-size: 12px; color: var(--text-soft);
-  font-weight: 700; white-space: nowrap; letter-spacing: 0.3px;
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--paper) 50%, transparent);
+  font-size: 13px; color: var(--text);
+  font-weight: 800; white-space: nowrap; letter-spacing: 0.3px;
+  text-shadow:
+    0 1px 0 color-mix(in srgb, var(--paper) 50%, transparent),
+    0 1px 5px rgba(0,0,0,0.4);
 }
 
 /* ---------- Section button (home portals) ---------- */
+/* Tactile press feedback — a physical "push" on tap, consistent with the
+   other interactive elements (avatar-btn, num-btn, etc.). */
+.section-btn { transition: transform 0.12s ease; }
+.section-btn:active { transform: scale(0.96); }
+.avatar-pill { transition: transform 0.12s ease; }
+.avatar-pill:active { transform: scale(0.97); }
 .section-btn {
   /* Paper card */
   width: 150px; min-height: 170px;

@@ -1,4 +1,4 @@
-const CACHE = 'vb-v69';  /* bumped: baby shape-match strong tap feedback (bounce+name+chime, pointerdown) — invalidates v68 caches */
+const CACHE = 'vb-v70';  /* bumped: taste-skill greenlit polish — contrast, 100dvh, tactile press, young-age sizing (animal-sounds/abcs/body-parts) — invalidates v69 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

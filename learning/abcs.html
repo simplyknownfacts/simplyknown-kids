@@ -61,6 +61,11 @@
     }
     .spelled-slot.filled { border-style: solid; background: rgba(168,230,207,0.3); }
     @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+    /* Younger ages (tier <= 3): bigger "starts-with" emoji + more spacing. */
+    body.young-icons .start-emoji { font-size: clamp(72px, 18vw, 110px); }
+    body.young-icons .start-name { font-size: 18px; }
+    body.young-icons .starts-grid { gap: 22px; }
   </style>
 </head>
 <body>
@@ -79,6 +84,7 @@
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'abcs');
+    if (tier <= 3) document.body.classList.add('young-icons');
     renderBackBtn('index.html');
     gameSettings.attach('abcs');
 
