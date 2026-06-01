@@ -125,21 +125,24 @@ html, body {
 
 * { touch-action: pan-x pan-y; }
 
-/* Parent settings opts in to scroll/zoom */
+/* Parent settings opts in to scroll/zoom.
+   IMPORTANT: body uses overflow:VISIBLE, not auto. html is the single scroll
+   container. If body also had overflow:auto it becomes a second scroll
+   container that captures the mouse wheel and never bubbles it to html — the
+   result is "scrollbar drags but wheel does nothing". One scroller only. */
 body[data-allow-zoom="1"] {
   position: static;
-  overflow: auto;
+  overflow: visible;
   touch-action: auto;
   height: auto;
 }
-/* When the body unlocks scrolling, the html must also un-lock — html, body
-   are both position:fixed + overflow:hidden above, which traps body scrolling
-   inside a 100% viewport. Without this, parent settings PIN gate clipped
-   below short landscape-phone viewports. */
+/* html is the scroll container — unlock it from the position:fixed +
+   overflow:hidden lock applied to html,body globally above. */
 html:has(body[data-allow-zoom="1"]) {
   position: static;
-  overflow: auto;
-  height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
 }
 
 /* Hub / list screens need internal vertical scroll when content overflows.

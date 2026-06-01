@@ -1,4 +1,4 @@
-const CACHE = 'vb-v60';  /* bumped: parent settings scroll JS fallback + count-along audio fix — invalidates v59 caches */
+const CACHE = 'vb-v61';  /* bumped: fix mouse-wheel scroll (single scroll container, body overflow visible) — invalidates v60 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
