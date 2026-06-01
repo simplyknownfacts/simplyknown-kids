@@ -1,4 +1,4 @@
-const CACHE = 'vb-v65';  /* bumped: cloud sync — detect expired session + conflict chooser (no more silent overwrite) — invalidates v64 caches */
+const CACHE = 'vb-v66';  /* bumped: tap-pop score always on + varied tier-3+ movement (engaging, age-scaled speeds) — invalidates v65 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
