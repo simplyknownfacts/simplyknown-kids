@@ -10,8 +10,8 @@ const _ACTIVE_KEY   = 'vb_active_id';
 // appear by default. Parent can override per-child in Parent Settings.
 const ACTIVITY_FEATURES = [
   { id:'tap-pop',       name:'Tap & Pop',        icon:'🫧', file:'tap-pop.html',     section:'games', minTier:1, features:[] },
-  { id:'shape-match',   name:'Shape Match',      icon:'🔷', file:'shape-match.html', section:'games', minTier:2, features:[
-    { key:'dragMode',      label:'Drag-to-match mode',                      minTier:2 },
+  { id:'shape-match',   name:'Shape Match',      icon:'🔷', file:'shape-match.html', section:'games', minTier:1, features:[
+    { key:'dragMode',      label:'Drag-to-match mode',                      minTier:1 },
   ]},
 
   { id:'hello-colors',  name:'Hello Colors',     icon:'🌈', file:'hello-colors.html',  section:'learn', minTier:1, features:[
