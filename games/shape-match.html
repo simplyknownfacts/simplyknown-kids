@@ -32,8 +32,8 @@
     }
     .target svg.shape { opacity: 0.45; }
     .target-label {
-      font-size: 11px; font-weight: 800; color: currentColor; opacity: 0.85;
-      text-transform: uppercase; letter-spacing: 1px;
+      font-size: 26px; font-weight: 800; color: currentColor; opacity: 0.85;
+      line-height: 1;
     }
     .target.matched { border-style: solid; opacity: 1; }
     .target.matched svg.shape { opacity: 1; }
@@ -203,7 +203,7 @@
         div.appendChild(makeSVG(s, 55, true));
         const lbl = document.createElement('div');
         lbl.className = 'target-label';
-        lbl.textContent = 'drop here';
+        lbl.textContent = '⬇';  // pre-reader-friendly cue instead of "DROP HERE" caps
         div.appendChild(lbl);
         document.body.appendChild(div); // attach to body, not targetsRow (target uses position:fixed)
         targetEls[s.name] = div;
