@@ -114,13 +114,26 @@
         const s = selected[0];
         const svg = makeSVG(s, tier <= 2 ? 200 : 180);
         svg.classList.add('pulse');
-        svg.addEventListener('click', () => {
-          speak(s.name); playChime();
+        svg.style.transition = 'transform 0.15s ease';
+        let done = false;
+        const reveal = (e) => {
+          if (e) { e.preventDefault(); e.stopPropagation(); }
+          if (done) return; // one reaction per shape
+          done = true;
+          // Immediate, obvious feedback so a tap never feels dead:
+          hint.textContent = s.name;            // show the name big
           svg.classList.remove('pulse');
-          shapeTimer = setTimeout(nextRound, 1500);
-        });
+          svg.style.transform = 'scale(1.18)';  // quick bounce
+          setTimeout(() => { svg.style.transform = 'scale(1)'; }, 160);
+          playChime();
+          speak(s.name);
+          clearTimeout(shapeTimer);
+          shapeTimer = setTimeout(nextRound, 1600);
+        };
+        // pointerdown = no 300ms tap delay, fires reliably on touch + mouse.
+        svg.addEventListener('pointerdown', reveal);
         shapesRow.appendChild(svg);
-        hint.textContent = tier <= 2 ? '' : `Tap the ${s.name}!`;
+        hint.textContent = tier <= 2 ? '👆 Tap the shape!' : `Tap the ${s.name}!`;
         speak(s.name);
         return;
       }
