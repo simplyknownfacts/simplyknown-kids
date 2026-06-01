@@ -1,4 +1,4 @@
-const CACHE = 'vb-v67';  /* bumped: tap-pop shiny bubbles get twinkling surface sparkles — invalidates v66 caches */
+const CACHE = 'vb-v68';  /* bumped: shape-match shows on baby (tier 1) home — single-shape tap-to-name — invalidates v67 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
