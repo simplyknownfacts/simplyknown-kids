@@ -1,4 +1,4 @@
-const CACHE = 'vb-v62';  /* bumped: shape-match drag from tier 2, hello-colors tap-all-things — invalidates v61 caches */
+const CACHE = 'vb-v63';  /* bumped: shape-match count scales with age (2 at toddler -> 6 at grade 2) — invalidates v62 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

@@ -103,8 +103,11 @@
       document.querySelectorAll('.target').forEach(t => t.remove());
 
       // Tap-to-identify mode (!dragOn): always 1 shape (single shape named on tap).
-      // Drag mode: start at 2, scale up with tier so kid has to choose the right target.
-      const count = !dragOn ? 1 : (tier <= 4 ? 2 : tier <= 5 ? 3 : tier <= 6 ? 4 : 6);
+      // Drag mode: toddler starts at 2, count grows with age.
+      //   tier 2 -> 2, tier 3 -> 2, tier 4 -> 3, tier 5 -> 3,
+      //   tier 6 -> 4, tier 7 -> 5, tier 8 -> 6
+      const DRAG_COUNT = { 2: 2, 3: 2, 4: 3, 5: 3, 6: 4, 7: 5, 8: 6 };
+      const count = !dragOn ? 1 : (DRAG_COUNT[tier] || 2);
       const selected = [...SHAPES].sort(() => Math.random() - 0.5).slice(0, count);
 
       if (!dragOn) {
