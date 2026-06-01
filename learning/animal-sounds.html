@@ -65,6 +65,12 @@
     }
     .choice-btn:active { transform: scale(0.9); }
     .choice-btn .cname { font-size: 14px; font-weight: 800; color: white; }
+
+    /* Younger ages (tier <= 3): bigger emoji + more spacing. */
+    body.young-icons .af-emoji { font-size: clamp(84px, 20vw, 140px); }
+    body.young-icons .choice-btn { font-size: 68px; }
+    body.young-icons .choice-btn .cname { font-size: 17px; }
+    body.young-icons .row, body.young-icons .choices-row { gap: 28px; }
   </style>
 </head>
 <body>
@@ -85,6 +91,7 @@
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'animal-sounds');
+    if (tier <= 3) document.body.classList.add('young-icons');
     renderBackBtn('index.html');
     gameSettings.attach('animal-sounds');
 
