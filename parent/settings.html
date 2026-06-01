@@ -907,7 +907,32 @@
       const s = window.cloudSync ? window.cloudSync.status() : { email: null };
       const lastSyncMs = Math.max(s.lastPushed || 0, s.lastPulled || 0);
       const lastSync = lastSyncMs ? new Date(lastSyncMs).toLocaleString() : 'syncing…';
-      if (s.email && s.syncKey) {
+      if (s.email && s.syncKey && s.expired) {
+        // Session expired (key rejected by server, e.g. signed in elsewhere).
+        // Show a clear re-sign-in prompt instead of pretending we're synced.
+        section.innerHTML = `
+          <div class="card" style="border:1px solid rgba(255,180,80,0.5);">
+            <div style="color:#FFC56B;font-weight:800;margin-bottom:6px;">⚠️ Sync session expired</div>
+            <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:4px;">${s.email}</div>
+            <div style="color:rgba(255,255,255,0.55);font-size:12px;margin-bottom:14px;line-height:1.5;">
+              You were signed out of cloud sync (often because you signed in on
+              another device). Your kids on this device are safe. Sign in again
+              to reconnect — we'll ask which kids to keep if they differ.
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-primary" style="flex:1;" onclick="syncMode('signin')">Sign in again</button>
+            </div>
+            <div id="syncForm" style="display:none;">
+              <label style="display:block;margin-top:10px;">Email</label>
+              <input type="text" id="syncEmail" placeholder="parent@example.com" autocomplete="email" value="${s.email}">
+              <label style="display:block;margin-top:8px;">Password</label>
+              <input type="password" id="syncPassword" placeholder="your password" autocomplete="current-password">
+              <button class="btn btn-primary" style="margin-top:10px;width:100%;" id="syncSubmit">Sign in</button>
+              <div id="syncMsg" style="color:#FF6B6B;font-size:12px;margin-top:8px;min-height:14px;"></div>
+            </div>
+          </div>
+        `;
+      } else if (s.email && s.syncKey) {
         section.innerHTML = `
           <div class="card">
             <div style="color:white;font-weight:800;margin-bottom:6px;">✓ Synced automatically</div>
@@ -959,8 +984,12 @@
       const r = await fn(email, password);
       if (!r.ok) { msg.textContent = r.error || 'Failed'; return; }
       msg.style.color = '#a8e6cf';
-      // Sign-in auto-pulls cloud data; sign-up auto-pushes current local
-      if (_syncMode === 'signin' && r.pulled) {
+      if (r.conflict) {
+        // Cloud and this device have different kid lists — reload so sync.js's
+        // chooser overlay appears and the parent picks which kids to keep.
+        msg.textContent = '✓ Signed in. Choosing which kids to keep…';
+        setTimeout(() => location.reload(), 900);
+      } else if (_syncMode === 'signin' && r.pulled) {
         msg.textContent = '✓ Signed in and pulled latest profiles. Refreshing…';
         setTimeout(() => location.reload(), 1200);
       } else {
