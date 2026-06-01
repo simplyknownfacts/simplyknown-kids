@@ -10,7 +10,7 @@
        Markup + script logic unchanged — pure CSS refresh. */
     body {
       background: #0B0820; /* dark base; atmosphere SVG layers on top */
-      overflow-y: auto; overflow-x: hidden;
+      overflow: visible;   /* html is the scroll container, not body — see inline unlock script */
       color: var(--text);
     }
     /* Dark scrim above the storybook sky so settings content is always readable. */
@@ -206,18 +206,24 @@
     }
   </style>
 </head>
-<body data-allow-zoom="1" style="position:static;overflow:auto;height:auto;touch-action:auto;">
+<body data-allow-zoom="1" style="position:static;overflow:visible;height:auto;touch-action:auto;">
 <script>
   // Belt-and-suspenders unlock for parent settings scroll. The :has() CSS
   // rule in style.css should handle this, but some PWA contexts (older
   // Chrome WebViews, stale cached CSS) don't apply it. Setting these inline
   // guarantees scroll works the moment this page loads.
+  //
+  // CRITICAL: html is the SOLE scroll container (overflow-y:auto). body must
+  // be overflow:VISIBLE — if body also scrolls, it traps the mouse wheel and
+  // only the scrollbar drag works. One scroller only.
   (function() {
     var h = document.documentElement;
     h.style.position = 'static';
-    h.style.overflow = 'auto';
-    h.style.height = 'auto';
+    h.style.overflowY = 'auto';
+    h.style.overflowX = 'hidden';
+    h.style.height = '100%';
     h.style.width = '100%';
+    document.body.style.overflow = 'visible';
   })();
 </script>
   <div class="back-btn" style="position:fixed;" onclick="goBack()">←</div>
