@@ -33,7 +33,7 @@ function _actionKeys(mascotId) {
 // Mascots whose assets are shot on a green screen: their videos live under
 // mascots/<id>/green/ and are keyed (green removed) per-frame onto a canvas so
 // the character floats with a genuinely transparent background — no circle mask.
-const CHROMA_MASCOTS = new Set(['dog']);
+const CHROMA_MASCOTS = new Set(['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle']);
 function _isChroma(mascotId) { return CHROMA_MASCOTS.has(mascotId); }
 // Green-screen keyer (tuned in mascot-green-video.html): remove green, despill.
 const _CK_THR = 40, _CK_SMOOTH = 40;
