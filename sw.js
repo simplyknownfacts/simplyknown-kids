@@ -1,4 +1,4 @@
-const CACHE = 'vb-v72';  /* bumped: multi-agent fixes — PIN-bypass close, shape-match grid, days/count-along difficulty, hello-colors prompt, money/abcs/animal-sounds, art toolbars, mascot drag — invalidates v71 caches */
+const CACHE = 'vb-v73';  /* bumped: mascot re-settles off controls on each screen; sw now network-first for JS/CSS so deploys land without a cache-clear — invalidates v72 */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
@@ -45,9 +45,13 @@ self.addEventListener('fetch', e => {
                  e.request.destination === 'document' ||
                  url.pathname.endsWith('.html') ||
                  url.pathname.endsWith('/');
-  if (isHTML) {
-    // Network-first for HTML — bypass HTTP cache (GitHub Pages sets max-age=600).
-    // cache:'no-store' makes the request hit origin every time.
+  // JS/CSS are network-first too: code changes ship on every deploy, so a stale
+  // cached copy is the #1 cause of "I don't see my update". Bytes are small.
+  const isCode = url.pathname.endsWith('.js') || url.pathname.endsWith('.css');
+  if (isHTML || isCode) {
+    // Network-first — bypass the HTTP cache (GitHub Pages sets max-age=600) so a
+    // deploy lands on the next online load with NO manual cache-clear. Falls back
+    // to the cached copy only when offline / the network fails.
     e.respondWith(
       fetch(e.request, { cache: 'no-store' }).then(res => {
         const copy = res.clone();
@@ -56,7 +60,7 @@ self.addEventListener('fetch', e => {
       }).catch(() => caches.match(e.request))
     );
   } else {
-    // Cache-first for static assets (JS/CSS/audio/icons).
+    // Cache-first for heavy, immutable assets (audio/video/images/icons/fonts).
     e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
   }
 });
