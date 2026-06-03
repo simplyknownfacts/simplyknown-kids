@@ -1,4 +1,4 @@
-const CACHE = 'vb-v73';  /* bumped: mascot re-settles off controls on each screen; sw now network-first for JS/CSS so deploys land without a cache-clear — invalidates v72 */
+const CACHE = 'vb-v74';  /* bumped: dog book-idle re-roll (no extra paws); woman/man voices in picker + safe fallback — invalidates v73 */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
