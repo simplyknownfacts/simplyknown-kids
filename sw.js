@@ -1,4 +1,4 @@
-const CACHE = 'vb-v74';  /* bumped: dog book-idle re-roll (no extra paws); woman/man voices in picker + safe fallback — invalidates v73 */
+const CACHE = 'vb-v75';  /* bumped: all 6 mascots now transparent (green chroma-key) — tiger/giraffe/panda/orca/eagle built on green w/ 4 voices — invalidates v74 */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',
