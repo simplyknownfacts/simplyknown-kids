@@ -1,0 +1,119 @@
+/* css/achievements.css — image-based ribbons, floating shelf, gallery, celebration.
+   Ribbons are Gemini PNG bodies (assets/ribbons) + hat/star toppers (assets/hats),
+   composited and animated by js/ribbon.js. */
+
+/* ============================ Ribbon element ============================ */
+.vb-ribbon { position: relative; display: inline-block; line-height: 0; }
+.vb-rib-float {
+  position: relative; transform-origin: 50% 16%;
+  animation: vbBob var(--d, 4.2s) ease-in-out var(--dl, 0s) infinite;
+}
+.vb-rib-body {
+  display: block; width: 100%; height: auto;
+  filter: drop-shadow(8px 11px 7px rgba(74, 58, 38, 0.34));
+}
+/* hat: bottom-center anchored just above the rosette top */
+.vb-rib-hat { position: absolute; left: 50%; top: 12%; transform: translate(-50%, -100%); }
+.vb-rib-hat img {
+  display: block; width: var(--hw, 74px); transform-origin: 50% 90%;
+  animation: var(--anim, hatSpin) var(--hd, 3.4s) ease-in-out var(--hdl, 0s) infinite;
+  filter: drop-shadow(3px 5px 4px rgba(60, 45, 25, 0.3));
+}
+/* rank stars float above the ribbon */
+.vb-rib-stars {
+  position: absolute; left: 50%; top: 0; transform: translateX(-50%);
+  display: flex; gap: 3px; align-items: flex-end;
+  animation: starFloat var(--d, 3.4s) ease-in-out infinite;
+}
+.vb-rib-stars img { display: block; filter: drop-shadow(0 3px 4px rgba(120, 90, 20, 0.45)); }
+.vb-rib-stars img.mid { margin-bottom: 8px; }
+
+.vb-ribbon.locked .vb-rib-body { filter: grayscale(1) brightness(0.62); }
+.vb-ribbon.locked { opacity: 0.6; }
+.vb-ribbon.locked .vb-rib-float,
+.vb-ribbon.locked .vb-rib-hat img,
+.vb-ribbon.locked .vb-rib-stars { animation: none; }
+
+@keyframes vbBob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-11px) rotate(2deg); } }
+@keyframes hatSpin   { 0%{transform:rotate(-12deg)} 18%{transform:rotate(12deg)} 40%{transform:rotate(-8deg)} 60%{transform:rotate(372deg)} 100%{transform:rotate(348deg)} }
+@keyframes hatBounce { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-12px) rotate(5deg)} }
+@keyframes hatWobble { 0%,100%{transform:rotate(-17deg)} 50%{transform:rotate(17deg)} }
+@keyframes hatPop    { 0%,100%{transform:scale(1) rotate(-4deg)} 50%{transform:scale(1.18) rotate(7deg)} }
+@keyframes starFloat { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-7px)} }
+
+/* ===== Ribbon side-panel (subtle translucent glass, secondary not centerpiece) ===== */
+.vb-shelf {
+  position: relative; border-radius: 16px;
+  width: 100%; max-width: 280px; margin: 0 0 0 auto;   /* tucked to the side */
+  padding: 12px 14px 13px;
+  background: var(--chip-bg, rgba(18,16,38,0.42));
+  border: 1px solid var(--chip-border, rgba(255,255,255,0.14));
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.26);
+  cursor: pointer;
+}
+.vb-shelf-title {
+  position: relative; z-index: 2; display: flex; align-items: center; gap: 6px;
+  margin: 0 0 2px; font-size: 14px; font-weight: 700; color: var(--text, #efeaff);
+}
+.vb-shelf-row {
+  position: relative; z-index: 2;
+  display: flex; flex-wrap: nowrap; justify-content: space-around; align-items: flex-end;
+  gap: 4px; padding: 6px 0 12px;
+}
+.vb-shelf-empty {
+  position: relative; z-index: 2; text-align: center; color: var(--text-soft, #b3aede);
+  font-size: 13px; padding: 12px 8px 14px;
+}
+.vb-shelf-btn {
+  position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 11px 10px; border-radius: 11px; cursor: pointer;
+  font-family: var(--font-ui, inherit); font-size: 13px; font-weight: 800; letter-spacing: 0.2px;
+  color: var(--text, #fff);
+  background: color-mix(in srgb, var(--accent, #FF8FA8) 26%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, #FF8FA8) 55%, transparent);
+}
+.vb-shelf-btn:active { transform: translateY(1px); }
+
+/* ============================ Gallery ============================ */
+.gallery-screen {
+  position: relative; z-index: 1;   /* above the fixed atmosphere sky */
+  min-height: 100vh; padding: calc(100px + env(safe-area-inset-top)) 18px 120px;
+  display: flex; flex-direction: column; align-items: center; gap: 24px;
+}
+.rank-banner { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text); text-align: center; }
+.rank-banner .rank-name { font-family: var(--font-display); font-size: clamp(28px, 6vw, 44px); font-weight: 700; }
+.rank-xp-track { width: min(420px, 80vw); height: 14px; border-radius: 999px; background: var(--chip-bg); overflow: hidden; }
+.rank-xp-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 600ms cubic-bezier(0.22,1,0.36,1); }
+.gallery-group { width: min(680px, 94vw); }
+.gallery-group h2 { color: var(--text); font-size: 18px; margin: 0 0 12px; display: flex; gap: 8px; align-items: center; }
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 52px 12px; }
+/* padding-top reserves room for the hat/stars that overflow above each ribbon */
+.gallery-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding-top: 36px; }
+.gallery-cell .cell-label { font-size: 12px; color: var(--text-soft); line-height: 1.2; }
+.gallery-cell .cell-hint  { font-size: 11px; color: var(--text-soft); opacity: 0.75; line-height: 1.2; }
+
+/* ============================ Celebration ============================ */
+.vb-celebrate {
+  position: fixed; inset: 0; z-index: 1200; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 18px; pointer-events: none;
+  background: radial-gradient(circle at 50% 45%, rgba(0,0,0,0.5), rgba(0,0,0,0.18));
+}
+.vb-celebrate .cele-title {
+  color: #fff; font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(24px, 7vw, 40px); text-shadow: 0 3px 14px rgba(0,0,0,0.5); text-align: center;
+}
+.vb-celebrate .cele-ribbon { animation: celePop 700ms cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes celePop {
+  0% { transform: translateY(40px) scale(0.4); opacity: 0; }
+  60% { transform: translateY(0) scale(1.1); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* ============================ Reduced motion ============================ */
+@media (prefers-reduced-motion: reduce) {
+  .vb-rib-float, .vb-rib-hat img, .vb-rib-stars { animation: none !important; }
+  .vb-celebrate .cele-ribbon { animation: celeFade 250ms ease both; }
+  @keyframes celeFade { from { opacity: 0; } to { opacity: 1; } }
+  .rank-xp-fill { transition: none; }
+}

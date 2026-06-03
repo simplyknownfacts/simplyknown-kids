@@ -1,0 +1,36 @@
+const { test } = require('node:test');
+const assert = require('node:assert');
+const defs = require('../js/achievement-defs.js');
+
+test('exports list, ranks, and lookups', () => {
+  assert.ok(Array.isArray(defs.VB_ACHIEVEMENTS));
+  assert.ok(Array.isArray(defs.VB_RANKS));
+  assert.strictEqual(typeof defs.byCounter, 'function');
+  assert.strictEqual(typeof defs.byId, 'function');
+});
+test('each activity has exactly one first-play + six milestone tiers', () => {
+  const tapFirst = defs.VB_ACHIEVEMENTS.filter(d => d.activity === 'tap-pop' && d.type === 'first');
+  const tapMiles = defs.VB_ACHIEVEMENTS.filter(d => d.activity === 'tap-pop' && d.type === 'milestone');
+  assert.strictEqual(tapFirst.length, 1);
+  assert.strictEqual(tapMiles.length, 6);
+});
+test('milestone thresholds are 5/10/25/50/75/100', () => {
+  const t = defs.VB_ACHIEVEMENTS.filter(d => d.activity === 'tap-pop' && d.type === 'milestone')
+    .map(d => d.threshold).sort((a,b)=>a-b);
+  assert.deepStrictEqual(t, [5,10,25,50,75,100]);
+});
+test('ids are unique', () => {
+  const ids = defs.VB_ACHIEVEMENTS.map(d => d.id);
+  assert.strictEqual(new Set(ids).size, ids.length);
+});
+test('ranks are ascending by minXp and start at 0', () => {
+  const xs = defs.VB_RANKS.map(r => r.minXp);
+  assert.strictEqual(xs[0], 0);
+  for (let i = 1; i < xs.length; i++) assert.ok(xs[i] > xs[i-1]);
+  assert.strictEqual(defs.VB_RANKS.length, 7);
+});
+test('byCounter returns milestone defs for a counter key, ascending', () => {
+  const ms = defs.byCounter('tap-pop');
+  assert.strictEqual(ms.length, 6);
+  assert.ok(ms[0].threshold <= ms[5].threshold);
+});

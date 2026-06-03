@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>My Ribbons</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/achievements.css">
+</head>
+<body class="section-learn">
+  <div class="gallery-screen">
+    <div class="rank-banner" id="rankBanner"></div>
+    <div id="groups" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:28px;"></div>
+  </div>
+
+  <script src="js/atmosphere.js"></script>
+  <script src="js/tiers.js"></script>
+  <script src="js/profiles.js"></script>
+  <script src="js/voice-manifest.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/yoto-player.js"></script>
+  <script src="js/achievement-defs.js"></script>
+  <script src="js/achievement-logic.js"></script>
+  <script src="js/ribbon.js"></script>
+  <script src="js/progress.js"></script>
+  <script>
+    window.VB_ASSET_BASE = '';
+    renderBackBtn('home.html');
+    const profile = getActiveProfile();
+    if (!profile) goProfiles();
+
+    const state = (window.vbProgress && vbProgress.getState()) || vbLogic.emptyState();
+    const ranks = vbDefs.VB_RANKS;
+    const cur = vbLogic.rankForXp(state.xp, ranks);
+    const idx = ranks.indexOf(cur);
+    const nextR = ranks[idx + 1] || null;
+
+    // ---- rank banner ----
+    const banner = document.getElementById('rankBanner');
+    const nm = document.createElement('div'); nm.className = 'rank-name';
+    nm.textContent = cur.label; banner.appendChild(nm);
+    const sub = document.createElement('div'); sub.style.color = 'var(--text-soft)';
+    sub.textContent = state.xp + ' XP' + (nextR ? '  ·  next: ' + nextR.label + ' at ' + nextR.minXp : '  ·  top rank!');
+    banner.appendChild(sub);
+    const track = document.createElement('div'); track.className = 'rank-xp-track';
+    const fill = document.createElement('div'); fill.className = 'rank-xp-fill';
+    const lo = cur.minXp, hi = nextR ? nextR.minXp : cur.minXp + 1;
+    fill.style.width = Math.max(4, Math.min(100, ((state.xp - lo) / (hi - lo)) * 100)) + '%';
+    track.appendChild(fill); banner.appendChild(track);
+
+    // ---- grouped ribbon grid ----
+    const groupsEl = document.getElementById('groups');
+    function group(title, icon, defs) {
+      if (!defs.length) return;
+      const earnedCount = defs.filter(d => state.unlocked[d.id]).length;
+      const g = document.createElement('div'); g.className = 'gallery-group';
+      const h = document.createElement('h2');
+      h.textContent = (icon ? icon + ' ' : '') + title + '  (' + earnedCount + '/' + defs.length + ')';
+      g.appendChild(h);
+      const grid = document.createElement('div'); grid.className = 'gallery-grid';
+      defs.forEach(function (d) {
+        const earned = !!state.unlocked[d.id];
+        const cell = document.createElement('div'); cell.className = 'gallery-cell';
+        cell.appendChild(renderRibbon(d, { size: 84, earned: earned }));
+        const lbl = document.createElement('div'); lbl.className = 'cell-label'; lbl.textContent = d.title;
+        cell.appendChild(lbl);
+        if (!earned && d.hint) {
+          const hint = document.createElement('div'); hint.className = 'cell-hint'; hint.textContent = d.hint;
+          cell.appendChild(hint);
+        }
+        grid.appendChild(cell);
+      });
+      g.appendChild(grid); groupsEl.appendChild(g);
+    }
+
+    vbDefs.ACTIVITIES.forEach(function (a) { group(a.name, a.icon, vbDefs.byActivity(a.id)); });
+    group('Streaks', '🔥', vbDefs.VB_ACHIEVEMENTS.filter(d => d.type === 'streak'));
+    group('Ranks', '👑', vbDefs.VB_ACHIEVEMENTS.filter(d => d.type === 'rank'));
+  </script>
+</body>
+</html>
