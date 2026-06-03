@@ -1,4 +1,4 @@
-const CACHE = 'vb-v71';  /* bumped: review fixes — XSS escaping, friendly sync errors, PIN msg, focus ring, reduced-motion, shape-match label — invalidates v70 caches */
+const CACHE = 'vb-v72';  /* bumped: multi-agent fixes — PIN-bypass close, shape-match grid, days/count-along difficulty, hello-colors prompt, money/abcs/animal-sounds, art toolbars, mascot drag — invalidates v71 caches */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

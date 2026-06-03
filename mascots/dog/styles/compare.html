@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dog styles — pick one</title>
+<style>
+  body { margin:0; background:#15171c; color:#e8e8ea; font:16px/1.4 system-ui, sans-serif; padding:24px; }
+  h1 { font-size:20px; font-weight:600; margin:0 0 4px; }
+  p.sub { color:#9aa0aa; margin:0 0 24px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:20px; }
+  figure { margin:0; background:#1e2127; border:1px solid #2c3038; border-radius:14px; overflow:hidden; }
+  figure img { display:block; width:100%; aspect-ratio:1; object-fit:contain; background:#fff; }
+  figcaption { padding:10px 14px; }
+  .name { font-weight:600; }
+  .ref { opacity:.6; }
+  .ref img { filter:grayscale(.2); }
+</style>
+</head>
+<body>
+  <h1>Dog — 6 styles to pick from</h1>
+  <p class="sub">All 6 have white paws and the same dog. Original (gray, bottom) is just for reference. Tell me the number you want.</p>
+  <div class="grid">
+    <figure><img src="realistic.png" alt="realistic"><figcaption><div class="name">1 · Realistic photo</div></figcaption></figure>
+    <figure><img src="pixar3d.png" alt="pixar3d"><figcaption><div class="name">2 · 3D Pixar-style</div></figcaption></figure>
+    <figure><img src="watercolor.png" alt="watercolor"><figcaption><div class="name">3 · Watercolor storybook</div></figcaption></figure>
+    <figure><img src="comic.png" alt="comic"><figcaption><div class="name">4 · Pop-art comic</div></figcaption></figure>
+    <figure><img src="pixelart.png" alt="pixelart"><figcaption><div class="name">5 · Retro pixel-art</div></figcaption></figure>
+    <figure><img src="claymation.png" alt="claymation"><figcaption><div class="name">6 · Claymation</div></figcaption></figure>
+    <figure class="ref"><img src="../master.png" alt="original"><figcaption><div class="name">— Original (reference)</div></figcaption></figure>
+  </div>
+</body>
+</html>

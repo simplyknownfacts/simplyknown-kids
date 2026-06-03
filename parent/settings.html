@@ -239,8 +239,8 @@
     </div>
     <div class="pin-pad" id="pinPad"></div>
     <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px;align-items:center;">
-      <button class="btn btn-ghost" onclick="setupMode()">Set up new PIN</button>
-      <div style="color:rgba(255,255,255,0.55);font-size:12px;text-align:center;max-width:280px;line-height:1.5;margin-top:6px;">
+      <button id="gateSetupBtn" class="btn btn-ghost" onclick="setupMode()" style="display:none;">Set up new PIN</button>
+      <div style="color:rgba(255,255,255,0.7);font-size:12px;text-align:center;max-width:280px;line-height:1.5;margin-top:6px;">
         Forgot your PIN? Email
         <a href="mailto:simplyknownfacts@gmail.com" style="color:#4ECDC4;font-weight:700;">simplyknownfacts@gmail.com</a>
         for help resetting.
@@ -275,13 +275,13 @@
     </div>
 
     <h2>🎯 Activities Available</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
       Pick which games show up on each child's home. Defaults follow each kid's age — younger kids only see age-appropriate games. Override anything here.
     </div>
     <div id="activitiesSection"></div>
 
     <h2>🎮 Activity Features</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
       Check to unlock features for each child regardless of age tier.
     </div>
     <div class="features-scroll">
@@ -292,32 +292,32 @@
     <div id="voiceSection"></div>
 
     <h2>🐾 Mascot Buddy</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
       The mascot welcomes the child, introduces each section, and cheers them on. Pick one per kid (or skip).
     </div>
     <div id="mascotSection"></div>
 
     <h2>🖍️ Coloring Pages</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
       Upload family photos to turn into coloring pages. The kid sees them in the Art → Color In activity, along with the built-in scenes. Up to 10 photos.
     </div>
     <div id="coloringSection"></div>
 
     <h2>🎧 Yoto</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
       Connect your Yoto account to let the child play family recordings (MYO cards) and purchased Yoto stories from the Listen tab.
     </div>
     <div id="yotoSection"></div>
 
     <h2>📺 YouTube Channels</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
       Paste a channel URL (e.g. https://www.youtube.com/@msrachel or .../channel/UC...).
       The child can browse all videos from that channel — no recommendations across channels.
     </div>
     <div id="youtubeSection"></div>
 
     <h2>☁️ Cloud Sync</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.5);font-size:13px;">
+    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
       Sign in once with email + password to sync child profiles across tablets.
       Voice picks, mascots, YouTube channels, and feature toggles all sync.
     </div>
@@ -326,7 +326,7 @@
     <h2>🔐 Change PIN</h2>
     <div class="card">
       <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
-      <div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:10px;line-height:1.5;">
+      <div style="color:rgba(255,255,255,0.7);font-size:12px;margin-top:10px;line-height:1.5;">
         Forgot your PIN? Email
         <a href="mailto:simplyknownfacts@gmail.com" style="color:#4ECDC4;font-weight:700;">simplyknownfacts@gmail.com</a>
         for help resetting.
@@ -363,6 +363,21 @@
       return String(s == null ? '' : s)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // Age chips show a single floor, not a range, so "0-12 mo+" / "1-2 yr+"
+    // (a range plus "+" reads as a contradiction). Use the tier's lower bound,
+    // or the upper bound when the lower bound is 0. e.g. "12 mo+", "1 yr+".
+    function tierFloorLabel(tier) {
+      const range = typeof tierAgeRange === 'function' ? tierAgeRange(tier) : '';
+      // Already a floor form like "7+ yr" → just normalise to "7 yr+".
+      const open = range.match(/^(\d+)\+\s*(mo|yr)/);
+      if (open) return open[1] + ' ' + open[2] + '+';
+      const m = range.match(/^(\d+)(?:-(\d+))?\s*(mo|yr)/);
+      if (!m) return range + '+';
+      const low = parseInt(m[1], 10), high = m[2] ? parseInt(m[2], 10) : null;
+      const floor = (low === 0 && high != null) ? high : low;
+      return floor + ' ' + m[3] + '+';
     }
 
     // ── Hashing (Web Crypto SHA-256 with per-PIN salt) ────────────────────────
@@ -427,6 +442,11 @@
     function showPinGate() {
       document.getElementById('pinGate').style.display = 'block';
       document.getElementById('mainSettings').style.display = 'none';
+      // "Set up new PIN" on the gate is FIRST-TIME setup only. If a PIN already
+      // exists, hide it so a child can't reset the gate without the current PIN.
+      // Recovery in that case is the "Forgot your PIN? Email…" path below.
+      document.getElementById('gateSetupBtn').style.display =
+        localStorage.getItem(PIN_KEY) ? 'none' : '';
       buildPinPad();
       updateDots();
       _refreshLockoutUI();
@@ -647,7 +667,7 @@
           </tr></thead><tbody>`;
         acts.forEach(a => {
           const ageChip = typeof tierAgeRange === 'function'
-            ? `<span style="display:inline-block;font-size:11px;font-weight:700;background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);padding:1px 8px;border-radius:999px;">${tierAgeRange(a.minTier)}+</span>`
+            ? `<span style="display:inline-block;font-size:11px;font-weight:700;background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);padding:1px 8px;border-radius:999px;">${tierFloorLabel(a.minTier)}</span>`
             : '';
           html += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
             <td style="padding:8px;color:white;font-weight:700;font-size:14px;">${a.icon} ${a.name}</td>
@@ -1132,6 +1152,11 @@
     }
 
     function setupMode() {
+      // Guard: when a PIN already exists, only allow changing it from inside the
+      // unlocked settings (the "Change 4-digit PIN" button). This blocks any
+      // no-knowledge reset from the locked gate, even if the gate button leaks.
+      const mainOpen = document.getElementById('mainSettings').style.display === 'block';
+      if (localStorage.getItem(PIN_KEY) && !mainOpen) { showPinGate(); return; }
       pinSetupStep = 1; pinFirst = ''; pinEntry = '';
       document.getElementById('pinPrompt').textContent = localStorage.getItem(PIN_KEY)
         ? 'Choose a new 4-digit PIN'
@@ -1289,7 +1314,7 @@
             // Age recommendation chip
             if (feat.minTier && typeof tierAgeRange === 'function') {
               const age = document.createElement('span');
-              age.textContent = tierAgeRange(feat.minTier) + '+';
+              age.textContent = tierFloorLabel(feat.minTier);
               age.style.cssText = 'display:inline-block;margin-left:8px;font-size:11px;font-weight:700;' +
                 'background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);' +
                 'padding:1px 8px;border-radius:999px;vertical-align:middle;';

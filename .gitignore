@@ -27,4 +27,9 @@ secrets/
 *_secret.txt
 *_token.txt
 *_credentials.json
+# dev tooling for the verification sweep (vanilla-JS repo stays dependency-free)
+package.json
+package-lock.json
+# sweep screenshots are regenerable artifacts — keep the script + report, drop the bulk
+tests/sweep/**/*.png
 # mascots/ committed for preview — will move to R2 once Worker is built

@@ -206,7 +206,7 @@
       const group = pickGroup(count);
       const answerIdx = Math.floor(Math.random() * count);
       const target = group[answerIdx];
-      instruction.textContent = '';
+      instruction.textContent = 'Which animal makes this sound?';
       setTimeout(() => speakAnimal(target), 400);
 
       const row = document.createElement('div');
