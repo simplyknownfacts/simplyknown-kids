@@ -281,7 +281,7 @@ function _attachDrag(wrap) {
 // search outward on an expanding ring for the nearest spot that overlaps
 // nothing (and stays on-screen), then glide there.
 function _interactiveRects(wrap) {
-  const sel = '.section-btn, .avatar-pill, button, a, [role="button"], [onclick]';
+  const sel = '.back-btn, .section-btn, .avatar-pill, button, a, [role="button"], [onclick]';
   const out = [];
   document.querySelectorAll(sel).forEach((el) => {
     if (el === wrap || wrap.contains(el)) return;
@@ -331,6 +331,26 @@ function _settleDrop(wrap) {
   wrap.style.left = `${best.x}px`;
   wrap.style.top = `${best.y}px`;
   _savePosition(best.x, best.y);
+}
+
+// On a NEW screen the layout changes (e.g. a back button appears top-left), so a
+// mascot parked there can end up covering a control. After the mascot shows, if
+// its current spot overlaps any interactive element, nudge it off — but leave it
+// alone when it's not covering anything (don't needlessly move a fine mascot).
+function _settleIfCovering() {
+  const wrap = _mascotEl;
+  if (!wrap || _drag || wrap.style.display === 'none') return;
+  const r = wrap.getBoundingClientRect();
+  if (r.width === 0 || r.height === 0) return;
+  if (!_overlapsAny(r.left, r.top, r.width, r.height, _interactiveRects(wrap))) return;
+  _settleDrop(wrap); // covering a control → glide to the nearest open spot + persist
+}
+
+// Run the check shortly after a show — twice, since page controls (back button,
+// tiles) and fonts can finish laying out a beat after the mascot appears.
+function _scheduleSettle() {
+  setTimeout(_settleIfCovering, 150);
+  setTimeout(_settleIfCovering, 600);
 }
 
 function _savePosition(x, y) {
@@ -519,6 +539,7 @@ function _playBase() {
   }
   _crossfadeTo(_src(mascotId, null, 'BASE'), { muted: true, loop: true, onended: null });
   _scheduleNextAction();
+  _scheduleSettle();   // nudge off any control it's covering on this screen
 }
 
 function _playAction() {
@@ -571,6 +592,7 @@ function play(key, opts) {
   _crossfadeTo(_src(mascotId, voice, key), {
     muted: !!(opts && opts.muted), loop: false, onended: () => _playBase(),
   });
+  _scheduleSettle();   // nudge off any control it's covering on this screen
 }
 
 function show() {
