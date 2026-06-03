@@ -379,36 +379,26 @@ html[data-tod="afternoon"] .title {
   display: flex; gap: 10px; z-index: 100;
 }
 .nav-btn {
-  /* Override the shared `.back-btn { position: fixed }` rule above so the
-     buttons flow side-by-side inside .nav-chrome instead of stacking. */
+  /* Modern flat icon button. position:relative overrides the shared
+     .back-btn{position:fixed} so Back/Home flow side-by-side in .nav-chrome. */
   position: relative;
-  width: 66px; height: 66px; border-radius: 20px;
-  border: none; cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 1px; color: #1A0F2E; font-family: var(--font-ui, inherit);
-  font-weight: 800; font-size: 13px; line-height: 1;
-  box-shadow:
-    0 8px 20px rgba(0,0,0,0.30),
-    inset 0 -4px 8px rgba(0,0,0,0.16),
-    inset 0 2px 0 rgba(255,255,255,0.65);
-  transition: transform 0.14s cubic-bezier(.2,.8,.2,1), filter 0.14s;
+  width: 54px; height: 54px; border-radius: 50%;
+  border: none; cursor: pointer; padding: 0;
+  display: grid; place-items: center; color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+  transition: transform 0.15s cubic-bezier(.2,.8,.2,1), box-shadow 0.15s, filter 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-.nav-btn .nav-ic { font-size: 26px; line-height: 1; }
-.nav-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
-.nav-btn:active { transform: scale(0.92); }
-.nav-btn.vb-press { transform: scale(0.92); }
+.nav-btn svg { width: 25px; height: 25px; display: block; }
+.nav-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 18px rgba(0,0,0,0.28); filter: brightness(1.05); }
+.nav-btn:active, .nav-btn.vb-press { transform: scale(0.9); }
 .nav-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
-/* Back = accent gold; Home = teal (per mockup). */
-.back-btn {
-  background: radial-gradient(circle at 35% 30%, #FFF1C8, var(--accent));
-}
-.home-btn {
-  background: radial-gradient(circle at 35% 30%, #BFF3EE, var(--teal));
-}
+.back-btn { background: #FF8A5B; }
+.home-btn { background: #4ECDC4; }
 @media (min-width: 768px) {
-  .nav-chrome { top: 24px; left: 24px; }
-  .nav-btn { width: 74px; height: 74px; font-size: 14px; }
-  .nav-btn .nav-ic { font-size: 30px; }
+  .nav-chrome { top: 22px; left: 22px; gap: 14px; }
+  .nav-btn { width: 60px; height: 60px; }
+  .nav-btn svg { width: 28px; height: 28px; }
 }
 /* When the Back/Home chrome is present, drop the page title below it so a
    centered title never tucks under the top-left buttons. Only affects pages

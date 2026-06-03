@@ -384,7 +384,7 @@
     document.body.style.overflow = 'visible';
   })();
 </script>
-  <div class="back-btn" style="position:fixed;" onclick="goBack()">←</div>
+  <button class="back-btn nav-btn" style="position:fixed; top:calc(14px + env(safe-area-inset-top)); left:calc(14px + env(safe-area-inset-left)); z-index:101;" onclick="goBack()" aria-label="Go back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 19l-7-7 7-7"/></svg></button>
 
   <!-- PIN Gate -->
   <div id="pinGate" class="settings-screen" style="text-align:center;">
