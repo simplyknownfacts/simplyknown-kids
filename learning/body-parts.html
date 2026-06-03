@@ -189,9 +189,12 @@
         <!-- teeth hint -->
         <path d="M110,124 Q120,128 130,124" fill="none" stroke="white" stroke-width="2" pointer-events="none"/>
 
-        <!-- BELLY (small button on shirt) -->
-        <circle class="hit" data-name="belly" cx="120" cy="240" r="6"
-                fill="#3aa49d" stroke="#1a3a5e" stroke-width="2"/>
+        <!-- BELLY: small visible button, but a larger invisible hit area
+             so little fingers can land it (matches other parts' size). -->
+        <circle class="hit" data-name="belly" cx="120" cy="240" r="22"
+                fill="transparent" stroke="none"/>
+        <circle cx="120" cy="240" r="6"
+                fill="#3aa49d" stroke="#1a3a5e" stroke-width="2" pointer-events="none"/>
       </svg>
     `;
     const figure = document.getElementById('figure');

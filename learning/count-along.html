@@ -193,10 +193,12 @@
         stage.appendChild(row);
 
       } else if (quizOn && tier <= 6) {
+        // "How many?" of 1 is trivial and reads like a glitch — bump to 2+.
+        const quizCount = count < 2 ? 2 : count;
         instruction.textContent = `How many ${thing.p}?`;
         speak(`How many ${thing.p}?`);
         const row = document.createElement('div'); row.className = 'row';
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < quizCount; i++) {
           const d = document.createElement('div');
           d.className = 'dot counted'; d.textContent = thing.e;
           row.appendChild(d);
@@ -204,15 +206,15 @@
         stage.appendChild(row);
 
         const numMax = tier === 5 ? 5 : 10;
-        const choices = new Set([count]);
+        const choices = new Set([quizCount]);
         while (choices.size < Math.min(3, numMax)) choices.add(Math.floor(Math.random() * numMax) + 1);
         const numRow = document.createElement('div'); numRow.className = 'row';
         [...choices].sort((a, b) => a - b).forEach(n => {
           const btn = document.createElement('div');
           btn.className = 'num-btn'; btn.textContent = n;
           btn.addEventListener('click', () => {
-            if (n === count) {
-              playSuccess(); speak(`Yes! ${countWord(count, thing)}!`);
+            if (n === quizCount) {
+              playSuccess(); speak(`Yes! ${countWord(quizCount, thing)}!`);
               btn.style.background = 'rgba(168,230,207,0.5)';
               autoTimer = setTimeout(nextRound, 1500);
             } else {
@@ -256,22 +258,38 @@
         stage.appendChild(row);
 
       } else {
-        // Tier 7+: simple addition
-        const a = Math.floor(Math.random() * 5) + 1;
-        const b = Math.floor(Math.random() * 5) + 1;
-        const ans = a + b;
-        instruction.textContent = `${a} + ${b} = ?`;
-        speak(`${a} plus ${b} equals?`);
+        // Tier 7+: skip-counting (by 2s, 5s, or 10s). Keeps the card focused on
+        // counting rather than arithmetic. "What number comes next: 2, 4, 6, …?"
+        const step = [2, 5, 10][Math.floor(Math.random() * 3)];
+        const length = 4; // how many terms to show before the blank
+        const start = step * (Math.floor(Math.random() * 4) + 1);
+        const sequence = [];
+        for (let i = 0; i < length; i++) sequence.push(start + step * i);
+        const ans = start + step * length;
+
+        instruction.textContent = `Counting by ${step}s — what comes next?`;
+        speak(`Counting by ${step}s. What number comes next?`);
+
+        const seqEl = document.createElement('div');
+        seqEl.className = 'number-big';
+        seqEl.style.fontSize = 'clamp(48px, 12vw, 90px)';
+        seqEl.textContent = sequence.join(', ') + ', ?';
+        stage.appendChild(seqEl);
+
         const choices = new Set([ans]);
-        while (choices.size < 3) choices.add(Math.floor(Math.random() * 10) + 1);
+        while (choices.size < 3) {
+          const off = (Math.floor(Math.random() * 3) + 1) * step;
+          choices.add(Math.random() < 0.5 ? ans + off : Math.max(step, ans - off));
+        }
         const numRow = document.createElement('div'); numRow.className = 'row';
         [...choices].sort((a, b) => a - b).forEach(n => {
           const btn = document.createElement('div');
           btn.className = 'num-btn'; btn.textContent = n;
           btn.addEventListener('click', () => {
             if (n === ans) {
-              playSuccess(); speak(`${a} plus ${b} equals ${ans}. Correct!`);
-              autoTimer = setTimeout(nextRound, 2000);
+              playSuccess(); speak(`Yes! ${ans}.`);
+              btn.style.background = 'rgba(168,230,207,0.5)';
+              autoTimer = setTimeout(nextRound, 1800);
             } else {
               playBoop();
               btn.style.background = 'rgba(255,107,107,0.4)';

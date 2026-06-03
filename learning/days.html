@@ -86,7 +86,7 @@
         bodyEl.appendChild(row);
         setTimeout(() => speak(`Today is ${DAYS[todayIdx].n}!`), 400);
 
-      } else if (tier <= 6 || quizOn) {
+      } else if (tier <= 6) {
         // "What comes after Monday?" / "What was yesterday?"
         const isAfter = Math.random() < 0.5;
         const baseIdx = Math.floor(Math.random() * 7);

@@ -17,9 +17,10 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
-// Load .env
-const ENV_PATH = path.join(ROOT, '.env');
-if (fs.existsSync(ENV_PATH)) {
+// Load .env — this worktree first, then fall back to the main repo root
+// (git worktrees don't get a copy of the gitignored .env).
+for (const ENV_PATH of [path.join(ROOT, '.env'), path.resolve(ROOT, '../../../.env')]) {
+  if (!fs.existsSync(ENV_PATH)) continue;
   for (const line of fs.readFileSync(ENV_PATH, 'utf8').split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*?)"?\s*$/);
     if (m) process.env[m[1]] ||= m[2];
@@ -27,12 +28,22 @@ if (fs.existsSync(ENV_PATH)) {
 }
 
 const MASCOTS = {
-  dog:     { name: 'Dog',     prompt: 'a friendly black pit bull mutt puppy with a white nose and white chest, sitting upright, big expressive eyes, cute cartoon illustration, kids book style, plain soft pastel background, full body visible, mouth slightly open in a happy smile' },
-  tiger:   { name: 'Tiger',   prompt: 'a friendly cartoon tiger cub sitting upright, big expressive eyes, orange and black stripes, white chest and belly, plain soft pastel background, kids book illustration style, full body visible, mouth slightly open in a happy smile' },
-  giraffe: { name: 'Giraffe', prompt: 'a friendly cartoon baby giraffe standing upright, long neck visible, big expressive eyes, yellow and brown spots, plain soft pastel background, kids book illustration style, full body visible, mouth slightly open in a happy smile' },
-  panda:   { name: 'Panda',   prompt: 'a friendly cartoon baby panda sitting upright, big expressive eyes, classic black and white markings, plain soft pastel background, kids book illustration style, full body visible, mouth slightly open in a happy smile' },
-  orca:    { name: 'Orca',    prompt: 'a friendly cartoon baby orca whale, smiling, big expressive eyes, glossy black and white skin, water-blue gradient background, kids book illustration style, body in playful pose, mouth slightly open showing a friendly smile' },
-  eagle:   { name: 'Eagle',   prompt: 'a friendly cartoon bald eagle, big expressive eyes, white head, brown body, golden beak slightly open in a friendly smile, plain soft pastel background, kids book illustration style, perched upright' },
+  dog:     { name: 'Dog',     prompt: 'a friendly black pit bull mutt puppy with white paws, a white chest, and a white muzzle with plenty of white around the nose, sitting upright, big expressive eyes, cute cartoon illustration, kids book style, a solid flat chroma-green (#00FF00) background, nothing else, full body visible, mouth slightly open in a happy smile' },
+  tiger:   { name: 'Tiger',   prompt: 'a friendly cartoon tiger cub sitting upright, big expressive eyes, orange and black stripes, white chest and belly, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, mouth slightly open in a happy smile' },
+  giraffe: { name: 'Giraffe', prompt: 'a friendly cartoon baby giraffe standing upright, long neck visible, big expressive eyes, yellow and brown spots, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, mouth slightly open in a happy smile' },
+  panda:   { name: 'Panda',   prompt: 'a friendly cartoon baby panda sitting upright, big expressive eyes, classic black and white markings, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, mouth slightly open in a happy smile' },
+  orca:    { name: 'Orca',    prompt: 'a friendly cartoon baby orca whale, smiling, big expressive eyes, glossy black and white skin, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, body in playful pose, mouth slightly open showing a friendly smile' },
+  eagle:   { name: 'Eagle',   prompt: 'a friendly cartoon bald eagle, big expressive eyes, white head, brown body, golden beak slightly open in a friendly smile, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, perched upright' },
+
+  // ── 6 new (2 air, 2 water, 2 land) ──
+  owl:     { name: 'Owl',     prompt: 'a friendly cartoon baby owl perched upright, big round expressive eyes, soft brown and cream feathers, small orange beak, little ear tufts, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, happy friendly expression' },
+  parrot:  { name: 'Parrot',  prompt: 'a friendly cartoon baby parrot perched upright, big expressive eyes, bright colorful feathers (red, blue, yellow and green), small curved beak, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, cheerful smile' },
+  dolphin: { name: 'Dolphin', prompt: 'a friendly cartoon baby dolphin, smiling, big expressive eyes, smooth blue-gray skin with a light belly, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, playful pose, mouth slightly open in a friendly smile' },
+  octopus: { name: 'Octopus', prompt: 'a friendly cartoon baby octopus, big expressive eyes, round head and eight curly tentacles, soft purple and pink color, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, happy curious smile' },
+  lion:    { name: 'Lion',    prompt: 'a friendly cartoon lion cub sitting upright, big expressive eyes, golden fur with a small fuzzy mane, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, happy friendly smile' },
+  bunny:   { name: 'Bunny',   prompt: 'a friendly cartoon baby bunny rabbit sitting upright, big expressive eyes, long soft ears, fluffy white and gray fur, little pink nose, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, sweet happy smile' },
+  fox:     { name: 'Fox',     prompt: 'a friendly cartoon fox cub sitting upright, big expressive eyes, orange fur with a white chest and cheeks, fluffy white-tipped tail, dark little paws, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, happy friendly smile' },
+  penguin: { name: 'Penguin', prompt: 'a friendly cartoon baby penguin standing upright, big expressive eyes, classic black and white body, little orange beak and orange feet, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, cheerful happy smile' },
 };
 
 const PHRASES = [
@@ -59,9 +70,13 @@ const PHRASES = [
 ];
 
 const VOICES = {
-  girl: process.env.EL_VOICE_GIRL || 'EXAVITQu4vr4xnSDxMaL', // Sarah
-  boy:  process.env.EL_VOICE_BOY  || 'TX3LPaxmHKxFdv7VOQHJ', // Liam (was Josh - too deep)
+  girl:  process.env.EL_VOICE_GIRL  || 'EXAVITQu4vr4xnSDxMaL', // Sarah  (kid, pitched up)
+  boy:   process.env.EL_VOICE_BOY   || 'TX3LPaxmHKxFdv7VOQHJ', // Liam   (kid, pitched up)
+  woman: process.env.EL_VOICE_WOMAN || '21m00Tcm4TlvDq8ikWAM', // Rachel (adult woman, no pitch)
+  man:   process.env.EL_VOICE_MAN   || 'pNInz6obpgDQGcFmaJgB', // Adam   (adult man, no pitch)
 };
+// Only kid voices get the +3 semitone pitch-up; grown-up voices stay natural.
+const KID_VOICES = new Set(['girl', 'boy']);
 
 // Pitch up all generated audio +3 semitones to sound more kid-like.
 // 2^(3/12) ≈ 1.189 frequency multiplier.
@@ -105,7 +120,7 @@ async function genImage(prompt, outPath) {
   return outPath;
 }
 
-async function genVoice(text, voiceId, outPath) {
+async function genVoice(text, voiceId, outPath, pitch = true) {
   const key = process.env.ELEVENLABS_API_KEY;
   if (!key) throw new Error('ELEVENLABS_API_KEY missing');
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
@@ -119,9 +134,11 @@ async function genVoice(text, voiceId, outPath) {
     }),
   });
   if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${await res.text()}`);
-  // Write raw audio, then pitch-shift in place via ffmpeg.
+  const buf = Buffer.from(await res.arrayBuffer());
+  // Kid voices get pitched up +3 semitones; grown-up voices are kept natural.
+  if (!pitch) { fs.writeFileSync(outPath, buf); return outPath; }
   const rawPath = outPath + '.raw.mp3';
-  fs.writeFileSync(rawPath, Buffer.from(await res.arrayBuffer()));
+  fs.writeFileSync(rawPath, buf);
   await new Promise((resolve, reject) => {
     const ff = spawn('ffmpeg', ['-y', '-i', rawPath, '-af',
       `asetrate=44100*${PITCH_RATIO},aresample=44100,atempo=1/${PITCH_RATIO}`,
@@ -285,12 +302,20 @@ const BASE_IDLES = {
   tiger:   { key: 'idle_base', prompt: 'The tiger cub sits calmly in resting pose, chest gently rising and falling with slow breathing, eyes blinking slowly, ears flicking occasionally, content peaceful expression, very subtle minimal motion only.' },
   giraffe: { key: 'idle_base', prompt: 'The giraffe stands calmly in resting pose, long neck still with the tiniest gentle sway, long eyelashes blinking softly, ears flicking occasionally, very subtle breathing motion only.' },
   panda:   { key: 'idle_base', prompt: 'The panda sits calmly in resting pose, chest gently breathing slowly, blinking softly, ears twitch once in a while, content and peaceful, very subtle minimal motion.' },
-  orca:    { key: 'idle_base', prompt: 'The orca whale floats peacefully in water, gentle slow tail flick keeping it in place, body slightly rising and falling with calm breathing, eyes blinking slowly, subtle underwater bubble drift.' },
+  orca:    { key: 'idle_base', prompt: 'The orca whale hovers in place with a gentle slow tail flick, body slightly rising and falling with calm breathing, eyes blinking slowly, subtle calm motion.' },
   eagle:   { key: 'idle_base', prompt: 'The eagle perches calmly on its branch, chest rising and falling with gentle breathing, head making tiny subtle turns, eyes blinking, very still and majestic, minimal motion only.' },
+  owl:     { key: 'idle_base', prompt: 'The owl perches calmly, chest gently rising and falling with slow breathing, big round eyes blinking slowly, head making tiny subtle turns, ear tufts twitching occasionally, very subtle minimal motion only.' },
+  parrot:  { key: 'idle_base', prompt: 'The parrot perches calmly, chest gently breathing, head tilting side to side with curious little movements, blinking, occasional small wing ruffle, very subtle minimal motion only.' },
+  dolphin: { key: 'idle_base', prompt: 'The dolphin hovers in place with a gentle slow tail flick, body slightly rising and falling with calm breathing, eyes blinking slowly, subtle calm motion.' },
+  octopus: { key: 'idle_base', prompt: 'The octopus hovers in place, eight tentacles gently curling and swaying, body softly pulsing with calm breathing, big eyes blinking slowly, subtle calm motion.' },
+  lion:    { key: 'idle_base', prompt: 'The lion cub sits calmly in resting pose, chest gently rising and falling with breathing, blinking slowly, small ears flicking occasionally, content peaceful expression, very subtle minimal motion.' },
+  bunny:   { key: 'idle_base', prompt: 'The bunny sits calmly, nose twitching softly, long ears giving the occasional gentle flop, chest breathing slowly, blinking, very subtle minimal motion only.' },
+  fox:     { key: 'idle_base', prompt: 'The fox cub sits calmly in resting pose, chest gently rising and falling with breathing, blinking slowly, ears flicking and the fluffy tail giving the occasional gentle swish, very subtle minimal motion.' },
+  penguin: { key: 'idle_base', prompt: 'The penguin stands calmly, body gently rocking side to side with slow breathing, blinking, little flippers twitching occasionally, very subtle minimal motion only.' },
 };
 
 const UNIVERSAL_IDLES = [
-  { key: 'idle_wave',    prompt: 'The character waves one paw at the camera with a friendly smile, gentle swaying motion, looking happy and welcoming, idle pose, neutral background.' },
+  { key: 'idle_wave',    prompt: 'The character waves one paw at the camera with a friendly smile, gentle swaying motion, looking happy and welcoming, idle pose, on a flat green background.' },
   { key: 'idle_bubbles', prompt: 'The character blows colorful soap bubbles from a small bubble wand, bubbles drift up around them, happy expression, gentle bobbing motion, idle pose.' },
   { key: 'idle_book',    prompt: 'The character holds an open colorful storybook in their paws, reading and occasionally looking up with a curious smile, peaceful idle motion.' },
   { key: 'idle_popcorn', prompt: 'The character holds a red-and-white striped popcorn bucket, eating popcorn one piece at a time with cheerful chewing motions, content and happy.' },
@@ -322,16 +347,64 @@ const SPECIES_IDLES = {
     { key: 'idle_somer',   prompt: 'The panda does a small somersault forward in place, tumbling cute and playful, then sits back up grinning.' },
   ],
   orca: [
-    { key: 'idle_flip',   prompt: 'The orca whale flips its tail and does a quick rolling spin underwater with bubbles trailing, then settles back to swimming pose, playful motion.' },
-    { key: 'idle_breach', prompt: 'The orca leaps up and breaches the surface of the water with a splash, water droplets flying around, then dives back down playfully.' },
-    { key: 'idle_splash', prompt: 'The orca slaps the water with its tail fin creating a small splash, bubbles rising, playful happy expression.' },
-    { key: 'idle_swim',   prompt: 'The orca swims in a slow gentle circle, fins moving smoothly, water flowing around it, peaceful underwater motion.' },
+    { key: 'idle_flip',   prompt: 'The orca whale flips its tail and does a quick rolling spin in place, then settles back to a gentle hover, playful motion.' },
+    { key: 'idle_breach', prompt: 'The orca leaps up in a playful arc then settles back down in place, happy and bouncy.' },
+    { key: 'idle_splash', prompt: 'The orca flicks its tail fin playfully and bobs gently with a happy expression.' },
+    { key: 'idle_swim',   prompt: 'The orca glides in a slow gentle circle in place, fins moving smoothly, peaceful motion.' },
   ],
   eagle: [
     { key: 'idle_flap',   prompt: 'The eagle stretches and flaps its large wings open and closed a few times, feathers spreading, then folds them back, majestic motion.' },
     { key: 'idle_preen',  prompt: 'The eagle turns its head and uses its golden beak to preen the feathers on its shoulder and chest, careful grooming motion.' },
     { key: 'idle_alert',  prompt: 'The eagle turns its head sharply side to side looking around alertly, sharp eyes scanning, feathers ruffling slightly.' },
     { key: 'idle_call',   prompt: 'The eagle opens its beak and lets out a small screech call, head tipped back slightly, chest puffing, throat moving with the sound.' },
+  ],
+  owl: [
+    { key: 'idle_hoot',     prompt: 'The owl opens its small beak for a little hoot, chest puffing gently, big eyes wide, friendly expression, then settles back.' },
+    { key: 'idle_headturn', prompt: 'The owl slowly rotates its head far to one side curiously like only an owl can, then back to center, big blinking eyes.' },
+    { key: 'idle_fluff',    prompt: 'The owl puffs up and fluffs all its feathers for a moment then settles them back down smooth, cute shiver motion.' },
+    { key: 'idle_peek',     prompt: 'The owl playfully covers its eyes with one wing, then peeks out from behind it with a happy little smile.' },
+  ],
+  parrot: [
+    { key: 'idle_squawk', prompt: 'The parrot opens its curved beak for a happy little squawk, head bobbing, colorful feathers ruffling, cheerful motion.' },
+    { key: 'idle_dance',  prompt: 'The parrot bobs its head up and down and steps side to side dancing on its perch, swaying happily to a beat.' },
+    { key: 'idle_preen',  prompt: 'The parrot turns its head and preens its colorful wing feathers with its beak, careful tidy grooming motion.' },
+    { key: 'idle_flap',   prompt: 'The parrot opens and flaps its bright wings a few times showing off the colors, then folds them back neatly.' },
+  ],
+  dolphin: [
+    { key: 'idle_jump',  prompt: 'The dolphin leaps up in a graceful arc and gently arcs back down in place, playful motion.' },
+    { key: 'idle_spin',  prompt: 'The dolphin does a quick happy spin in place, then settles back to a gentle hover.' },
+    { key: 'idle_click', prompt: 'The dolphin nods its head and opens its mouth making cheerful clicking and chittering motions, friendly and chatty.' },
+    { key: 'idle_swim',  prompt: 'The dolphin glides in a slow gentle circle in place, fins moving smoothly, peaceful motion.' },
+  ],
+  octopus: [
+    { key: 'idle_wiggle',     prompt: 'The octopus wiggles all eight tentacles playfully one after another like a happy little wave, big smiling eyes.' },
+    { key: 'idle_squirt',     prompt: 'The octopus playfully bobs upward a little then drifts back down, tentacles fluttering, happy expression.' },
+    { key: 'idle_curl',       prompt: 'The octopus curls all its tentacles in to make a round ball shape, then slowly unfurls them again, cute motion.' },
+    { key: 'idle_colorshift', prompt: 'The octopus softly shifts its color through gentle pastel hues like a happy octopus, tentacles swaying calmly.' },
+  ],
+  lion: [
+    { key: 'idle_roar',    prompt: 'The lion cub opens its mouth in a tiny cute roar, little mane ruffling, then closes its mouth with a proud happy grin.' },
+    { key: 'idle_stretch', prompt: 'The lion cub stretches forward like a big cat, front paws extending and back arching, then relaxes back to sitting.' },
+    { key: 'idle_lick',    prompt: 'The lion cub licks one front paw and rubs it over its face grooming itself like a cat, cute careful motion.' },
+    { key: 'idle_pounce',  prompt: 'The lion cub crouches low and does a small playful pounce forward in place, then sits back up looking pleased.' },
+  ],
+  bunny: [
+    { key: 'idle_hop',     prompt: 'The bunny does a small happy hop in place, ears bouncing, then settles back down with a sweet expression.' },
+    { key: 'idle_munch',   prompt: 'The bunny holds a leafy orange carrot in its paws and munches on it happily with quick little nibbles, content motion.' },
+    { key: 'idle_earwash', prompt: 'The bunny pulls one long ear down with its paws and washes it, then lets it spring back up, cute grooming motion.' },
+    { key: 'idle_thump',   prompt: 'The bunny thumps a back foot a couple of times then perks its ears up alert and curious, playful motion.' },
+  ],
+  fox: [
+    { key: 'idle_pounce',  prompt: 'The fox cub crouches low and does a small playful pounce forward in place, then sits back up looking pleased.' },
+    { key: 'idle_tailwrap',prompt: 'The fox cub curls its fluffy tail around itself cozily, then settles with a content little smile.' },
+    { key: 'idle_sniff',   prompt: 'The fox cub sniffs the air curiously, nose twitching, ears perking up and turning side to side.' },
+    { key: 'idle_tilt',    prompt: 'The fox cub tilts its head curiously from side to side, big eyes blinking, sweet inquisitive expression.' },
+  ],
+  penguin: [
+    { key: 'idle_waddle', prompt: 'The penguin takes a couple of cute waddling steps in place, flippers out for balance, happy expression.' },
+    { key: 'idle_flap',   prompt: 'The penguin flaps its little flippers quickly with excitement, bobbing up and down, joyful motion.' },
+    { key: 'idle_slide',  prompt: 'The penguin flops onto its belly and does a short happy slide in place, then pops back up grinning.' },
+    { key: 'idle_preen',  prompt: 'The penguin turns its head and preens its chest feathers with its little beak, tidy grooming motion.' },
   ],
 };
 
@@ -381,7 +454,8 @@ async function klingImage2VideoIdle(imagePath, prompt, outPath) {
 
 const args = process.argv.slice(2);
 const mascotId = args[0];
-const mode = args.find(a => a.startsWith('--'))?.slice(2) || 'image-only';
+const outArg = args.find(a => a.startsWith('--out='));
+const mode = args.find(a => a.startsWith('--') && !a.startsWith('--out='))?.slice(2) || 'image-only';
 
 if (!mascotId || !MASCOTS[mascotId]) {
   console.error('Usage: node scripts/generate-mascot.mjs <mascot> [--image-only|--one-clip|--full]');
@@ -390,7 +464,7 @@ if (!mascotId || !MASCOTS[mascotId]) {
 }
 
 const mascot = MASCOTS[mascotId];
-const dir = path.join(ROOT, 'mascots', mascotId);
+const dir = outArg ? path.resolve(ROOT, outArg.slice('--out='.length)) : path.join(ROOT, 'mascots', mascotId);
 fs.mkdirSync(dir, { recursive: true });
 
 console.log(`\n=== ${mascot.name} (${mode}) ===\n`);
@@ -416,7 +490,10 @@ if (mode === 'idle') {
   const idleDir = path.join(dir, 'idle');
   fs.mkdirSync(idleDir, { recursive: true });
   let done = 0, failed = 0;
-  const idleSet = _idleSetFor(mascotId);
+  // Optional --idles=key1,key2 filter (e.g. test just idle_base before the full set).
+  const idlesArg = args.find(a => a.startsWith('--idles='));
+  const onlyIdles = idlesArg ? idlesArg.slice('--idles='.length).split(',') : null;
+  const idleSet = _idleSetFor(mascotId).filter(i => !onlyIdles || onlyIdles.includes(i.key));
   for (const idle of idleSet) {
     const outPath = path.join(idleDir, `${idle.key}.mp4`);
     if (fs.existsSync(outPath) && fs.statSync(outPath).size > 1000) {
@@ -460,7 +537,7 @@ for (const voice of voicesToRun) {
     try {
       console.log(`→ [${voice}/${p.key}] "${p.text}"`);
       if (!fs.existsSync(audioPath)) {
-        await genVoice(p.text, VOICES[voice], audioPath);
+        await genVoice(p.text, VOICES[voice], audioPath, KID_VOICES.has(voice));
         console.log(`  voice ok`);
       }
       await replicateLipSync(imagePath, audioPath, videoPath, p.motion);

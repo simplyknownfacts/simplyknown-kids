@@ -43,6 +43,14 @@
     .num-btn:active { transform: scale(0.9); }
     .num-btn.wrong { animation: shake 0.3s; background: rgba(255,107,107,0.4); }
     @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+    /* Low tiers (≤4): piles are tiny (≤3 items) — keep the whole equation on one
+       row so it reads "pile + pile = box" left-to-right instead of wrapping. */
+    body.low-tier .eq-row { flex-wrap: nowrap; gap: 8px; font-size: clamp(36px, 9vw, 72px); }
+    body.low-tier .pile { max-width: 130px; padding: 6px; gap: 4px; }
+    body.low-tier .pile .item { font-size: clamp(24px, 6vw, 44px); }
+    body.low-tier .op { font-size: clamp(36px, 8vw, 64px); }
+    body.low-tier .answer-box { min-width: 72px; min-height: 64px; font-size: clamp(36px, 8vw, 64px); }
   </style>
 </head>
 <body>
@@ -62,6 +70,7 @@
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'math');
+    if (tier <= 4) document.body.classList.add('low-tier');
     renderBackBtn('index.html');
     gameSettings.attach('math');
 

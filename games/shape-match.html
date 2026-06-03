@@ -146,63 +146,90 @@
 
       // Safe play area = viewport rectangle minus reserved zones for chrome/UI.
       // Targets are position:fixed so they can't overflow document below the fold.
-      const TARGET = 130, MARGIN = 16;
+      const MARGIN = 16;
+      const TARGET_MAX = 130;  // roomy boxes when space allows
+      const TARGET_MIN = 76;   // never shrink below an easy drop target for little fingers
       const safeBottomCSS = parseInt(getComputedStyle(document.documentElement)
         .getPropertyValue('--sai-b').trim()) || 0;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const shapesBottom = shapesRow.getBoundingClientRect().bottom;
-      const reserveTop    = shapesBottom + MARGIN;
+      const reserveTop    = shapesBottom + MARGIN; // never let targets ride up under the source shapes
       const reserveBottom = 120 + safeBottomCSS; // gear (48) + safe-area + app drawer breathing room
-      const reserveLeft   = 110; // clears back-btn (max 88 + margin)
-      const reserveRight  = 90;  // clears gear (48 + margin)
+      // Side reserves clear the back-btn (left) and gear (right). On narrow
+      // phones the full reserves leave almost no width, forcing a 1-col stack
+      // that overlaps — so shrink them when the viewport is tight. The chrome
+      // sits at the very top/bottom corners, and the play grid is vertically
+      // centered between shapesBottom and the gear, so trimming the side gutters
+      // here doesn't actually collide with that chrome.
+      const narrow = vw < 480;
+      const reserveLeft  = narrow ? 24 : 110;
+      const reserveRight = narrow ? 24 : 90;
+
+      // Outer box the grid must fit inside (full target width before sizing).
+      const fieldW = Math.max(0, vw - reserveLeft - reserveRight);
+      const fieldH = Math.max(0, vh - reserveTop - reserveBottom);
+
+      // Deterministic grid: pick a column count that fits using the SMALLEST
+      // acceptable box, then derive the actual box size so every row AND column
+      // fits with no overlap. We size to fit instead of capping the row step
+      // (which previously let rows slide on top of each other).
+      const n = shuffledTargets.length;
+      const cellMin = TARGET_MIN + MARGIN;
+      const colsFit = Math.max(1, Math.floor((fieldW + MARGIN) / cellMin));
+      const cols = Math.max(1, Math.min(n, colsFit));
+      const rows = Math.ceil(n / cols);
+      // Largest box that fits both axes given this col/row count, clamped.
+      const fitByW = (fieldW - (cols - 1) * MARGIN) / cols;
+      const fitByH = (fieldH - (rows - 1) * MARGIN) / rows;
+      const TARGET = Math.max(TARGET_MIN, Math.min(TARGET_MAX, fitByW, fitByH));
+
       const minX = reserveLeft + TARGET / 2;
       const maxX = vw - reserveRight - TARGET / 2;
       const minY = reserveTop + TARGET / 2;
       const maxY = vh - reserveBottom - TARGET / 2;
-
-      // Deterministic grid placement: figure out how many columns fit, then
-      // spread targets evenly across rows. This prevents the overlap that
-      // happened on narrow phones where random scatter couldn't find clear
-      // spots. A small jitter on each cell keeps it from feeling robotic.
       const safeW = Math.max(0, maxX - minX);
       const safeH = Math.max(0, maxY - minY);
-      const cellSpan = TARGET + MARGIN;
-      const cols = Math.max(1, Math.min(shuffledTargets.length,
-                                        Math.floor((safeW + MARGIN) / cellSpan) || 1));
-      const rows = Math.ceil(shuffledTargets.length / cols);
-      // Available widths/heights split evenly across cells
-      const colStep = cols > 1 ? safeW / (cols - 1) : 0;
-      const rowStep = rows > 1 ? Math.min(safeH / (rows - 1), cellSpan + 20) : 0;
+
+      // Row pitch = exactly what a non-overlapping row needs (box + margin),
+      // but spread out to fill the safe height if there's room to spare.
+      const rowPitch = rows > 1
+        ? Math.max(TARGET + MARGIN, Math.min(safeH / (rows - 1), TARGET + MARGIN + 24))
+        : 0;
       // Center the grid block vertically inside the safe area
-      const gridH = rowStep * (rows - 1);
+      const gridH = rowPitch * (rows - 1);
       const yOrigin = minY + (safeH - gridH) / 2;
-      const jitter = 8;
+      const jitter = TARGET >= 110 ? 8 : 0; // no jitter on tight grids — keep clearance honest
       const positions = shuffledTargets.map((_, i) => {
         const r = Math.floor(i / cols);
         const c = i % cols;
         // Last row may be partial — center its cells
-        const colsInRow = (r === rows - 1) ? (shuffledTargets.length - r * cols) : cols;
+        const colsInRow = (r === rows - 1) ? (n - r * cols) : cols;
         const rowColStep = colsInRow > 1 ? safeW / (colsInRow - 1) : 0;
         const rowXOrigin = colsInRow > 1 ? minX : (minX + maxX) / 2;
         const x = rowXOrigin + c * rowColStep + (Math.random() - 0.5) * jitter;
-        const y = yOrigin + r * rowStep + (Math.random() - 0.5) * jitter;
+        const y = yOrigin + r * rowPitch + (Math.random() - 0.5) * jitter;
         return { x, y };
       });
 
+      // Inner shape/label scale with the box so small boxes don't look cramped.
+      const innerSize = Math.round(TARGET * 0.42);
       shuffledTargets.forEach((s, i) => {
         const div = document.createElement('div');
         div.className = 'target';
         div.dataset.shape = s.name;
         const spot = positions[i];
         // center coordinates; translate to top-left for position:fixed
+        div.style.width = TARGET + 'px';
+        div.style.height = TARGET + 'px';
         div.style.left = (spot.x - TARGET / 2) + 'px';
         div.style.top  = (spot.y - TARGET / 2) + 'px';
         div.style.color = s.color;
         div.style.background = s.color + '20';
-        div.appendChild(makeSVG(s, 55, true));
+        div.appendChild(makeSVG(s, innerSize, true));
         const lbl = document.createElement('div');
         lbl.className = 'target-label';
+        lbl.style.fontSize = Math.round(TARGET * 0.2) + 'px';
         lbl.textContent = '⬇';  // pre-reader-friendly cue instead of "DROP HERE" caps
         div.appendChild(lbl);
         document.body.appendChild(div); // attach to body, not targetsRow (target uses position:fixed)

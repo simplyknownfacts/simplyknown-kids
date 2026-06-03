@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mascot chroma-key — live video</title>
+<style>
+  body { margin:0; font:15px/1.4 system-ui,sans-serif; color:#eee; background:#0e1020; padding:20px; }
+  h1{font-size:18px} p.note{color:#9aa0aa;max-width:720px}
+  .stage{display:flex;gap:24px;flex-wrap:wrap;margin-top:18px;align-items:flex-start}
+  .col{text-align:center}.label{margin:8px 0;font-weight:600}
+  .bg{width:300px;height:300px;border-radius:18px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .bg1{background:linear-gradient(135deg,#ff6b6b,#ffd93d)}
+  .bg2{background:linear-gradient(135deg,#4ecdc4,#556270)}
+  .photo{background:linear-gradient(120deg,#2b5876,#4e4376)}
+  .check{background:conic-gradient(#ccc 90deg,#fff 0 180deg,#ccc 0 270deg,#fff 0) 0 0/40px 40px}
+  canvas.out{width:260px;height:260px}
+  video{display:none}
+</style>
+</head>
+<body>
+  <h1>Mascot transparent background — LIVE Kling video</h1>
+  <p class="note">The actual idle video, green removed every frame in real time, composited over colorful backgrounds and a checkerboard (transparency). This is the real test: if the moving dog stays clean-edged with no green flicker, the animated mascot can float anywhere.</p>
+  <div class="stage">
+    <div class="col"><div class="label">Warm bg</div><div class="bg bg1"><canvas class="out" id="c1" width="260" height="260"></canvas></div></div>
+    <div class="col"><div class="label">Cool bg</div><div class="bg bg2"><canvas class="out" id="c2" width="260" height="260"></canvas></div></div>
+    <div class="col"><div class="label">Transparency check</div><div class="bg check"><canvas class="out" id="c3" width="260" height="260"></canvas></div></div>
+  </div>
+
+  <video id="vid" src="mascots/dog/green/idle/idle_base.mp4" muted loop playsinline autoplay crossorigin="anonymous"></video>
+
+<script>
+const vid = document.getElementById('vid');
+const canvases = ['c1','c2','c3'].map(id => {
+  const c = document.getElementById(id);
+  return { c, ctx: c.getContext('2d', { willReadFrequently:true }) };
+});
+const THR = 40, SMOOTH = 40;   // tuned from the static proof
+
+function frame(){
+  if (vid.readyState >= 2) {
+    for (const {c, ctx} of canvases) {
+      const w=c.width,h=c.height;
+      ctx.clearRect(0,0,w,h);
+      ctx.drawImage(vid,0,0,w,h);
+      const id=ctx.getImageData(0,0,w,h), d=id.data;
+      for(let i=0;i<d.length;i+=4){
+        const r=d[i],g=d[i+1],b=d[i+2],m=Math.max(r,b),gn=g-m;
+        if(gn>THR){d[i+3]=0;}
+        else if(gn>THR-SMOOTH){const t=(gn-(THR-SMOOTH))/SMOOTH;d[i+3]=Math.round(d[i+3]*(1-t));if(d[i+3]>0)d[i+1]=m;}
+        else if(gn>0){d[i+1]=m;}
+      }
+      ctx.putImageData(id,0,0);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+vid.play().catch(()=>{});
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -12,11 +12,10 @@
       display:none; gap:10px; align-items:center;
       padding:10px 10px calc(10px + env(safe-area-inset-bottom)) 10px;
       background:rgba(0,0,0,0.4); backdrop-filter:blur(8px); z-index:10;
-      /* Horizontal scroll instead of wrap so chips never clip off-screen on
-         narrow landscape phones. Center if everything fits. */
-      flex-wrap:nowrap; overflow-x:auto;
-      -webkit-overflow-scrolling:touch;
-      justify-content:flex-start;
+      /* Wrap to multiple rows so every stamp AND the theme switcher stay on
+         screen — young kids don't discover horizontal scroll. */
+      flex-wrap:wrap;
+      justify-content:center;
     }
     /* TRUE tablet landscape only: bar moves to right side as a scrollable rail.
        Phone landscape (~844x390) falls back to the bottom strip above so we
@@ -42,6 +41,7 @@
       width:60px; height:60px; border-radius:16px;
       background:rgba(255,255,255,0.12);
       border:3px solid rgba(255,255,255,0.2);
+      flex-shrink:0;
       font-size:32px; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
       transition:transform 0.1s;
@@ -51,15 +51,15 @@
     @media (min-width: 768px) {
       .stamp-chip { width:96px; height:96px; font-size:52px; border-radius:22px; border-width:4px; }
       .scene-chip { width:96px; height:96px; font-size:42px; }
-      .scene-sep { height:72px; }
       .scene-label { font-size:14px; }
       #stampbar { padding:16px; gap:14px; }
     }
-    /* Theme selector: visually separated, different shape + color */
+    /* Theme selector: visually separated, different shape + color.
+       Full-width sep forces the Scene chips onto their own wrapped row. */
     .scene-sep {
-      width: 2px; height: 48px;
+      flex-basis: 100%;
+      height: 2px; margin: 4px 0 2px;
       background: rgba(255,255,255,0.35);
-      margin: 0 6px;
       flex-shrink: 0;
     }
     .scene-label {
@@ -72,6 +72,7 @@
       width:60px; height:60px; border-radius:50%; /* round vs square stamps */
       background: linear-gradient(135deg, #4ECDC4, #45B7D1);
       border:3px solid rgba(255,255,255,0.5);
+      flex-shrink:0;
       font-size:28px; cursor:pointer; color:white;
       display:flex; align-items:center; justify-content:center;
       transition:transform 0.1s;

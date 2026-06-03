@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const url = process.argv[2] || 'http://localhost:8888/mascot-green-test.html';
+const out = process.argv[3] || 'mascots/dog/green/proof-static.png';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1100, height: 520 } });
+await p.goto(url, { waitUntil: 'networkidle' });
+await p.waitForTimeout(1500);
+const el = await p.$('.stage');
+await (el || p).screenshot({ path: out });
+await b.close();
+console.log('saved ' + out);
