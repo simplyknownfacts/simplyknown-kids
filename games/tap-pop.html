@@ -159,6 +159,7 @@
         });
       }
       playPop();
+      if (typeof haptic === 'function') haptic(b.shiny ? 30 : 18); // satisfying pop tick
       if (scoreOn) { score += b.shiny ? 3 : 1; scoreVal.textContent = score; }
     }
 

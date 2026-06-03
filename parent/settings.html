@@ -120,30 +120,42 @@
       border: 1px solid var(--chip-border);
     }
 
-    /* PIN gate */
-    .pin-display { display:flex; gap:12px; justify-content:center; margin:18px 0; }
+    /* PIN gate — friendlier "Grown-ups only" lock screen (see _chrome-mockup) */
+    #pinGate .title {
+      font-family: var(--font-display); font-style: italic; font-weight: 600;
+      font-size: clamp(28px, 5vw, 34px);
+    }
+    #pinPrompt { color: var(--text-soft); font-size: 15px; margin-bottom: 6px; }
+    .pin-display { display:flex; gap:16px; justify-content:center; margin:20px 0 26px; }
     .pin-dot {
       width:18px; height:18px; border-radius:50%;
       background: transparent;
       border: 2px solid var(--chip-border);
+      transition: background 0.12s, box-shadow 0.12s, border-color 0.12s;
     }
     .pin-dot.filled {
-      background: var(--accent);
-      border-color: var(--accent);
-      box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 60%, transparent);
+      background: var(--teal);
+      border-color: var(--teal);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--teal) 60%, transparent);
     }
-    .pin-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:280px; margin:0 auto; }
+    .pin-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; max-width:300px; margin:0 auto; }
     .pin-key {
-      aspect-ratio:1; border-radius:50%;
-      font-size:24px; font-weight:700;
+      width:100%; aspect-ratio:1; max-width:84px; margin:0 auto;
+      border-radius:22px;
+      font-size:30px; font-weight:700;
       font-family: var(--font-ui);
       color: var(--text);
-      background: rgba(255,255,255,0.06);
+      background: var(--panel, rgba(255,255,255,0.06));
       border: 1px solid var(--chip-border);
       display:flex; align-items:center; justify-content:center;
-      cursor:pointer; transition: background 0.12s, transform 0.08s;
+      cursor:pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.25), inset 0 2px 0 rgba(255,255,255,0.06);
+      transition: background 0.15s, transform 0.1s;
     }
-    .pin-key:active { background:rgba(255,255,255,0.18); transform: scale(0.92); }
+    .pin-key.key-del { font-size:24px; }
+    .pin-key:hover { background: rgba(255,255,255,0.12); }
+    .pin-key:active, .pin-key.vb-press { background:rgba(255,255,255,0.18); transform: scale(0.9); }
+    .pin-key:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
     #pinGate, #mainSettings { display: none; }
 
     /* Activity features table */
@@ -204,6 +216,152 @@
       text-align: left !important;
       font-weight: 500;
     }
+
+    /* ───────────────────────────────────────────────────────────────────
+       Sidebar + child-switcher shell (mockup: parent/_settings-mockup.html)
+       Wider than the old single column so the two panes fit side by side.
+       ─────────────────────────────────────────────────────────────────── */
+    #mainSettings.settings-screen { max-width: 1180px; }
+
+    /* Child switcher (header pills) */
+    .kids-bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin: 4px 0 22px; }
+    .kid-pill {
+      display:flex; align-items:center; gap:9px; padding:7px 14px 7px 8px;
+      border-radius:999px; background: rgba(28,20,58,0.92);
+      border:1px solid rgba(255,255,255,0.14); cursor:pointer;
+      transition: transform .15s, background .15s, border-color .15s;
+    }
+    .kid-pill:hover { transform: translateY(-1px); }
+    .kid-pill .av {
+      width:30px; height:30px; border-radius:50%; display:grid; place-items:center;
+      font-size:16px; flex:0 0 auto;
+    }
+    .kid-pill.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent) inset;
+      background: rgba(78,205,196,0.12);
+    }
+    .kid-pill .nm { font-weight:700; font-size:14px; color: var(--text); }
+    .kid-pill .ag { font-size:11px; color: var(--text-soft); }
+    .kid-add {
+      padding:9px 14px; border-radius:999px; background:transparent;
+      border:1px dashed var(--chip-border); color: var(--text-soft);
+      font-weight:600; font-size:13px; cursor:pointer; font-family: var(--font-ui);
+    }
+    .kid-add:hover { color: var(--text); border-color: var(--accent); }
+
+    /* Two-pane shell */
+    .shell { display:grid; grid-template-columns:236px 1fr; gap:18px; align-items:start; }
+    nav.side {
+      background: rgba(28,20,58,0.92);
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius:18px; padding:10px;
+      position: sticky; top:16px;
+    }
+    .side .grp {
+      font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+      color: var(--text-soft); padding:12px 12px 6px; font-weight:700;
+    }
+    .navitem {
+      display:flex; align-items:center; gap:11px; padding:10px 12px;
+      border-radius:11px; color: var(--text); font-weight:600; font-size:14.5px;
+      cursor:pointer; transition: background .15s; user-select:none;
+    }
+    .navitem .ic { width:22px; text-align:center; font-size:16px; flex:0 0 auto; }
+    .navitem:hover { background: rgba(255,255,255,0.06); }
+    .navitem.active {
+      background: rgba(78,205,196,0.14);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    /* Panels — one visible at a time */
+    .panel-area {
+      background: rgba(28,20,58,0.92);
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius:18px; padding:22px 24px 26px; min-height:520px;
+    }
+    .settings-panel { display:none; }
+    .settings-panel.active { display:block; }
+    /* The panel area provides the card chrome, so h2s inside panels are plain
+       headings (not the big italic section dividers from the old scroll view). */
+    .panel-area h2 {
+      font-family: var(--font-ui); font-style: normal; font-weight: 800;
+      font-size: 20px; letter-spacing:-.3px; margin: 0 0 4px;
+    }
+    .panel-area h2 .who { color: var(--accent); font-weight:700; font-size:14px; margin-left:6px; }
+    /* First card inside a panel shouldn't double up the panel's top padding. */
+    .settings-panel > .subtitle:first-of-type { margin-top: 6px; }
+
+    /* Voice cards (mockup .voices / .vcard) */
+    .voices { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px; }
+    .vcard {
+      display:flex; align-items:center; gap:14px; padding:15px 16px;
+      border-radius:14px; background: rgba(255,255,255,0.05);
+      border:1px solid var(--chip-border); cursor:pointer; position:relative;
+      transition: transform .15s, border-color .15s, background .15s;
+    }
+    .vcard:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.3); }
+    .vcard.sel {
+      border-color: var(--accent);
+      background: rgba(78,205,196,0.12);
+      box-shadow: 0 0 0 1px var(--accent) inset;
+    }
+    .vcard .play {
+      width:42px; height:42px; border-radius:50%; flex:0 0 auto;
+      display:grid; place-items:center; background: rgba(255,255,255,0.1);
+      color: var(--text); font-size:16px; border:1px solid var(--chip-border);
+    }
+    .vcard.playing .play { background: var(--accent); color:#10231f; }
+    .vcard .vinfo { min-width:0; }
+    .vcard .vn { font-weight:700; font-size:15px; color: var(--text); }
+    .vcard .vd { font-size:12px; color: var(--text-soft); }
+    .vcard .check { margin-left:auto; color: var(--accent); font-weight:900; font-size:18px; opacity:0; }
+    .vcard.sel .check { opacity:1; }
+    .vcard.full { grid-column:1/-1; }
+    /* Equalizer bars while a sample plays */
+    .vcard .bars { display:none; gap:2px; align-items:flex-end; height:16px; margin-left:auto; margin-right:6px; }
+    .vcard.playing .bars { display:flex; }
+    .vcard.playing .check { display:none; }
+    .vcard .bars i { width:3px; background: var(--accent); border-radius:2px; animation: vbeq .9s ease-in-out infinite; }
+    .vcard .bars i:nth-child(2){ animation-delay:.15s; }
+    .vcard .bars i:nth-child(3){ animation-delay:.3s; }
+    .vcard .bars i:nth-child(4){ animation-delay:.45s; }
+    @keyframes vbeq { 0%,100%{height:4px} 50%{height:16px} }
+    .voice-hint { margin-top:16px; font-size:12.5px; color: var(--text-soft);
+      display:flex; align-items:center; gap:7px; min-height:18px; }
+
+    /* Accordion section title — hidden on wide screens, shown on narrow */
+    .acc-title { display:none; }
+
+    /* ── Narrow screens: collapse sidebar into an accordion ── */
+    @media (max-width: 819px) {
+      #mainSettings.settings-screen { max-width: 760px; padding: 80px 16px 60px; }
+      .shell { display:block; }
+      nav.side { display:none; }
+      .panel-area { background:transparent; border:none; border-radius:0; padding:0; min-height:0; }
+      .settings-panel { display:block; margin-bottom:10px; }
+      .settings-panel .panel-body { display:none; }
+      .settings-panel.acc-open .panel-body { display:block; }
+      .acc-title {
+        display:flex; align-items:center; gap:10px; width:100%;
+        background: rgba(28,20,58,0.92); border:1px solid rgba(255,255,255,0.14);
+        border-radius:14px; padding:14px 16px; cursor:pointer; color: var(--text);
+        font-family: var(--font-ui); font-weight:700; font-size:15px; user-select:none;
+      }
+      .acc-title .ic { font-size:18px; flex:0 0 auto; }
+      .acc-title .chev { margin-left:auto; transition: transform .2s; color: var(--text-soft); }
+      .settings-panel.acc-open .acc-title { border-radius:14px 14px 0 0; border-bottom:none; }
+      .settings-panel.acc-open .acc-title .chev { transform: rotate(180deg); }
+      .settings-panel .panel-body {
+        background: rgba(28,20,58,0.92);
+        border:1px solid rgba(255,255,255,0.14); border-top:none;
+        border-radius:0 0 14px 14px; padding:18px 16px;
+      }
+      .panel-area h2 { display:none; } /* the accordion title already names it */
+      .voices { grid-template-columns:1fr; }
+      .vcard.full { grid-column:auto; }
+    }
   </style>
 </head>
 <body data-allow-zoom="1" style="position:static;overflow:visible;height:auto;touch-action:auto;">
@@ -230,7 +388,7 @@
 
   <!-- PIN Gate -->
   <div id="pinGate" class="settings-screen" style="text-align:center;">
-    <div class="title" style="margin-bottom:8px;">⚙️ Parent Settings</div>
+    <div class="title" style="margin-bottom:8px;">⚙️ Grown-ups only</div>
     <div class="subtitle" id="pinPrompt">Enter your 4-digit PIN</div>
     <div id="lockoutBanner" style="display:none;color:#FF6B6B;font-weight:800;margin:10px 0;"></div>
     <div class="pin-display" id="pinDisplay">
@@ -252,86 +410,159 @@
   <div id="mainSettings" class="settings-screen">
     <div class="title">⚙️ Parent Settings</div>
 
-    <h2>👨‍👩‍👧 Child Profiles</h2>
-    <div id="profilesList"></div>
-    <button class="btn btn-primary" onclick="showAddForm()">＋ Add Child</button>
+    <!-- Child switcher (populated by buildKidsBar) -->
+    <div class="kids-bar" id="kidsBar"></div>
 
-    <div id="addForm" style="display:none;">
-      <div class="card" style="margin-top:12px;">
-        <h2 style="margin-top:0;">New Child</h2>
-        <label>Name</label>
-        <input type="text" id="newName" placeholder="Child's name">
-        <label style="margin-top:12px;display:block;">Birthday</label>
-        <input type="date" id="newBirthday">
-        <label style="margin-top:12px;display:block;">Avatar</label>
-        <div class="row" id="avatarPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
-        <label style="margin-top:12px;display:block;">Color</label>
-        <div class="row" id="colorPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
-        <div class="row-between" style="margin-top:16px;">
-          <button class="btn btn-primary" onclick="saveNewProfile()">Save</button>
-          <button class="btn btn-ghost" onclick="document.getElementById('addForm').style.display='none'">Cancel</button>
-        </div>
-      </div>
-    </div>
+    <div class="shell">
+      <!-- Sidebar nav (populated by buildSidebar) -->
+      <nav class="side" id="sideNav"></nav>
 
-    <h2>🎯 Activities Available</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
-      Pick which games show up on each child's home. Defaults follow each kid's age — younger kids only see age-appropriate games. Override anything here.
-    </div>
-    <div id="activitiesSection"></div>
+      <!-- Content area: one panel visible at a time -->
+      <div class="panel-area">
 
-    <h2>🎮 Activity Features</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
-      Check to unlock features for each child regardless of age tier.
-    </div>
-    <div class="features-scroll">
-      <table class="features-table" id="featuresTable"></table>
-    </div>
+        <!-- 🎯 Activities Available -->
+        <section class="settings-panel" id="panel-activities" data-key="activities" data-icon="🎯" data-title="Activities">
+          <div class="acc-title"><span class="ic">🎯</span><span class="acc-label">Activities</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>🎯 Activities Available <span class="who panel-who"></span></h2>
+            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+              Pick which games show up on this child's home. Defaults follow their age — younger kids only see age-appropriate games. Override anything here.
+            </div>
+            <div id="activitiesSection"></div>
+          </div>
+        </section>
 
-    <h2>🎙️ Voice</h2>
-    <div id="voiceSection"></div>
+        <!-- 🎮 Activity Features -->
+        <section class="settings-panel" id="panel-features" data-key="features" data-icon="🎮" data-title="Activity features">
+          <div class="acc-title"><span class="ic">🎮</span><span class="acc-label">Activity features</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>🎮 Activity Features <span class="who panel-who"></span></h2>
+            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+              Check to unlock features for this child regardless of age tier.
+            </div>
+            <div class="features-scroll">
+              <table class="features-table" id="featuresTable"></table>
+            </div>
+          </div>
+        </section>
 
-    <h2>🐾 Mascot Buddy</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
-      The mascot welcomes the child, introduces each section, and cheers them on. Pick one per kid (or skip).
-    </div>
-    <div id="mascotSection"></div>
+        <!-- 🎙️ Voice -->
+        <section class="settings-panel" id="panel-voice" data-key="voice" data-icon="🎙️" data-title="Voice">
+          <div class="acc-title"><span class="ic">🎙️</span><span class="acc-label">Voice</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>🎙️ Voice <span class="who panel-who"></span></h2>
+            <div id="voiceSection"></div>
+          </div>
+        </section>
 
-    <h2>🖍️ Coloring Pages</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
-      Upload family photos to turn into coloring pages. The kid sees them in the Art → Color In activity, along with the built-in scenes. Up to 10 photos.
-    </div>
-    <div id="coloringSection"></div>
+        <!-- 🐾 Mascot Buddy -->
+        <section class="settings-panel" id="panel-mascot" data-key="mascot" data-icon="🐾" data-title="Mascot buddy">
+          <div class="acc-title"><span class="ic">🐾</span><span class="acc-label">Mascot buddy</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>🐾 Mascot Buddy <span class="who panel-who"></span></h2>
+            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+              The mascot welcomes the child, introduces each section, and cheers them on. Pick one (or skip).
+            </div>
+            <div id="mascotSection"></div>
+          </div>
+        </section>
 
-    <h2>🎧 Yoto</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
-      Connect your Yoto account to let the child play family recordings (MYO cards) and purchased Yoto stories from the Listen tab.
-    </div>
-    <div id="yotoSection"></div>
+        <!-- 🖍️ Coloring Pages -->
+        <section class="settings-panel" id="panel-coloring" data-key="coloring" data-icon="🖍️" data-title="Coloring pages">
+          <div class="acc-title"><span class="ic">🖍️</span><span class="acc-label">Coloring pages</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>🖍️ Coloring Pages <span class="who panel-who"></span></h2>
+            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+              Upload family photos to turn into coloring pages. The kid sees them in the Art → Color In activity, along with the built-in scenes. Up to 10 photos.
+            </div>
+            <div id="coloringSection"></div>
+          </div>
+        </section>
 
-    <h2>📺 YouTube Channels</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
-      Paste a channel URL (e.g. https://www.youtube.com/@msrachel or .../channel/UC...).
-      The child can browse all videos from that channel — no recommendations across channels.
-    </div>
-    <div id="youtubeSection"></div>
+        <!-- 📺 YouTube -->
+        <section class="settings-panel" id="panel-youtube" data-key="youtube" data-icon="📺" data-title="YouTube">
+          <div class="acc-title"><span class="ic">📺</span><span class="acc-label">YouTube</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>📺 YouTube Channels <span class="who panel-who"></span></h2>
+            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+              Paste a channel URL (e.g. https://www.youtube.com/@msrachel or .../channel/UC...).
+              The child can browse all videos from that channel — no recommendations across channels.
+            </div>
+            <div id="youtubeSection"></div>
+          </div>
+        </section>
 
-    <h2>☁️ Cloud Sync</h2>
-    <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
-      Sign in once with email + password to sync child profiles across tablets.
-      Voice picks, mascots, YouTube channels, and feature toggles all sync.
-    </div>
-    <div id="syncSection"></div>
+        <!-- 👨‍👩‍👧 Children (manages ALL kids) -->
+        <section class="settings-panel" id="panel-children" data-key="children" data-icon="👨‍👩‍👧" data-title="Children" data-group="app">
+          <div class="acc-title"><span class="ic">👨‍👩‍👧</span><span class="acc-label">Children</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>👨‍👩‍👧 Child Profiles</h2>
+            <div id="profilesList"></div>
+            <button class="btn btn-primary" onclick="showAddForm()">＋ Add Child</button>
 
-    <h2>🔐 Change PIN</h2>
-    <div class="card">
-      <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
-      <div style="color:rgba(255,255,255,0.7);font-size:12px;margin-top:10px;line-height:1.5;">
-        Forgot your PIN? Email
-        <a href="mailto:simplyknownfacts@gmail.com" style="color:#4ECDC4;font-weight:700;">simplyknownfacts@gmail.com</a>
-        for help resetting.
-      </div>
-    </div>
+            <div id="addForm" style="display:none;">
+              <div class="card" style="margin-top:12px;">
+                <h2 style="margin-top:0;">New Child</h2>
+                <label>Name</label>
+                <input type="text" id="newName" placeholder="Child's name">
+                <label style="margin-top:12px;display:block;">Birthday</label>
+                <input type="date" id="newBirthday">
+                <label style="margin-top:12px;display:block;">Avatar</label>
+                <div class="row" id="avatarPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
+                <label style="margin-top:12px;display:block;">Color</label>
+                <div class="row" id="colorPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
+                <div class="row-between" style="margin-top:16px;">
+                  <button class="btn btn-primary" onclick="saveNewProfile()">Save</button>
+                  <button class="btn btn-ghost" onclick="document.getElementById('addForm').style.display='none'">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 🎧 Yoto -->
+        <section class="settings-panel" id="panel-yoto" data-key="yoto" data-icon="🎧" data-title="Yoto" data-group="app">
+          <div class="acc-title"><span class="ic">🎧</span><span class="acc-label">Yoto</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>🎧 Yoto</h2>
+            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+              Connect your Yoto account to let the child play family recordings (MYO cards) and purchased Yoto stories from the Listen tab.
+            </div>
+            <div id="yotoSection"></div>
+          </div>
+        </section>
+
+        <!-- ☁️ Cloud Sync -->
+        <section class="settings-panel" id="panel-sync" data-key="sync" data-icon="☁️" data-title="Cloud sync" data-group="app">
+          <div class="acc-title"><span class="ic">☁️</span><span class="acc-label">Cloud sync</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>☁️ Cloud Sync</h2>
+            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+              Sign in once with email + password to sync child profiles across tablets.
+              Voice picks, mascots, YouTube channels, and feature toggles all sync.
+            </div>
+            <div id="syncSection"></div>
+          </div>
+        </section>
+
+        <!-- 🔐 Change PIN -->
+        <section class="settings-panel" id="panel-pin" data-key="pin" data-icon="🔐" data-title="Change PIN" data-group="app">
+          <div class="acc-title"><span class="ic">🔐</span><span class="acc-label">Change PIN</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>🔐 Change PIN</h2>
+            <div class="card">
+              <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
+              <div style="color:rgba(255,255,255,0.7);font-size:12px;margin-top:10px;line-height:1.5;">
+                Forgot your PIN? Email
+                <a href="mailto:simplyknownfacts@gmail.com" style="color:#4ECDC4;font-weight:700;">simplyknownfacts@gmail.com</a>
+                for help resetting.
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /.panel-area -->
+    </div><!-- /.shell -->
   </div>
 
   <script src="../js/atmosphere.js"></script>
@@ -485,6 +716,9 @@
     function showMain() {
       document.getElementById('pinGate').style.display = 'none';
       document.getElementById('mainSettings').style.display = 'block';
+      ensureSettingsChild();
+      buildSidebar();
+      buildKidsBar();
       renderProfiles();
       buildAddForm();
       buildFeaturesTable();
@@ -495,10 +729,145 @@
       buildColoringSection();
       buildYotoSection();
       buildSyncSection();
+      // Default panel: Activities if kids exist, else Children (so an empty
+      // app lands the parent straight on "Add child").
+      const startKey = getProfiles().length ? (_activePanel || 'activities') : 'children';
+      showPanel(startKey);
       if (new URLSearchParams(window.location.search).get('action') === 'add') {
+        showPanel('children');
         setTimeout(() => showAddForm(), 100);
       }
     }
+
+    // ── Sidebar + child-switcher shell ─────────────────────────────────────────
+    // The "active settings child" is who the per-child panels render for. It's
+    // separate from the app's active-profile key so opening settings never
+    // changes which kid the kid-facing app last used.
+    let _settingsChildId = null;
+    let _activePanel = null;
+
+    // Nav groups → panel keys. Order matches the mockup.
+    const PER_CHILD_PANELS = ['activities', 'features', 'voice', 'mascot', 'coloring', 'youtube'];
+    const APP_PANELS = ['children', 'yoto', 'sync', 'pin'];
+
+    function _settingsChild() {
+      return getProfiles().find(p => p.id === _settingsChildId) || null;
+    }
+
+    // Make sure _settingsChildId points at a real profile (or null if none).
+    function ensureSettingsChild() {
+      const profiles = getProfiles();
+      if (!profiles.length) { _settingsChildId = null; return; }
+      if (!profiles.some(p => p.id === _settingsChildId)) {
+        _settingsChildId = profiles[0].id;
+      }
+    }
+
+    // Per-child panel headers show "· <Name>" so it's clear whose settings
+    // these are even when scrolled past the switcher.
+    function updatePanelWhoHeaders() {
+      const child = _settingsChild();
+      const who = child ? '· ' + child.name : '';
+      document.querySelectorAll('.panel-who').forEach(el => {
+        // App panels (children/yoto/sync/pin) don't carry a .panel-who element,
+        // so this only ever fills the per-child panel headers.
+        el.textContent = who;
+      });
+    }
+
+    function buildKidsBar() {
+      const bar = document.getElementById('kidsBar');
+      bar.innerHTML = '';
+      const profiles = getProfiles();
+      updatePanelWhoHeaders();
+      profiles.forEach(p => {
+        const pill = document.createElement('div');
+        pill.className = 'kid-pill' + (p.id === _settingsChildId ? ' active' : '');
+        const months = getAgeMonths(p.birthday);
+        const t = tierForAge(months);
+        pill.innerHTML = `
+          <span class="av" style="background:${esc(p.color || 'rgba(255,255,255,0.1)')};">${esc(p.avatar || '🙂')}</span>
+          <span><div class="nm">${esc(p.name)}</div><div class="ag">${tierLabel(t)}</div></span>`;
+        pill.addEventListener('click', () => setSettingsChild(p.id));
+        bar.appendChild(pill);
+      });
+      const add = document.createElement('button');
+      add.className = 'kid-add';
+      add.textContent = '+ Add child';
+      add.addEventListener('click', () => { showPanel('children'); showAddForm(); });
+      bar.appendChild(add);
+    }
+
+    function setSettingsChild(id) {
+      _settingsChildId = id;
+      buildKidsBar();
+      buildSidebar();           // refreshes the "<Name>'s settings" group header
+      // re-render only the per-child panels for the newly selected child
+      buildActivitiesSection();
+      buildFeaturesTable();
+      buildVoiceSection();
+      buildMascotSection();
+      buildColoringSection();
+      buildYoutubeSection();
+    }
+
+    function buildSidebar() {
+      const nav = document.getElementById('sideNav');
+      nav.innerHTML = '';
+      const child = _settingsChild();
+      const panels = Array.from(document.querySelectorAll('.settings-panel'));
+      const byKey = {};
+      panels.forEach(s => { byKey[s.dataset.key] = s; });
+
+      const mkGroup = (label) => {
+        const g = document.createElement('div');
+        g.className = 'grp';
+        g.textContent = label;
+        nav.appendChild(g);
+      };
+      const mkItem = (key) => {
+        const sec = byKey[key];
+        if (!sec) return;
+        const item = document.createElement('div');
+        item.className = 'navitem' + (key === _activePanel ? ' active' : '');
+        item.dataset.key = key;
+        item.innerHTML = `<span class="ic">${esc(sec.dataset.icon)}</span> ${esc(sec.dataset.title)}`;
+        item.addEventListener('click', () => showPanel(key));
+        nav.appendChild(item);
+      };
+
+      mkGroup(child ? `${child.name}'s settings` : 'Child settings');
+      PER_CHILD_PANELS.forEach(mkItem);
+      mkGroup('App');
+      APP_PANELS.forEach(mkItem);
+    }
+
+    // Show one panel, hide the rest (wide screens). On narrow screens the panels
+    // are an accordion (CSS), so showPanel also toggles the open state there.
+    function showPanel(key) {
+      _activePanel = key;
+      const isNarrow = window.matchMedia('(max-width: 819px)').matches;
+      document.querySelectorAll('.settings-panel').forEach(sec => {
+        const on = sec.dataset.key === key;
+        sec.classList.toggle('active', on);
+        if (isNarrow) sec.classList.toggle('acc-open', on);
+      });
+      document.querySelectorAll('.navitem').forEach(it => {
+        it.classList.toggle('active', it.dataset.key === key);
+      });
+    }
+
+    // Accordion: tapping a section title on narrow screens toggles it open.
+    document.addEventListener('click', (e) => {
+      const title = e.target.closest('.acc-title');
+      if (!title) return;
+      if (!window.matchMedia('(max-width: 819px)').matches) return;
+      const sec = title.closest('.settings-panel');
+      const open = sec.classList.contains('acc-open');
+      // accordion: one open at a time
+      document.querySelectorAll('.settings-panel').forEach(s => s.classList.remove('acc-open'));
+      if (!open) { sec.classList.add('acc-open'); _activePanel = sec.dataset.key; }
+    });
 
     function _parseChannelId(input) {
       const s = (input || '').trim();
@@ -514,12 +883,12 @@
     function buildYoutubeSection() {
       const section = document.getElementById('youtubeSection');
       section.innerHTML = '';
-      const profiles = getProfiles();
-      if (!profiles.length) {
+      const p = _settingsChild();
+      if (!p) {
         section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
         return;
       }
-      profiles.forEach(p => {
+      {
         const card = document.createElement('div');
         card.className = 'card';
         const list = (p.youtube || []).map((ch, i) => `
@@ -546,7 +915,7 @@
                   onclick="addYoutubeChannel('${p.id}')">+ Add channel</button>
         `;
         section.appendChild(card);
-      });
+      }
     }
 
     function addYoutubeChannel(profileId) {
@@ -595,37 +964,31 @@
     function buildMascotSection() {
       const section = document.getElementById('mascotSection');
       section.innerHTML = '';
-      const profiles = getProfiles();
-      if (!profiles.length) {
+      const p = _settingsChild();
+      if (!p) {
         section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
         return;
       }
       const MASCOTS = (window.mascot && window.mascot.available) || ['dog','tiger','giraffe','panda','orca','eagle'];
       const LABELS = (window.mascot && window.mascot.labels) || {};
-      profiles.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        const current = p.mascot && p.mascot.id;
-        const opts = ['<option value="">None</option>'].concat(
-          MASCOTS.map(m => `<option value="${m}" ${current === m ? 'selected' : ''}>${LABELS[m] || m}</option>`)
-        ).join('');
-        card.innerHTML = `
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-            <span style="font-size:24px;">${esc(p.avatar)}</span>
-            <span style="color:white;font-weight:800;">${esc(p.name)}</span>
-          </div>
-          <select id="mascot-${p.id}" style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,0.1);color:white;border:2px solid rgba(255,255,255,0.2);font-size:15px;">
-            ${opts}
-          </select>
-          <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:8px 14px;"
-                  onclick="testMascot('${p.id}')">▶ Preview welcome</button>
-        `;
-        card.querySelector('select').addEventListener('change', (e) => {
-          const newId = e.target.value || null;
-          updateProfile(p.id, { mascot: newId ? { id: newId } : null });
-        });
-        section.appendChild(card);
+      const card = document.createElement('div');
+      card.className = 'card';
+      const current = p.mascot && p.mascot.id;
+      const opts = ['<option value="">None</option>'].concat(
+        MASCOTS.map(m => `<option value="${m}" ${current === m ? 'selected' : ''}>${LABELS[m] || m}</option>`)
+      ).join('');
+      card.innerHTML = `
+        <select id="mascot-${p.id}" style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,0.1);color:white;border:2px solid rgba(255,255,255,0.2);font-size:15px;">
+          ${opts}
+        </select>
+        <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:8px 14px;"
+                onclick="testMascot('${p.id}')">▶ Preview welcome</button>
+      `;
+      card.querySelector('select').addEventListener('change', (e) => {
+        const newId = e.target.value || null;
+        updateProfile(p.id, { mascot: newId ? { id: newId } : null });
       });
+      section.appendChild(card);
     }
 
     function testMascot(profileId) {
@@ -641,11 +1004,11 @@
       if (prev) localStorage.setItem('vb_active_id', prev);
     }
 
-    // ─── Per-activity visibility (one row per game × per child) ─────────────
+    // ─── Per-activity visibility (one row per game, for the ACTIVE child) ─────
     function buildActivitiesSection() {
       const section = document.getElementById('activitiesSection');
-      const profiles = getProfiles();
-      if (!profiles.length) {
+      const p = _settingsChild();
+      if (!p) {
         section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
         return;
       }
@@ -663,23 +1026,21 @@
           <thead><tr>
             <th style="text-align:left;padding:6px 8px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;">Activity</th>
             <th style="text-align:left;padding:6px 8px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;">Age</th>
-            ${profiles.map(p => `<th style="text-align:center;padding:6px 8px;color:rgba(255,255,255,0.9);font-size:13px;font-weight:800;">${esc(p.avatar || '')} ${esc(p.name)}</th>`).join('')}
+            <th style="text-align:center;padding:6px 8px;color:rgba(255,255,255,0.9);font-size:13px;font-weight:800;">Show</th>
           </tr></thead><tbody>`;
         acts.forEach(a => {
           const ageChip = typeof tierAgeRange === 'function'
             ? `<span style="display:inline-block;font-size:11px;font-weight:700;background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);padding:1px 8px;border-radius:999px;">${tierFloorLabel(a.minTier)}</span>`
             : '';
+          const checked = isActivityVisible(p, a.id);
           html += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
             <td style="padding:8px;color:white;font-weight:700;font-size:14px;">${a.icon} ${a.name}</td>
             <td style="padding:8px;">${ageChip}</td>
-            ${profiles.map(p => {
-              const checked = isActivityVisible(p, a.id);
-              return `<td style="padding:8px;text-align:center;">
-                <input type="checkbox" class="act-vis" data-pid="${p.id}" data-aid="${a.id}"
-                       ${checked ? 'checked' : ''}
-                       style="width:22px;height:22px;accent-color:#4ECDC4;cursor:pointer;">
-              </td>`;
-            }).join('')}
+            <td style="padding:8px;text-align:center;">
+              <input type="checkbox" class="act-vis" data-pid="${p.id}" data-aid="${a.id}"
+                     ${checked ? 'checked' : ''}
+                     style="width:22px;height:22px;accent-color:#4ECDC4;cursor:pointer;">
+            </td>
           </tr>`;
         });
         html += '</tbody></table>';
@@ -1045,59 +1406,103 @@
       buildSyncSection();
     }
 
+    // Voice picker — one set of tappable CARDS for the ACTIVE settings child.
+    // Tapping a card BOTH selects the voice (persists) AND plays a short sample
+    // in that voice. Real voices play the mascot welcome clip; 'browser' uses
+    // speechSynthesis. Only one sample plays at a time.
+    const VOICES = [
+      { id:'girl',    name:'Nurturing Girl',  desc:'Sarah · warm, gentle',  icon:'▶' },
+      { id:'boy',     name:'Nurturing Boy',   desc:'Josh · bright, kind',   icon:'▶' },
+      { id:'woman',   name:'Grown-up Woman',  desc:'Rachel · calm, adult',  icon:'▶' },
+      { id:'man',     name:'Grown-up Man',    desc:'Adam · steady, adult',  icon:'▶' },
+      { id:'browser', name:'Browser default', desc:"Device's built-in voice", icon:'🌐', full:true },
+    ];
+    let _voiceAudio = null;       // currently-playing HTMLAudioElement
+    let _voicePlayingCard = null; // its .vcard element
+
+    function _stopVoiceSample() {
+      if (_voiceAudio) { try { _voiceAudio.pause(); } catch(e){} _voiceAudio = null; }
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch(e){}
+      if (_voicePlayingCard) { _voicePlayingCard.classList.remove('playing'); _voicePlayingCard = null; }
+      const hint = document.getElementById('voiceHint');
+      if (hint) hint.textContent = '';
+    }
+
     function buildVoiceSection() {
       const section = document.getElementById('voiceSection');
       section.innerHTML = '';
-      const profiles = getProfiles();
-      if (!profiles.length) {
+      _stopVoiceSample();
+      const p = _settingsChild();
+      if (!p) {
         section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
         return;
       }
-      const VOICES = [
-        { id:'browser', label:'Browser default' },
-        { id:'girl',    label:'Nurturing Girl (Sarah)' },
-        { id:'boy',     label:'Nurturing Boy (Josh)' },
-        { id:'woman',   label:'Grown-up Woman (Rachel)' },
-        { id:'man',     label:'Grown-up Man (Adam)' },
-      ];
-      profiles.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        const current = p.voice || 'browser';
-        const opts = VOICES.map(v => `
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer;">
-            <input type="radio" name="voice-${p.id}" value="${v.id}" ${current === v.id ? 'checked' : ''}
-                   style="width:18px;height:18px;accent-color:#4ECDC4;">
-            <span style="color:white;font-weight:700;font-size:14px;">${esc(v.label)}</span>
-          </label>
-        `).join('');
-        card.innerHTML = `
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-            <span style="font-size:24px;">${esc(p.avatar)}</span>
-            <span style="color:white;font-weight:800;">${esc(p.name)}</span>
-          </div>
-          ${opts}
-          <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:8px 14px;"
-                  onclick="testVoice('${p.id}')">▶ Play sample</button>
-        `;
-        card.querySelectorAll('input[type=radio]').forEach(r => {
-          r.addEventListener('change', () => {
-            updateProfile(p.id, { voice: r.value });
-          });
-        });
-        section.appendChild(card);
+      const current = p.voice || 'girl';
+      const cards = VOICES.map(v => `
+        <div class="vcard${v.id === current ? ' sel' : ''}${v.full ? ' full' : ''}" data-voice="${v.id}">
+          <div class="play">${v.icon}</div>
+          <div class="vinfo"><div class="vn">${esc(v.name)}</div><div class="vd">${esc(v.desc)}</div></div>
+          <div class="bars"><i></i><i></i><i></i><i></i></div>
+          <div class="check">✓</div>
+        </div>`).join('');
+      section.innerHTML = `
+        <p class="subtitle" style="margin:0 0 16px;color:rgba(255,255,255,0.7);font-size:13.5px;">
+          The voice your mascot speaks in. Tap any voice to hear a short sample, then pick the one you like.
+        </p>
+        <div class="voices">${cards}</div>
+        <div class="voice-hint" id="voiceHint"></div>`;
+      section.querySelectorAll('.vcard').forEach(card => {
+        card.addEventListener('click', () => onVoiceCard(p.id, card));
       });
     }
 
-    function testVoice(profileId) {
+    function onVoiceCard(profileId, card) {
+      const voiceId = card.dataset.voice;
+      // 1) select + persist
+      updateProfile(profileId, { voice: voiceId });
+      const section = document.getElementById('voiceSection');
+      section.querySelectorAll('.vcard').forEach(c => c.classList.toggle('sel', c === card));
+      // also reflect on the kids bar age line? no — voice isn't shown there.
+      // 2) play sample (stops any prior one first)
+      playVoiceSample(profileId, voiceId, card);
+    }
+
+    function playVoiceSample(profileId, voiceId, card) {
+      _stopVoiceSample();
+      const hint = document.getElementById('voiceHint');
       const p = getProfiles().find(x => x.id === profileId);
-      if (!p) return;
-      const v = p.voice || 'browser';
-      // Use the same speak() pipeline by temporarily activating this profile
-      const prev = localStorage.getItem('vb_active_profile');
-      setActiveProfile(profileId);
-      speak('Yes! Apple is Red!');
-      if (prev) localStorage.setItem('vb_active_profile', prev);
+      const label = (VOICES.find(v => v.id === voiceId) || {}).name || 'voice';
+
+      if (voiceId === 'browser') {
+        if (!('speechSynthesis' in window)) { if (hint) hint.textContent = 'This device has no built-in voice.'; return; }
+        const u = new SpeechSynthesisUtterance('Yes! Apple is red!');
+        u.rate = 0.9; u.pitch = 1.15;
+        card.classList.add('playing'); _voicePlayingCard = card;
+        if (hint) hint.innerHTML = `🔊 Browser voice is playing a sample…`;
+        u.onend = u.onerror = () => {
+          if (_voicePlayingCard === card) { card.classList.remove('playing'); _voicePlayingCard = null; if (hint) hint.textContent = ''; }
+        };
+        try { window.speechSynthesis.speak(u); } catch(e) { card.classList.remove('playing'); }
+        return;
+      }
+
+      // Real voices: play the active child's mascot welcome clip in that voice.
+      // Path mirrors the app: mascots/<mascotId>/green/audio/<voiceId>_welcome.mp3
+      const mascotId = (p && p.mascot && p.mascot.id) || 'dog';
+      const base = (typeof rootPath === 'function') ? rootPath() : '../';
+      const src = `${base}mascots/${mascotId}/green/audio/${voiceId}_welcome.mp3`;
+      const audio = new Audio(src);
+      _voiceAudio = audio;
+      card.classList.add('playing'); _voicePlayingCard = card;
+      if (hint) hint.innerHTML = `🔊 ${esc(label)} is playing a sample…`;
+      const done = () => {
+        if (_voicePlayingCard === card) { card.classList.remove('playing'); _voicePlayingCard = null; }
+        if (_voiceAudio === audio) _voiceAudio = null;
+        if (hint && (hint.textContent || '').includes(label)) hint.textContent = '';
+      };
+      audio.onended = done;
+      audio.onerror = () => { if (hint) hint.textContent = `Couldn't play the ${label} sample for this mascot.`; done(); };
+      audio.play().catch(() => { if (hint) hint.textContent = `Tap again to play the ${label} sample.`; done(); });
     }
 
     function buildPinPad() {
@@ -1105,7 +1510,7 @@
       pad.innerHTML = '';
       [1,2,3,4,5,6,7,8,9,'',0,'⌫'].forEach(k => {
         const key = document.createElement('div');
-        key.className = 'pin-key';
+        key.className = 'pin-key' + (k === '⌫' ? ' key-del' : '');
         key.textContent = k;
         if (k === '') { key.style.visibility = 'hidden'; }
         else {
@@ -1248,48 +1653,65 @@
       const name = document.getElementById('newName').value.trim();
       const birthday = document.getElementById('newBirthday').value;
       if (!name || !birthday) { alert('Please fill in name and birthday.'); return; }
-      addProfile({ name, birthday, avatar: selectedAvatar, color: selectedColor });
+      const created = addProfile({ name, birthday, avatar: selectedAvatar, color: selectedColor });
       document.getElementById('newName').value = '';
       document.getElementById('newBirthday').value = '';
       document.getElementById('addForm').style.display = 'none';
+      // New child becomes the active settings child so the per-child panels
+      // immediately reflect them.
+      if (created && created.id) _settingsChildId = created.id;
       renderProfiles();
+      buildKidsBar();
+      buildSidebar();
       buildFeaturesTable();
       buildVoiceSection();
+      buildActivitiesSection();
+      buildMascotSection();
+      buildColoringSection();
+      buildYoutubeSection();
     }
 
     function removeProfile(id) {
       if (confirm('Delete this profile? This cannot be undone.')) {
         deleteProfile(id);
+        // If we deleted the active settings child, re-point at a remaining one.
+        if (_settingsChildId === id) _settingsChildId = null;
+        ensureSettingsChild();
         renderProfiles();
+        buildKidsBar();
+        buildSidebar();
         buildFeaturesTable();
+        buildVoiceSection();
+        buildActivitiesSection();
+        buildMascotSection();
+        buildColoringSection();
+        buildYoutubeSection();
       }
     }
 
-    // ── Activity Features Table ───────────────────────────────────────────────
+    // ── Activity Features Table (ACTIVE child only) ───────────────────────────
     function buildFeaturesTable() {
       const table = document.getElementById('featuresTable');
       table.innerHTML = '';
-      const profiles = getProfiles();
+      const profile = _settingsChild();
 
-      if (!profiles.length) {
-        table.innerHTML = '<tr><td class="no-profiles-note">No child profiles yet — add a child above.</td></tr>';
+      if (!profile) {
+        table.innerHTML = '<tr><td class="no-profiles-note">No child profiles yet — add a child first.</td></tr>';
         return;
       }
 
-      // Header row
+      // Header row — one feature column for the selected child
       const thead = table.createTHead();
       const hr = thead.insertRow();
       const corner = document.createElement('th');
       corner.textContent = 'Activity';
       hr.appendChild(corner);
-      profiles.forEach(p => {
-        const th = document.createElement('th');
-        th.innerHTML = `<div class="child-col-header">
-          <span class="ch-avatar">${esc(p.avatar)}</span>
-          <span class="ch-name">${esc(p.name)}</span>
-        </div>`;
-        hr.appendChild(th);
-      });
+      const th = document.createElement('th');
+      th.innerHTML = `<div class="child-col-header">
+        <span class="ch-avatar">${esc(profile.avatar)}</span>
+        <span class="ch-name">${esc(profile.name)}</span>
+      </div>`;
+      hr.appendChild(th);
 
       // One row per activity
       const tbody = table.createTBody();
@@ -1298,32 +1720,30 @@
         const nameCell = row.insertCell();
         nameCell.textContent = activity.name;
 
-        profiles.forEach(profile => {
-          const cell = row.insertCell();
-          activity.features.forEach(feat => {
-            const lbl = document.createElement('label');
-            lbl.className = 'feat-label';
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.checked = getProfileFeature(profile, activity.id, feat.key);
-            cb.addEventListener('change', () => {
-              setProfileFeature(profile.id, activity.id, feat.key, cb.checked);
-            });
-            const span = document.createElement('span');
-            span.textContent = feat.label;
-            lbl.appendChild(cb);
-            lbl.appendChild(span);
-            // Age recommendation chip
-            if (feat.minTier && typeof tierAgeRange === 'function') {
-              const age = document.createElement('span');
-              age.textContent = tierFloorLabel(feat.minTier);
-              age.style.cssText = 'display:inline-block;margin-left:8px;font-size:11px;font-weight:700;' +
-                'background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);' +
-                'padding:1px 8px;border-radius:999px;vertical-align:middle;';
-              lbl.appendChild(age);
-            }
-            cell.appendChild(lbl);
+        const cell = row.insertCell();
+        activity.features.forEach(feat => {
+          const lbl = document.createElement('label');
+          lbl.className = 'feat-label';
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = getProfileFeature(profile, activity.id, feat.key);
+          cb.addEventListener('change', () => {
+            setProfileFeature(profile.id, activity.id, feat.key, cb.checked);
           });
+          const span = document.createElement('span');
+          span.textContent = feat.label;
+          lbl.appendChild(cb);
+          lbl.appendChild(span);
+          // Age recommendation chip
+          if (feat.minTier && typeof tierAgeRange === 'function') {
+            const age = document.createElement('span');
+            age.textContent = tierFloorLabel(feat.minTier);
+            age.style.cssText = 'display:inline-block;margin-left:8px;font-size:11px;font-weight:700;' +
+              'background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);' +
+              'padding:1px 8px;border-radius:999px;vertical-align:middle;';
+            lbl.appendChild(age);
+          }
+          cell.appendChild(lbl);
         });
       });
     }
