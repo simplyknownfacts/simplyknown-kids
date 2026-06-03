@@ -372,27 +372,46 @@ html[data-tod="afternoon"] .title {
   font-size: 17px; color: var(--ink); text-align: center;
 }
 
-/* ---------- Back button ---------- */
-.back-btn {
-  position: fixed; top: calc(16px + env(safe-area-inset-top)); left: 16px;
-  width: 64px; height: 64px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #FFF1C8 0%, var(--accent) 100%);
-  border: none;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 32px; font-weight: 900; color: #1A0F2E;
-  cursor: pointer;
+/* ---------- Nav chrome: Back + Home pair (top-left) ---------- */
+.nav-chrome {
+  position: fixed; top: calc(14px + env(safe-area-inset-top));
+  left: calc(14px + env(safe-area-inset-left));
+  display: flex; gap: 10px; z-index: 100;
+}
+.nav-btn {
+  width: 66px; height: 66px; border-radius: 20px;
+  border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1px; color: #1A0F2E; font-family: var(--font-ui, inherit);
+  font-weight: 800; font-size: 13px; line-height: 1;
   box-shadow:
-    0 8px 22px color-mix(in srgb, var(--accent) 50%, transparent),
-    inset 0 -4px 8px rgba(0,0,0,0.18),
-    inset 0 2px 0 rgba(255,255,255,0.7);
-  transition: transform 0.12s;
-  z-index: 100; line-height: 1;
+    0 8px 20px rgba(0,0,0,0.30),
+    inset 0 -4px 8px rgba(0,0,0,0.16),
+    inset 0 2px 0 rgba(255,255,255,0.65);
+  transition: transform 0.14s cubic-bezier(.2,.8,.2,1), filter 0.14s;
 }
-.back-btn:active { transform: scale(0.9); }
+.nav-btn .nav-ic { font-size: 26px; line-height: 1; }
+.nav-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.nav-btn:active { transform: scale(0.92); }
+.nav-btn.vb-press { transform: scale(0.92); }
+.nav-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+/* Back = accent gold; Home = teal (per mockup). */
+.back-btn {
+  background: radial-gradient(circle at 35% 30%, #FFF1C8, var(--accent));
+}
+.home-btn {
+  background: radial-gradient(circle at 35% 30%, #BFF3EE, var(--teal));
+}
 @media (min-width: 768px) {
-  .back-btn { width: 76px; height: 76px; font-size: 38px; top: 24px; left: 24px; }
+  .nav-chrome { top: 24px; left: 24px; }
+  .nav-btn { width: 74px; height: 74px; font-size: 14px; }
+  .nav-btn .nav-ic { font-size: 30px; }
 }
+
+/* Generic press-scale for tactile layer (non-nav elements). Suppressed under
+   reduced-motion because the .vb-press class is only added by JS when motion
+   is allowed. */
+.vb-press { transform: scale(0.94); }
 
 /* ---------- Row / column helpers ---------- */
 .row { display: flex; flex-direction: row; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; }
@@ -416,18 +435,28 @@ html[data-tod="afternoon"] .title {
   backdrop-filter: blur(6px);
 }
 
-/* ---------- Settings gear ---------- */
+/* ---------- "Grown-ups" parent pill (corner-tucked, bottom-right) ---------- */
 .settings-gear {
-  position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); right: 24px;
-  width: 36px; height: 36px;
-  opacity: 0.45;
-  display: flex; align-items: center; justify-content: center;
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  right: calc(16px + env(safe-area-inset-right));
+  min-height: 44px;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: 999px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: var(--text); font-family: var(--font-ui, inherit);
+  font-weight: 700; font-size: 13px;
   cursor: pointer; z-index: 99;
-  transition: opacity 0.2s;
-  background: none; border: none;
+  backdrop-filter: blur(8px);
+  transition: background 0.15s, transform 0.14s;
 }
-.settings-gear svg { width: 28px; height: 28px; fill: var(--text); }
-.settings-gear:active { opacity: 0.9; }
+.settings-gear .gear { font-size: 18px; line-height: 1; }
+.settings-gear .gear-label { line-height: 1; }
+.settings-gear:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+.settings-gear:active,
+.settings-gear.vb-press { transform: scale(0.96); }
+.settings-gear:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
 
 /* ---------- Animations (preserved + new) ---------- */
 @keyframes popIn {

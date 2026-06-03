@@ -15,6 +15,21 @@
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
+  // Inject hover/active/focus styling for the in-game gear once. Inline styles
+  // can't express pseudo-states, so this gives the bare emoji a real button feel.
+  let _gearStyleInjected = false;
+  function _injectGearStyle() {
+    if (_gearStyleInjected) return;
+    _gearStyleInjected = true;
+    const s = document.createElement('style');
+    s.textContent =
+      '#gameSettingsGear{transition:background .15s,transform .12s,opacity .15s;}' +
+      '#gameSettingsGear:hover{background:rgba(0,0,0,0.7);opacity:1;}' +
+      '#gameSettingsGear:active,#gameSettingsGear.vb-press{transform:scale(0.92);}' +
+      '#gameSettingsGear:focus-visible{outline:3px solid #4ECDC4;outline-offset:3px;}';
+    document.head.appendChild(s);
+  }
+
   function _findActivity(activityId) {
     if (typeof ACTIVITY_FEATURES === 'undefined') return null;
     return ACTIVITY_FEATURES.find(a => a.id === activityId);
@@ -33,19 +48,21 @@
       ? (typeof containerSel === 'string' ? document.querySelector(containerSel) : containerSel)
       : null;
 
+    _injectGearStyle();
     const gear = document.createElement('button');
     gear.id = 'gameSettingsGear';
     gear.title = 'Game settings';
+    gear.setAttribute('aria-label', 'Game settings');
     gear.textContent = '⚙️';
     if (container) {
       gear.style.cssText = `
         width: 48px; height: 48px; border-radius: 50%;
-        background: rgba(0,0,0,0.5); color: white;
-        border: 2px solid rgba(255,255,255,0.4);
+        background: rgba(0,0,0,0.55); color: white;
+        border: 2px solid rgba(255,255,255,0.45);
         font-size: 22px; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
         box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        opacity: 0.7;
+        opacity: 0.85;
         order: 999;
       `;
       container.appendChild(gear);
@@ -55,12 +72,12 @@
         bottom: calc(14px + env(safe-area-inset-bottom));
         right: calc(14px + env(safe-area-inset-right));
         width: 48px; height: 48px; border-radius: 50%;
-        background: rgba(0,0,0,0.5); color: white;
-        border: 2px solid rgba(255,255,255,0.4);
+        background: rgba(0,0,0,0.55); color: white;
+        border: 2px solid rgba(255,255,255,0.45);
         font-size: 22px; cursor: pointer; z-index: 9000;
         display: flex; align-items: center; justify-content: center;
         box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        opacity: 0.7;
+        opacity: 0.85;
       `;
       document.body.appendChild(gear);
     }

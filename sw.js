@@ -1,4 +1,4 @@
-const CACHE = 'vb-v75';  /* bumped: all 6 mascots now transparent (green chroma-key) — tiger/giraffe/panda/orca/eagle built on green w/ 4 voices — invalidates v74 */
+const CACHE = 'vb-v76';  /* bumped: settings redesign (sidebar/accordion + voice sample), friendlier Back+Home+Grown-ups chrome, redesigned lock screen, tactile press + haptics — invalidates v75 */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

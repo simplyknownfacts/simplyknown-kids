@@ -256,14 +256,65 @@ function speak(text, rate = 0.85, pitch = 1.2) {
   return _voiceSpeak(text, v);
 }
 
-// Render a standard back button
+// Render the nav chrome: a Back + Home pair, top-left. Both are big rounded
+// tactile targets with an icon + tiny label (see parent/_chrome-mockup.html).
+// Home only appears here, so it's never shown on home.html (which doesn't call
+// renderBackBtn). Back keeps its existing behavior: dest ? goTo(dest) : back.
 function renderBackBtn(dest) {
-  const btn = document.createElement('button');
-  btn.className = 'back-btn'; btn.textContent = '←';
-  btn.setAttribute('aria-label', 'Go back');
-  btn.addEventListener('click', () => dest ? goTo(dest) : history.back());
-  document.body.appendChild(btn);
+  const wrap = document.createElement('div');
+  wrap.className = 'nav-chrome';
+
+  const back = document.createElement('button');
+  back.className = 'back-btn nav-btn';
+  back.innerHTML = '<span class="nav-ic" aria-hidden="true">←</span><span class="nav-label">Back</span>';
+  back.setAttribute('aria-label', 'Go back');
+  back.addEventListener('click', () => dest ? goTo(dest) : history.back());
+
+  const home = document.createElement('button');
+  home.className = 'home-btn nav-btn';
+  home.innerHTML = '<span class="nav-ic" aria-hidden="true">🏠</span><span class="nav-label">Home</span>';
+  home.setAttribute('aria-label', 'Go home');
+  home.addEventListener('click', () => goHome());
+
+  wrap.appendChild(back);
+  wrap.appendChild(home);
+  document.body.appendChild(wrap);
 }
+
+// ── Tactile + haptic feedback (shared, reduced-motion safe) ─────────────────
+// haptic(ms): short vibration on supported devices. navigator.vibrate is a
+// no-op/undefined on iOS Safari and desktop, so feature-check + try/catch.
+// Haptics are intentional, not motion, so they fire regardless of
+// prefers-reduced-motion (only the visual press-scale is gated).
+function haptic(ms = 12) {
+  try {
+    if (navigator && typeof navigator.vibrate === 'function') {
+      navigator.vibrate(ms);
+    }
+  } catch (e) {}
+}
+
+(function _tactileLayer() {
+  const reduce = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Selector for the interactive elements that should feel tappable.
+  const SEL = 'button, .back-btn, .home-btn, .nav-btn, .activity-card, ' +
+              '.section-btn, .tile, [role="button"]';
+  document.addEventListener('pointerdown', (e) => {
+    const el = e.target && e.target.closest && e.target.closest(SEL);
+    if (!el) return;
+    // Visual press-scale — suppressed under reduced-motion.
+    if (!reduce) {
+      el.classList.add('vb-press');
+      const clear = () => el.classList.remove('vb-press');
+      el.addEventListener('pointerup', clear, { once: true });
+      el.addEventListener('pointercancel', clear, { once: true });
+      el.addEventListener('pointerleave', clear, { once: true });
+    }
+    // Quick haptic tick on every tap (gentle).
+    haptic(12);
+  }, { capture: true, passive: true });
+})();
 
 // Splash a color burst at a point (x, y) on a canvas ctx
 function colorBurst(ctx, x, y, color, radius = 60) {

@@ -267,6 +267,7 @@
             target.classList.add('matched');
             svg.style.display = 'none';
             playSuccess(); speak(s.name);
+            if (typeof haptic === 'function') haptic(25); // satisfying correct-match tick
             matched++;
             if (matched === count) setTimeout(nextRound, 1500);
           } else {
