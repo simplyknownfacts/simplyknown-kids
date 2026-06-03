@@ -1,4 +1,4 @@
-const CACHE = 'vb-v77';  /* bumped: fixed Back/Home buttons stacking + overlapping page titles (incl. abcs .nav-btn collision); body-parts now uses a real teaching figure with tap-zones — invalidates v76 */
+const CACHE = 'vb-v78';  /* bumped: modern flat icon Back/Home buttons (icon-only), fixed broken+tiny settings back button — invalidates v77 */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

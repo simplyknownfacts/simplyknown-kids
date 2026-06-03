@@ -264,15 +264,18 @@ function renderBackBtn(dest) {
   const wrap = document.createElement('div');
   wrap.className = 'nav-chrome';
 
+  const BACK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 19l-7-7 7-7"/></svg>';
+  const HOME_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.2 2.6 11.3a1 1 0 0 0 .66 1.75H4.2V20a1 1 0 0 0 1 1h3.6v-5.2a1 1 0 0 1 1-1h2.4a1 1 0 0 1 1 1V21h3.6a1 1 0 0 0 1-1v-6.95h.94a1 1 0 0 0 .66-1.75z"/></svg>';
+
   const back = document.createElement('button');
   back.className = 'back-btn nav-btn';
-  back.innerHTML = '<span class="nav-ic" aria-hidden="true">←</span><span class="nav-label">Back</span>';
+  back.innerHTML = BACK_SVG;
   back.setAttribute('aria-label', 'Go back');
   back.addEventListener('click', () => dest ? goTo(dest) : history.back());
 
   const home = document.createElement('button');
   home.className = 'home-btn nav-btn';
-  home.innerHTML = '<span class="nav-ic" aria-hidden="true">🏠</span><span class="nav-label">Home</span>';
+  home.innerHTML = HOME_SVG;
   home.setAttribute('aria-label', 'Go home');
   home.addEventListener('click', () => goHome());
 
