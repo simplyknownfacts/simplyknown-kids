@@ -1,4 +1,4 @@
-const CACHE = 'vb-v76';  /* bumped: settings redesign (sidebar/accordion + voice sample), friendlier Back+Home+Grown-ups chrome, redesigned lock screen, tactile press + haptics — invalidates v75 */
+const CACHE = 'vb-v77';  /* bumped: fixed Back/Home buttons stacking + overlapping page titles (incl. abcs .nav-btn collision); body-parts now uses a real teaching figure with tap-zones — invalidates v76 */
 const ASSETS = [
   './', './index.html', './home.html',
   './css/style.css',

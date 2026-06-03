@@ -279,6 +279,8 @@ function renderBackBtn(dest) {
   wrap.appendChild(back);
   wrap.appendChild(home);
   document.body.appendChild(wrap);
+  // Lets CSS reserve top space so a page title clears the Back/Home chrome.
+  document.body.classList.add('vb-chrome');
 }
 
 // ── Tactile + haptic feedback (shared, reduced-motion safe) ─────────────────

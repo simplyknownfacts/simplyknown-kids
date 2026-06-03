@@ -379,6 +379,9 @@ html[data-tod="afternoon"] .title {
   display: flex; gap: 10px; z-index: 100;
 }
 .nav-btn {
+  /* Override the shared `.back-btn { position: fixed }` rule above so the
+     buttons flow side-by-side inside .nav-chrome instead of stacking. */
+  position: relative;
   width: 66px; height: 66px; border-radius: 20px;
   border: none; cursor: pointer;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -407,6 +410,11 @@ html[data-tod="afternoon"] .title {
   .nav-btn { width: 74px; height: 74px; font-size: 14px; }
   .nav-btn .nav-ic { font-size: 30px; }
 }
+/* When the Back/Home chrome is present, drop the page title below it so a
+   centered title never tucks under the top-left buttons. Only affects pages
+   that render the chrome (activities), not the home/launch screens or the
+   full-bleed game canvases (which have no .title). */
+body.vb-chrome .title { margin-top: clamp(26px, 7vw, 44px); }
 
 /* Generic press-scale for tactile layer (non-nav elements). Suppressed under
    reduced-motion because the .vb-press class is only added by JS when motion
