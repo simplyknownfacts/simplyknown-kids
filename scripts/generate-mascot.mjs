@@ -317,7 +317,7 @@ const BASE_IDLES = {
 const UNIVERSAL_IDLES = [
   { key: 'idle_wave',    prompt: 'The character waves one paw at the camera with a friendly smile, gentle swaying motion, looking happy and welcoming, idle pose, on a flat green background.' },
   { key: 'idle_bubbles', prompt: 'The character blows colorful soap bubbles from a small bubble wand, bubbles drift up around them, happy expression, gentle bobbing motion, idle pose.' },
-  { key: 'idle_book',    prompt: 'The character holds an open colorful storybook in their paws, reading and occasionally looking up with a curious smile, peaceful idle motion.' },
+  { key: 'idle_book',    prompt: 'The character sits upright and lifts its two front paws to hold an open colorful storybook against its chest, looking down at the pages then glancing up with a curious happy smile. The book is clearly visible and held by the two front paws. Keep natural anatomy — four legs only, no duplicated or extra paws/arms/hands.' },
   { key: 'idle_popcorn', prompt: 'The character holds a red-and-white striped popcorn bucket, eating popcorn one piece at a time with cheerful chewing motions, content and happy.' },
 ];
 

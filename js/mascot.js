@@ -72,9 +72,14 @@ function _mascotIdFor(profile) {
 }
 
 function _mascotVoiceFor(profile) {
-  return (profile && profile.mascot && profile.mascot.voice)
-       || (profile && profile.voice)
-       || 'girl';
+  const v = (profile && profile.mascot && profile.mascot.voice)
+         || (profile && profile.voice)
+         || 'girl';
+  // woman/man talking clips only exist for fully-built (green/chroma) mascots.
+  // For any other mascot, fall back to girl so the picker can safely offer all
+  // four voices without a missing-clip break.
+  if ((v === 'woman' || v === 'man') && !_isChroma(_mascotIdFor(profile))) return 'girl';
+  return v;
 }
 
 function _ensureEl() {
