@@ -31,14 +31,14 @@
     .start-emoji { font-size: clamp(50px, 12vw, 80px); line-height: 1; }
     .start-name  { font-size: 16px; font-weight: 900; text-align: center; }
     .nav-row { display: flex; gap: 14px; justify-content: center; margin-top: 4px; }
-    .nav-btn {
+    .pager-btn {
       padding: 14px 24px; border-radius: 18px;
       background: #4ECDC4; color: #1a1a2e;
       border: 3px solid white; font-size: 18px; font-weight: 900;
       cursor: pointer; min-width: 130px;
     }
-    .nav-btn:active { transform: scale(0.94); }
-    .nav-btn.secondary { background: rgba(255,255,255,0.18); color: white; border-color: rgba(255,255,255,0.3); }
+    .pager-btn:active { transform: scale(0.94); }
+    .pager-btn.secondary { background: rgba(255,255,255,0.18); color: white; border-color: rgba(255,255,255,0.3); }
     /* Spell mode */
     .letter-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
@@ -210,10 +210,10 @@
 
       const nav = document.createElement('div'); nav.className = 'nav-row';
       const prev = document.createElement('button');
-      prev.className = 'nav-btn secondary'; prev.textContent = '← Back';
+      prev.className = 'pager-btn secondary'; prev.textContent = '← Back';
       prev.addEventListener('pointerdown', () => { idx = (idx + 25) % 26; nextRound(); });
       const next = document.createElement('button');
-      next.className = 'nav-btn'; next.textContent = 'Next →';
+      next.className = 'pager-btn'; next.textContent = 'Next →';
       next.addEventListener('pointerdown', () => { idx = (idx + 1) % 26; nextRound(); });
       nav.appendChild(prev); nav.appendChild(next);
       bodyEl.appendChild(nav);
