@@ -1,4 +1,4 @@
-const CACHE = 'vb-v81';  /* bumped: wooden ribbon shelf + native gallery scroll, ribbon rebalance (harder tiers + repeatable ×N), parent-settings contrast fix, peek-a-boo wired + 3 new young-kid games (Magic Touch / Tap-a-Tune / Surprise Pop), ribbon-award now speaks in the child's voice (woman/man clips added) — invalidates v80 */
+const CACHE = 'vb-v82';  /* bumped: ribbons page touch-scroll fix (html height:100% single scroller — v81's height:auto left no scrollport, so touch swipe was dead on real devices). Prior v81: wooden ribbon shelf + native gallery scroll, ribbon rebalance (harder tiers + repeatable ×N), parent-settings contrast fix, peek-a-boo wired + 3 new young-kid games (Magic Touch / Tap-a-Tune / Surprise Pop), ribbon-award now speaks in the child's voice (woman/man clips added) — invalidates v80 */
 const ASSETS = [
   './', './index.html', './home.html', './achievements.html',
   './css/style.css', './css/achievements.css',

@@ -107,11 +107,19 @@
 /* The ribbon gallery scrolls as a normal document — override the global app
    scroll-lock (style.css: html,body{overflow:hidden;position:fixed}) that kept this
    page from scrolling on real devices. Only this page opts in (html.vb-scroll);
-   kid activity pages stay locked. */
-html.vb-scroll, html.vb-scroll body {
+   kid activity pages stay locked.
+   html is the SINGLE scroll container, bounded to the viewport (height:100%) so it
+   has a real scrollport; body stays overflow:visible + height:auto so it grows past
+   the viewport and html scrolls it. height:auto on html = no scrollport = touch
+   scroll dead on devices (the v81 bug); body:overflow:auto = a 2nd scroller that
+   eats the gesture. Mirrors the proven parent-settings unlock in style.css. */
+html.vb-scroll {
   position: static !important; overflow-y: auto !important; overflow-x: hidden !important;
+  height: 100% !important; -webkit-overflow-scrolling: touch;
+}
+html.vb-scroll body {
+  position: static !important; overflow: visible !important;
   height: auto !important; min-height: 100%;
-  -webkit-overflow-scrolling: touch;
 }
 .rank-banner { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text); text-align: center; }
 .rank-banner .rank-name { font-family: var(--font-display); font-size: clamp(28px, 6vw, 44px); font-weight: 700; }
