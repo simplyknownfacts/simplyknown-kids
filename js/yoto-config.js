@@ -8,5 +8,5 @@
 //   3. Tell them your redirect URI: https://kids.simplyknown.co/yoto-callback.html
 //   4. They send you a client_id — paste below or in settings.
 window.YOTO_CONFIG = {
-  clientId: '', // ← paste your Yoto client_id here, or set via parent settings
+  clientId: 'FKjZtNSdQ44uhEL9yBDnRYN2tKW1e4dQ', // Yoto public client_id — "Valiant Breeze Kids App". Public client (PKCE), so this is NOT a secret. Parent Settings can override per-device via vb_yoto_client_id.
 };

@@ -31,8 +31,17 @@ const SCOPES = 'family:library:view offline_access openid profile';
 
 function _isConfigured() { return !!(CLIENT_ID && CLIENT_ID.length > 5); }
 
+// Yoto auth is PER-PROFILE: each child links their OWN Yoto account, so tokens
+// are keyed by the active profile id — one profile never sees another's Yoto
+// library. Reads vb_active_id straight from localStorage (not getActiveProfile)
+// so it also works on yoto-callback.html, which doesn't load profiles.js.
+function _activeId() {
+  try { return localStorage.getItem('vb_active_id') || '_none'; } catch (e) { return '_none'; }
+}
+function _tokKey() { return 'vb_yoto_tokens_' + _activeId(); }
+
 function _getTokens() {
-  const raw = localStorage.getItem('vb_yoto_tokens');
+  const raw = localStorage.getItem(_tokKey());
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
@@ -44,9 +53,9 @@ function _setTokens(t, refreshTokenFallback) {
     expires_at: Date.now() + ((t.expires_in || 3600) * 1000),
     scope: t.scope || '',
   };
-  localStorage.setItem('vb_yoto_tokens', JSON.stringify(stored));
+  localStorage.setItem(_tokKey(), JSON.stringify(stored));
 }
-function _clearTokens() { localStorage.removeItem('vb_yoto_tokens'); }
+function _clearTokens() { localStorage.removeItem(_tokKey()); }
 
 function _isConnected() { return !!_getTokens(); }
 
