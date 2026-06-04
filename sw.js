@@ -1,4 +1,4 @@
-const CACHE = 'vb-v79';  /* bumped: restored achievements/ribbons system (recovered from deleted branch) — engine + shelf + gallery wired into all activities — invalidates v78 */
+const CACHE = 'vb-v80';  /* bumped: achievements/ribbons restored + wired into all activities; body-parts now rotates 12 real diverse kid figures (random per open, switch every 5) — invalidates v78 */
 const ASSETS = [
   './', './index.html', './home.html', './achievements.html',
   './css/style.css', './css/achievements.css',
@@ -11,6 +11,10 @@ const ASSETS = [
   './learning/animal-sounds.html', './learning/count-along.html',
   './learning/abcs.html', './learning/days.html', './learning/math.html',
   './learning/spelling.html', './learning/money.html', './learning/body-parts.html',
+  './learning/img/bodies/body-01.png', './learning/img/bodies/body-02.png', './learning/img/bodies/body-03.png',
+  './learning/img/bodies/body-04.png', './learning/img/bodies/body-05.png', './learning/img/bodies/body-06.png',
+  './learning/img/bodies/body-07.png', './learning/img/bodies/body-08.png', './learning/img/bodies/body-09.png',
+  './learning/img/bodies/body-10.png', './learning/img/bodies/body-11.png', './learning/img/bodies/body-12.png',
   './art/index.html', './art/color-splash.html',
   './art/finger-paint.html', './art/stamp-art.html', './art/color-in.html',
   './videos/index.html',
