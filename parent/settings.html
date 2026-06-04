@@ -1147,102 +1147,105 @@
         img.src = url;
       });
     }
-    // "Coloring book" pipeline — only major outlines, no noise:
-    //   1) downsample heavily (texture detail dies with the resolution)
-    //   2) posterize gray to 4 levels — flattens shading inside each region
-    //      so the algorithm doesn't see "edges" inside a single wall/window
-    //   3) Sobel edge detect on the posterized version → only boundaries
-    //      between flat regions survive
-    //   4) high threshold + morphological opening (erode then dilate) →
-    //      kills speckle dots, keeps long contour lines
-    //   5) dilate the survivors to make legible 2-3 px strokes
-    //   6) upsample back to display size
+    // Photo → clean coloring stencil via ADAPTIVE THRESHOLD (the "photocopy"
+    // method): ink a pixel only when it's noticeably darker than its local
+    // neighbourhood, so flat areas stay white and only real edges become lines.
+    // Far cleaner than the old posterize+Sobel approach, which banded smooth
+    // photos into blotchy regions and traced scribbly edges between them.
+    //   1) downsample + grayscale + gentle blur (kill skin/fabric texture)
+    //   2) local average via a fast separable box blur
+    //   3) ink where (localMean - gray) > OFFSET  → major outlines only
+    //   4) despeckle (drop lone pixels) + thicken to a legible ~2px stroke
     function _photoToLineArt(img) {
-      // Work at a much smaller resolution. This is the biggest single lever
-      // for reducing noise — at 400×400 a square window in a photo becomes
-      // ~5 strong-edge pixels instead of 50 scribbly ones.
-      const WORK_DIM = 400;
+      const WORK_DIM = 560;
       const ratio = Math.min(WORK_DIM / img.width, WORK_DIM / img.height, 1);
-      const w = Math.round(img.width * ratio);
-      const h = Math.round(img.height * ratio);
+      const w = Math.max(1, Math.round(img.width * ratio));
+      const h = Math.max(1, Math.round(img.height * ratio));
 
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
       const ctx = c.getContext('2d');
-      // Pre-blur on draw — softens texture before we even look at pixels
-      ctx.filter = 'grayscale(1) contrast(1.2) blur(1.5px)';
+      // Grayscale + a gentle blur to wipe out skin / fabric / grain texture
+      // before we threshold, so it doesn't all turn into speckle.
+      ctx.filter = 'grayscale(1) contrast(1.05) blur(1px)';
       ctx.drawImage(img, 0, 0, w, h);
       ctx.filter = 'none';
 
-      const src = ctx.getImageData(0, 0, w, h);
-      const gray = new Uint8ClampedArray(w * h);
-      // Posterize to 4 gray levels — collapses shading gradients
-      const LEVELS = 4;
-      const step = 256 / LEVELS;
-      for (let i = 0, j = 0; i < src.data.length; i += 4, j++) {
-        const g = src.data[i] * 0.299 + src.data[i+1] * 0.587 + src.data[i+2] * 0.114;
-        gray[j] = Math.floor(g / step) * step;
+      const src = ctx.getImageData(0, 0, w, h).data;
+      const gray = new Float32Array(w * h);
+      for (let i = 0, j = 0; i < src.length; i += 4, j++) {
+        gray[j] = src[i] * 0.299 + src[i+1] * 0.587 + src[i+2] * 0.114;
       }
 
-      // Sobel — but on the posterized image, so it only fires on real region boundaries
-      const edges = new Uint8ClampedArray(w * h);
+      // Neighbourhood average. Radius scales with the image so it captures the
+      // local region, not texture; a bigger radius keeps only larger/softer
+      // edges (good: major outlines, not every detail).
+      const radius = Math.max(6, Math.round(Math.min(w, h) / 22));
+      const mean = _boxBlur(gray, w, h, radius);
+
+      // Adaptive threshold. OFFSET tunes sensitivity: higher = fewer, bolder
+      // lines (cleaner, less busy) — right for a young kid's coloring page.
+      const OFFSET = 12;
+      const ink = new Uint8Array(w * h);
+      for (let i = 0; i < gray.length; i++) {
+        ink[i] = (mean[i] - gray[i]) > OFFSET ? 1 : 0;
+      }
+
+      // Despeckle: drop pixels with no orthogonal neighbour (kills grain dots).
+      const clean = new Uint8Array(w * h);
       for (let y = 1; y < h - 1; y++) {
         for (let x = 1; x < w - 1; x++) {
           const i = y * w + x;
-          const gx =
-            -gray[i - w - 1] -2*gray[i - 1] -gray[i + w - 1]
-            +gray[i - w + 1] +2*gray[i + 1] +gray[i + w + 1];
-          const gy =
-            -gray[i - w - 1] -2*gray[i - w] -gray[i - w + 1]
-            +gray[i + w - 1] +2*gray[i + w] +gray[i + w + 1];
-          edges[i] = Math.min(255, Math.hypot(gx, gy));
+          if (!ink[i]) continue;
+          clean[i] = (ink[i-1] + ink[i+1] + ink[i-w] + ink[i+w]) >= 1 ? 1 : 0;
         }
       }
 
-      // High threshold — only strong region boundaries survive
-      const THRESHOLD = 90;
-      const bin = new Uint8Array(w * h);
-      for (let i = 0; i < edges.length; i++) bin[i] = edges[i] > THRESHOLD ? 1 : 0;
-
-      // Morphological opening (erode then dilate) — kills isolated speckles
-      const eroded = new Uint8Array(w * h);
+      // Thicken to a legible ~2px stroke (single dilate).
+      const thick = new Uint8Array(w * h);
       for (let y = 1; y < h - 1; y++) {
         for (let x = 1; x < w - 1; x++) {
           const i = y * w + x;
-          eroded[i] = (bin[i] && bin[i-1] && bin[i+1] && bin[i-w] && bin[i+w]) ? 1 : 0;
-        }
-      }
-      const opened = new Uint8Array(w * h);
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          const i = y * w + x;
-          opened[i] = (eroded[i] || eroded[i-1] || eroded[i+1] || eroded[i-w] || eroded[i+w]) ? 1 : 0;
+          thick[i] = (clean[i] || clean[i-1] || clean[i+1] || clean[i-w] || clean[i+w]) ? 1 : 0;
         }
       }
 
-      // Dilate twice more to make survivors bold + legible
-      let cur = opened;
-      for (let pass = 0; pass < 2; pass++) {
-        const next = new Uint8Array(w * h);
-        for (let y = 1; y < h - 1; y++) {
-          for (let x = 1; x < w - 1; x++) {
-            const i = y * w + x;
-            next[i] = (cur[i] || cur[i-1] || cur[i+1] || cur[i-w] || cur[i+w]) ? 1 : 0;
-          }
-        }
-        cur = next;
-      }
-
-      // Write back as black/white
       const dst = ctx.createImageData(w, h);
-      for (let i = 0; i < cur.length; i++) {
-        const v = cur[i] ? 0 : 255;
+      for (let i = 0; i < thick.length; i++) {
+        const v = thick[i] ? 0 : 255;
         const j = i * 4;
         dst.data[j] = dst.data[j+1] = dst.data[j+2] = v;
         dst.data[j+3] = 255;
       }
       ctx.putImageData(dst, 0, 0);
       return c.toDataURL('image/png');
+    }
+
+    // Fast separable box blur on a Float32 grayscale plane (running sum, O(n)).
+    function _boxBlur(src, w, h, r) {
+      const tmp = new Float32Array(w * h);
+      const out = new Float32Array(w * h);
+      const win = 2 * r + 1;
+      const cw = (v) => v < 0 ? 0 : (v > w - 1 ? w - 1 : v);
+      const ch = (v) => v < 0 ? 0 : (v > h - 1 ? h - 1 : v);
+      for (let y = 0; y < h; y++) {
+        const row = y * w;
+        let sum = 0;
+        for (let k = -r; k <= r; k++) sum += src[row + cw(k)];
+        for (let x = 0; x < w; x++) {
+          tmp[row + x] = sum / win;
+          sum += src[row + cw(x + r + 1)] - src[row + cw(x - r)];
+        }
+      }
+      for (let x = 0; x < w; x++) {
+        let sum = 0;
+        for (let k = -r; k <= r; k++) sum += tmp[ch(k) * w + x];
+        for (let y = 0; y < h; y++) {
+          out[y * w + x] = sum / win;
+          sum += tmp[ch(y + r + 1) * w + x] - tmp[ch(y - r) * w + x];
+        }
+      }
+      return out;
     }
 
     function buildYotoSection() {
