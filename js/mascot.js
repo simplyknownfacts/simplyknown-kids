@@ -36,7 +36,12 @@ function _actionKeys(mascotId) {
 const CHROMA_MASCOTS = new Set(['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle']);
 function _isChroma(mascotId) { return CHROMA_MASCOTS.has(mascotId); }
 // Green-screen keyer (tuned in mascot-green-video.html): remove green, despill.
-const _CK_THR = 40, _CK_SMOOTH = 40;
+// _CK_FLOOR clears FAINT residue: a weaker green screen (the giraffe measures
+// gn~46 in the background vs the dog's ~57) plus mp4 compression leaves low-alpha
+// despilled-yellow pixels that read as a "hazy yellow box" around the character
+// while it animates. Anything left this transparent is background, never the
+// opaque body, so dropping it is safe and also crisps every mascot's edge.
+const _CK_THR = 40, _CK_SMOOTH = 40, _CK_FLOOR = 60;
 function _chromaKey(ctx, w, h) {
   const id = ctx.getImageData(0, 0, w, h), d = id.data;
   for (let i = 0; i < d.length; i += 4) {
@@ -44,8 +49,9 @@ function _chromaKey(ctx, w, h) {
     if (gn > _CK_THR) { d[i + 3] = 0; }
     else if (gn > _CK_THR - _CK_SMOOTH) {
       const t = (gn - (_CK_THR - _CK_SMOOTH)) / _CK_SMOOTH;
-      d[i + 3] = Math.round(d[i + 3] * (1 - t));
-      if (d[i + 3] > 0) d[i + 1] = m;
+      const a = Math.round(d[i + 3] * (1 - t));
+      if (a < _CK_FLOOR) { d[i + 3] = 0; }       // kill faint haze
+      else { d[i + 3] = a; d[i + 1] = m; }
     } else if (gn > 0) { d[i + 1] = m; }
   }
   ctx.putImageData(id, 0, 0);
