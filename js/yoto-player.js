@@ -70,6 +70,10 @@
           animation: yotoLaunchPulse 2.6s ease-in-out infinite;
         }
         #yotoLaunch:active { transform: scale(0.92); animation: none; }
+        /* The home hub's bottom-right kid-switcher pill (#avatarPill) sits where
+           the FAB would; lift the FAB above it. :has() is reactive, so it applies
+           even though the pill is built by the page script after load. */
+        body:has(#avatarPill) #yotoLaunch { bottom: calc(160px + env(safe-area-inset-bottom)); }
         @keyframes yotoLaunchPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.07); } }
         @media (prefers-reduced-motion: reduce) { #yotoLaunch { animation: none; } }
       `;
@@ -82,26 +86,6 @@
     b.textContent = '🎧';
     b.addEventListener('pointerdown', function (e) { e.preventDefault(); _openListen(); });
     document.body.appendChild(b);
-    // Avoid overlapping the home kid-switcher pill (bottom-right): lift the FAB
-    // just above it when present; otherwise it stays in the bottom-right corner.
-    function _lift() {
-      var fab = document.getElementById('yotoLaunch'); if (!fab) return;
-      var base = 16;
-      var pill = document.getElementById('avatarPill');
-      if (pill) {
-        var r = pill.getBoundingClientRect();
-        if (r.width && r.height && r.right > window.innerWidth - 320 && r.bottom > window.innerHeight - 240) {
-          base = Math.round(window.innerHeight - r.top) + 14;
-        }
-      }
-      fab.style.bottom = 'calc(' + base + 'px + env(safe-area-inset-bottom))';
-    }
-    _lift();
-    // The home #avatarPill is built by the page script after load, so retry for
-    // a couple of seconds to catch it (idempotent), then stop.
-    var _tries = 0;
-    var _iv = setInterval(function () { _lift(); if (++_tries >= 12) clearInterval(_iv); }, 200);
-    window.addEventListener('resize', _lift);
   }
   function _initLauncher() {
     if (_onHub() && _yotoConnected()) _renderLauncher();
