@@ -37,17 +37,14 @@ const SCOPES = 'family:library:view offline_access openid profile';
 
 function _isConfigured() { return !!(CLIENT_ID && CLIENT_ID.length > 5); }
 
-// Yoto auth is PER-PROFILE: each child links their OWN Yoto account, so tokens
-// are keyed by the active profile id — one profile never sees another's Yoto
-// library. Reads vb_active_id straight from localStorage (not getActiveProfile)
-// so it also works on yoto-callback.html, which doesn't load profiles.js.
-function _activeId() {
-  try { return localStorage.getItem('vb_active_id') || '_none'; } catch (e) { return '_none'; }
-}
-function _tokKey() { return 'vb_yoto_tokens_' + _activeId(); }
+// Yoto is ONE family account → ONE shared library, so the app uses a single
+// SHARED connection (Scott's call 2026-06-04): connect once and every kid profile
+// on the device sees the same family library. There's no separate library per
+// child within a family, so per-profile tokens were unnecessary.
+const TOKENS_KEY = 'vb_yoto_tokens';
 
 function _getTokens() {
-  const raw = localStorage.getItem(_tokKey());
+  const raw = localStorage.getItem(TOKENS_KEY);
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
@@ -59,9 +56,9 @@ function _setTokens(t, refreshTokenFallback) {
     expires_at: Date.now() + ((t.expires_in || 3600) * 1000),
     scope: t.scope || '',
   };
-  localStorage.setItem(_tokKey(), JSON.stringify(stored));
+  localStorage.setItem(TOKENS_KEY, JSON.stringify(stored));
 }
-function _clearTokens() { localStorage.removeItem(_tokKey()); }
+function _clearTokens() { localStorage.removeItem(TOKENS_KEY); }
 
 function _isConnected() { return !!_getTokens(); }
 

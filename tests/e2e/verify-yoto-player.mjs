@@ -49,7 +49,7 @@ const prof = { id:'A', name:'Aldo', birthday:bday, avatar:'\u{1F98A}', color:'#4
 const seed = `try{localStorage.setItem('vb_profiles',JSON.stringify([${JSON.stringify(prof)}]));localStorage.setItem('vb_active_id','A');}catch(e){}
 try{HTMLMediaElement.prototype.play=function(){return Promise.resolve();};}catch(e){}
 try{if(window.speechSynthesis)speechSynthesis.speak=function(){};}catch(e){}`;
-const tokenScript = `try{localStorage.setItem('vb_yoto_tokens_A', JSON.stringify({access_token:'t',refresh_token:'r',expires_at:Date.now()+3600000,scope:''}));}catch(e){}`;
+const tokenScript = `try{localStorage.setItem('vb_yoto_tokens', JSON.stringify({access_token:'t',refresh_token:'r',expires_at:Date.now()+3600000,scope:''}));}catch(e){}`;
 
 const browser = await chromium.launch();
 async function makeCtx(withToken) {

@@ -28,14 +28,11 @@
   };
 
   // ───── Shared helpers ──────────────────────────────────────────────
-  function _activeId() {
-    try { return localStorage.getItem('vb_active_id') || '_none'; } catch (e) { return '_none'; }
-  }
-  // Connected = this profile has its OWN Yoto tokens (same per-profile key as
-  // js/yoto.js). Read straight from localStorage so hub pages don't need to load
-  // yoto.js just to decide whether to show the launcher.
+  // Connected = the family's shared Yoto tokens exist (single shared connection;
+  // see js/yoto.js). Read straight from localStorage so hub pages don't need to
+  // load yoto.js just to decide whether to show the launcher.
   function _yotoConnected() {
-    try { return !!localStorage.getItem('vb_yoto_tokens_' + _activeId()); } catch (e) { return false; }
+    try { return !!localStorage.getItem('vb_yoto_tokens'); } catch (e) { return false; }
   }
   function _listenUrl() {
     const base = (typeof rootPath === 'function') ? rootPath()

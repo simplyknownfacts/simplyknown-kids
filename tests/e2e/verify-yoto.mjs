@@ -2,10 +2,10 @@
 //  1. client_id is configured on a normal page (home.html).
 //  2. yoto-callback.html also has the client_id (it loads yoto-config.js now),
 //     so the OAuth token exchange won't post an empty client_id.
-//  3. Tokens are PER-PROFILE: profile A being connected does NOT make profile B
-//     look connected (no kid sees another's Yoto library).
+//  3. SHARED family connection: one token, so every kid profile sees the same
+//     family Yoto connection (one family account = one library).
 // Self-contained: own static server. Run with the e2e suite.
-import { chromium } from 'playwright';   // requires the e2e node_modules (run with the suite)
+import { chromium } from 'playwright';   // requires the e2e node_modules (run with the suite)   // requires the e2e node_modules (run with the suite)
 import { createServer } from 'http';
 import { readFile } from 'fs/promises';
 import { join, extname, dirname } from 'path';
@@ -38,26 +38,23 @@ const ctx = await browser.newContext({ viewport: { width: 800, height: 600 } });
 await ctx.addInitScript(init);
 const page = await ctx.newPage();
 
-// --- normal page: configured + per-profile isolation ---
+// --- normal page: configured + SHARED family connection ---
 await page.goto(`http://localhost:${PORT}/home.html`, { waitUntil: 'networkidle' });
 await page.waitForFunction(() => !!window.yoto, { timeout: 10000 });
 const main = await page.evaluate((EXPECT_ID) => {
   const out = {};
   out.configured = window.yoto.isConfigured();
-  // simulate profile A connected
+  // shared family connection: one token, every profile sees it
   localStorage.setItem('vb_active_id', 'A');
-  localStorage.setItem('vb_yoto_tokens_A', JSON.stringify({ access_token:'tokA', refresh_token:'r', expires_at: Date.now()+3600000, scope:'' }));
+  localStorage.setItem('vb_yoto_tokens', JSON.stringify({ access_token:'tokShared', refresh_token:'r', expires_at: Date.now()+3600000, scope:'' }));
   out.connectedA = window.yoto.isConnected();
-  // switch to profile B — must NOT be connected (B never linked Yoto)
+  // switch to profile B — ALSO connected (one shared family connection)
   localStorage.setItem('vb_active_id', 'B');
   out.connectedB = window.yoto.isConnected();
-  // back to A — still connected (its own token)
-  localStorage.setItem('vb_active_id', 'A');
-  out.connectedA2 = window.yoto.isConnected();
-  // disconnect on A must only wipe A's bucket
+  // disconnect wipes the shared token for everyone
   window.yoto.disconnect();
-  out.connectedA_afterDisconnect = window.yoto.isConnected();
-  out.tokenKeyB = localStorage.getItem('vb_yoto_tokens_B');   // should be null (never set)
+  out.connectedAfterDisconnect = window.yoto.isConnected();
+  out.sharedKeyAfter = localStorage.getItem('vb_yoto_tokens');   // should be null after disconnect
   return out;
 }, EXPECT_ID);
 
@@ -74,14 +71,14 @@ console.log(JSON.stringify(result, null, 2));
 const pass =
   main.configured === true &&
   main.connectedA === true &&
-  main.connectedB === false &&          // ← the privacy guarantee
-  main.connectedA2 === true &&
-  main.connectedA_afterDisconnect === false &&
+  main.connectedB === true &&           // shared: every profile sees the family connection
+  main.connectedAfterDisconnect === false &&
+  main.sharedKeyAfter === null &&
   cb.clientId === EXPECT_ID &&
   cb.configured === true;
-console.log(`\nCONFIGURED (home):     ${main.configured}`);
-console.log(`PER-PROFILE ISOLATION: A=${main.connectedA} B=${main.connectedB} (B must be false)`);
-console.log(`CALLBACK has clientId: ${cb.clientId === EXPECT_ID}`);
+console.log(`\nCONFIGURED (home):      ${main.configured}`);
+console.log(`SHARED CONNECTION:      A=${main.connectedA} B=${main.connectedB} (both true) → disconnect=${main.connectedAfterDisconnect}`);
+console.log(`CALLBACK has clientId:  ${cb.clientId === EXPECT_ID}`);
 console.log(`VERDICT: ${pass ? 'PASS ✅' : 'FAIL ❌'}`);
 await browser.close();
 server.close();
