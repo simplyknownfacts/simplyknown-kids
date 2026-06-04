@@ -59,7 +59,7 @@
       s.textContent = `
         #yotoLaunch {
           position: fixed; z-index: 9000;
-          bottom: calc(16px + env(safe-area-inset-bottom));
+          bottom: calc(96px + env(safe-area-inset-bottom));   /* clear the bottom profile-switcher chip / ribbons shelf on hubs */
           right: calc(16px + env(safe-area-inset-right));
           width: 62px; height: 62px; border-radius: 50%; border: none;
           display: flex; align-items: center; justify-content: center;

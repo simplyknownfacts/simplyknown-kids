@@ -27,13 +27,13 @@ const REDIRECT_URI = (typeof window !== 'undefined' ? window.location.origin : '
 const AUTH_URL = 'https://login.yotoplay.com/authorize';
 const TOKEN_URL = 'https://login.yotoplay.com/oauth/token';
 const API_BASE = 'https://api.yotoplay.com';
-// Scopes requested at login. NOTE: 'offline_access' (refresh tokens /
-// stay-logged-in) is GATED by Yoto behind manual pre-approval — requesting it
-// returns "access_denied: scopes not pre-approved: offline_access". Until Yoto
-// approves it for this client_id (email dev@yotoplay.com with the client_id +
-// redirect URI), we omit it; a connection then lasts ~1h before the parent
-// reconnects. Re-add 'offline_access' here once approved to restore refresh.
-const SCOPES = 'family:library:view openid profile';
+// Scopes requested at login. offline_access (refresh tokens / stay-logged-in)
+// was enabled in the Yoto dashboard 2026-06-04, so it's back in the request.
+// NOTE: family:library:view is requested but Yoto is NOT yet granting it for
+// this unverified app — the issued token returns scope "openid profile" only,
+// so the card-library API (/card/family/library) 403s until family:library:view
+// is approved/verified on Yoto's side.
+const SCOPES = 'family:library:view offline_access openid profile';
 
 function _isConfigured() { return !!(CLIENT_ID && CLIENT_ID.length > 5); }
 
