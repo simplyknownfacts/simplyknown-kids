@@ -745,7 +745,7 @@
       // Default panel: Activities if kids exist, else Children (so an empty
       // app lands the parent straight on "Add child").
       const startKey = getProfiles().length ? (_activePanel || 'activities') : 'children';
-      showPanel(startKey);
+      showPanel(startKey, false);   // start with the accordion collapsed on narrow screens
       if (new URLSearchParams(window.location.search).get('action') === 'add') {
         showPanel('children');
         setTimeout(() => showAddForm(), 100);
@@ -857,13 +857,15 @@
 
     // Show one panel, hide the rest (wide screens). On narrow screens the panels
     // are an accordion (CSS), so showPanel also toggles the open state there.
-    function showPanel(key) {
+    function showPanel(key, openAcc = true) {
       _activePanel = key;
       const isNarrow = window.matchMedia('(max-width: 819px)').matches;
       document.querySelectorAll('.settings-panel').forEach(sec => {
         const on = sec.dataset.key === key;
         sec.classList.toggle('active', on);
-        if (isNarrow) sec.classList.toggle('acc-open', on);
+        // On narrow screens the panels are an accordion. Don't auto-expand on the
+        // initial load (openAcc=false) so settings open fully collapsed.
+        if (isNarrow) sec.classList.toggle('acc-open', on && openAcc);
       });
       document.querySelectorAll('.navitem').forEach(it => {
         it.classList.toggle('active', it.dataset.key === key);
