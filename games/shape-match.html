@@ -153,6 +153,60 @@
       const shuffledTargets = [...selected].sort(() => Math.random() - 0.5);
       const targetEls = {};
 
+      // Create + append the SOURCE shapes FIRST so .shapes-row has its real
+      // (possibly wrapped) height before we place the targets. Otherwise targets
+      // are positioned against an EMPTY row and the shapes then expand down into
+      // them and overlap — worst for older kids (up to 6 shapes) on a narrow
+      // phone. Shrink the source shapes on narrow viewports so the row wraps less
+      // and leaves room for the drop boxes.
+      const narrowVp = window.innerWidth < 480;
+      const srcSize = tier <= 4 ? (narrowVp ? 92 : 120) : (narrowVp ? 60 : 90);
+      selected.forEach(s => {
+        const svg = makeSVG(s, srcSize);
+        svg.classList.add('pulse');
+        svg.dataset.shape = s.name;
+        let dragging = false, startX, startY, origX, origY;
+        svg.addEventListener('pointerdown', e => {
+          svg.classList.remove('pulse');
+          dragging = true;
+          const r = svg.getBoundingClientRect();
+          startX = e.clientX; startY = e.clientY;
+          origX = r.left; origY = r.top;
+          svg.style.position = 'fixed';
+          svg.style.zIndex = 999;
+          svg.style.left = r.left + 'px'; svg.style.top = r.top + 'px';
+          svg.setPointerCapture(e.pointerId);
+        });
+        svg.addEventListener('pointermove', e => {
+          if (!dragging) return;
+          svg.style.left = (origX + e.clientX - startX) + 'px';
+          svg.style.top  = (origY + e.clientY - startY)  + 'px';
+        });
+        svg.addEventListener('pointerup', e => {
+          dragging = false;
+          const target = targetEls[s.name];
+          if (!target) return;
+          const tr = target.getBoundingClientRect();
+          if (e.clientX > tr.left && e.clientX < tr.right &&
+              e.clientY > tr.top  && e.clientY < tr.bottom) {
+            target.classList.add('matched');
+            svg.style.display = 'none';
+            playSuccess(); speak(s.name);
+            if (typeof haptic === 'function') haptic(25); // satisfying correct-match tick
+            if (window.vbProgress) vbProgress.record('shape-match');
+            matched++;
+            if (matched === count) {
+              if (count === 6 && window.vbProgress) vbProgress.mastery('shape-match.mastery');
+              setTimeout(nextRound, 1500);
+            }
+          } else {
+            playBoop();
+            svg.style.position = ''; svg.style.left = ''; svg.style.top = '';
+          }
+        });
+        shapesRow.appendChild(svg);
+      });
+
       // Safe play area = viewport rectangle minus reserved zones for chrome/UI.
       // Targets are position:fixed so they can't overflow document below the fold.
       const MARGIN = 16;
@@ -245,51 +299,8 @@
         targetEls[s.name] = div;
       });
 
-      selected.forEach(s => {
-        const svg = makeSVG(s, tier <= 4 ? 120 : 90);
-        svg.classList.add('pulse');
-        svg.dataset.shape = s.name;
-        let dragging = false, startX, startY, origX, origY;
-
-        svg.addEventListener('pointerdown', e => {
-          svg.classList.remove('pulse');
-          dragging = true;
-          const r = svg.getBoundingClientRect();
-          startX = e.clientX; startY = e.clientY;
-          origX = r.left; origY = r.top;
-          svg.style.position = 'fixed';
-          svg.style.zIndex = 999;
-          svg.style.left = r.left + 'px'; svg.style.top = r.top + 'px';
-          svg.setPointerCapture(e.pointerId);
-        });
-        svg.addEventListener('pointermove', e => {
-          if (!dragging) return;
-          svg.style.left = (origX + e.clientX - startX) + 'px';
-          svg.style.top  = (origY + e.clientY - startY)  + 'px';
-        });
-        svg.addEventListener('pointerup', e => {
-          dragging = false;
-          const target = targetEls[s.name];
-          const tr = target.getBoundingClientRect();
-          if (e.clientX > tr.left && e.clientX < tr.right &&
-              e.clientY > tr.top  && e.clientY < tr.bottom) {
-            target.classList.add('matched');
-            svg.style.display = 'none';
-            playSuccess(); speak(s.name);
-            if (typeof haptic === 'function') haptic(25); // satisfying correct-match tick
-            if (window.vbProgress) vbProgress.record('shape-match');
-            matched++;
-            if (matched === count) {
-              if (count === 6 && window.vbProgress) vbProgress.mastery('shape-match.mastery');
-              setTimeout(nextRound, 1500);
-            }
-          } else {
-            playBoop();
-            svg.style.position = ''; svg.style.left = ''; svg.style.top = '';
-          }
-        });
-        shapesRow.appendChild(svg);
-      });
+      // (source shapes are created above, before the targets, so .shapes-row has
+      // its real height when the target positions are computed)
     }
 
     nextRound();

@@ -46,7 +46,10 @@
   // ───── Launcher FAB — home + section hubs only (not activities/listen) ─
   function _onHub() {
     const p = location.pathname;
-    return /\/home\.html$/.test(p) || /\/(games|learning|art|videos)\/index\.html$/.test(p);
+    // Home is intentionally excluded: it already has a Listen section tile, so a
+    // launcher there is redundant and just crowds the busy bottom-right corner
+    // (exit + avatar pill). Section hubs have no Listen tile → launcher is useful.
+    return /\/(games|learning|art|videos)\/index\.html$/.test(p);
   }
   function _renderLauncher() {
     if (document.getElementById('yotoLaunch')) return;

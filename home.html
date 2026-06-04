@@ -18,7 +18,7 @@
     .home-screen {
       width: 100vw; height: 100vh; height: 100dvh;
       display: flex; flex-direction: column;
-      padding: 40px 28px 120px;
+      padding: 40px 28px 150px;            /* extra bottom room so the ribbons shelf clears the fixed exit + avatar pill */
       align-items: center;
       overflow-y: auto;                    /* allow scroll if 5 portals show on short viewports */
       -webkit-overflow-scrolling: touch;
@@ -212,7 +212,7 @@
       </div>
     </div>
 
-    <div id="vbShelfMount" style="width:100%;max-width:980px;margin:34px auto 0;"></div>
+    <div id="vbShelfMount" style="width:100%;max-width:980px;margin:22px auto 0;"></div>
   </div>
 
   <button id="exitBtn" onclick="exitApp()" aria-label="Exit app"
