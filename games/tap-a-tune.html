@@ -15,7 +15,7 @@
             min-height: 22px; margin-bottom: 8px; transition: opacity .3s; }
     #pads { flex: 1; display: flex; gap: 8px; }
     .pad {
-      flex: 1; border: none; border-radius: 16px; cursor: pointer; position: relative;
+      flex: 1; border: none; border-radius: 16px; cursor: pointer; position: relative; touch-action: none;
       box-shadow: inset 0 -10px 24px rgba(0,0,0,0.28), inset 0 6px 14px rgba(255,255,255,0.35), 0 6px 16px rgba(0,0,0,0.3);
       transition: transform .07s ease, filter .12s ease; overflow: hidden;
       display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16px;
@@ -153,23 +153,42 @@
       } else { hintEl.textContent = canSong ? 'Tap the keys! 🎹' : ''; }
     }
 
-    pads.forEach((p, i) => {
-      p.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        if (song) {
-          if (i === song.seq[pos]) {
-            hitPad(i); pos++;
-            if (pos >= song.seq.length) setTimeout(() => endSong(true), 350);
-            else showNext();
-          } else {
-            p.classList.add('wrong'); setTimeout(() => p.classList.remove('wrong'), 300);
-            if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
-          }
-        } else {
-          hitPad(i);
-        }
-      });
+    // Pointer handling: tap a key, OR — in free play — slide your finger across
+    // the keys to play them in order like a real piano (glissando), no lifting.
+    let dragging = false, lastI = -1;
+    function padIndexAt(x, y) {
+      const el = document.elementFromPoint(x, y);
+      const pad = el && el.closest ? el.closest('.pad') : null;
+      return pad ? pads.indexOf(pad) : -1;
+    }
+    function songTap(i) {
+      if (i === song.seq[pos]) {
+        hitPad(i); pos++;
+        if (pos >= song.seq.length) setTimeout(() => endSong(true), 350);
+        else showNext();
+      } else {
+        const p = pads[i];
+        p.classList.add('wrong'); setTimeout(() => p.classList.remove('wrong'), 300);
+        if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
+      }
+    }
+    padsEl.addEventListener('pointerdown', (e) => {
+      const i = padIndexAt(e.clientX, e.clientY);
+      if (i < 0) return;
+      e.preventDefault();
+      // drop implicit pointer-capture so moves retarget to whichever key the finger is over
+      try { if (e.pointerId != null) e.target.releasePointerCapture(e.pointerId); } catch (_) {}
+      if (song) { songTap(i); return; }   // guided song mode stays tap-to-follow
+      dragging = true; lastI = i; hitPad(i);
     });
+    padsEl.addEventListener('pointermove', (e) => {
+      if (!dragging || song) return;
+      const i = padIndexAt(e.clientX, e.clientY);
+      if (i >= 0 && i !== lastI) { lastI = i; hitPad(i); }   // play only when the finger enters a NEW key
+    });
+    const endDrag = () => { dragging = false; lastI = -1; };
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
 
     if (canSong) {
       songBtn.style.display = 'block';

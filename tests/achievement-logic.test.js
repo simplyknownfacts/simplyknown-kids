@@ -24,25 +24,27 @@ test('firstPlay unlocks once and adds xp', () => {
   assert.strictEqual(again.state.xp, 1);
 });
 test('record crosses milestone tiers + fires the repeatable', () => {
-  const { state, unlocked } = logic.record(fresh(), 'tap-pop', 250, defs);
+  const every = defs.byId('tap-pop.repeat').every;   // per-speed (300 for fast tap games)
+  const { state, unlocked } = logic.record(fresh(), 'tap-pop', every, defs);
   const mids = unlocked.filter(d => d.type === 'milestone').map(d => d.id).sort();
   assert.deepStrictEqual(mids, ['tap-pop.milestone.bronze', 'tap-pop.milestone.silver']);
   const rep = unlocked.find(d => d.type === 'repeat');
-  assert.ok(rep && rep.count === 10);           // 250 / 25 = 10 stars
-  assert.strictEqual(state.counters['tap-pop'], 250);
-  assert.strictEqual(state.repeats['tap-pop'], 10);
+  assert.ok(rep && rep.count === 1);            // floor(every / every) = 1 star
+  assert.strictEqual(state.counters['tap-pop'], every);
+  assert.strictEqual(state.repeats['tap-pop'], 1);
 });
 test('record does not re-unlock already-earned tiers', () => {
-  let s = logic.record(fresh(), 'tap-pop', 60, defs).state;   // bronze+silver+2 stars
+  let s = logic.record(fresh(), 'tap-pop', 60, defs).state;   // bronze only (silver=250 not yet reached)
   const r2 = logic.record(s, 'tap-pop', 1, defs);             // 61: nothing new
   assert.strictEqual(r2.unlocked.length, 0);
   assert.strictEqual(r2.state.counters['tap-pop'], 61);
 });
 test('repeatable star ribbon re-fires every N and tracks the count', () => {
-  let r = logic.record(fresh(), 'tap-pop', 25, defs);
+  const every = defs.byId('tap-pop.repeat').every;
+  let r = logic.record(fresh(), 'tap-pop', every, defs);
   assert.ok(r.unlocked.some(d => d.type === 'repeat' && d.count === 1));
   assert.strictEqual(r.state.repeats['tap-pop'], 1);
-  r = logic.record(r.state, 'tap-pop', 25, defs);   // total 50
+  r = logic.record(r.state, 'tap-pop', every, defs);   // total 2×every
   assert.ok(r.unlocked.some(d => d.type === 'repeat' && d.count === 2));
   assert.strictEqual(r.state.repeats['tap-pop'], 2);
 });
@@ -75,10 +77,11 @@ test('3-day streak unlocks the streak ribbon', () => {
 });
 test('rank flips at threshold and awards rank ribbon once', () => {
   let s = fresh();
-  s = logic.firstPlay(s, 'tap-pop', defs).state;
-  s = logic.record(s, 'tap-pop', 300, defs).state;   // 1 + (1+2+3+5) + 12 stars = 24 xp
+  s = logic.firstPlay(s, 'tap-pop', defs).state;     // +1 xp
+  // 3000 successes: milestones bronze+silver+gold+sapphire (1+2+3+5=11) + floor(3000/300)=10 stars
+  s = logic.record(s, 'tap-pop', 3000, defs).state;  // 1 + 11 + 10 = 22 xp
   assert.ok(s.xp >= 15);
-  assert.strictEqual(s.rank, 'explorer');
+  assert.strictEqual(s.rank, 'explorer');            // explorer=15, star=40 → 22 lands on explorer
   assert.ok(Object.keys(s.unlocked).includes('rank.explorer'));
 });
 test('rankForXp picks the highest threshold not exceeding xp', () => {

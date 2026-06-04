@@ -50,8 +50,18 @@
     { tier:'diamond',  threshold:10000, xp:10, label:'Diamond' }
   ];
   // A repeatable "star" ribbon, awarded once per this many successes per activity,
-  // shown with a ×N count badge. Tunable.
-  var REPEAT_EVERY = 25;
+  // shown with a ×N count badge. Per-SPEED so fast tap/drag games don't spam it:
+  // at the old flat 25, rapid tapping banked ★ ribbons and the celebrate queue
+  // drained them ~every 2s. Fast = the 5 toddler games + 4 art canvases (a success
+  // = one touch); slow = deliberate correct-answer activities (quizzes, shape-match).
+  // Tunable.
+  var REPEAT_FAST = 300;
+  var REPEAT_SLOW = 50;
+  var SLOW_ACTIVITIES = {
+    'shape-match':1, 'hello-colors':1, 'animal-sounds':1, 'count-along':1, 'abcs':1,
+    'days':1, 'math':1, 'spelling':1, 'money':1, 'body-parts':1
+  };
+  function repeatEveryFor(id) { return SLOW_ACTIVITIES[id] ? REPEAT_SLOW : REPEAT_FAST; }
 
   var STREAKS = [
     { id:'streak.3', type:'streak', title:'3-Day Streak', hint:'Play 3 days in a row', icon:'🔥', xp:3, days:3 },
@@ -83,10 +93,11 @@
         icon: a.icon, xp: m.xp
       });
     });
+    var rEvery = repeatEveryFor(a.id);
     VB_ACHIEVEMENTS.push({
       id: a.id + '.repeat', activity: a.id, section: a.section, type:'repeat',
-      counter: a.id, every: REPEAT_EVERY,
-      title: a.name + ' Star', hint: 'Earn 1 every ' + REPEAT_EVERY + ' ' + a.noun,
+      counter: a.id, every: rEvery,
+      title: a.name + ' Star', hint: 'Earn 1 every ' + rEvery + ' ' + a.noun,
       icon: a.icon, xp: 1
     });
     if (a.mastery) {
