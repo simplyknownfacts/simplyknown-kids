@@ -143,10 +143,34 @@ function playSuccess() {
 function playChime() { playTone(880, 0.4, 0.2); }
 function playBoop()  { playTone(330, 0.1, 0.2, 'square'); }
 
+// When a phrase has no recorded clip we fall back to the browser's speech
+// synthesis. Prefer a female English voice so the fallback matches the app's
+// adult-female default instead of whatever (often male/robotic) voice the
+// device would pick by default.
+let _ttsVoice = null, _ttsVoicePicked = false;
+function _pickFemaleVoice() {
+  if (_ttsVoicePicked) return _ttsVoice;
+  if (!window.speechSynthesis) return null;
+  const vs = window.speechSynthesis.getVoices() || [];
+  if (!vs.length) return null; // voices load async — retry on the next call
+  _ttsVoicePicked = true;
+  const en = vs.filter(v => /^en[-_]?/i.test(v.lang));
+  const pool = en.length ? en : vs;
+  const female = /(female|woman|samantha|karen|moira|tessa|victoria|susan|fiona|serena|allison|\bava\b|joanna|salli|kendra|zira|hazel|google uk english female)/i;
+  _ttsVoice = pool.find(v => female.test(v.name)) || null;
+  return _ttsVoice;
+}
+if (typeof window !== 'undefined' && window.speechSynthesis) {
+  try { window.speechSynthesis.getVoices(); } catch (e) {}
+  window.speechSynthesis.onvoiceschanged = () => { _ttsVoicePicked = false; _pickFemaleVoice(); };
+}
+
 function _browserSpeak(text, rate = 0.85, pitch = 1.2) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
+  const fv = _pickFemaleVoice();
+  if (fv) u.voice = fv;
   u.rate = rate; u.pitch = pitch;
   window.speechSynthesis.speak(u);
 }
@@ -241,7 +265,7 @@ function _voiceSpeak(text, voice) {
 
 function _getActiveVoice() {
   const p = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
-  return (p && p.voice) || 'girl'; // default to ElevenLabs Sarah, not robotic browser TTS
+  return (p && p.voice) || 'woman'; // default to adult female (Rachel) when none selected, not robotic browser TTS
 }
 
 function speak(text, rate = 0.85, pitch = 1.2) {

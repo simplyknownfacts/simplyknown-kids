@@ -1452,7 +1452,7 @@
         section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
         return;
       }
-      const current = p.voice || 'girl';
+      const current = p.voice || 'woman';
       const cards = VOICES.map(v => `
         <div class="vcard${v.id === current ? ' sel' : ''}${v.full ? ' full' : ''}" data-voice="${v.id}">
           <div class="play">${v.icon}</div>
