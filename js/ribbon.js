@@ -81,10 +81,14 @@
       sc.style.setProperty('--d', (3.0 + (rnd % 18) / 10).toFixed(2) + 's');
       for (var k = 0; k < stars; k++) {
         var si = document.createElement('img');
-        si.src = b + 'assets/hats/star.png'; si.alt = '';
+        // Hat/topper PNGs are optional — degrade gracefully if missing (attach
+        // onerror BEFORE src so a cached 404 still triggers the hide).
+        si.onerror = function () { this.style.display = 'none'; };
+        si.alt = '';
         var sw = (stars === 3 && k === 1) ? size * 0.34 : size * 0.26;
         si.style.width = Math.round(sw) + 'px';
         if (stars === 3 && k === 1) si.className = 'mid';
+        si.src = b + 'assets/hats/star.png';
         sc.appendChild(si);
       }
       fl.appendChild(sc);
@@ -93,11 +97,15 @@
       var ha = document.createElement('span');
       ha.className = 'vb-rib-hat';
       var hi = document.createElement('img');
-      hi.src = b + 'assets/hats/' + hat + '.png'; hi.alt = '';
+      // Hat PNGs are optional — degrade gracefully (hide) if the asset is missing.
+      // Attach onerror BEFORE setting src so a cached 404 still triggers the hide.
+      hi.onerror = function () { this.style.display = 'none'; };
+      hi.alt = '';
       hi.style.setProperty('--hw', Math.round(size * (HATW[hat] || 0.62)) + 'px');
       hi.style.setProperty('--anim', ['hatSpin','hatBounce','hatWobble','hatPop'][rnd % 4]);
       hi.style.setProperty('--hd', (2.8 + (rnd % 26) / 10).toFixed(2) + 's');
       hi.style.setProperty('--hdl', (-((rnd % 20) / 10)).toFixed(2) + 's');
+      hi.src = b + 'assets/hats/' + hat + '.png';
       ha.appendChild(hi);
       fl.appendChild(ha);
     }

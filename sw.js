@@ -1,9 +1,10 @@
-const CACHE = 'vb-v78';  /* bumped: modern flat icon Back/Home buttons (icon-only), fixed broken+tiny settings back button — invalidates v77 */
+const CACHE = 'vb-v79';  /* bumped: restored achievements/ribbons system (recovered from deleted branch) — engine + shelf + gallery wired into all activities — invalidates v78 */
 const ASSETS = [
-  './', './index.html', './home.html',
-  './css/style.css',
+  './', './index.html', './home.html', './achievements.html',
+  './css/style.css', './css/achievements.css',
   './js/atmosphere.js',
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',
+  './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',
   './js/yoto.js', './js/yoto-config.js', './js/yoto-player.js',
   './games/index.html', './games/tap-pop.html', './games/shape-match.html',
   './learning/index.html', './learning/hello-colors.html',

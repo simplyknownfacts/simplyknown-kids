@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Peek-a-Boo</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
   <style>
     body { background: linear-gradient(160deg, #1a1a2e, #2d1b69); }
     .stage { display:flex; align-items:center; justify-content:center; gap:32px; flex-wrap:wrap; }
@@ -47,12 +48,19 @@
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
   <script src="../js/app.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/celebrate.js"></script>
+  <script src="../js/progress.js"></script>
+  <script>window.VB_ASSET_BASE='../';</script>
   <script>
     (function() {
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'peek-a-boo');
     renderBackBtn('index.html');
+    if (window.vbProgress) { vbProgress.firstPlay('peek-a-boo'); vbProgress.touchStreak(); }
 
     let roundTimer = null;
     window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
@@ -78,6 +86,7 @@
       const curtain = wrap.querySelector('.curtain');
       curtain.classList.add('open');
       playSuccess();
+      if (window.vbProgress) vbProgress.record('peek-a-boo');
       setTimeout(onDone, 1800);
     }
 

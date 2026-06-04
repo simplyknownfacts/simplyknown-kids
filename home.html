@@ -13,6 +13,7 @@
   <link rel="manifest" href="manifest.json">
   <title>SimplyKnown Kids — Home</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/achievements.css">
   <style>
     .home-screen {
       width: 100vw; height: 100vh; height: 100dvh;
@@ -210,6 +211,8 @@
         <div class="label">Listen</div>
       </div>
     </div>
+
+    <div id="vbShelfMount" style="width:100%;max-width:980px;margin:34px auto 0;"></div>
   </div>
 
   <button id="exitBtn" onclick="exitApp()" aria-label="Exit app"
@@ -229,6 +232,11 @@
   <script src="js/yoto-config.js"></script>
   <script src="js/yoto.js"></script>
   <script src="js/yoto-player.js"></script>
+  <script src="js/achievement-defs.js"></script>
+  <script src="js/achievement-logic.js"></script>
+  <script src="js/ribbon.js"></script>
+  <script src="js/progress.js"></script>
+  <script src="js/shelf.js"></script>
   <script>
     function go(section) { playChime(); goTo(section); }
 
@@ -339,6 +347,11 @@
         }, 600);
       } else if (hasGreetingClip) {
         setTimeout(() => speak(greetText), 600);
+      }
+
+      // Floating ribbon shelf — all earned ribbons (rotating selection), tap = gallery
+      if (window.vbShelf) {
+        vbShelf.mount(document.getElementById('vbShelfMount'), { section: 'all', title: '⭐ My Ribbons' });
       }
     } else {
       goProfiles();

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Body Parts</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
   <style>
     body { background: linear-gradient(160deg, #b89b80, #6e533c); }
     .screen { justify-content: flex-start !important;
@@ -62,6 +63,12 @@
   <script src="../js/app.js"></script>
   <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/celebrate.js"></script>
+  <script src="../js/progress.js"></script>
+  <script>window.VB_ASSET_BASE='../';</script>
   <script>
     (function() {
     const profile = getActiveProfile();
@@ -70,6 +77,7 @@
     if (tier <= 3) document.body.classList.add('young-icons');
     renderBackBtn('index.html');
     gameSettings.attach('body-parts');
+    if (window.vbProgress) { vbProgress.firstPlay('body-parts'); vbProgress.touchStreak(); }
 
     // A real teaching figure (a front-facing cartoon child). Invisible round
     // tap-zones overlay each body part; a correct tap glows the zone. Positions
@@ -133,6 +141,13 @@
           el.classList.add('flash');
           if (typeof haptic === 'function') haptic(25);
           playSuccess();
+          if (window.vbProgress) {
+            vbProgress.record('body-parts');
+            // "Name an extra part" — any part that only exists in all-parts mode
+            if (allOn && (target === 'arm' || target === 'leg' || target === 'hair' || target === 'belly')) {
+              vbProgress.mastery('body-parts.mastery');
+            }
+          }
           speak(`Yes! That's the ${PRONOUN(target)}.`);
           roundTimer = setTimeout(nextRound, 1800);
         } else {

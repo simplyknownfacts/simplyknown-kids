@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Math Mountain</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
   <style>
     body { background: linear-gradient(160deg, #2d8659, #1a5a3a); }
     .screen { justify-content: flex-start !important;
@@ -65,6 +66,12 @@
   <script src="../js/app.js"></script>
   <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/celebrate.js"></script>
+  <script src="../js/progress.js"></script>
+  <script>window.VB_ASSET_BASE='../';</script>
   <script>
     (function() {
     const profile = getActiveProfile();
@@ -73,6 +80,7 @@
     if (tier <= 4) document.body.classList.add('low-tier');
     renderBackBtn('index.html');
     gameSettings.attach('math');
+    if (window.vbProgress) { vbProgress.firstPlay('math'); vbProgress.touchStreak(); }
 
     // Op availability: auto-on at age-recommended tier OR parent-opted-in via toggle
     const subOn = tier >= 6 || getProfileFeature(profile, 'math', 'subtract');
@@ -165,6 +173,7 @@
           if (n === ans) {
             box.textContent = ans; box.classList.add('filled');
             playSuccess();
+            if (window.vbProgress) { vbProgress.record('math'); if (op === '−') vbProgress.mastery('math.mastery'); }
             speak(`${a} ${opWord} ${b} equals ${ans}!`);
             roundTimer = setTimeout(nextRound, 2200);
           } else {

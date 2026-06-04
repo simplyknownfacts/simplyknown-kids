@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>ABCs</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
   <style>
     body { background: linear-gradient(160deg, #6a4c93, #3a2c5e); }
     .screen {
@@ -79,6 +80,12 @@
   <script src="../js/app.js"></script>
   <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/celebrate.js"></script>
+  <script src="../js/progress.js"></script>
+  <script>window.VB_ASSET_BASE='../';</script>
   <script>
     (function() {
     const profile = getActiveProfile();
@@ -87,6 +94,7 @@
     if (tier <= 3) document.body.classList.add('young-icons');
     renderBackBtn('index.html');
     gameSettings.attach('abcs');
+    if (window.vbProgress) { vbProgress.firstPlay('abcs'); vbProgress.touchStreak(); }
 
     const wordHintsOn = tier >= 3 || getProfileFeature(profile, 'abcs', 'wordHints');
     const spellOn     = tier >= 7 || getProfileFeature(profile, 'abcs', 'spellMode');
@@ -165,6 +173,7 @@
               speak(L);
               if (slots.every(s => s.textContent)) {
                 playSuccess();
+                if (window.vbProgress) { vbProgress.record('abcs'); vbProgress.mastery('abcs.mastery'); }
                 setTimeout(() => speak(word.w), 400);
                 setTimeout(nextRound, 2400);
               }
@@ -214,7 +223,7 @@
       prev.addEventListener('pointerdown', () => { idx = (idx + 25) % 26; nextRound(); });
       const next = document.createElement('button');
       next.className = 'pager-btn'; next.textContent = 'Next →';
-      next.addEventListener('pointerdown', () => { idx = (idx + 1) % 26; nextRound(); });
+      next.addEventListener('pointerdown', () => { if (window.vbProgress) vbProgress.record('abcs'); idx = (idx + 1) % 26; nextRound(); });
       nav.appendChild(prev); nav.appendChild(next);
       bodyEl.appendChild(nav);
 
