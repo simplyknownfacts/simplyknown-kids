@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Games</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
   <style>
     .hub-screen {
       min-height: 100vh;
@@ -33,6 +34,8 @@
       No games are turned on for this child yet.<br>
       A grown-up can enable them in ⚙️ Parent Settings → Activities.
     </div>
+
+    <div id="vbShelfMount" style="width:100%;max-width:760px;margin:8px auto 30px;"></div>
   </div>
 
   <script src="../js/atmosphere.js"></script>
@@ -42,7 +45,13 @@
   <script src="../js/app.js"></script>
   <script src="../js/yoto-player.js"></script>
   <script src="../js/mascot.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/progress.js"></script>
+  <script src="../js/shelf.js"></script>
   <script>
+    window.VB_ASSET_BASE = '../';
     function go(page) { playChime(); goTo(page); }
     renderBackBtn('../home.html');
     const profile = getActiveProfile();
@@ -64,6 +73,7 @@
       });
     }
     if (window.mascot) setTimeout(() => mascot.play('games_intro'), 400);
+    if (window.vbShelf) vbShelf.mount(document.getElementById('vbShelfMount'), { section: 'games', title: '🎮 Games Ribbons' });
   </script>
 </body>
 </html>

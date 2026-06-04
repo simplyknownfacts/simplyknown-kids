@@ -30,6 +30,10 @@ secrets/
 # dev tooling for the verification sweep (vanilla-JS repo stays dependency-free)
 package.json
 package-lock.json
-# sweep screenshots are regenerable artifacts — keep the script + report, drop the bulk
+# sweep screenshots + report are regenerable artifacts — keep run-sweep.mjs, drop output
 tests/sweep/**/*.png
+tests/sweep/report.json
+tests/sweep/report.md
+# scratch dev/verification scripts (underscore-prefixed) — kept local, not product
+scripts/_*.mjs
 # mascots/ committed for preview — will move to R2 once Worker is built

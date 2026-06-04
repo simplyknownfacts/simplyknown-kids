@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Spelling Bee</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
   <style>
     body { background: linear-gradient(160deg, #b8860b, #6e530a); }
     .screen {
@@ -67,6 +68,12 @@
   <script src="../js/app.js"></script>
   <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/celebrate.js"></script>
+  <script src="../js/progress.js"></script>
+  <script>window.VB_ASSET_BASE='../';</script>
   <script>
     (function() {
     const profile = getActiveProfile();
@@ -74,6 +81,7 @@
     const tier = getActivityTier(profile, 'spelling');
     renderBackBtn('index.html');
     gameSettings.attach('spelling');
+    if (window.vbProgress) { vbProgress.firstPlay('spelling'); vbProgress.touchStreak(); }
 
     const spellOn = tier >= 6 || getProfileFeature(profile, 'spelling', 'spellMode');
 
@@ -116,6 +124,7 @@
             if (w === target.w) {
               card.classList.add('matched');
               playSuccess();
+              if (window.vbProgress) vbProgress.record('spelling');
               speak(target.w);
               roundTimer = setTimeout(nextRound, 1800);
             } else {
@@ -162,6 +171,7 @@
               speak(L);
               if (slots.every(s => s.textContent)) {
                 playSuccess();
+                if (window.vbProgress) { vbProgress.record('spelling'); vbProgress.mastery('spelling.mastery'); }
                 setTimeout(() => speak(target.w), 400);
                 roundTimer = setTimeout(nextRound, 2400);
               }

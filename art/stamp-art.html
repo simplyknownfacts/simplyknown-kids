@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Stamp Art</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
   <style>
     #canvas { position:fixed; inset:0; touch-action:none; }
     #stampbar {
@@ -90,6 +91,12 @@
   <script src="../js/app.js"></script>
   <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/celebrate.js"></script>
+  <script src="../js/progress.js"></script>
+  <script>window.VB_ASSET_BASE='../';</script>
   <script>
     (function() {
     const profile = getActiveProfile();
@@ -97,6 +104,7 @@
     const tier = getActivityTier(profile, 'stamp-art');
     renderBackBtn('index.html');
     gameSettings.attach('stamp-art', { container: '#stampbar' });
+    if (window.vbProgress) { vbProgress.firstPlay('stamp-art'); vbProgress.touchStreak(); }
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -193,6 +201,7 @@
       clearInterval(autoInt);
       const stamp = showPalette ? activeStamp : theme.stamps[Math.floor(Math.random() * theme.stamps.length)];
       placeStamp(e.clientX, e.clientY, stamp, tier <= 4 ? 80 : 60);
+      if (window.vbProgress) vbProgress.record('stamp-art');
     });
     })();
   </script>

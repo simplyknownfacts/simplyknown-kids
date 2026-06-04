@@ -131,10 +131,11 @@ function seedScript(profile) {
   `;
 }
 
-// classify a failed/console message as asset-404 noise (mascot/audio/video)
+// classify a failed/console message as asset-404 noise (mascot/audio/video, and
+// the optional ribbon hat/topper PNGs which degrade gracefully when absent)
 function isAssetNoise(url) {
   if (!url) return false;
-  return /\/(mascots|audio|voices|videos)\//i.test(url) ||
+  return /\/(mascots|audio|voices|videos|hats)\//i.test(url) ||
          /\.(mp4|webm|mp3|wav|ogg|m4a)(\?|$)/i.test(url);
 }
 
@@ -149,8 +150,11 @@ async function captureCell(context, { label, urlPath, profile, pngPath, postLoad
   page.on('console', (msg) => {
     if (msg.type() === 'error') {
       const t = msg.text();
-      // network 404s surface here too; route them to noise if asset
-      if (isAssetNoise(t)) assetNoise.push(t);
+      // network 404s surface here too; route them to noise if asset. The text of
+      // a resource-load error doesn't include the URL, so also check the message
+      // location (where the asset 404 actually originated).
+      const locUrl = (msg.location && msg.location().url) || '';
+      if (isAssetNoise(t) || isAssetNoise(locUrl)) assetNoise.push(t);
       else consoleErrors.push(t);
     }
   });

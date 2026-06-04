@@ -1,15 +1,20 @@
-const CACHE = 'vb-v78';  /* bumped: modern flat icon Back/Home buttons (icon-only), fixed broken+tiny settings back button — invalidates v77 */
+const CACHE = 'vb-v80';  /* bumped: achievements/ribbons restored + wired into all activities; body-parts now rotates 12 real diverse kid figures (random per open, switch every 5) — invalidates v78 */
 const ASSETS = [
-  './', './index.html', './home.html',
-  './css/style.css',
+  './', './index.html', './home.html', './achievements.html',
+  './css/style.css', './css/achievements.css',
   './js/atmosphere.js',
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',
+  './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',
   './js/yoto.js', './js/yoto-config.js', './js/yoto-player.js',
   './games/index.html', './games/tap-pop.html', './games/shape-match.html',
   './learning/index.html', './learning/hello-colors.html',
   './learning/animal-sounds.html', './learning/count-along.html',
   './learning/abcs.html', './learning/days.html', './learning/math.html',
   './learning/spelling.html', './learning/money.html', './learning/body-parts.html',
+  './learning/img/bodies/body-01.png', './learning/img/bodies/body-02.png', './learning/img/bodies/body-03.png',
+  './learning/img/bodies/body-04.png', './learning/img/bodies/body-05.png', './learning/img/bodies/body-06.png',
+  './learning/img/bodies/body-07.png', './learning/img/bodies/body-08.png', './learning/img/bodies/body-09.png',
+  './learning/img/bodies/body-10.png', './learning/img/bodies/body-11.png', './learning/img/bodies/body-12.png',
   './art/index.html', './art/color-splash.html',
   './art/finger-paint.html', './art/stamp-art.html', './art/color-in.html',
   './videos/index.html',

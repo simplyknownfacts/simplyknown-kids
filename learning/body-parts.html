@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Body Parts</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
   <style>
     body { background: linear-gradient(160deg, #b89b80, #6e533c); }
     .screen { justify-content: flex-start !important;
@@ -62,6 +63,12 @@
   <script src="../js/app.js"></script>
   <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/celebrate.js"></script>
+  <script src="../js/progress.js"></script>
+  <script>window.VB_ASSET_BASE='../';</script>
   <script>
     (function() {
     const profile = getActiveProfile();
@@ -70,31 +77,75 @@
     if (tier <= 3) document.body.classList.add('young-icons');
     renderBackBtn('index.html');
     gameSettings.attach('body-parts');
+    if (window.vbProgress) { vbProgress.firstPlay('body-parts'); vbProgress.touchStreak(); }
 
-    // A real teaching figure (a front-facing cartoon child). Invisible round
-    // tap-zones overlay each body part; a correct tap glows the zone. Positions
-    // are % of the figure box (which matches the image's 3:4 aspect ratio).
+    // A rotating cast of real, diverse kid figures. Each kid is a chroma-keyed
+    // PNG (transparent) framed head-at-top / feet-at-bottom in a 3:4 box, so the
+    // STANDING kids share one tuned tap-zone template. The wheelchair child is
+    // seated and gets its own zones. Invisible round tap-zones overlay each body
+    // part; a correct tap glows the zone. Positions are % of the figure box.
     const figure = document.getElementById('figure');
-    const ZONES = [
-      { n:'hair',  x:50, y:13, r:22 },
-      { n:'eye',   x:45, y:23, r:10 }, { n:'eye',  x:55, y:23, r:10 },
-      { n:'ear',   x:37, y:24, r:9 },  { n:'ear',  x:63, y:24, r:9 },
-      { n:'nose',  x:50, y:26, r:8 },
-      { n:'mouth', x:50, y:30, r:11 },
-      { n:'arm',   x:28, y:36, r:12 }, { n:'arm',  x:72, y:36, r:12 },
-      { n:'hand',  x:13, y:33, r:13 }, { n:'hand', x:87, y:33, r:13 },
-      { n:'belly', x:50, y:50, r:16 },
-      { n:'leg',   x:44, y:76, r:12 }, { n:'leg',  x:56, y:76, r:12 },
-      { n:'foot',  x:45, y:93, r:11 }, { n:'foot', x:55, y:93, r:11 },
+
+    // Shared template for the 11 standing kids (consistent pose & framing).
+    const STANDING_ZONES = [
+      { n:'hair',  x:50, y:10, r:26 },
+      { n:'eye',   x:44, y:22, r:8 },  { n:'eye',  x:56, y:22, r:8 },
+      { n:'ear',   x:37, y:23, r:7 },  { n:'ear',  x:63, y:23, r:7 },
+      { n:'nose',  x:50, y:25, r:7 },
+      { n:'mouth', x:50, y:29, r:9 },
+      { n:'arm',   x:31, y:48, r:11 }, { n:'arm',  x:69, y:48, r:11 },
+      { n:'hand',  x:25, y:62, r:11 }, { n:'hand', x:75, y:62, r:11 },
+      { n:'belly', x:50, y:50, r:15 },
+      { n:'leg',   x:44, y:78, r:12 }, { n:'leg',  x:56, y:78, r:12 },
+      { n:'foot',  x:45, y:95, r:10 }, { n:'foot', x:55, y:95, r:10 },
     ];
-    figure.innerHTML = '<img class="body-img" src="img/body-kid.png" alt="A cartoon child standing with arms out">';
-    ZONES.forEach(z => {
-      const b = document.createElement('button');
-      b.className = 'hit'; b.dataset.name = z.n;
-      b.setAttribute('aria-label', z.n);
-      b.style.left = z.x + '%'; b.style.top = z.y + '%'; b.style.width = z.r + '%';
-      figure.appendChild(b);
-    });
+    // Wheelchair child (seated): head/eyes/nose/mouth near top but shifted left
+    // (the chair extends right); torso/belly seated; legs forward & lower; feet
+    // down near the footrest. Hands rest on the chair / lap.
+    const WHEELCHAIR_ZONES = [
+      { n:'hair',  x:41, y:13, r:21 },
+      { n:'eye',   x:37, y:23, r:8 },  { n:'eye',  x:48, y:23, r:8 },
+      { n:'ear',   x:31, y:24, r:7 },  { n:'ear',  x:53, y:24, r:7 },
+      { n:'nose',  x:42, y:26, r:7 },
+      { n:'mouth', x:42, y:30, r:9 },
+      { n:'arm',   x:30, y:46, r:11 }, { n:'arm',  x:57, y:45, r:11 },
+      { n:'hand',  x:31, y:57, r:11 }, { n:'hand', x:56, y:57, r:11 },
+      { n:'belly', x:43, y:50, r:14 },
+      { n:'leg',   x:48, y:67, r:12 }, { n:'leg',  x:58, y:70, r:12 },
+      { n:'foot',  x:54, y:86, r:11 }, { n:'foot', x:63, y:87, r:11 },
+    ];
+
+    const BODIES = [
+      { img:'img/bodies/body-01.png', zones: STANDING_ZONES },
+      { img:'img/bodies/body-02.png', zones: STANDING_ZONES },
+      { img:'img/bodies/body-03.png', zones: STANDING_ZONES },
+      { img:'img/bodies/body-04.png', zones: STANDING_ZONES },
+      { img:'img/bodies/body-05.png', zones: STANDING_ZONES },
+      { img:'img/bodies/body-06.png', zones: STANDING_ZONES },
+      { img:'img/bodies/body-07.png', zones: STANDING_ZONES },
+      { img:'img/bodies/body-08.png', zones: STANDING_ZONES },
+      { img:'img/bodies/body-09.png', zones: WHEELCHAIR_ZONES }, // wheelchair child
+      { img:'img/bodies/body-10.png', zones: STANDING_ZONES },
+      { img:'img/bodies/body-11.png', zones: STANDING_ZONES },
+      { img:'img/bodies/body-12.png', zones: STANDING_ZONES },
+    ];
+
+    let bodyIdx = Math.floor(Math.random() * BODIES.length);
+
+    // (Re)render the current body's <img> + rebuild its tap-zone buttons, and
+    // re-wire the tap handlers (zones change per body).
+    function renderBody() {
+      const body = BODIES[bodyIdx];
+      figure.innerHTML = '<img class="body-img" src="' + body.img + '" alt="A child standing">';
+      body.zones.forEach(z => {
+        const b = document.createElement('button');
+        b.className = 'hit'; b.dataset.name = z.n;
+        b.setAttribute('aria-label', z.n);
+        b.style.left = z.x + '%'; b.style.top = z.y + '%'; b.style.width = z.r + '%';
+        figure.appendChild(b);
+      });
+      wireZones();
+    }
 
     // What's available per tier. With the new tier scheme, tier 4 = Pre-K (3-4y).
     const TODDLER_PARTS = ['eye','nose','mouth','ear','hand','foot'];
@@ -109,6 +160,7 @@
     let target = null;
     let lastTarget = null;
     let roundTimer = null;
+    let correctCount = 0; // taps since last body switch — rotate every 5
     window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
 
     function nextRound() {
@@ -126,24 +178,50 @@
       });
     }
 
-    figure.querySelectorAll('.hit').forEach(el => {
-      el.addEventListener('pointerdown', () => {
-        const name = el.dataset.name;
-        if (name === target) {
-          el.classList.add('flash');
-          if (typeof haptic === 'function') haptic(25);
-          playSuccess();
-          speak(`Yes! That's the ${PRONOUN(target)}.`);
-          roundTimer = setTimeout(nextRound, 1800);
-        } else {
-          el.classList.add('wrong');
-          playBoop();
-          setTimeout(() => el.classList.remove('wrong'), 350);
-          if (tier <= 3) speak(`That's the ${PRONOUN(name)}.`);
-        }
+    // Wire tap handlers for the CURRENT body's zones (called on each renderBody).
+    function wireZones() {
+      figure.querySelectorAll('.hit').forEach(el => {
+        el.addEventListener('pointerdown', () => {
+          const name = el.dataset.name;
+          if (name === target) {
+            el.classList.add('flash');
+            if (typeof haptic === 'function') haptic(25);
+            playSuccess();
+            if (window.vbProgress) {
+              vbProgress.record('body-parts');
+              // "Name an extra part" — any part that only exists in all-parts mode
+              if (allOn && (target === 'arm' || target === 'leg' || target === 'hair' || target === 'belly')) {
+                vbProgress.mastery('body-parts.mastery');
+              }
+            }
+            speak(`Yes! That's the ${PRONOUN(target)}.`);
+            // Rotate to a different random body every 5 correct taps.
+            correctCount++;
+            const rotate = correctCount % 5 === 0;
+            roundTimer = setTimeout(() => {
+              if (rotate) switchBody();
+              nextRound();
+            }, 1800);
+          } else {
+            el.classList.add('wrong');
+            playBoop();
+            setTimeout(() => el.classList.remove('wrong'), 350);
+            if (tier <= 3) speak(`That's the ${PRONOUN(name)}.`);
+          }
+        });
       });
-    });
+    }
 
+    // Pick a DIFFERENT random body and re-render it.
+    function switchBody() {
+      if (BODIES.length < 2) return;
+      let next = bodyIdx;
+      while (next === bodyIdx) next = Math.floor(Math.random() * BODIES.length);
+      bodyIdx = next;
+      renderBody();
+    }
+
+    renderBody();
     nextRound();
     })();
   </script>
