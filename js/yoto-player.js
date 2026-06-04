@@ -27,6 +27,68 @@
     getState: loadState,
   };
 
+  // ───── Shared helpers ──────────────────────────────────────────────
+  function _activeId() {
+    try { return localStorage.getItem('vb_active_id') || '_none'; } catch (e) { return '_none'; }
+  }
+  // Connected = this profile has its OWN Yoto tokens (same per-profile key as
+  // js/yoto.js). Read straight from localStorage so hub pages don't need to load
+  // yoto.js just to decide whether to show the launcher.
+  function _yotoConnected() {
+    try { return !!localStorage.getItem('vb_yoto_tokens_' + _activeId()); } catch (e) { return false; }
+  }
+  function _listenUrl() {
+    const base = (typeof rootPath === 'function') ? rootPath()
+      : (/\/(games|learning|art|videos|parent)\//.test(location.pathname) ? '../' : './');
+    return base + 'listen/index.html';
+  }
+  function _openListen() {
+    if (typeof goTo === 'function') goTo(_listenUrl()); else location.href = _listenUrl();
+  }
+
+  // ───── Launcher FAB — home + section hubs only (not activities/listen) ─
+  function _onHub() {
+    const p = location.pathname;
+    return /\/home\.html$/.test(p) || /\/(games|learning|art|videos)\/index\.html$/.test(p);
+  }
+  function _renderLauncher() {
+    if (document.getElementById('yotoLaunch')) return;
+    if (!document.getElementById('yotoLaunchStyles')) {
+      const s = document.createElement('style');
+      s.id = 'yotoLaunchStyles';
+      s.textContent = `
+        #yotoLaunch {
+          position: fixed; z-index: 9000;
+          bottom: calc(16px + env(safe-area-inset-bottom));
+          right: calc(16px + env(safe-area-inset-right));
+          width: 62px; height: 62px; border-radius: 50%; border: none;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 30px; line-height: 1; cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          background: linear-gradient(180deg, color-mix(in srgb, var(--c-listen, #FF9F6B) 82%, #fff), var(--c-listen, #FF9F6B));
+          box-shadow: 0 8px 22px rgba(0,0,0,0.34), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 -4px 8px rgba(120,60,10,0.30);
+          animation: yotoLaunchPulse 2.6s ease-in-out infinite;
+        }
+        #yotoLaunch:active { transform: scale(0.92); animation: none; }
+        @keyframes yotoLaunchPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+        @media (prefers-reduced-motion: reduce) { #yotoLaunch { animation: none; } }
+      `;
+      document.head.appendChild(s);
+    }
+    const b = document.createElement('button');
+    b.id = 'yotoLaunch';
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Open Yoto cards');
+    b.textContent = '🎧';
+    b.addEventListener('pointerdown', function (e) { e.preventDefault(); _openListen(); });
+    document.body.appendChild(b);
+  }
+  function _initLauncher() {
+    if (_onHub() && _yotoConnected()) _renderLauncher();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _initLauncher);
+  else _initLauncher();
+
   // ───── Mini-player overlay (everywhere except the Listen page) ─────
   // On Listen page the full player UI is in charge — no mini.
   if (location.pathname.includes('/listen/')) return;
@@ -66,7 +128,13 @@
 
     const cover = el.querySelector('#ymCover');
     if (state.cover) cover.innerHTML = `<img src="${state.cover}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
-    el.querySelector('#ymTitle').textContent = state.title || 'Yoto';
+    const titleEl = el.querySelector('#ymTitle');
+    titleEl.textContent = state.title || 'Yoto';
+    // Tap the cover or title to open the full Listen player (switch cards / skip).
+    [cover, titleEl].forEach((t) => {
+      t.style.cursor = 'pointer';
+      t.addEventListener('pointerdown', _openListen);
+    });
 
     el.querySelector('#ymPP').addEventListener('pointerdown', () => {
       if (!_audio) return;
