@@ -97,7 +97,10 @@
       fab.style.bottom = 'calc(' + base + 'px + env(safe-area-inset-bottom))';
     }
     _lift();
-    setTimeout(_lift, 400);
+    // The home #avatarPill is built by the page script after load, so retry for
+    // a couple of seconds to catch it (idempotent), then stop.
+    var _tries = 0;
+    var _iv = setInterval(function () { _lift(); if (++_tries >= 12) clearInterval(_iv); }, 200);
     window.addEventListener('resize', _lift);
   }
   function _initLauncher() {
