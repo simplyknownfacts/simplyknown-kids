@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Tap-a-Tune</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #161235; touch-action: manipulation; }
+    #wrap { position: fixed; inset: 0; display: flex; flex-direction: column;
+            padding: calc(86px + env(safe-area-inset-top)) 10px 12px; box-sizing: border-box; }
+    #hint { text-align: center; font-family: var(--font-ui, sans-serif); font-weight: 800;
+            font-size: 16px; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            min-height: 22px; margin-bottom: 8px; transition: opacity .3s; }
+    #pads { flex: 1; display: flex; gap: 8px; }
+    .pad {
+      flex: 1; border: none; border-radius: 16px; cursor: pointer; position: relative;
+      box-shadow: inset 0 -10px 24px rgba(0,0,0,0.28), inset 0 6px 14px rgba(255,255,255,0.35), 0 6px 16px rgba(0,0,0,0.3);
+      transition: transform .07s ease, filter .12s ease; overflow: hidden;
+      display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16px;
+      font-family: var(--font-ui, sans-serif); font-weight: 900; font-size: 20px; color: rgba(255,255,255,0.92);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+    .pad.active { transform: scale(0.96); filter: brightness(1.45); }
+    .pad.next { animation: padGlow 0.9s ease-in-out infinite; }
+    @keyframes padGlow { 0%,100% { filter: brightness(1); transform: translateY(0); } 50% { filter: brightness(1.6); transform: translateY(-6px); } }
+    .pad.wrong { animation: padShake 0.3s; }
+    @keyframes padShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+    #songBtn {
+      margin: 12px auto 0; padding: 12px 22px; border-radius: 999px; border: none; cursor: pointer;
+      font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 16px; color: #fff;
+      background: linear-gradient(180deg, #FF8FA8, #FF6B8A); box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+    #songBtn:active { transform: translateY(1px); }
+    .note-pop { position: fixed; font-size: 30px; pointer-events: none; animation: noteRise 0.9s ease-out forwards; }
+    @keyframes noteRise { 0%{opacity:1;transform:translateY(0) scale(0.6)} 100%{opacity:0;transform:translateY(-90px) scale(1.3)} }
+    @media (prefers-reduced-motion: reduce) {
+      .pad.next, .pad.wrong { animation: none; } .note-pop { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <div id="hint"></div>
+    <div id="pads"></div>
+    <button id="songBtn" style="display:none">🎵 Play a song</button>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
+  <script src="../js/game-settings.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/celebrate.js"></script>
+  <script src="../js/progress.js"></script>
+  <script>window.VB_ASSET_BASE='../';</script>
+  <script>
+  (function () {
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); return; }
+    const tier = getActivityTier(profile, 'tap-a-tune');
+
+    renderBackBtn('index.html');
+    gameSettings.attach('tap-a-tune');
+    if (window.vbProgress) { vbProgress.firstPlay('tap-a-tune'); vbProgress.touchStreak(); }
+
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // pentatonic C major — every combination sounds pleasant, so free-play never sounds "wrong"
+    const NOTES = [
+      { name: 'C', f: 261.63, color: '#FF6B6B' },
+      { name: 'D', f: 293.66, color: '#FF9F43' },
+      { name: 'E', f: 329.63, color: '#FFE66D' },
+      { name: 'G', f: 392.00, color: '#4ECDC4' },
+      { name: 'A', f: 440.00, color: '#45B7D1' },
+      { name: 'C', f: 523.25, color: '#a86cdb' },
+    ];
+    const SONGS = [
+      { name: 'Twinkle Twinkle', seq: [0, 0, 3, 3, 4, 4, 3] },
+      { name: 'Mary Had a Little Lamb', seq: [2, 1, 0, 1, 2, 2, 2] },
+      { name: 'Row Your Boat', seq: [0, 0, 0, 1, 2] },
+    ];
+    const showLabels = tier >= 5;     // bigger kids see note names
+    const canSong = tier >= 3;        // toddlers+ get the guided song mode
+
+    // ── WebAudio synth (soft, kid-friendly) ──
+    let actx;
+    function note(freq) {
+      try {
+        actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+        if (actx.state === 'suspended') actx.resume();
+        const t = actx.currentTime;
+        const osc = actx.createOscillator(), gain = actx.createGain(), lp = actx.createBiquadFilter();
+        osc.type = 'triangle'; osc.frequency.value = freq;
+        lp.type = 'lowpass'; lp.frequency.value = 2400;
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.32, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+        osc.connect(lp); lp.connect(gain); gain.connect(actx.destination);
+        osc.start(t); osc.stop(t + 0.95);
+      } catch (e) {}
+    }
+
+    const padsEl = document.getElementById('pads');
+    const hintEl = document.getElementById('hint');
+    const songBtn = document.getElementById('songBtn');
+    const pads = NOTES.map((n, i) => {
+      const p = document.createElement('button');
+      p.className = 'pad'; p.dataset.i = i;
+      p.style.background = `linear-gradient(180deg, ${n.color}, color-mix(in srgb, ${n.color} 62%, #000))`;
+      if (showLabels) p.textContent = n.name;
+      padsEl.appendChild(p);
+      return p;
+    });
+
+    let song = null, pos = 0;
+
+    function notePop(padEl, emoji) {
+      if (reduce) return;
+      const r = padEl.getBoundingClientRect();
+      const s = document.createElement('div'); s.className = 'note-pop'; s.textContent = emoji;
+      s.style.left = (r.left + r.width / 2 - 15) + 'px'; s.style.top = (r.top + 20) + 'px';
+      document.body.appendChild(s); setTimeout(() => s.remove(), 900);
+    }
+
+    function hitPad(i) {
+      const p = pads[i];
+      note(NOTES[i].f);
+      if (typeof haptic === 'function') haptic(12);
+      if (window.vbProgress) vbProgress.record('tap-a-tune');
+      p.classList.add('active'); setTimeout(() => p.classList.remove('active'), 120);
+      notePop(p, ['🎵', '🎶', '♪', '✨'][i % 4]);
+    }
+
+    function clearGuide() { pads.forEach(p => p.classList.remove('next')); }
+    function showNext() { clearGuide(); if (song && pos < song.seq.length) pads[song.seq[pos]].classList.add('next'); }
+
+    function startSong() {
+      song = SONGS[Math.floor(Math.random() * SONGS.length)];
+      pos = 0;
+      hintEl.textContent = '🎵 ' + song.name + ' — follow the glow!';
+      showNext();
+    }
+    function endSong(win) {
+      song = null; clearGuide();
+      if (win) {
+        hintEl.textContent = '🎉 You played it!';
+        if (typeof playSuccess === 'function') { try { playSuccess(); } catch (e) {} }
+        if (window.vbProgress) vbProgress.record('tap-a-tune');
+      } else { hintEl.textContent = canSong ? 'Tap the keys! 🎹' : ''; }
+    }
+
+    pads.forEach((p, i) => {
+      p.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (song) {
+          if (i === song.seq[pos]) {
+            hitPad(i); pos++;
+            if (pos >= song.seq.length) setTimeout(() => endSong(true), 350);
+            else showNext();
+          } else {
+            p.classList.add('wrong'); setTimeout(() => p.classList.remove('wrong'), 300);
+            if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
+          }
+        } else {
+          hitPad(i);
+        }
+      });
+    });
+
+    if (canSong) {
+      songBtn.style.display = 'block';
+      songBtn.addEventListener('click', () => { if (song) endSong(false); else startSong(); });
+      hintEl.textContent = 'Tap the keys! 🎹';
+    } else {
+      hintEl.textContent = '🎹 Tap to make music! 🎶';
+    }
+  })();
+  </script>
+</body>
+</html>

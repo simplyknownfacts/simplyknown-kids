@@ -20,19 +20,22 @@
     overlay.className = 'vb-celebrate';
 
     var ribbon = (typeof renderRibbon === 'function')
-      ? renderRibbon(def, { size: 150 })
+      ? renderRibbon(def, { size: 150, count: def.count })
       : document.createElement('div');
     ribbon.classList.add('cele-ribbon');
     overlay.appendChild(ribbon);
 
     var title = document.createElement('div');
     title.className = 'cele-title';
-    title.textContent = def.title || 'New ribbon!';
+    title.textContent = (def.title || 'New ribbon!') + (def.count ? ' ×' + def.count : '');
     overlay.appendChild(title);
 
     document.body.appendChild(overlay);
     if (typeof playSuccess === 'function') { try { playSuccess(); } catch (e) {} }
-    if (typeof speak === 'function') { try { speak('You earned ' + (def.title || 'a ribbon') + '!'); } catch (e) {} }
+    // Generic clip-backed phrase so the award speaks in the CHILD'S voice (the
+    // per-title string had no recorded clip → robotic browser TTS). Needs the
+    // 'You earned a new ribbon!' clip generated (see voice-manifest.js).
+    if (typeof speak === 'function') { try { speak('You earned a new ribbon!'); } catch (e) {} }
 
     var dwell = 2000;
     setTimeout(function () {

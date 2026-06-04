@@ -50,8 +50,11 @@ if (!API_KEY && !process.argv.includes('--dry')) {
 const VOICES = {
   girl: process.env.EL_VOICE_GIRL || 'EXAVITQu4vr4xnSDxMaL', // "Sarah" - warm female
   boy:  process.env.EL_VOICE_BOY  || 'TX3LPaxmHKxFdv7VOQHJ', // "Liam" - energetic young male (was Josh, too deep)
+  woman: process.env.EL_VOICE_WOMAN || '21m00Tcm4TlvDq8ikWAM', // "Rachel" - adult woman (natural, no pitch)
+  man:   process.env.EL_VOICE_MAN   || 'pNInz6obpgDQGcFmaJgB', // "Adam" - adult man (natural, no pitch)
 };
-// Pitch up +3 semitones via ffmpeg to sound more kid-like
+// Only kid voices get the +3-semitone pitch-up; grown-up voices stay natural.
+const KID_VOICES = new Set(['girl', 'boy']);
 const PITCH_RATIO = 1.189207;
 
 const MODEL_ID = process.env.EL_MODEL || 'eleven_turbo_v2_5'; // cheap + fast
@@ -153,14 +156,14 @@ for (const item of toGenerate) {
       continue;
     }
     const buf = Buffer.from(await res.arrayBuffer());
-    if (item.kind === 'tts') {
-      // TTS clips: write raw, pitch-shift +3 semi for kid voice, replace
+    if (item.kind === 'tts' && KID_VOICES.has(item.voice)) {
+      // kid voices: write raw, pitch-shift +3 semitones, replace
       const rawPath = item.filepath + '.raw.mp3';
       fs.writeFileSync(rawPath, buf);
       await _pitchShift(rawPath, item.filepath, PITCH_RATIO);
       fs.unlinkSync(rawPath);
     } else {
-      // SFX: keep as-is (animal sounds, not voices)
+      // grown-up voices (woman/man) + SFX: keep natural, no pitch
       fs.writeFileSync(item.filepath, buf);
     }
     done++;
@@ -172,4 +175,4 @@ for (const item of toGenerate) {
 }
 
 console.log(`\nGenerated ${done} clips, ${failed} failures.`);
-console.log(`Output: audio/{girl,boy}/`);
+console.log(`Output: audio/{${voicesToRun.join(',')}}/`);

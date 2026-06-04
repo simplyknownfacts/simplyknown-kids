@@ -34,6 +34,18 @@
 .vb-ribbon.locked .vb-rib-hat img,
 .vb-ribbon.locked .vb-rib-stars { animation: none; }
 
+/* repeatable-ribbon ×N count badge (bottom-right corner) */
+.vb-rib-count {
+  position: absolute; right: -2px; bottom: 6px; z-index: 3;
+  min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px; font-family: var(--font-ui, inherit);
+  font-size: 12px; font-weight: 800; color: #4a3410; line-height: 1;
+  background: linear-gradient(180deg, #ffe08a, #f3b13a);
+  border: 1.5px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
+.vb-ribbon.locked .vb-rib-count { display: none; }
+
 @keyframes vbBob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-11px) rotate(2deg); } }
 @keyframes hatSpin   { 0%{transform:rotate(-12deg)} 18%{transform:rotate(12deg)} 40%{transform:rotate(-8deg)} 60%{transform:rotate(372deg)} 100%{transform:rotate(348deg)} }
 @keyframes hatBounce { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-12px) rotate(5deg)} }
@@ -41,33 +53,43 @@
 @keyframes hatPop    { 0%,100%{transform:scale(1) rotate(-4deg)} 50%{transform:scale(1.18) rotate(7deg)} }
 @keyframes starFloat { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-7px)} }
 
-/* ===== Ribbon side-panel (subtle translucent glass, secondary not centerpiece) ===== */
+/* ===== Ribbon shelf — a wooden plank the ribbons rest + float on ===== */
 .vb-shelf {
-  position: relative; border-radius: 16px;
-  width: 100%; max-width: 280px; margin: 0 0 0 auto;   /* tucked to the side */
-  padding: 12px 14px 13px;
-  background: var(--chip-bg, rgba(18,16,38,0.42));
-  border: 1px solid var(--chip-border, rgba(255,255,255,0.14));
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.26);
+  position: relative; width: 100%; margin: 0; padding: 0;
+  background: none; border: none; box-shadow: none;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
   cursor: pointer;
 }
 .vb-shelf-title {
-  position: relative; z-index: 2; display: flex; align-items: center; gap: 6px;
-  margin: 0 0 2px; font-size: 14px; font-weight: 700; color: var(--text, #efeaff);
+  position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin: 0 0 4px; font-family: var(--font-display, inherit);
+  font-size: 16px; font-weight: 700; color: var(--text, #efeaff);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.35);
 }
 .vb-shelf-row {
   position: relative; z-index: 2;
-  display: flex; flex-wrap: nowrap; justify-content: space-around; align-items: flex-end;
-  gap: 4px; padding: 6px 0 12px;
+  display: flex; flex-wrap: nowrap; justify-content: space-evenly; align-items: flex-end;
+  gap: clamp(12px, 4vw, 40px); min-height: 100px; padding: 4px 20px 22px;
 }
+/* the wooden plank, spanning the full shelf width; ribbons rest on its top edge */
+.vb-shelf-row::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 22px; z-index: 1;
+  border-radius: 4px / 6px;
+  background:
+    repeating-linear-gradient(90.5deg, rgba(58,30,8,0.20) 0 2px, rgba(255,222,176,0.05) 2px 8px, rgba(58,30,8,0.11) 8px 16px),
+    linear-gradient(180deg, #c98f52 0%, #a76e3b 45%, #804f28 100%);
+  box-shadow: 0 14px 24px rgba(0,0,0,0.42), 0 3px 0 rgba(40,22,8,0.4),
+              inset 0 2px 0 rgba(255,233,198,0.4), inset 0 -5px 8px rgba(45,26,10,0.5);
+}
+/* ribbons sit in front of / on top of the plank */
+.vb-shelf-row > * { position: relative; z-index: 2; }
 .vb-shelf-empty {
   position: relative; z-index: 2; text-align: center; color: var(--text-soft, #b3aede);
   font-size: 13px; padding: 12px 8px 14px;
 }
 .vb-shelf-btn {
   position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
-  width: 100%; padding: 11px 10px; border-radius: 11px; cursor: pointer;
+  width: auto; max-width: 280px; margin: 12px auto 0; padding: 10px 18px; border-radius: 999px; cursor: pointer;
   font-family: var(--font-ui, inherit); font-size: 13px; font-weight: 800; letter-spacing: 0.2px;
   color: var(--text, #fff);
   background: color-mix(in srgb, var(--accent, #FF8FA8) 26%, transparent);
@@ -78,8 +100,18 @@
 /* ============================ Gallery ============================ */
 .gallery-screen {
   position: relative; z-index: 1;   /* above the fixed atmosphere sky */
-  min-height: 100vh; padding: calc(100px + env(safe-area-inset-top)) 18px 120px;
+  min-height: 100vh;
+  padding: calc(100px + env(safe-area-inset-top)) 18px 120px;
   display: flex; flex-direction: column; align-items: center; gap: 24px;
+}
+/* The ribbon gallery scrolls as a normal document — override the global app
+   scroll-lock (style.css: html,body{overflow:hidden;position:fixed}) that kept this
+   page from scrolling on real devices. Only this page opts in (html.vb-scroll);
+   kid activity pages stay locked. */
+html.vb-scroll, html.vb-scroll body {
+  position: static !important; overflow-y: auto !important; overflow-x: hidden !important;
+  height: auto !important; min-height: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 .rank-banner { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text); text-align: center; }
 .rank-banner .rank-name { font-family: var(--font-display); font-size: clamp(28px, 6vw, 44px); font-weight: 700; }

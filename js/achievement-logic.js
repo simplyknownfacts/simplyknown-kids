@@ -3,12 +3,13 @@
   'use strict';
 
   function emptyState() {
-    return { unlocked:{}, counters:{}, streak:{ last:null, current:0, best:0 }, xp:0, rank:'sprout' };
+    return { unlocked:{}, counters:{}, repeats:{}, streak:{ last:null, current:0, best:0 }, xp:0, rank:'sprout' };
   }
   function clone(s) {
     return {
       unlocked: Object.assign({}, s.unlocked),
       counters: Object.assign({}, s.counters),
+      repeats: Object.assign({}, s.repeats || {}),
       streak: Object.assign({}, s.streak || { last:null, current:0, best:0 }),
       xp: s.xp || 0,
       rank: s.rank || 'sprout'
@@ -51,6 +52,18 @@
     defsApi.byCounter(counterKey).forEach(function (def) {
       if (after >= def.threshold) _apply(state, def, out);
     });
+    // repeatable "star" ribbon: one per `every` successes, tracked as a count
+    // (bypasses the one-shot unlocked map so it can re-fire and show ×N).
+    var rep = defsApi.byId(counterKey + '.repeat');
+    if (rep && rep.every > 0) {
+      var earnedN = Math.floor(after / rep.every);
+      var haveN = state.repeats[counterKey] || 0;
+      if (earnedN > haveN) {
+        state.repeats[counterKey] = earnedN;
+        state.xp += (rep.xp || 0) * (earnedN - haveN);
+        out.push(Object.assign({}, rep, { count: earnedN, repeated: true }));
+      }
+    }
     _reconcileRank(state, defsApi, out);
     return { state: state, unlocked: out };
   }

@@ -6,6 +6,19 @@
   <title>Parent Settings</title>
   <link rel="stylesheet" href="../css/style.css">
   <style>
+    /* Parent Settings is a grown-up utility on a fixed dark base. Pin the night
+       palette so text stays light/readable regardless of the time-of-day theme
+       atmosphere.js stamps on <html> — afternoon/morning flip --text near-black,
+       which made settings text invisible (black text on the dark/blue panel). */
+    html, html[data-tod] {
+      --bg-0:#08061C; --bg-1:#16113E; --bg-2:#251D63;
+      --hill-0:#0D0A28; --hill-1:#1A1448; --hill-2:#2A2068;
+      --orb-color:#FFF1C8; --orb-rim:#FFC56B;
+      --accent:#FFC56B; --accent-soft:#FFE3A8;
+      --text:#FFF1C8; --text-soft:rgba(255,241,200,0.62);
+      --chip-bg:rgba(255,241,200,0.08); --chip-border:rgba(255,241,200,0.22);
+      --star:#FFF7E0;
+    }
     /* Storybook nightlight redesign for parent settings.
        Markup + script logic unchanged — pure CSS refresh. */
     body {

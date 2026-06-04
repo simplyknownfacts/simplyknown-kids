@@ -33,6 +33,7 @@
   // e.g. firstPlay on a repeat visit, mastery re-fire, or touchStreak same-day.
   function _sig(s) {
     return s.xp + '|' + s.rank + '|' + JSON.stringify(s.counters) +
+           '|' + JSON.stringify(s.repeats || {}) +
            '|' + (s.streak ? s.streak.last + ',' + s.streak.current : '');
   }
 

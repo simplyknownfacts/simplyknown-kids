@@ -15,6 +15,16 @@
       if (section && section !== 'all' && def.section !== section) continue;
       out.push(def);
     }
+    // repeatable ribbons live in state.repeats (not state.unlocked)
+    if (state.repeats) {
+      for (var act in state.repeats) {
+        if (!state.repeats.hasOwnProperty(act) || !(state.repeats[act] > 0)) continue;
+        var rdef = vbDefs.byId(act + '.repeat');
+        if (!rdef) continue;
+        if (section && section !== 'all' && rdef.section !== section) continue;
+        out.push(rdef);
+      }
+    }
     return out;
   }
 
@@ -70,7 +80,8 @@
     var pick = shuffle(defs.slice()).slice(0, max);
     var row = document.createElement('div'); row.className = 'vb-shelf-row';
     pick.forEach(function (def) {
-      row.appendChild(renderRibbon(def, { size: 60, earned: true, base: base, noTopper: true }));
+      var cnt = (def.type === 'repeat' && state.repeats) ? (state.repeats[def.activity] || 0) : 0;
+      row.appendChild(renderRibbon(def, { size: 60, earned: true, base: base, noTopper: true, count: cnt }));
     });
     shelf.appendChild(row);
     addButton();

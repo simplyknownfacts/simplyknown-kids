@@ -135,6 +135,9 @@ _phrases.push(`What's the answer?`);
 // Money
 _phrases.push('How much money is here?');
 
+// Ribbon award — spoken in the child's voice when a ribbon is earned (js/celebrate.js)
+_phrases.push('You earned a new ribbon!');
+
 // Numbers 1-50 spoken as digits
 const _numbers = [];
 for (let i = 1; i <= 50; i++) _numbers.push(String(i));

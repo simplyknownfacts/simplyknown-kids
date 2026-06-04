@@ -14,10 +14,15 @@ test('each activity has exactly one first-play + six milestone tiers', () => {
   assert.strictEqual(tapFirst.length, 1);
   assert.strictEqual(tapMiles.length, 6);
 });
-test('milestone thresholds are 5/10/25/50/75/100', () => {
+test('milestone thresholds are 50/250/1000/2500/5000/10000', () => {
   const t = defs.VB_ACHIEVEMENTS.filter(d => d.activity === 'tap-pop' && d.type === 'milestone')
     .map(d => d.threshold).sort((a,b)=>a-b);
-  assert.deepStrictEqual(t, [5,10,25,50,75,100]);
+  assert.deepStrictEqual(t, [50,250,1000,2500,5000,10000]);
+});
+test('each activity has one repeatable star ribbon with a positive "every"', () => {
+  const rep = defs.VB_ACHIEVEMENTS.filter(d => d.activity === 'tap-pop' && d.type === 'repeat');
+  assert.strictEqual(rep.length, 1);
+  assert.ok(rep[0].every > 0);
 });
 test('ids are unique', () => {
   const ids = defs.VB_ACHIEVEMENTS.map(d => d.id);

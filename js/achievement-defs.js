@@ -7,6 +7,9 @@
     { id:'shape-match',  name:'Shape Match',  icon:'🔷', section:'games', noun:'shapes matched',
       mastery:{ title:'Shape Master', hint:'Finish a 6-shape round' } },
     { id:'peek-a-boo',   name:'Peek-a-Boo',   icon:'👀', section:'games', noun:'peeks', mastery:null },
+    { id:'magic-touch',  name:'Magic Touch',  icon:'✨', section:'games', noun:'taps', mastery:null },
+    { id:'tap-a-tune',   name:'Tap-a-Tune',   icon:'🎹', section:'games', noun:'notes played', mastery:null },
+    { id:'surprise-pop', name:'Surprise Pop', icon:'🥚', section:'games', noun:'surprises', mastery:null },
 
     { id:'hello-colors', name:'Hello Colors', icon:'🌈', section:'learn', noun:'colors named',
       mastery:{ title:'Color Whiz', hint:'Win the color quiz' } },
@@ -33,14 +36,22 @@
     { id:'color-in',     name:'Color In',     icon:'🖍️', section:'art', noun:'areas colored', mastery:null }
   ];
 
+  // Tuned 2026-06-04 to Scott's tap-pop calibration (successes are frequent there).
+  // Milestone "trophy" tiers are intentionally rare; the repeatable ribbon
+  // (REPEAT_EVERY) carries the frequent-reward / engagement loop. NOTE: this one
+  // shared scale applies to every activity — for slow activities (math, spelling)
+  // gold(1000) is aspirational; can be made per-activity if desired.
   var MILESTONE_TIERS = [
-    { tier:'bronze',   threshold:5,   xp:1, label:'Bronze' },
-    { tier:'silver',   threshold:10,  xp:2, label:'Silver' },
-    { tier:'gold',     threshold:25,  xp:3, label:'Gold' },
-    { tier:'sapphire', threshold:50,  xp:5, label:'Sapphire' },
-    { tier:'ruby',     threshold:75,  xp:7, label:'Ruby' },
-    { tier:'diamond',  threshold:100, xp:10, label:'Diamond' }
+    { tier:'bronze',   threshold:50,    xp:1,  label:'Bronze' },
+    { tier:'silver',   threshold:250,   xp:2,  label:'Silver' },
+    { tier:'gold',     threshold:1000,  xp:3,  label:'Gold' },
+    { tier:'sapphire', threshold:2500,  xp:5,  label:'Sapphire' },
+    { tier:'ruby',     threshold:5000,  xp:7,  label:'Ruby' },
+    { tier:'diamond',  threshold:10000, xp:10, label:'Diamond' }
   ];
+  // A repeatable "star" ribbon, awarded once per this many successes per activity,
+  // shown with a ×N count badge. Tunable.
+  var REPEAT_EVERY = 25;
 
   var STREAKS = [
     { id:'streak.3', type:'streak', title:'3-Day Streak', hint:'Play 3 days in a row', icon:'🔥', xp:3, days:3 },
@@ -71,6 +82,12 @@
         title: a.name + ' ' + m.label, hint: 'Reach ' + m.threshold + ' ' + a.noun,
         icon: a.icon, xp: m.xp
       });
+    });
+    VB_ACHIEVEMENTS.push({
+      id: a.id + '.repeat', activity: a.id, section: a.section, type:'repeat',
+      counter: a.id, every: REPEAT_EVERY,
+      title: a.name + ' Star', hint: 'Earn 1 every ' + REPEAT_EVERY + ' ' + a.noun,
+      icon: a.icon, xp: 1
     });
     if (a.mastery) {
       VB_ACHIEVEMENTS.push({

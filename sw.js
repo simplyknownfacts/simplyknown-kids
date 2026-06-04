@@ -1,4 +1,4 @@
-const CACHE = 'vb-v80';  /* bumped: achievements/ribbons restored + wired into all activities; body-parts now rotates 12 real diverse kid figures (random per open, switch every 5) — invalidates v78 */
+const CACHE = 'vb-v81';  /* bumped: wooden ribbon shelf + native gallery scroll, ribbon rebalance (harder tiers + repeatable ×N), parent-settings contrast fix, peek-a-boo wired + 3 new young-kid games (Magic Touch / Tap-a-Tune / Surprise Pop), ribbon-award now speaks in the child's voice (woman/man clips added) — invalidates v80 */
 const ASSETS = [
   './', './index.html', './home.html', './achievements.html',
   './css/style.css', './css/achievements.css',
@@ -6,7 +6,8 @@ const ASSETS = [
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',
   './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',
   './js/yoto.js', './js/yoto-config.js', './js/yoto-player.js',
-  './games/index.html', './games/tap-pop.html', './games/shape-match.html',
+  './games/index.html', './games/tap-pop.html', './games/peek-a-boo.html',
+  './games/magic-touch.html', './games/tap-a-tune.html', './games/surprise-pop.html', './games/shape-match.html',
   './learning/index.html', './learning/hello-colors.html',
   './learning/animal-sounds.html', './learning/count-along.html',
   './learning/abcs.html', './learning/days.html', './learning/math.html',

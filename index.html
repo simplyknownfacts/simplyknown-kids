@@ -83,17 +83,6 @@
       font-size: 15px; font-weight: 700; color: var(--text); opacity: 0.85;
       font-family: var(--font-ui);
     }
-    .parent-hint {
-      position: fixed; bottom: calc(16px + env(safe-area-inset-bottom));
-      left: 0; right: 0; text-align: center;
-      font-family: var(--font-ui); font-size: 11px;
-      color: var(--text-soft); letter-spacing: 1.2px;
-      pointer-events: none;
-      /* Translucent strip behind so it never disappears into bg or content */
-      padding: 8px 24px;
-      background: linear-gradient(to top, color-mix(in srgb, var(--bg-0) 85%, transparent) 30%, transparent);
-      backdrop-filter: blur(2px);
-    }
   </style>
 </head>
 <body>
@@ -107,10 +96,6 @@
       <div class="plus">+</div>
       <div class="label">Add a child</div>
     </div>
-  </div>
-
-  <div class="parent-hint">
-    TAP ✦ IN THE CORNER TO OPEN PARENT SETTINGS · PIN REQUIRED
   </div>
 
   <button class="settings-gear" id="settingsGear" aria-label="Parent settings" title="Parent settings">

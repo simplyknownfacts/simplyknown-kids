@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="vb-scroll">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -52,16 +52,18 @@
     const groupsEl = document.getElementById('groups');
     function group(title, icon, defs) {
       if (!defs.length) return;
-      const earnedCount = defs.filter(d => state.unlocked[d.id]).length;
+      const earnedCount = defs.filter(d => d.type === 'repeat' ? (state.repeats && state.repeats[d.activity] > 0) : state.unlocked[d.id]).length;
       const g = document.createElement('div'); g.className = 'gallery-group';
       const h = document.createElement('h2');
       h.textContent = (icon ? icon + ' ' : '') + title + '  (' + earnedCount + '/' + defs.length + ')';
       g.appendChild(h);
       const grid = document.createElement('div'); grid.className = 'gallery-grid';
       defs.forEach(function (d) {
-        const earned = !!state.unlocked[d.id];
+        const isRepeat = (d.type === 'repeat');
+        const cnt = isRepeat ? ((state.repeats && state.repeats[d.activity]) || 0) : 0;
+        const earned = isRepeat ? cnt > 0 : !!state.unlocked[d.id];
         const cell = document.createElement('div'); cell.className = 'gallery-cell';
-        cell.appendChild(renderRibbon(d, { size: 84, earned: earned }));
+        cell.appendChild(renderRibbon(d, { size: 84, earned: earned, count: cnt }));
         const lbl = document.createElement('div'); lbl.className = 'cell-label'; lbl.textContent = d.title;
         cell.appendChild(lbl);
         if (!earned && d.hint) {

@@ -32,6 +32,7 @@
     if (def.type === 'mastery')   return 'pink';
     if (def.type === 'streak')    return 'orange';
     if (def.type === 'rank')      return 'purple';
+    if (def.type === 'repeat')    return 'gold';
     return 'gold';
   }
 
@@ -111,6 +112,14 @@
     }
 
     wrap.appendChild(fl);
+
+    // repeatable ribbons carry a ×N count badge in the corner
+    if (opts.count >= 1) {
+      var badge = document.createElement('span');
+      badge.className = 'vb-rib-count';
+      badge.textContent = '×' + opts.count;
+      wrap.appendChild(badge);
+    }
     return wrap;
   }
 
