@@ -59,7 +59,7 @@
       s.textContent = `
         #yotoLaunch {
           position: fixed; z-index: 9000;
-          bottom: calc(96px + env(safe-area-inset-bottom));   /* clear the bottom profile-switcher chip / ribbons shelf on hubs */
+          bottom: calc(16px + env(safe-area-inset-bottom));
           right: calc(16px + env(safe-area-inset-right));
           width: 62px; height: 62px; border-radius: 50%; border: none;
           display: flex; align-items: center; justify-content: center;
@@ -82,6 +82,23 @@
     b.textContent = '🎧';
     b.addEventListener('pointerdown', function (e) { e.preventDefault(); _openListen(); });
     document.body.appendChild(b);
+    // Avoid overlapping the home kid-switcher pill (bottom-right): lift the FAB
+    // just above it when present; otherwise it stays in the bottom-right corner.
+    function _lift() {
+      var fab = document.getElementById('yotoLaunch'); if (!fab) return;
+      var base = 16;
+      var pill = document.getElementById('avatarPill');
+      if (pill) {
+        var r = pill.getBoundingClientRect();
+        if (r.width && r.height && r.right > window.innerWidth - 320 && r.bottom > window.innerHeight - 240) {
+          base = Math.round(window.innerHeight - r.top) + 14;
+        }
+      }
+      fab.style.bottom = 'calc(' + base + 'px + env(safe-area-inset-bottom))';
+    }
+    _lift();
+    setTimeout(_lift, 400);
+    window.addEventListener('resize', _lift);
   }
   function _initLauncher() {
     if (_onHub() && _yotoConnected()) _renderLauncher();
