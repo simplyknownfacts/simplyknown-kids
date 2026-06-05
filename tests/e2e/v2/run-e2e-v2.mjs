@@ -16,9 +16,10 @@ import games from './oracle/games.mjs';
 import learn from './oracle/learn.mjs';
 import art from './oracle/art.mjs';
 import settings from './oracle/settings.mjs';
+import sensory from './oracle/sensory.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const ALL = [...shell, ...games, ...learn, bodyParts, ...art, ...settings];
+const ALL = [...shell, ...games, ...learn, bodyParts, ...art, ...settings, ...sensory];
 
 const args = process.argv.slice(2);
 const argVal = (n, d) => { const a = args.find((x) => x.startsWith(`--${n}=`)); return a ? a.split('=')[1] : d; };
@@ -31,7 +32,7 @@ console.log(`E2E v2 against ${BASE}`);
 const browser = await launch();
 try {
   for (const entry of ALL) {
-    if (only && entry.id !== only) continue;
+    if (only && !entry.id.includes(only)) continue;
     const tiers = (entry.tiers || TIERS).filter((t) => !wantTiers || wantTiers.includes(t));
     for (const tier of tiers) {
       for (const vp of wantVps) {
