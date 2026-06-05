@@ -126,6 +126,14 @@
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     setBackground();
+    // Keep filling the screen + preserve the stamps (and current theme bg) on rotate/resize.
+    window.addEventListener('resize', () => {
+      const tmp = document.createElement('canvas'); tmp.width = canvas.width; tmp.height = canvas.height;
+      tmp.getContext('2d').drawImage(canvas, 0, 0);
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      setBackground();
+      ctx.drawImage(tmp, 0, 0);
+    });
 
     function placeStamp(x, y, emoji, size = 60) {
       ctx.font = `${size}px serif`;

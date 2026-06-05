@@ -71,6 +71,14 @@
     canvas.height = window.innerHeight;
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Keep filling the screen + preserve the painting on rotate/resize.
+    window.addEventListener('resize', () => {
+      const tmp = document.createElement('canvas'); tmp.width = canvas.width; tmp.height = canvas.height;
+      tmp.getContext('2d').drawImage(canvas, 0, 0);
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(tmp, 0, 0);
+    });
 
     const PALETTE = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#ffffff'];
     let painting = false, lastX = 0, lastY = 0;

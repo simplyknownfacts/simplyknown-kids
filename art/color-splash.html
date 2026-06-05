@@ -72,6 +72,14 @@
     canvas.height = window.innerHeight;
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Fill the screen + preserve the canvas on rotate/resize (no resize handler before = dead space + missed taps in landscape).
+    window.addEventListener('resize', () => {
+      const tmp = document.createElement('canvas'); tmp.width = canvas.width; tmp.height = canvas.height;
+      tmp.getContext('2d').drawImage(canvas, 0, 0);
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(tmp, 0, 0);
+    });
 
     const COLORS = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#7CFC00'];
     let activeColor = COLORS[0];
