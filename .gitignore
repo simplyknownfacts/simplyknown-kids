@@ -37,6 +37,9 @@ tests/sweep/report.md
 # full real-click E2E harness output (screenshots + reports) — regenerable
 tests/e2e/out/
 tests/e2e/node_modules/
+# E2E v2 harness output (screenshots + report) — regenerable, keep the .mjs source
+tests/e2e/v2/screenshots/
+tests/e2e/v2/report.json
 # scratch dev/verification scripts (underscore-prefixed) — kept local, not product
 scripts/_*.mjs
 # mascots/ committed for preview — will move to R2 once Worker is built
