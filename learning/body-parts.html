@@ -94,7 +94,8 @@
     // centre resolves to THAT feature, not a neighbour.
     function standing(o) {
       o = o || {};
-      const cx = o.cx ?? 50;       // body / face centre
+      const cx = o.cx ?? 50;       // body centre
+      const fcx = o.faceCx ?? cx;  // face centre — differs from body for a turned/off-centre head (e.g. body-07)
       const f  = o.fy ?? 0;        // face vertical shift (+ = lower on the kid)
       const eDx = o.earDx ?? 13;   // ear half-spread
       const hDx = o.handDx ?? 21;  // hand half-spread
@@ -106,10 +107,10 @@
         { n:'hand',  x:cx-hDx, y:58, r:11 }, { n:'hand', x:cx+hDx, y:58, r:11 },
         { n:'leg',   x:cx-6, y:74, r:12 },   { n:'leg',  x:cx+6, y:74, r:12 },
         { n:'foot',  x:cx-4, y:92, r:10 },   { n:'foot', x:cx+4, y:92, r:10 },
-        { n:'ear',   x:cx-eDx, y:19+f, r:6 },{ n:'ear',  x:cx+eDx, y:19+f, r:6 },
-        { n:'eye',   x:cx-6, y:18+f, r:7 },  { n:'eye',  x:cx+6, y:18+f, r:7 },
-        { n:'nose',  x:cx, y:22+f, r:6 },
-        { n:'mouth', x:cx, y:26+f, r:7 },
+        { n:'ear',   x:fcx-eDx, y:19+f, r:6 },{ n:'ear',  x:fcx+eDx, y:19+f, r:6 },
+        { n:'eye',   x:fcx-6, y:18+f, r:7 },  { n:'eye',  x:fcx+6, y:18+f, r:7 },
+        { n:'nose',  x:fcx, y:22+f, r:6 },
+        { n:'mouth', x:fcx, y:26+f, r:7 },
       ];
     }
     // Per-kid tweaks (measured against each image; only where it deviates).
@@ -118,7 +119,7 @@
     const CONFIG = {
       1:{handDx:24}, 2:{fy:-1, handDx:22}, 3:{fy:-1, handDx:20},
       4:{fy:-3, earDx:16, handDx:28, armDx:20}, 5:{fy:-3, earDx:15},
-      6:{fy:-3, earDx:16}, 7:{fy:9, earDx:16, handDx:19},
+      6:{fy:-3, earDx:16}, 7:{fy:8, faceCx:55, earDx:16, handDx:19}, // body-07: turned head shifted right
       8:{fy:-3, earDx:16}, 10:{fy:-1}, 11:{fy:-3, earDx:16}, 12:{fy:-2, handDx:19},
     };
     // Wheelchair child (seated) — head centred ~x48, torso/legs/feet shifted.
