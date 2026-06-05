@@ -14,7 +14,7 @@
               overflow-y: auto; }
     .figure {
       position: relative;
-      width: min(330px, 84vw); aspect-ratio: 3/4;
+      width: min(370px, 92vw); aspect-ratio: 3/4;
       margin: 0 auto;
     }
     .body-img {
@@ -47,7 +47,7 @@
       color: white; text-shadow: 0 4px 14px rgba(0,0,0,0.4); text-align: center;
     }
     /* Younger ages (tier <= 3): bigger figure so small fingers hit parts. */
-    body.young-icons .figure { width: min(400px, 92vw); }
+    body.young-icons .figure { width: min(430px, 96vw); }
     body.young-icons .prompt-big { font-size: clamp(28px, 7vw, 46px); }
   </style>
 </head>
@@ -86,49 +86,64 @@
     // part; a correct tap glows the zone. Positions are % of the figure box.
     const figure = document.getElementById('figure');
 
-    // Shared template for the 11 standing kids (consistent pose & framing).
-    const STANDING_ZONES = [
-      { n:'hair',  x:50, y:10, r:26 },
-      { n:'eye',   x:44, y:22, r:8 },  { n:'eye',  x:56, y:22, r:8 },
-      { n:'ear',   x:37, y:23, r:7 },  { n:'ear',  x:63, y:23, r:7 },
-      { n:'nose',  x:50, y:25, r:7 },
-      { n:'mouth', x:50, y:29, r:9 },
-      { n:'arm',   x:31, y:48, r:11 }, { n:'arm',  x:69, y:48, r:11 },
-      { n:'hand',  x:25, y:62, r:11 }, { n:'hand', x:75, y:62, r:11 },
-      { n:'belly', x:50, y:50, r:15 },
-      { n:'leg',   x:44, y:78, r:12 }, { n:'leg',  x:56, y:78, r:12 },
-      { n:'foot',  x:45, y:95, r:10 }, { n:'foot', x:55, y:95, r:10 },
-    ];
-    // Wheelchair child (seated): head/eyes/nose/mouth near top but shifted left
-    // (the chair extends right); torso/belly seated; legs forward & lower; feet
-    // down near the footrest. Hands rest on the chair / lap.
+    // Standing-kid tap zones. The AI kids share the "stand straight, arms out,
+    // full body, centred" pose, so most parts are consistent — but each kid's
+    // FACE drifts a bit (head size / hair volume), so every kid carries a small
+    // per-kid offset (CONFIG). Face parts are appended LAST (nose/mouth after
+    // eyes/ears) so the central features sit on top → tapping a feature's
+    // centre resolves to THAT feature, not a neighbour.
+    function standing(o) {
+      o = o || {};
+      const cx = o.cx ?? 50;       // body / face centre
+      const f  = o.fy ?? 0;        // face vertical shift (+ = lower on the kid)
+      const eDx = o.earDx ?? 13;   // ear half-spread
+      const hDx = o.handDx ?? 21;  // hand half-spread
+      const aDx = o.armDx ?? 17;   // arm half-spread
+      return [
+        { n:'hair',  x:cx, y:9, r:24 },
+        { n:'belly', x:cx, y:48, r:14 },
+        { n:'arm',   x:cx-aDx, y:46, r:10 }, { n:'arm',  x:cx+aDx, y:46, r:10 },
+        { n:'hand',  x:cx-hDx, y:58, r:11 }, { n:'hand', x:cx+hDx, y:58, r:11 },
+        { n:'leg',   x:cx-6, y:74, r:12 },   { n:'leg',  x:cx+6, y:74, r:12 },
+        { n:'foot',  x:cx-4, y:92, r:10 },   { n:'foot', x:cx+4, y:92, r:10 },
+        { n:'ear',   x:cx-eDx, y:19+f, r:6 },{ n:'ear',  x:cx+eDx, y:19+f, r:6 },
+        { n:'eye',   x:cx-6, y:18+f, r:7 },  { n:'eye',  x:cx+6, y:18+f, r:7 },
+        { n:'nose',  x:cx, y:22+f, r:6 },
+        { n:'mouth', x:cx, y:26+f, r:7 },
+      ];
+    }
+    // Per-kid tweaks (measured against each image; only where it deviates).
+    // body-07 has a tall afro that pushes the face well down (fy:9); the boys
+    // sit a touch higher with ears that stick out (fy:-3, earDx:16).
+    const CONFIG = {
+      1:{handDx:24}, 2:{fy:-1, handDx:22}, 3:{fy:-1, handDx:20},
+      4:{fy:-3, earDx:16, handDx:28, armDx:20}, 5:{fy:-3, earDx:15},
+      6:{fy:-3, earDx:16}, 7:{fy:9, earDx:16, handDx:19},
+      8:{fy:-3, earDx:16}, 10:{fy:-1}, 11:{fy:-3, earDx:16}, 12:{fy:-2, handDx:19},
+    };
+    // Wheelchair child (seated) — head centred ~x48, torso/legs/feet shifted.
     const WHEELCHAIR_ZONES = [
-      { n:'hair',  x:41, y:13, r:21 },
-      { n:'eye',   x:37, y:23, r:8 },  { n:'eye',  x:48, y:23, r:8 },
-      { n:'ear',   x:31, y:24, r:7 },  { n:'ear',  x:53, y:24, r:7 },
-      { n:'nose',  x:42, y:26, r:7 },
-      { n:'mouth', x:42, y:30, r:9 },
-      { n:'arm',   x:30, y:46, r:11 }, { n:'arm',  x:57, y:45, r:11 },
-      { n:'hand',  x:31, y:57, r:11 }, { n:'hand', x:56, y:57, r:11 },
-      { n:'belly', x:43, y:50, r:14 },
-      { n:'leg',   x:48, y:67, r:12 }, { n:'leg',  x:58, y:70, r:12 },
-      { n:'foot',  x:54, y:86, r:11 }, { n:'foot', x:63, y:87, r:11 },
+      { n:'hair',  x:48, y:9,  r:20 },
+      { n:'belly', x:47, y:44, r:13 },
+      { n:'arm',   x:37, y:42, r:10 }, { n:'arm',  x:58, y:43, r:10 },
+      { n:'hand',  x:39, y:51, r:10 }, { n:'hand', x:57, y:52, r:10 },
+      { n:'leg',   x:43, y:61, r:12 }, { n:'leg',  x:54, y:63, r:12 },
+      { n:'foot',  x:43, y:78, r:10 }, { n:'foot', x:57, y:79, r:10 },
+      { n:'ear',   x:39, y:19, r:6 },  { n:'ear',  x:57, y:19, r:6 },
+      { n:'eye',   x:44, y:18, r:7 },  { n:'eye',  x:53, y:18, r:7 },
+      { n:'nose',  x:48, y:22, r:6 },
+      { n:'mouth', x:48, y:25, r:7 },
     ];
 
-    const BODIES = [
-      { img:'img/bodies/body-01.png', zones: STANDING_ZONES },
-      { img:'img/bodies/body-02.png', zones: STANDING_ZONES },
-      { img:'img/bodies/body-03.png', zones: STANDING_ZONES },
-      { img:'img/bodies/body-04.png', zones: STANDING_ZONES },
-      { img:'img/bodies/body-05.png', zones: STANDING_ZONES },
-      { img:'img/bodies/body-06.png', zones: STANDING_ZONES },
-      { img:'img/bodies/body-07.png', zones: STANDING_ZONES },
-      { img:'img/bodies/body-08.png', zones: STANDING_ZONES },
-      { img:'img/bodies/body-09.png', zones: WHEELCHAIR_ZONES }, // wheelchair child
-      { img:'img/bodies/body-10.png', zones: STANDING_ZONES },
-      { img:'img/bodies/body-11.png', zones: STANDING_ZONES },
-      { img:'img/bodies/body-12.png', zones: STANDING_ZONES },
-    ];
+    // 12 kids (body-01..12). #9 is the seated wheelchair child (own zones);
+    // the rest use the standing template + their per-kid CONFIG tweaks.
+    const BODIES = [];
+    for (let n = 1; n <= 12; n++) {
+      BODIES.push({
+        img: 'img/bodies/body-' + String(n).padStart(2, '0') + '.png',
+        zones: n === 9 ? WHEELCHAIR_ZONES : standing(CONFIG[n]),
+      });
+    }
 
     let bodyIdx = Math.floor(Math.random() * BODIES.length);
 

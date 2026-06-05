@@ -1147,72 +1147,44 @@
         img.src = url;
       });
     }
-    // Photo → clean coloring stencil via ADAPTIVE THRESHOLD (the "photocopy"
-    // method): ink a pixel only when it's noticeably darker than its local
-    // neighbourhood, so flat areas stay white and only real edges become lines.
-    // Far cleaner than the old posterize+Sobel approach, which banded smooth
-    // photos into blotchy regions and traced scribbly edges between them.
-    //   1) downsample + grayscale + gentle blur (kill skin/fabric texture)
-    //   2) local average via a fast separable box blur
-    //   3) ink where (localMean - gray) > OFFSET  → major outlines only
-    //   4) despeckle (drop lone pixels) + thicken to a legible ~2px stroke
+    // Photo → clean coloring-book line art via XDoG (eXtended Difference-of-
+    // Gaussians) — the edge model dedicated "photo to coloring page" tools use.
+    // Subtract two Gaussian blurs to find edges, soft-threshold them into ink
+    // with a tanh ramp, then a levels stretch boldens the outlines while keeping
+    // interiors pure white. Result: confident black outlines + gentle stipple
+    // shading in hair/fabric — instead of the speckle the old adaptive-threshold
+    // "photocopy" method produced on real photos.
     function _photoToLineArt(img) {
-      const WORK_DIM = 560;
-      const ratio = Math.min(WORK_DIM / img.width, WORK_DIM / img.height, 1);
+      const WORK = 700;
+      const ratio = Math.min(WORK / img.width, WORK / img.height, 1);
       const w = Math.max(1, Math.round(img.width * ratio));
       const h = Math.max(1, Math.round(img.height * ratio));
 
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
       const ctx = c.getContext('2d');
-      // Grayscale + a gentle blur to wipe out skin / fabric / grain texture
-      // before we threshold, so it doesn't all turn into speckle.
-      ctx.filter = 'grayscale(1) contrast(1.05) blur(1px)';
       ctx.drawImage(img, 0, 0, w, h);
-      ctx.filter = 'none';
-
       const src = ctx.getImageData(0, 0, w, h).data;
+
+      // Grayscale, normalised to 0..1.
       const gray = new Float32Array(w * h);
       for (let i = 0, j = 0; i < src.length; i += 4, j++) {
-        gray[j] = src[i] * 0.299 + src[i+1] * 0.587 + src[i+2] * 0.114;
+        gray[j] = (src[i] * 0.299 + src[i+1] * 0.587 + src[i+2] * 0.114) / 255;
       }
 
-      // Neighbourhood average. Radius scales with the image so it captures the
-      // local region, not texture; a bigger radius keeps only larger/softer
-      // edges (good: major outlines, not every detail).
-      const radius = Math.max(6, Math.round(Math.min(w, h) / 22));
-      const mean = _boxBlur(gray, w, h, radius);
-
-      // Adaptive threshold. OFFSET tunes sensitivity: higher = fewer, bolder
-      // lines (cleaner, less busy) — right for a young kid's coloring page.
-      const OFFSET = 12;
-      const ink = new Uint8Array(w * h);
-      for (let i = 0; i < gray.length; i++) {
-        ink[i] = (mean[i] - gray[i]) > OFFSET ? 1 : 0;
-      }
-
-      // Despeckle: drop pixels with no orthogonal neighbour (kills grain dots).
-      const clean = new Uint8Array(w * h);
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          const i = y * w + x;
-          if (!ink[i]) continue;
-          clean[i] = (ink[i-1] + ink[i+1] + ink[i-w] + ink[i+w]) >= 1 ? 1 : 0;
-        }
-      }
-
-      // Thicken to a legible ~2px stroke (single dilate).
-      const thick = new Uint8Array(w * h);
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          const i = y * w + x;
-          thick[i] = (clean[i] || clean[i-1] || clean[i+1] || clean[i-w] || clean[i+w]) ? 1 : 0;
-        }
-      }
+      // XDoG: difference of two Gaussians, soft-thresholded, levels-stretched.
+      // Tuned on real photos for bold outlines + light stipple, white interiors.
+      const SIGMA = 1.6, K = 1.6, TAU = 0.985, PHI = 35, EPS = 0, LO = 0.15, HI = 0.85;
+      const g1 = _gaussBlur(gray, w, h, SIGMA);
+      const g2 = _gaussBlur(gray, w, h, SIGMA * K);
 
       const dst = ctx.createImageData(w, h);
-      for (let i = 0; i < thick.length; i++) {
-        const v = thick[i] ? 0 : 255;
+      for (let i = 0; i < gray.length; i++) {
+        const d = g1[i] - TAU * g2[i];
+        let e = d >= EPS ? 1 : 1 + Math.tanh(PHI * (d - EPS));
+        e = (e - LO) / (HI - LO);       // levels: bolden lines, clean whites
+        if (e < 0) e = 0; else if (e > 1) e = 1;
+        const v = Math.round(e * 255);
         const j = i * 4;
         dst.data[j] = dst.data[j+1] = dst.data[j+2] = v;
         dst.data[j+3] = 255;
@@ -1221,29 +1193,22 @@
       return c.toDataURL('image/png');
     }
 
-    // Fast separable box blur on a Float32 grayscale plane (running sum, O(n)).
-    function _boxBlur(src, w, h, r) {
-      const tmp = new Float32Array(w * h);
-      const out = new Float32Array(w * h);
-      const win = 2 * r + 1;
+    // Separable Gaussian blur on a Float32 grayscale plane (clamped edges).
+    function _gaussBlur(src, w, h, sigma) {
+      const r = Math.max(1, Math.ceil(sigma * 3));
+      const k = new Float32Array(2 * r + 1);
+      let ksum = 0;
+      for (let i = -r; i <= r; i++) { const v = Math.exp(-(i*i) / (2*sigma*sigma)); k[i+r] = v; ksum += v; }
+      for (let i = 0; i < k.length; i++) k[i] /= ksum;
       const cw = (v) => v < 0 ? 0 : (v > w - 1 ? w - 1 : v);
       const ch = (v) => v < 0 ? 0 : (v > h - 1 ? h - 1 : v);
+      const tmp = new Float32Array(w * h), out = new Float32Array(w * h);
       for (let y = 0; y < h; y++) {
         const row = y * w;
-        let sum = 0;
-        for (let k = -r; k <= r; k++) sum += src[row + cw(k)];
-        for (let x = 0; x < w; x++) {
-          tmp[row + x] = sum / win;
-          sum += src[row + cw(x + r + 1)] - src[row + cw(x - r)];
-        }
+        for (let x = 0; x < w; x++) { let a = 0; for (let i = -r; i <= r; i++) a += src[row + cw(x+i)] * k[i+r]; tmp[row + x] = a; }
       }
       for (let x = 0; x < w; x++) {
-        let sum = 0;
-        for (let k = -r; k <= r; k++) sum += tmp[ch(k) * w + x];
-        for (let y = 0; y < h; y++) {
-          out[y * w + x] = sum / win;
-          sum += tmp[ch(y + r + 1) * w + x] - tmp[ch(y - r) * w + x];
-        }
+        for (let y = 0; y < h; y++) { let a = 0; for (let i = -r; i <= r; i++) a += tmp[ch(y+i)*w + x] * k[i+r]; out[y*w + x] = a; }
       }
       return out;
     }
