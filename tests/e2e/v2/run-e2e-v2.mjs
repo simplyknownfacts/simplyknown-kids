@@ -11,9 +11,14 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { launch, newContext, seedProfile, instrument, getErrs, shot, makeReport, BASE, TIERS } from './lib/harness.mjs';
 import bodyParts from './oracle/body-parts.mjs';
+import shell from './oracle/shell.mjs';
+import games from './oracle/games.mjs';
+import learn from './oracle/learn.mjs';
+import art from './oracle/art.mjs';
+import settings from './oracle/settings.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const ALL = [bodyParts]; // append more oracle entries here as they're built
+const ALL = [...shell, ...games, ...learn, bodyParts, ...art, ...settings];
 
 const args = process.argv.slice(2);
 const argVal = (n, d) => { const a = args.find((x) => x.startsWith(`--${n}=`)); return a ? a.split('=')[1] : d; };
@@ -32,7 +37,7 @@ try {
       for (const vp of wantVps) {
         const ctx = await newContext(browser, vp);
         const feats = entry.features ? entry.features(tier) : {};
-        await seedProfile(ctx, { tier, features: feats });
+        if (!entry.noSeed) await seedProfile(ctx, { tier, features: feats, coloringPages: entry.coloringPages || null, pin: entry.pin || null });
         const page = await ctx.newPage();
         page.setDefaultTimeout(15000);
         const info = { report, tier, vp, page, BASE, id: `${entry.id}/t${tier}/${vp}` };
