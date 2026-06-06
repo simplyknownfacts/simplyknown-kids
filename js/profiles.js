@@ -101,9 +101,9 @@ function _newProfileId() {
   if (changed) saveProfiles(list);
 })();
 
-function addProfile({ name, birthday, avatar, color }) {
+function addProfile({ name, birthday, avatar, color, voice, mascot }) {
   const list = getProfiles();
-  const p = { id: _newProfileId(), name, birthday, avatar, color, voice: 'woman', mascot: null, tierOverrides: {}, features: {}, youtube: [] };
+  const p = { id: _newProfileId(), name, birthday, avatar, color, voice: voice || 'woman', mascot: mascot || null, tierOverrides: {}, features: {}, youtube: [] };
   list.push(p);
   saveProfiles(list);
   return p;

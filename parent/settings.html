@@ -524,6 +524,10 @@
                 <div class="row" id="avatarPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
                 <label style="margin-top:12px;display:block;">Color</label>
                 <div class="row" id="colorPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
+                <label style="margin-top:12px;display:block;">Animal companion</label>
+                <div class="row" id="newMascotPicker" style="flex-wrap:wrap;margin-top:8px;gap:8px;"></div>
+                <label style="margin-top:12px;display:block;">Voice</label>
+                <div class="row" id="newVoicePicker" style="flex-wrap:wrap;margin-top:8px;gap:8px;"></div>
                 <div class="row-between" style="margin-top:16px;">
                   <button class="btn btn-primary" onclick="saveNewProfile()">Save</button>
                   <button class="btn btn-ghost" onclick="document.getElementById('addForm').style.display='none'">Cancel</button>
@@ -597,6 +601,12 @@
 
     let selectedAvatar = AVATARS[0];
     let selectedColor  = COLORS[0];
+    let selectedMascot = null;  // animal companion — REQUIRED in the add form
+    let selectedVoice  = null;  // voice — REQUIRED in the add form
+    const ADD_MASCOTS = [ // id + emoji for the add-form animal-companion picker
+      { id:'dog', e:'🐶' }, { id:'tiger', e:'🐯' }, { id:'giraffe', e:'🦒' },
+      { id:'panda', e:'🐼' }, { id:'orca', e:'🐋' }, { id:'eagle', e:'🦅' },
+    ];
     let pinEntry = '';
     let pinSetupStep = 0, pinFirst = '';
     let lockoutTimer = null;
@@ -900,7 +910,7 @@
       section.innerHTML = '';
       const p = _settingsChild();
       if (!p) {
-        section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
+        section.innerHTML = '<button class="btn btn-primary" onclick="openAddChild()">＋ Add a child to get started</button>';
         return;
       }
       {
@@ -981,7 +991,7 @@
       section.innerHTML = '';
       const p = _settingsChild();
       if (!p) {
-        section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
+        section.innerHTML = '<button class="btn btn-primary" onclick="openAddChild()">＋ Add a child to get started</button>';
         return;
       }
       const MASCOTS = (window.mascot && window.mascot.available) || ['dog','tiger','giraffe','panda','orca','eagle'];
@@ -1024,7 +1034,7 @@
       const section = document.getElementById('activitiesSection');
       const p = _settingsChild();
       if (!p) {
-        section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
+        section.innerHTML = '<button class="btn btn-primary" onclick="openAddChild()">＋ Add a child to get started</button>';
         return;
       }
       const sections = [
@@ -1417,7 +1427,7 @@
       _stopVoiceSample();
       const p = _settingsChild();
       if (!p) {
-        section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.4);font-size:13px;">Add a child profile first.</div>';
+        section.innerHTML = '<button class="btn btn-primary" onclick="openAddChild()">＋ Add a child to get started</button>';
         return;
       }
       const current = p.voice || 'woman';
@@ -1626,19 +1636,65 @@
         });
         colorPicker.appendChild(dot);
       });
+
+      const mp = document.getElementById('newMascotPicker');
+      if (mp) {
+        mp.innerHTML = '';
+        ADD_MASCOTS.forEach(m => {
+          const btn = document.createElement('div');
+          btn.style.cssText = 'font-size:30px;cursor:pointer;padding:6px 8px;border-radius:12px;border:3px solid transparent;line-height:1;';
+          btn.textContent = m.e; btn.title = m.id;
+          btn.addEventListener('click', () => {
+            selectedMascot = m.id;
+            mp.querySelectorAll('div').forEach(d => d.style.borderColor = 'transparent');
+            btn.style.borderColor = '#4ECDC4';
+          });
+          mp.appendChild(btn);
+        });
+      }
+
+      const vp = document.getElementById('newVoicePicker');
+      if (vp) {
+        vp.innerHTML = '';
+        VOICES.forEach(v => {
+          const btn = document.createElement('div');
+          btn.style.cssText = 'cursor:pointer;padding:8px 12px;border-radius:12px;border:2px solid rgba(255,255,255,0.25);font-size:13px;color:#fff;';
+          btn.textContent = v.name;
+          btn.addEventListener('click', () => {
+            selectedVoice = v.id;
+            vp.querySelectorAll('div').forEach(d => { d.style.borderColor = 'rgba(255,255,255,0.25)'; d.style.background = ''; });
+            btn.style.borderColor = '#4ECDC4'; btn.style.background = 'rgba(78,205,196,0.18)';
+          });
+          vp.appendChild(btn);
+        });
+      }
+    }
+
+    // Open the add-child form from anywhere in settings (used by the per-panel
+    // "add a child first" prompts, which previously did nothing).
+    function openAddChild() {
+      showPanel('children');
+      showAddForm();
+      const f = document.getElementById('addForm');
+      if (f && f.scrollIntoView) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     function showAddForm() {
+      selectedMascot = null; selectedVoice = null; // force a fresh required pick
+      buildAddForm();
       document.getElementById('addForm').style.display = 'block';
     }
 
     function saveNewProfile() {
       const name = document.getElementById('newName').value.trim();
       const birthday = document.getElementById('newBirthday').value;
-      if (!name || !birthday) { alert('Please fill in name and birthday.'); return; }
-      const created = addProfile({ name, birthday, avatar: selectedAvatar, color: selectedColor });
+      if (!name || !birthday) { alert('Please add a name and birthday.'); return; }
+      if (!selectedMascot) { alert('Please pick an animal companion.'); return; }
+      if (!selectedVoice)  { alert('Please pick a voice.'); return; }
+      const created = addProfile({ name, birthday, avatar: selectedAvatar, color: selectedColor, voice: selectedVoice, mascot: { id: selectedMascot } });
       document.getElementById('newName').value = '';
       document.getElementById('newBirthday').value = '';
+      selectedMascot = null; selectedVoice = null;
       document.getElementById('addForm').style.display = 'none';
       // New child becomes the active settings child so the per-child panels
       // immediately reflect them.
