@@ -28,8 +28,8 @@ test('repeatable cadence is per-speed: fast tap games rarer than quiz activities
   const every = id => defs.VB_ACHIEVEMENTS.find(d => d.activity === id && d.type === 'repeat').every;
   assert.strictEqual(every('tap-pop'), 300);      // fast tap game
   assert.strictEqual(every('tap-a-tune'), 300);   // fast tap game
-  assert.strictEqual(every('math'), 50);          // deliberate quiz
-  assert.strictEqual(every('shape-match'), 50);   // deliberate match
+  assert.strictEqual(every('math'), 120);         // deliberate quiz (raised from 50 — ribbons were too frequent)
+  assert.strictEqual(every('shape-match'), 120);  // deliberate match
 });
 test('ids are unique', () => {
   const ids = defs.VB_ACHIEVEMENTS.map(d => d.id);

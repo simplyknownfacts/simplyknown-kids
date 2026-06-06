@@ -20,7 +20,7 @@
     overlay.className = 'vb-celebrate';
 
     var ribbon = (typeof renderRibbon === 'function')
-      ? renderRibbon(def, { size: 150, count: def.count })
+      ? renderRibbon(def, { size: 84, count: def.count })
       : document.createElement('div');
     ribbon.classList.add('cele-ribbon');
     overlay.appendChild(ribbon);
@@ -37,7 +37,7 @@
     // 'You earned a new ribbon!' clip generated (see voice-manifest.js).
     if (typeof speak === 'function') { try { speak('You earned a new ribbon!'); } catch (e) {} }
 
-    var dwell = 2000;
+    var dwell = 1300;
     setTimeout(function () {
       overlay.style.transition = 'opacity 300ms ease';
       overlay.style.opacity = '0';

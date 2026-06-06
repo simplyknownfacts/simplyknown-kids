@@ -56,7 +56,7 @@
   // = one touch); slow = deliberate correct-answer activities (quizzes, shape-match).
   // Tunable.
   var REPEAT_FAST = 300;
-  var REPEAT_SLOW = 50;
+  var REPEAT_SLOW = 120; // was 50 — too spammy on tap-driven 'slow' activities (e.g. Body Parts: a 6yo earned a ribbon every ~2 min). 120 ≈ a few-minute cadence.
   var SLOW_ACTIVITIES = {
     'shape-match':1, 'hello-colors':1, 'animal-sounds':1, 'count-along':1, 'abcs':1,
     'days':1, 'math':1, 'spelling':1, 'money':1, 'body-parts':1
