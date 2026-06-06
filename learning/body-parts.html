@@ -113,14 +113,17 @@
         { n:'mouth', x:fcx, y:26+f, r:7 },
       ];
     }
-    // Per-kid tweaks (measured against each image; only where it deviates).
-    // body-07 has a tall afro that pushes the face well down (fy:9); the boys
-    // sit a touch higher with ears that stick out (fy:-3, earDx:16).
+    // Per-kid face offsets, set from automated EYE DETECTION on each PNG
+    // (dark pupils next to white sclera, paired left/right) — not eyeballing,
+    // which left every kid's face zones ~4-6% too high in v97. fy = eyeY%−18;
+    // faceCx shifts only the face for a turned/off-centre head (limbs stay
+    // body-centred). Big-hair kids sit lowest (fy ~+4); the afro kid most (+13).
     const CONFIG = {
-      1:{handDx:24}, 2:{fy:-1, handDx:22}, 3:{fy:-1, handDx:20},
-      4:{fy:-3, earDx:16, handDx:28, armDx:20}, 5:{fy:-3, earDx:15},
-      6:{fy:-3, earDx:16}, 7:{fy:8, faceCx:55, earDx:16, handDx:19}, // body-07: turned head shifted right
-      8:{fy:-3, earDx:16}, 10:{fy:-1}, 11:{fy:-3, earDx:16}, 12:{fy:-2, handDx:19},
+      1:{fy:4, faceCx:53, handDx:24}, 2:{fy:4, handDx:22}, 3:{fy:4, handDx:20},
+      4:{fy:3, earDx:16, handDx:28, armDx:20}, 5:{fy:-1, earDx:15},
+      6:{fy:-2, earDx:16}, 7:{fy:13, faceCx:58, earDx:16, handDx:19},
+      8:{fy:1, earDx:16}, 10:{fy:3, faceCx:47},
+      11:{fy:5, faceCx:47, earDx:16}, 12:{fy:3, faceCx:46, handDx:19},
     };
     // Wheelchair child (seated) — head centred ~x48, torso/legs/feet shifted.
     const WHEELCHAIR_ZONES = [
