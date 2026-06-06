@@ -134,14 +134,40 @@ function playPop() {
   } catch(e) {}
 }
 
+// On-screen caption of what the app says/does — so prompts and "Yes!/Try again"
+// are readable with the VOLUME OFF. Non-blocking (pointer-events:none), one
+// shared pill, latest message wins, auto-fades. speak() shows the exact phrase;
+// playSuccess()/playBoop() add a generic cue for activities (or tiers) that give
+// audio feedback without speaking (e.g. Body Parts wrong tap at tier 4+).
+let _vbCapEl, _vbCapTimer;
+function _showCaption(text) {
+  if (!text) return;
+  try {
+    if (!_vbCapEl) {
+      const st = document.createElement('style');
+      st.textContent = '.vb-caption{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,10px);max-width:92vw;padding:11px 22px;border-radius:999px;background:rgba(20,20,40,.88);color:#fff;font:800 clamp(20px,4.8vw,30px)/1.15 system-ui,-apple-system,sans-serif;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.35);z-index:99999;pointer-events:none;opacity:0;transition:opacity .18s ease,transform .18s ease}.vb-caption.show{opacity:1;transform:translate(-50%,0)}';
+      document.head.appendChild(st);
+      _vbCapEl = document.createElement('div');
+      _vbCapEl.className = 'vb-caption';
+      _vbCapEl.setAttribute('aria-hidden', 'true');
+      (document.body || document.documentElement).appendChild(_vbCapEl);
+    }
+    _vbCapEl.textContent = String(text);
+    _vbCapEl.classList.add('show');
+    clearTimeout(_vbCapTimer);
+    _vbCapTimer = setTimeout(() => { if (_vbCapEl) _vbCapEl.classList.remove('show'); }, 1800);
+  } catch (e) {}
+}
+
 function playSuccess() {
+  _showCaption('Yes! 🎉');
   [523, 659, 784, 1047].forEach((f, i) => {
     setTimeout(() => playTone(f, 0.3, 0.2), i * 120);
   });
 }
 
 function playChime() { playTone(880, 0.4, 0.2); }
-function playBoop()  { playTone(330, 0.1, 0.2, 'square'); }
+function playBoop()  { _showCaption('Try again 👆'); playTone(330, 0.1, 0.2, 'square'); }
 
 // When a phrase has no recorded clip we fall back to the browser's speech
 // synthesis. Prefer a female English voice so the fallback matches the app's
@@ -275,6 +301,7 @@ function speak(text, rate = 0.85, pitch = 1.2) {
   // "3 ducks" = ["3","ducks"]) is unaffected because that's a single speak()
   // call that builds one chain.
   cancelSpeak();
+  _showCaption(text);
   const v = _getActiveVoice();
   if (v === 'browser') return _browserSpeak(text, rate, pitch);
   return _voiceSpeak(text, v);
