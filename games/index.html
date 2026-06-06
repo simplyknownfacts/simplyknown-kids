@@ -72,7 +72,8 @@
         row.appendChild(card);
       });
     }
-    if (window.mascot) setTimeout(() => mascot.play('games_intro'), 400);
+    // Mascot intentionally NOT shown on the section menu (its fixed bottom-left
+    // float covered a tile / the ribbons footer on the dense phone grid).
     if (window.vbShelf) vbShelf.mount(document.getElementById('vbShelfMount'), { section: 'games', title: '🎮 Games Ribbons' });
   </script>
 </body>

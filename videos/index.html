@@ -115,7 +115,8 @@
   <script src="../js/yoto-player.js"></script>
   <script src="../js/mascot.js"></script>
   <script>
-    if (window.mascot) setTimeout(() => mascot.play('watch_intro'), 400);
+    // Mascot intentionally NOT shown on the section menu (its fixed bottom-left
+    // float covered content on the dense phone grid).
     (function() {
       const profile = getActiveProfile();
       if (!profile) { goProfiles(); return; }

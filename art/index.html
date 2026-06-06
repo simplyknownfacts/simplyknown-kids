@@ -72,7 +72,8 @@
         row.appendChild(card);
       });
     }
-    if (window.mascot) setTimeout(() => mascot.play('art_intro'), 400);
+    // Mascot intentionally NOT shown on the section menu (its fixed bottom-left
+    // float covered a tile on the dense phone grid).
     if (window.vbShelf) vbShelf.mount(document.getElementById('vbShelfMount'), { section: 'art', title: '🎨 Art Ribbons' });
   </script>
 </body>

@@ -72,7 +72,9 @@
         row.appendChild(card);
       });
     }
-    if (window.mascot) setTimeout(() => mascot.play('learn_intro'), 400);
+    // Mascot intentionally NOT shown on the section menu: its fixed bottom-left
+    // float (z-index:9999) covered an activity tile on the dense phone grid.
+    // It still lives on home.html + inside each activity.
     if (window.vbShelf) vbShelf.mount(document.getElementById('vbShelfMount'), { section: 'learn', title: '📚 Learn Ribbons' });
   </script>
 </body>
