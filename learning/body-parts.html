@@ -10,11 +10,11 @@
     body { background: linear-gradient(160deg, #b89b80, #6e533c); }
     .screen { justify-content: flex-start !important;
               padding-top: calc(70px + env(safe-area-inset-top));
-              padding-bottom: 200px;
+              padding-bottom: 130px;
               overflow-y: auto; }
     .figure {
       position: relative;
-      width: min(370px, 92vw); aspect-ratio: 3/4;
+      width: min(440px, 98vw); aspect-ratio: 3/4;
       margin: 0 auto;
     }
     .body-img {
@@ -47,7 +47,7 @@
       color: white; text-shadow: 0 4px 14px rgba(0,0,0,0.4); text-align: center;
     }
     /* Younger ages (tier <= 3): bigger figure so small fingers hit parts. */
-    body.young-icons .figure { width: min(430px, 96vw); }
+    body.young-icons .figure { width: min(500px, 100vw); }
     body.young-icons .prompt-big { font-size: clamp(28px, 7vw, 46px); }
   </style>
 </head>
@@ -182,12 +182,22 @@
     let correctCount = 0; // taps since last body switch — rotate every 5
     window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
 
+    // Shuffled "bag": ask EVERY part once before any repeats (random picking gave
+    // the same part 3× in 5 taps). Refill + reshuffle when empty, avoiding an
+    // immediate repeat across the refill seam.
+    let _bag = [];
+    function _drawTarget() {
+      if (!_bag.length) {
+        _bag = partList.slice();
+        for (let i = _bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = _bag[i]; _bag[i] = _bag[j]; _bag[j] = t; }
+        if (_bag.length > 1 && _bag[0] === lastTarget) _bag.push(_bag.shift());
+      }
+      return _bag.shift();
+    }
+
     function nextRound() {
       clearTimeout(roundTimer);
-      // Never repeat the last part
-      let pool = partList.filter(p => p !== lastTarget);
-      if (!pool.length) pool = partList;
-      target = pool[Math.floor(Math.random() * pool.length)];
+      target = _drawTarget();
       lastTarget = target;
       const prompt = tier <= 2 ? `Where's the ${target}?` : `Tap the ${PRONOUN(target)}!`;
       hint.textContent = prompt;
