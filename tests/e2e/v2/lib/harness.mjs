@@ -40,8 +40,8 @@ export async function newContext(browser, viewport = 'phone') {
 // visibility / coloring pages / PIN, plus an error capture hook.
 export async function seedProfile(context, { tier, features = {}, activitiesVisible = {}, coloringPages = null, pin = null }) {
   const profile = {
-    id: 't' + tier, name: 'T' + tier, birthday: tierBirthday(tier), avatar: '🦊',
-    color: '#4ECDC4', voice: 'woman', mascot: null, tierOverrides: {}, features, activitiesVisible, youtube: [],
+    id: 't' + tier, name: 'T' + tier, birthday: tierBirthday(tier),
+    color: '#4ECDC4', voice: 'woman', mascot: { id: 'dog' }, tierOverrides: {}, features, activitiesVisible, youtube: [],
   };
   await context.addInitScript((data) => {
     try {

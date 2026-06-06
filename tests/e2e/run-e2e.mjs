@@ -75,7 +75,7 @@ function birthdayForTier(tier) {
   return d.toISOString().slice(0, 10);
 }
 function makeProfile(tier, id, name) {
-  return { id, name, birthday: birthdayForTier(tier), avatar: '\u{1F98A}', color: '#4ECDC4', voice: 'girl', mascot: null, tierOverrides: {}, features: {}, youtube: [] };
+  return { id, name, birthday: birthdayForTier(tier), color: '#4ECDC4', voice: 'girl', mascot: { id: 'dog' }, tierOverrides: {}, features: {}, youtube: [] };
 }
 function initScript(profile) {
   return `

@@ -303,7 +303,7 @@
     const profile = getActiveProfile();
     if (profile) {
       // Avatar pill
-      document.getElementById('pillAvatar').textContent = profile.avatar || '🌟';
+      document.getElementById('pillAvatar').textContent = mascotEmoji(profile);
       document.getElementById('pillAvatar').style.background =
         `radial-gradient(circle at 35% 35%, #fff8, ${profile.color}cc)`;
       document.getElementById('pillAvatar').style.boxShadow =

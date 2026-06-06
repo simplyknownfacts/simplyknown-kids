@@ -13,7 +13,7 @@ const KID = (over = {}) => ({ id: 'k1', name: 'Kid', birthday: '2020-01-01', ava
 // Parent Settings (which is normally PIN-gated) so its controls are reachable.
 const SCENARIOS = [
   { name: 'picker — NO profiles', url: '/index.html', seed: () => {} },
-  { name: 'picker — with profile', url: '/index.html', seed: () => { localStorage.setItem('vb_profiles', JSON.stringify([{ id: 'k1', name: 'Kid', birthday: '2020-01-01', avatar: '🦊', color: '#4ECDC4' }])); localStorage.setItem('vb_active_id', 'k1'); } },
+  { name: 'picker — with profile', url: '/index.html', seed: () => { localStorage.setItem('vb_profiles', JSON.stringify([{ id: 'k1', name: 'Kid', birthday: '2020-01-01', color: '#4ECDC4', mascot: { id: 'dog' } }])); localStorage.setItem('vb_active_id', 'k1'); } },
   { name: 'home', url: '/home.html', seedKid: true },
   { name: 'games hub', url: '/games/index.html', seedKid: true },
   { name: 'learn hub', url: '/learning/index.html', seedKid: true },

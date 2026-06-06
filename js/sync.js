@@ -224,7 +224,7 @@ function _renderConflictOverlay() {
     return `<label style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;` +
       `background:rgba(255,255,255,0.06);margin-bottom:8px;cursor:pointer;color:#fff;">` +
       `<input type="checkbox" data-i="${i}" checked style="width:22px;height:22px;flex-shrink:0;">` +
-      `<span style="font-size:28px;">${_esc(e.p.avatar || '🌟')}</span>` +
+      `<span style="font-size:28px;">${_esc(mascotEmoji(e.p))}</span>` +
       `<span style="flex:1;"><b>${_esc(e.p.name || 'Unnamed')}</b>` +
       `<span style="opacity:0.6;font-size:12px;">${ageBits}</span><br>` +
       `<span style="font-size:11px;opacity:0.55;">${_esc(e.from.join(' + '))}</span></span></label>`;

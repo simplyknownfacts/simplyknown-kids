@@ -263,7 +263,7 @@
 
       html += `<div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-          <span style="font-size:22px;">${p.avatar || '🐾'}</span>
+          <span style="font-size:22px;">${mascotEmoji(p)}</span>
           <span style="font-weight:800;">${p.name}</span>
           <span style="margin-left:auto;font-size:11px;color:rgba(255,255,255,0.4);">${isCustom ? '✏️ custom' : '📅 from age'}</span>
         </div>

@@ -1,6 +1,14 @@
 const _PROFILES_KEY = 'vb_profiles';
 const _ACTIVE_KEY   = 'vb_active_id';
 
+// The kid's animal companion (mascot) IS their avatar — its emoji is the icon
+// shown in the kid-chooser, home pill, and settings. Single source of truth =
+// profile.mascot.id, so changing the mascot updates the icon everywhere.
+const MASCOT_EMOJI = { dog:'🐶', tiger:'🐯', giraffe:'🦒', panda:'🐼', orca:'🐳', eagle:'🦅' };
+function mascotEmoji(profile) {
+  return (profile && profile.mascot && MASCOT_EMOJI[profile.mascot.id]) || '🐾';
+}
+
 // minTier on each entry = the tier where this is age-appropriate. Used to:
 //   - render "<age range>+" chips next to feature toggles in settings
 //   - decide if a whole activity shows on a kid's home by default
@@ -101,9 +109,9 @@ function _newProfileId() {
   if (changed) saveProfiles(list);
 })();
 
-function addProfile({ name, birthday, avatar, color, voice, mascot }) {
+function addProfile({ name, birthday, color, voice, mascot }) {
   const list = getProfiles();
-  const p = { id: _newProfileId(), name, birthday, avatar, color, voice: voice || 'woman', mascot: mascot || null, tierOverrides: {}, features: {}, youtube: [] };
+  const p = { id: _newProfileId(), name, birthday, color, voice: voice || 'woman', mascot: mascot || null, tierOverrides: {}, features: {}, youtube: [] };
   list.push(p);
   saveProfiles(list);
   return p;

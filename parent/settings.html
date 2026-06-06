@@ -520,8 +520,6 @@
                 <input type="text" id="newName" placeholder="Child's name">
                 <label style="margin-top:12px;display:block;">Birthday</label>
                 <input type="date" id="newBirthday">
-                <label style="margin-top:12px;display:block;">Avatar</label>
-                <div class="row" id="avatarPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
                 <label style="margin-top:12px;display:block;">Color</label>
                 <div class="row" id="colorPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
                 <label style="margin-top:12px;display:block;">Animal companion</label>
@@ -596,10 +594,8 @@
     const LOCKOUT_KEY = 'vb_pin_lockout'; // stores JSON {attempts,lockedUntil}
     // Recovery phrase was removed — drop any stale hash so it doesn't sit in storage
     localStorage.removeItem('vb_recovery');
-    const AVATARS = ['🐻','🐸','🐱','🐶','🐼','🦊','🐰','🐯','🐧','🦋','🌸','⭐'];
     const COLORS  = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#a8e6cf'];
 
-    let selectedAvatar = AVATARS[0];
     let selectedColor  = COLORS[0];
     let selectedMascot = null;  // animal companion — REQUIRED in the add form
     let selectedVoice  = null;  // voice — REQUIRED in the add form
@@ -809,7 +805,7 @@
         const months = getAgeMonths(p.birthday);
         const t = tierForAge(months);
         pill.innerHTML = `
-          <span class="av" style="background:${esc(p.color || 'rgba(255,255,255,0.1)')};">${esc(p.avatar || '🙂')}</span>
+          <span class="av" style="background:${esc(p.color || 'rgba(255,255,255,0.1)')};">${esc(mascotEmoji(p))}</span>
           <span><div class="nm">${esc(p.name)}</div><div class="ag">${tierLabel(t)}</div></span>`;
         pill.addEventListener('click', () => setSettingsChild(p.id));
         bar.appendChild(pill);
@@ -926,7 +922,7 @@
         `).join('') || '<div style="color:rgba(255,255,255,0.4);font-size:13px;padding:8px 0;">No channels yet.</div>';
         card.innerHTML = `
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-            <span style="font-size:24px;">${esc(p.avatar)}</span>
+            <span style="font-size:24px;">${esc(mascotEmoji(p))}</span>
             <span style="color:white;font-weight:800;">${esc(p.name)}</span>
           </div>
           ${list}
@@ -1597,7 +1593,7 @@
         card.innerHTML = `
           <div class="row-between">
             <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:30px;">${esc(p.avatar)}</span>
+              <span style="font-size:30px;">${esc(mascotEmoji(p))}</span>
               <div>
                 <div style="color:white;font-weight:800;font-size:15px;">${esc(p.name)}</div>
                 <div style="color:rgba(255,255,255,0.5);font-size:12px;">${ageMonths}mo · Tier ${t}: ${tierLabel(t)}</div>
@@ -1610,20 +1606,6 @@
     }
 
     function buildAddForm() {
-      const avatarPicker = document.getElementById('avatarPicker');
-      avatarPicker.innerHTML = '';
-      AVATARS.forEach(a => {
-        const btn = document.createElement('div');
-        btn.style.cssText = 'font-size:32px;cursor:pointer;padding:4px;border-radius:8px;';
-        btn.textContent = a;
-        btn.addEventListener('click', () => {
-          selectedAvatar = a;
-          document.querySelectorAll('#avatarPicker div').forEach(d => d.style.background = '');
-          btn.style.background = 'rgba(255,255,255,0.2)';
-        });
-        avatarPicker.appendChild(btn);
-      });
-
       const colorPicker = document.getElementById('colorPicker');
       colorPicker.innerHTML = '';
       COLORS.forEach(c => {
@@ -1691,7 +1673,7 @@
       if (!name || !birthday) { alert('Please add a name and birthday.'); return; }
       if (!selectedMascot) { alert('Please pick an animal companion.'); return; }
       if (!selectedVoice)  { alert('Please pick a voice.'); return; }
-      const created = addProfile({ name, birthday, avatar: selectedAvatar, color: selectedColor, voice: selectedVoice, mascot: { id: selectedMascot } });
+      const created = addProfile({ name, birthday, color: selectedColor, voice: selectedVoice, mascot: { id: selectedMascot } });
       document.getElementById('newName').value = '';
       document.getElementById('newBirthday').value = '';
       selectedMascot = null; selectedVoice = null;
@@ -1747,7 +1729,7 @@
       hr.appendChild(corner);
       const th = document.createElement('th');
       th.innerHTML = `<div class="child-col-header">
-        <span class="ch-avatar">${esc(profile.avatar)}</span>
+        <span class="ch-avatar">${esc(mascotEmoji(profile))}</span>
         <span class="ch-name">${esc(profile.name)}</span>
       </div>`;
       hr.appendChild(th);
