@@ -43,3 +43,5 @@ tests/e2e/v2/report.json
 # scratch dev/verification scripts (underscore-prefixed) — kept local, not product
 scripts/_*.mjs
 # mascots/ committed for preview — will move to R2 once Worker is built
+# visual-sweep screenshots — regenerable
+tests/e2e/v2/visual/
