@@ -104,10 +104,12 @@
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // ── Themes ────────────────────────────────────────────────────────────────
+    // rot = radians to spin the emoji so its nose points UP (emojis ship sideways:
+    //   🚗/🚤 face left → +90°; 🚀 points up-right → -45°). Tuned by screenshot.
     const THEMES = {
-      road:  { vehicle:'🚗', name:'Road',  obstacles:['🚧','🚙','🛢️','🚚'], top:'#8ed0ea', bot:'#3f6fa5', lane:'#586b7d', stripe:'rgba(255,216,77,0.9)', edge:'#3f7d3f' },
-      river: { vehicle:'🚤', name:'River', obstacles:['🪨','🪵','🦆','🐊'], top:'#a6e3ff', bot:'#1f6fa8', lane:'#2f96cf', stripe:'rgba(220,245,255,0.7)', edge:'#caa56a' },
-      space: { vehicle:'🚀', name:'Space', obstacles:['☄️','🪐','👾','🛸'], top:'#241a52', bot:'#05010f', lane:'#140c30', stripe:'rgba(124,92,231,0.8)', edge:'#0c0820' },
+      road:  { vehicle:'🚗', name:'Road',  kind:'road',  rot: Math.PI/2,  obstacles:['🚧','🚙','🛢️','🚚'], top:'#8ed0ea', bot:'#3f6fa5', lane:'#586b7d', stripe:'rgba(255,216,77,0.9)', edge:'#3f7d3f' },
+      river: { vehicle:'🚤', name:'River', kind:'water', rot: Math.PI/2,  obstacles:['🪨','🪵','🦆','🐊'], top:'#a6e3ff', bot:'#1f6fa8', water:'#2f96cf', wave:'rgba(255,255,255,0.4)', edge:'#caa56a' },
+      space: { vehicle:'🚀', name:'Space', kind:'space', rot:-Math.PI/4, obstacles:['☄️','🪐','👾','🛸'], top:'#241a52', bot:'#05010f', star:'#ffffff', edge:'#0c0820' },
     };
     const ORDER = ['road', 'river', 'space'];
 
@@ -141,7 +143,7 @@
     let theme = THEMES.road;
     let themeKey = 'road';
     let car = null;                // {x, target}
-    let obstacles = [];
+    let obstacles = [], stars = [];
     let dist = 0, speed = 0, startedAt = 0, lastSpawn = 0, laneOff = 0, animId = 0, lastT = 0;
     let best = 0;
 
@@ -210,6 +212,11 @@
       resize();
       car = { x: (roadX0 + roadX1) / 2, target: (roadX0 + roadX1) / 2 };
       obstacles = []; dist = 0; speed = TUNE.baseSpeed; laneOff = 0;
+      stars = [];
+      if (theme.kind === 'space') {
+        const n = reduce ? 30 : 70;
+        for (let i = 0; i < n; i++) stars.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.8 + 0.4, a: Math.random() * 0.6 + 0.4, sp: Math.random() * 0.6 + 0.4 });
+      }
       startedAt = Date.now(); lastSpawn = startedAt; lastT = performance.now();
       state = 'play';
       document.getElementById('hud').style.display = 'block';
@@ -258,22 +265,17 @@
       const px = speed * H * dt;                                      // px moved this frame
       dist += speed * 60 * dt;                                        // "meters" ~ speed*time
       laneOff = (laneOff + px) % (H * 0.18);
+      if (theme.kind === 'space') {
+        for (const s of stars) { s.y += px * s.sp; if (s.y > H) { s.y = 0; s.x = Math.random() * W; } }
+      }
 
       // spawn (Date.now() to match startedAt / lastPointer clock, NOT the RAF clock)
       const spawnEvery = TUNE.spawnMs * (TUNE.baseSpeed / speed);     // a touch more often as you speed up
       const nowMs = Date.now();
       if (nowMs - lastSpawn > spawnEvery) { spawnObstacle(); lastSpawn = nowMs; }
 
-      // ── draw background + road ──
-      const g = ctx.createLinearGradient(0, 0, 0, H);
-      g.addColorStop(0, theme.top); g.addColorStop(1, theme.bot);
-      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = theme.edge; ctx.fillRect(0, 0, roadX0, H); ctx.fillRect(roadX1, 0, W - roadX1, H);
-      ctx.fillStyle = theme.lane; ctx.fillRect(roadX0, 0, roadX1 - roadX0, H);
-      // moving centre dashes
-      ctx.fillStyle = theme.stripe;
-      const dashH = H * 0.09, gap = H * 0.18, dw = Math.max(6, W * 0.012);
-      for (let y = -gap + laneOff; y < H; y += gap) ctx.fillRect((roadX0 + roadX1) / 2 - dw / 2, y, dw, dashH);
+      // ── themed backdrop: road lane / flowing water / starfield ──
+      drawBackdrop();
 
       // ── obstacles ──
       const grace = Date.now() - startedAt < TUNE.graceMs;
@@ -300,11 +302,53 @@
       animId = requestAnimationFrame(loop);
     }
 
+    function drawBackdrop() {
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, theme.top); g.addColorStop(1, theme.bot);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+      if (theme.kind === 'space') {
+        // scrolling starfield — no road
+        ctx.fillStyle = theme.star;
+        for (const s of stars) { ctx.globalAlpha = s.a; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.fill(); }
+        ctx.globalAlpha = 1;
+        // faint glowing lane edges so kids see where they can fly
+        ctx.strokeStyle = 'rgba(124,92,231,0.4)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(roadX0, 0); ctx.lineTo(roadX0, H); ctx.moveTo(roadX1, 0); ctx.lineTo(roadX1, H); ctx.stroke();
+        return;
+      }
+
+      // banks/grass on the sides (road + water)
+      ctx.fillStyle = theme.edge; ctx.fillRect(0, 0, roadX0, H); ctx.fillRect(roadX1, 0, W - roadX1, H);
+
+      if (theme.kind === 'water') {
+        ctx.fillStyle = theme.water; ctx.fillRect(roadX0, 0, roadX1 - roadX0, H);
+        // scrolling wavy lines = flowing water
+        ctx.strokeStyle = theme.wave; ctx.lineWidth = Math.max(2, H * 0.004); ctx.lineCap = 'round';
+        const wgap = H * 0.14, amp = H * 0.014;
+        for (let y = -wgap + (laneOff % wgap); y < H + wgap; y += wgap) {
+          ctx.beginPath();
+          for (let x = roadX0 + 6; x <= roadX1 - 6; x += 22) {
+            const yy = y + Math.sin((x + laneOff) / 24) * amp;
+            if (x === roadX0 + 6) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+          }
+          ctx.stroke();
+        }
+        return;
+      }
+
+      // road: grey lane + scrolling centre dashes
+      ctx.fillStyle = theme.lane; ctx.fillRect(roadX0, 0, roadX1 - roadX0, H);
+      ctx.fillStyle = theme.stripe;
+      const dashH = H * 0.09, gap = H * 0.18, dw = Math.max(6, W * 0.012);
+      for (let y = -gap + laneOff; y < H; y += gap) ctx.fillRect((roadX0 + roadX1) / 2 - dw / 2, y, dw, dashH);
+    }
+
     function drawCar(carY, hit) {
       ctx.save();
       ctx.translate(car.x, carY);
       const lean = Math.max(-0.3, Math.min(0.3, (car.target - car.x) / 60));
-      ctx.rotate(lean);
+      ctx.rotate((theme.rot || 0) + lean);
       if (hit) { ctx.globalAlpha = 0.6; }
       ctx.font = vSize + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(theme.vehicle, 0, 0);
