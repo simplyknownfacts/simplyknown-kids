@@ -27,6 +27,7 @@ const ACTIVITY_FEATURES = [
   { id:'shape-match',   name:'Shape Match',      icon:'🔷', file:'shape-match.html', section:'games', minTier:1, features:[
     { key:'dragMode',      label:'Drag-to-match mode',                      minTier:1 },
   ]},
+  { id:'tilt-drive',    name:'Tilt Drive',       icon:'🏎️', file:'tilt-drive.html', section:'games', minTier:1, features:[] },
 
   { id:'hello-colors',  name:'Hello Colors',     icon:'🌈', file:'hello-colors.html',  section:'learn', minTier:1, features:[
     { key:'colorQuiz',     label:'Color quiz mode',                         minTier:4 },

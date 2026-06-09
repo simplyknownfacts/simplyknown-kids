@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Tilt Drive</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1026; }
+    #canvas { position: fixed; inset: 0; touch-action: none; }
+
+    /* HUD — distance + best, top-center */
+    #hud {
+      position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 50%;
+      transform: translateX(-50%); display: none; z-index: 5;
+      font-family: var(--font-ui, system-ui, sans-serif); text-align: center;
+      color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.55); pointer-events: none;
+    }
+    #hud .dist { font-size: clamp(22px, 6vw, 34px); font-weight: 800; letter-spacing: 0.5px; }
+    #hud .best { font-size: 13px; font-weight: 700; opacity: 0.85; }
+
+    /* Overlays (start picker + game over) */
+    .overlay {
+      position: fixed; inset: 0; z-index: 10; display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 18px; padding: 24px; box-sizing: border-box;
+      background: radial-gradient(120% 120% at 50% 0%, rgba(12,16,38,0.72), rgba(8,6,20,0.92));
+      -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+    }
+    .overlay.show { display: flex; }
+    .ov-title {
+      font-family: var(--font-display, system-ui); font-style: italic; font-weight: 700;
+      font-size: clamp(34px, 8vw, 56px); color: #fff; text-align: center; letter-spacing: -0.5px;
+      text-shadow: 0 4px 18px rgba(0,0,0,0.5); margin: 0;
+    }
+    .ov-sub { color: rgba(255,255,255,0.82); font: 600 15px/1.4 system-ui, sans-serif; text-align: center; max-width: 420px; }
+    .style-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .style-card {
+      width: 116px; height: 132px; border-radius: 22px; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+      background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.18);
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .style-card:active { transform: scale(0.94); }
+    .style-card .veh { font-size: 54px; line-height: 1; }
+    .style-card .nm  { color: #fff; font: 800 15px system-ui, sans-serif; }
+    .ov-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .ov-btn {
+      padding: 14px 26px; border-radius: 999px; border: none; cursor: pointer;
+      font: 800 17px system-ui, sans-serif; -webkit-tap-highlight-color: transparent;
+      transition: transform .12s ease;
+    }
+    .ov-btn:active { transform: scale(0.95); }
+    .ov-btn.primary { background: #4ECDC4; color: #08312c; }
+    .ov-btn.ghost   { background: rgba(255,255,255,0.14); color: #fff; }
+    .ov-stat { color: #fff; font: 800 clamp(26px,7vw,40px) system-ui, sans-serif; text-align: center; }
+    .ov-stat small { display: block; font-size: 14px; font-weight: 700; opacity: 0.8; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="hud"><div class="dist" id="hudDist">0 m</div><div class="best" id="hudBest"></div></div>
+
+  <!-- Start / style picker -->
+  <div class="overlay show" id="startOv">
+    <h1 class="ov-title">Tilt Drive</h1>
+    <div class="ov-sub" id="startHint">Pick a ride, then tilt your phone left &amp; right to steer!</div>
+    <div class="style-row" id="styleRow"></div>
+  </div>
+
+  <!-- Game over -->
+  <div class="overlay" id="overOv">
+    <div class="ov-stat" id="overStat">You drove 0 m<small></small></div>
+    <div class="ov-btns">
+      <button class="ov-btn primary" id="againBtn">Play again</button>
+      <button class="ov-btn ghost" id="changeBtn">Change ride</button>
+    </div>
+  </div>
+
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
+  <script src="../js/game-settings.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/celebrate.js"></script>
+  <script src="../js/progress.js"></script>
+  <script>window.VB_ASSET_BASE='../';</script>
+  <script>
+  (function () {
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); return; }
+    const tier = getActivityTier(profile, 'tilt-drive');
+
+    renderBackBtn('index.html');
+    if (window.gameSettings) gameSettings.attach('tilt-drive');
+    if (window.vbProgress) vbProgress.firstPlay('tilt-drive');
+
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ── Themes ────────────────────────────────────────────────────────────────
+    const THEMES = {
+      road:  { vehicle:'🚗', name:'Road',  obstacles:['🚧','🚙','🛢️','🚚'], top:'#8ed0ea', bot:'#3f6fa5', lane:'#586b7d', stripe:'rgba(255,216,77,0.9)', edge:'#3f7d3f' },
+      river: { vehicle:'🚤', name:'River', obstacles:['🪨','🪵','🦆','🐊'], top:'#a6e3ff', bot:'#1f6fa8', lane:'#2f96cf', stripe:'rgba(220,245,255,0.7)', edge:'#caa56a' },
+      space: { vehicle:'🚀', name:'Space', obstacles:['☄️','🪐','👾','🛸'], top:'#241a52', bot:'#05010f', lane:'#140c30', stripe:'rgba(124,92,231,0.8)', edge:'#0c0820' },
+    };
+    const ORDER = ['road', 'river', 'space'];
+
+    // ── Tier tuning: little kids slow + roomy + forgiving; big kids fast + tight ─
+    const TUNE = {
+      baseSpeed: tier <= 2 ? 0.16 : tier <= 4 ? 0.24 : tier <= 6 ? 0.34 : 0.44, // frac of H per sec
+      accel:     tier <= 2 ? 0.010 : tier <= 4 ? 0.016 : 0.022,                  // +speed per 100m
+      maxSpeed:  tier <= 2 ? 0.40 : tier <= 4 ? 0.62 : 0.85,
+      spawnMs:   tier <= 2 ? 1500 : tier <= 4 ? 1150 : tier <= 6 ? 850 : 650,
+      roadFrac:  tier <= 2 ? 0.94 : tier <= 4 ? 0.84 : 0.74,                     // wider road = easier
+      hitbox:    tier <= 2 ? 0.50 : tier <= 4 ? 0.66 : 0.80,                     // <1 = forgiving
+      graceMs:   tier <= 2 ? 2500 : tier <= 4 ? 1500 : 800,
+      steer:     tier <= 2 ? 0.9 : 1.15,                                         // tilt responsiveness
+    };
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, roadX0 = 0, roadX1 = 0, vSize = 0, oSize = 0;
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      const roadW = W * TUNE.roadFrac;
+      roadX0 = (W - roadW) / 2; roadX1 = roadX0 + roadW;
+      vSize = Math.max(34, Math.min(W, H) * 0.11);
+      oSize = vSize * 0.92;
+      if (car) car.x = Math.min(Math.max(car.x, roadX0 + vSize / 2), roadX1 - vSize / 2);
+    }
+
+    // ── State ───────────────────────────────────────────────────────────────
+    let state = 'pick';            // 'pick' | 'play' | 'over'
+    let theme = THEMES.road;
+    let themeKey = 'road';
+    let car = null;                // {x, target}
+    let obstacles = [];
+    let dist = 0, speed = 0, startedAt = 0, lastSpawn = 0, laneOff = 0, animId = 0, lastT = 0;
+    let best = 0;
+
+    function bestKey(k) { return 'vb_tiltdrive_best_' + k; }
+    function loadBest(k) { return parseInt(localStorage.getItem(bestKey(k)) || '0', 10) || 0; }
+    function saveBest(k, m) { try { localStorage.setItem(bestKey(k), String(m)); } catch (e) {} }
+
+    // ── Steering inputs (tilt + touch + keyboard all feed car.target) ─────────
+    let tiltOn = false, tiltBase = null, tiltVal = 0, lastPointer = 0;
+    function onOrient(e) {
+      if (e.gamma == null) return;
+      tiltOn = true;
+      if (tiltBase == null) tiltBase = e.gamma;       // calibrate to how they're holding it
+      tiltVal = Math.max(-35, Math.min(35, e.gamma - tiltBase));
+    }
+    async function enableTilt() {
+      try {
+        if (typeof DeviceOrientationEvent !== 'undefined' &&
+            typeof DeviceOrientationEvent.requestPermission === 'function') {
+          const r = await DeviceOrientationEvent.requestPermission();   // iOS 13+ (needs the tap gesture)
+          if (r !== 'granted') return false;
+        }
+        window.addEventListener('deviceorientation', onOrient);
+        return true;
+      } catch (e) { return false; }
+    }
+    function onPointer(e) {
+      if (state !== 'play') return;
+      lastPointer = Date.now();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX);
+      car.target = Math.min(Math.max(x, roadX0 + vSize / 2), roadX1 - vSize / 2);
+    }
+    canvas.addEventListener('pointerdown', onPointer);
+    canvas.addEventListener('pointermove', onPointer);
+    window.addEventListener('keydown', (e) => {
+      if (state !== 'play' || !car) return;
+      const step = (roadX1 - roadX0) * 0.16;
+      if (e.key === 'ArrowLeft')  { car.target = Math.max(roadX0 + vSize / 2, car.target - step); lastPointer = Date.now(); }
+      if (e.key === 'ArrowRight') { car.target = Math.min(roadX1 - vSize / 2, car.target + step); lastPointer = Date.now(); }
+    });
+    window.addEventListener('resize', resize);
+
+    // ── Build start picker ────────────────────────────────────────────────────
+    const styleRow = document.getElementById('styleRow');
+    ORDER.forEach(k => {
+      const t = THEMES[k];
+      const card = document.createElement('div');
+      card.className = 'style-card';
+      card.style.background = `linear-gradient(160deg, ${t.top}, ${t.bot})`;
+      card.innerHTML = `<div class="veh">${t.vehicle}</div><div class="nm">${t.name}</div>`;
+      card.addEventListener('click', () => startGame(k));
+      styleRow.appendChild(card);
+    });
+
+    function show(id, on) { document.getElementById(id).classList.toggle('show', on); }
+
+    async function startGame(k) {
+      themeKey = k; theme = THEMES[k];
+      best = loadBest(k);
+      show('startOv', false); show('overOv', false);
+      // the click is the user gesture iOS needs for motion permission
+      tiltBase = null; tiltVal = 0;
+      const got = await enableTilt();
+      const hint = got ? 'Tilt to steer! 🚗' : 'Drag left & right to steer! 👆';
+      if (typeof _showCaption === 'function') _showCaption(hint);
+      resize();
+      car = { x: (roadX0 + roadX1) / 2, target: (roadX0 + roadX1) / 2 };
+      obstacles = []; dist = 0; speed = TUNE.baseSpeed; laneOff = 0;
+      startedAt = Date.now(); lastSpawn = startedAt; lastT = performance.now();
+      state = 'play';
+      document.getElementById('hud').style.display = 'block';
+      cancelAnimationFrame(animId); animId = requestAnimationFrame(loop);
+    }
+
+    function spawnObstacle() {
+      const sz = oSize;
+      const x = roadX0 + sz / 2 + Math.random() * ((roadX1 - roadX0) - sz);
+      obstacles.push({ x, y: -sz, emoji: theme.obstacles[Math.floor(Math.random() * theme.obstacles.length)], sz });
+    }
+
+    function crash() {
+      state = 'over';
+      cancelAnimationFrame(animId);
+      const m = Math.floor(dist);
+      const isBest = m > best;
+      if (isBest) { best = m; saveBest(themeKey, m); }
+      if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
+      if (typeof haptic === 'function') haptic(40);
+      if (window.vbProgress) { try { vbProgress.record('tilt-drive'); } catch (e) {} }
+      if (typeof _showCaption === 'function') _showCaption('Crash! 💥');
+      document.getElementById('hud').style.display = 'none';
+      document.getElementById('overStat').innerHTML =
+        `You drove ${m} m${isBest ? ' 🎉' : ''}<small>${isBest ? 'New best!' : 'Best: ' + best + ' m'}</small>`;
+      show('overOv', true);
+    }
+
+    function aabb(ax, ay, aw, ah, bx, by, bw, bh) {
+      return Math.abs(ax - bx) < (aw + bw) / 2 && Math.abs(ay - by) < (ah + bh) / 2;
+    }
+
+    function loop(now) {
+      const dt = Math.min(50, now - lastT) / 1000; lastT = now;       // seconds, clamped
+      const carY = H * 0.8;
+
+      // steering: tilt nudges unless a touch/keys were used in the last 700ms
+      if (tiltOn && Date.now() - lastPointer > 700) {
+        car.target += (tiltVal / 35) * (roadX1 - roadX0) * TUNE.steer * dt;
+        car.target = Math.min(Math.max(car.target, roadX0 + vSize / 2), roadX1 - vSize / 2);
+      }
+      car.x += (car.target - car.x) * Math.min(1, dt * 12);          // ease toward target
+
+      // forward speed ramps with distance
+      speed = Math.min(TUNE.maxSpeed, TUNE.baseSpeed + (dist / 100) * TUNE.accel);
+      const px = speed * H * dt;                                      // px moved this frame
+      dist += speed * 60 * dt;                                        // "meters" ~ speed*time
+      laneOff = (laneOff + px) % (H * 0.18);
+
+      // spawn (Date.now() to match startedAt / lastPointer clock, NOT the RAF clock)
+      const spawnEvery = TUNE.spawnMs * (TUNE.baseSpeed / speed);     // a touch more often as you speed up
+      const nowMs = Date.now();
+      if (nowMs - lastSpawn > spawnEvery) { spawnObstacle(); lastSpawn = nowMs; }
+
+      // ── draw background + road ──
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, theme.top); g.addColorStop(1, theme.bot);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = theme.edge; ctx.fillRect(0, 0, roadX0, H); ctx.fillRect(roadX1, 0, W - roadX1, H);
+      ctx.fillStyle = theme.lane; ctx.fillRect(roadX0, 0, roadX1 - roadX0, H);
+      // moving centre dashes
+      ctx.fillStyle = theme.stripe;
+      const dashH = H * 0.09, gap = H * 0.18, dw = Math.max(6, W * 0.012);
+      for (let y = -gap + laneOff; y < H; y += gap) ctx.fillRect((roadX0 + roadX1) / 2 - dw / 2, y, dw, dashH);
+
+      // ── obstacles ──
+      const grace = Date.now() - startedAt < TUNE.graceMs;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        const o = obstacles[i];
+        o.y += px;
+        ctx.font = o.sz + 'px serif';
+        ctx.fillText(o.emoji, o.x, o.y);
+        // collision (forgiving hitbox), skipped during start grace
+        if (!grace && aabb(car.x, carY, vSize * TUNE.hitbox, vSize * TUNE.hitbox,
+                           o.x, o.y, o.sz * TUNE.hitbox, o.sz * TUNE.hitbox)) {
+          drawCar(carY, true); crash(); return;
+        }
+        if (o.y > H + o.sz) obstacles.splice(i, 1);
+      }
+
+      drawCar(carY, false);
+
+      // HUD
+      document.getElementById('hudDist').textContent = Math.floor(dist) + ' m';
+      document.getElementById('hudBest').textContent = best ? 'Best ' + best + ' m' : '';
+
+      animId = requestAnimationFrame(loop);
+    }
+
+    function drawCar(carY, hit) {
+      ctx.save();
+      ctx.translate(car.x, carY);
+      const lean = Math.max(-0.3, Math.min(0.3, (car.target - car.x) / 60));
+      ctx.rotate(lean);
+      if (hit) { ctx.globalAlpha = 0.6; }
+      ctx.font = vSize + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(theme.vehicle, 0, 0);
+      ctx.restore();
+    }
+
+    // buttons
+    document.getElementById('againBtn').addEventListener('click', () => startGame(themeKey));
+    document.getElementById('changeBtn').addEventListener('click', () => {
+      show('overOv', false); show('startOv', true); state = 'pick';
+    });
+
+    resize();
+    window.addEventListener('beforeunload', () => cancelAnimationFrame(animId));
+  })();
+  </script>
+</body>
+</html>

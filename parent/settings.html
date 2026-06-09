@@ -560,6 +560,18 @@
           </div>
         </section>
 
+        <!-- 📥 Offline / Travel -->
+        <section class="settings-panel" id="panel-offline" data-key="offline" data-icon="📥" data-title="Offline / Travel" data-group="app">
+          <div class="acc-title"><span class="ic">📥</span><span class="acc-label">Offline / Travel</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>📥 Offline / Travel</h2>
+            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+              Going somewhere with no internet (a plane, the car, grandma's)? Download your family's games, sounds, and mascots onto THIS device so everything works offline. (YouTube and Yoto still need internet.)
+            </div>
+            <div id="offlineSection"></div>
+          </div>
+        </section>
+
         <!-- 🔐 Change PIN -->
         <section class="settings-panel" id="panel-pin" data-key="pin" data-icon="🔐" data-title="Change PIN" data-group="app">
           <div class="acc-title"><span class="ic">🔐</span><span class="acc-label">Change PIN</span><span class="chev">▾</span></div>
@@ -748,6 +760,7 @@
       buildColoringSection();
       buildYotoSection();
       buildSyncSection();
+      buildOfflineSection();
       // Default panel: Activities if kids exist, else Children (so an empty
       // app lands the parent straight on "Add child").
       const startKey = getProfiles().length ? (_activePanel || 'activities') : 'children';
@@ -767,7 +780,7 @@
 
     // Nav groups → panel keys. Order matches the mockup.
     const PER_CHILD_PANELS = ['activities', 'features', 'voice', 'mascot', 'coloring', 'youtube'];
-    const APP_PANELS = ['children', 'yoto', 'sync', 'pin'];
+    const APP_PANELS = ['children', 'yoto', 'sync', 'offline', 'pin'];
 
     function _settingsChild() {
       return getProfiles().find(p => p.id === _settingsChildId) || null;
@@ -1415,6 +1428,139 @@
       if (_voicePlayingCard) { _voicePlayingCard.classList.remove('playing'); _voicePlayingCard = null; }
       const hint = document.getElementById('voiceHint');
       if (hint) hint.textContent = '';
+    }
+
+    // ─── Offline / Travel ───────────────────────────────────────────────────
+    // Downloads the family's media (shared sounds + each used mascot's clips)
+    // into the 'vb-offline' cache, which sw.js preserves across version bumps.
+    // The app shell is already precached, so this only fetches the heavy media.
+    const OFFLINE_CACHE = 'vb-offline';
+    let _offlineBusy = false;
+
+    function _familyMascotIds() {
+      const ids = new Set();
+      getProfiles().forEach(p => { if (p.mascot && p.mascot.id) ids.add(p.mascot.id); });
+      return [...ids];
+    }
+
+    async function _loadOfflineManifest() {
+      const base = (typeof rootPath === 'function') ? rootPath() : '../';
+      const res = await fetch(base + 'offline-manifest.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('manifest ' + res.status);
+      return res.json();
+    }
+
+    // Resolve manifest paths ('./audio/..') to absolute site-root URLs (NOT
+    // /parent/..), so cached keys match what the kid-facing pages request.
+    function _offlineFileList(manifest, mascotIds) {
+      const base = (typeof rootPath === 'function') ? rootPath() : '../';
+      const toUrl = p => new URL(base + p.replace(/^\.\//, ''), location.href).href;
+      const files = [...manifest.shared.files];
+      mascotIds.forEach(id => { if (manifest.mascots[id]) files.push(...manifest.mascots[id].files); });
+      const seen = new Set(), out = [];
+      for (const f of files) { if (!seen.has(f.p)) { seen.add(f.p); out.push({ url: toUrl(f.p), bytes: f.b }); } }
+      return out;
+    }
+
+    const _fmtMB = bytes => (bytes / 1048576).toFixed(0) + ' MB';
+
+    async function buildOfflineSection() {
+      const section = document.getElementById('offlineSection');
+      if (!section) return;
+      if (!('caches' in window)) {
+        section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.7);font-size:13px;">This browser can\'t store offline downloads. Try Chrome or Safari.</div>';
+        return;
+      }
+      let manifest;
+      try { manifest = await _loadOfflineManifest(); }
+      catch (e) {
+        section.innerHTML = '<div class="card" style="color:#ffb4b4;font-size:13px;">Couldn\'t load the offline list — connect to the internet once to set this up.</div>';
+        return;
+      }
+      const mascotIds = _familyMascotIds();
+      const list = _offlineFileList(manifest, mascotIds);
+      const totalBytes = list.reduce((s, f) => s + f.bytes, 0);
+      const cache = await caches.open(OFFLINE_CACHE);
+      const have = (await cache.keys()).length;
+      const done = have > 0 && have >= list.length;
+      const mascotNames = mascotIds
+        .map(id => (window.mascot && window.mascot.labels && window.mascot.labels[id]) || id)
+        .join(', ') || 'none yet — add a child with a mascot first';
+
+      section.innerHTML = `
+        <div class="card">
+          <div style="color:white;font-size:14px;line-height:1.7;margin-bottom:12px;">
+            <div><b>Mascots included:</b> ${esc(mascotNames)}</div>
+            <div><b>Download size:</b> ~${_fmtMB(totalBytes)} &nbsp;<span style="opacity:0.55;">(${list.length} files)</span></div>
+          </div>
+          <div id="offlineProgressWrap" style="display:none;margin-bottom:12px;">
+            <div style="height:10px;background:rgba(255,255,255,0.12);border-radius:6px;overflow:hidden;">
+              <div id="offlineBar" style="height:100%;width:0%;background:#4ECDC4;transition:width 0.2s;"></div>
+            </div>
+            <div id="offlineProgressTxt" style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:6px;">Starting…</div>
+          </div>
+          <div id="offlineStatus" style="font-size:13px;margin-bottom:12px;color:${done ? '#7be0c0' : 'rgba(255,255,255,0.6)'};">
+            ${done ? '✓ Downloaded — ready for offline use.' : (have > 0 ? `Partial download (${have}/${list.length} files). Tap to finish.` : 'Not downloaded yet.')}
+          </div>
+          <div class="row" style="gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-primary" id="offlineDownloadBtn">${done ? 'Re-download / update' : 'Download family for offline use'}</button>
+            <button class="btn btn-ghost" id="offlineRemoveBtn" style="${have > 0 ? '' : 'display:none;'}">Remove download</button>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:10px;line-height:1.5;">
+            Tip: download on wi-fi before you leave. It survives app updates. YouTube &amp; Yoto still need internet.
+          </div>
+        </div>`;
+
+      document.getElementById('offlineDownloadBtn').addEventListener('click', () => _downloadOffline(list));
+      const rm = document.getElementById('offlineRemoveBtn');
+      if (rm) rm.addEventListener('click', _removeOffline);
+    }
+
+    async function _downloadOffline(list) {
+      if (_offlineBusy || !list.length) return;
+      _offlineBusy = true;
+      const wrap = document.getElementById('offlineProgressWrap');
+      const bar = document.getElementById('offlineBar');
+      const txt = document.getElementById('offlineProgressTxt');
+      const status = document.getElementById('offlineStatus');
+      const dlBtn = document.getElementById('offlineDownloadBtn');
+      if (wrap) wrap.style.display = '';
+      if (dlBtn) dlBtn.disabled = true;
+      const cache = await caches.open(OFFLINE_CACHE);
+      let done = 0, failed = 0, quota = false;
+      const queue = list.slice();
+      async function worker() {
+        while (queue.length) {
+          const item = queue.pop();
+          try {
+            const res = await fetch(item.url, { cache: 'no-store' });
+            if (!res.ok) throw new Error(res.status);
+            await cache.put(item.url, res);
+          } catch (e) {
+            failed++;
+            if (e && e.name === 'QuotaExceededError') { quota = true; queue.length = 0; }
+          }
+          done++;
+          const pct = Math.round(done / list.length * 100);
+          if (bar) bar.style.width = pct + '%';
+          if (txt) txt.textContent = `${done} / ${list.length} files (${pct}%)` + (failed ? ` — ${failed} skipped` : '');
+        }
+      }
+      await Promise.all(Array.from({ length: 6 }, worker));  // 6 parallel fetches
+      if (status) {
+        if (quota) { status.style.color = '#ffb4b4'; status.textContent = 'Stopped — this device is out of storage. Free up space (or remove some, then re-download).'; }
+        else if (failed) { status.style.color = '#ffb4b4'; status.textContent = `Downloaded with ${failed} skipped — check your connection and tap Re-download.`; }
+        else { status.style.color = '#7be0c0'; status.textContent = '✓ Downloaded — ready for offline use.'; }
+      }
+      _offlineBusy = false;
+      buildOfflineSection();  // refresh button label + remove button + status
+    }
+
+    async function _removeOffline() {
+      if (_offlineBusy) return;
+      if (!confirm('Remove the offline download from this device? You can re-download later (needs internet).')) return;
+      await caches.delete(OFFLINE_CACHE);
+      buildOfflineSection();
     }
 
     function buildVoiceSection() {
