@@ -13,9 +13,9 @@ const FEATS = { math: { subtract: true, multiply: true }, spelling: { spellMode:
 
 const ACTS = [
   'games/tap-pop', 'games/peek-a-boo', 'games/magic-touch', 'games/tap-a-tune', 'games/surprise-pop', 'games/shape-match',
-  'games/tilt-drive',
+  'games/tilt-drive', 'games/memory-match',
   'learning/hello-colors', 'learning/animal-sounds', 'learning/count-along', 'learning/abcs', 'learning/body-parts',
-  'learning/days', 'learning/math', 'learning/spelling', 'learning/money',
+  'learning/days', 'learning/math', 'learning/spelling', 'learning/money', 'learning/clock',
   'art/stamp-art', 'art/finger-paint', 'art/color-splash', 'art/color-in',
 ];
 const SHELL = ['index', 'home', 'games/index', 'learning/index', 'art/index', 'achievements'];

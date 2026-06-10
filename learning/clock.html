@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Clock Time</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/achievements.css">
+  <style>
+    body { background: linear-gradient(160deg, #2a4d6e, #15293f); }
+    .screen { justify-content: flex-start !important;
+              padding-top: calc(70px + env(safe-area-inset-top));
+              padding-bottom: 160px;
+              overflow-y: auto; }
+    #clockWrap { width: min(72vw, 340px); margin: 0 auto;
+                 filter: drop-shadow(0 8px 22px rgba(0,0,0,0.4)); }
+    .num-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .num-btn {
+      min-width: 92px; min-height: 64px; padding: 12px 18px; border-radius: 18px;
+      background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.25);
+      color: white; font-size: 24px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.12s;
+    }
+    .num-btn:active { transform: scale(0.9); }
+    .num-btn.wrong { animation: shake 0.3s; background: rgba(255,107,107,0.4); }
+    .num-btn.right { background: rgba(168,230,207,0.5); }
+    @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  </style>
+</head>
+<body>
+  <div class="screen" id="stage" style="gap:22px;">
+    <div class="title">🕒 Clock Time</div>
+    <div class="subtitle" id="hint">What time is it?</div>
+    <div id="clockWrap"></div>
+    <div class="num-row" id="choices"></div>
+  </div>
+  <script src="../js/tiers.js"></script>
+  <script src="../js/profiles.js"></script>
+  <script src="../js/voice-manifest.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/yoto-player.js"></script>
+  <script src="../js/game-settings.js"></script>
+  <script src="../js/achievement-defs.js"></script>
+  <script src="../js/achievement-logic.js"></script>
+  <script src="../js/ribbon.js"></script>
+  <script src="../js/celebrate.js"></script>
+  <script src="../js/progress.js"></script>
+  <script>window.VB_ASSET_BASE='../';</script>
+  <script>
+    (function () {
+    const profile = getActiveProfile();
+    if (!profile) { goProfiles(); return; }
+    const tier = getActivityTier(profile, 'clock');
+
+    renderBackBtn('index.html');
+    gameSettings.attach('clock');
+    if (window.vbProgress) { vbProgress.firstPlay('clock'); vbProgress.touchStreak(); }
+
+    // Minute granularity grows with tier: K/Gr1 read o'clock, Gr2 half-past,
+    // Gr3 quarters, Gr4+ any 5 minutes.
+    const MINUTE_CHOICES =
+      tier <= 7 ? [0] :
+      tier <= 8 ? [0, 30] :
+      tier <= 9 ? [0, 15, 30, 45] :
+      [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+    const NS = 'http://www.w3.org/2000/svg';
+    const wrap = document.getElementById('clockWrap');
+    const choicesRow = document.getElementById('choices');
+    let roundTimer = null, lastKey = null;
+    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+
+    function el(tag, attrs) {
+      const n = document.createElementNS(NS, tag);
+      for (const k in attrs) n.setAttribute(k, attrs[k]);
+      return n;
+    }
+
+    function drawClock(h, m) {
+      wrap.innerHTML = '';
+      const svg = el('svg', { viewBox: '0 0 200 200' });
+      svg.appendChild(el('circle', { cx: 100, cy: 100, r: 96, fill: '#fdf6e3', stroke: '#2a4d6e', 'stroke-width': 6 }));
+      // ticks + numerals
+      for (let i = 1; i <= 12; i++) {
+        const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+        const tx = 100 + Math.cos(a) * 78, ty = 100 + Math.sin(a) * 78;
+        const ox = 100 + Math.cos(a) * 90, oy = 100 + Math.sin(a) * 90;
+        const ix = 100 + Math.cos(a) * 84, iy = 100 + Math.sin(a) * 84;
+        svg.appendChild(el('line', { x1: ix, y1: iy, x2: ox, y2: oy, stroke: '#2a4d6e', 'stroke-width': 3, 'stroke-linecap': 'round' }));
+        const t = el('text', { x: tx, y: ty, 'text-anchor': 'middle', 'dominant-baseline': 'central',
+          'font-size': 17, 'font-weight': 800, 'font-family': 'Arial, sans-serif', fill: '#1a3149' });
+        t.textContent = i;
+        svg.appendChild(t);
+      }
+      // minute ticks
+      for (let i = 0; i < 60; i++) {
+        if (i % 5 === 0) continue;
+        const a = (i / 60) * Math.PI * 2 - Math.PI / 2;
+        svg.appendChild(el('line', {
+          x1: 100 + Math.cos(a) * 88, y1: 100 + Math.sin(a) * 88,
+          x2: 100 + Math.cos(a) * 91, y2: 100 + Math.sin(a) * 91,
+          stroke: '#7d93a8', 'stroke-width': 1.5, 'stroke-linecap': 'round' }));
+      }
+      // hands — hour hand advances with minutes like a real clock
+      const ha = ((h % 12) / 12 + m / 60 / 12) * Math.PI * 2 - Math.PI / 2;
+      const ma = (m / 60) * Math.PI * 2 - Math.PI / 2;
+      svg.appendChild(el('line', { x1: 100, y1: 100, x2: 100 + Math.cos(ha) * 46, y2: 100 + Math.sin(ha) * 46,
+        stroke: '#1a3149', 'stroke-width': 8, 'stroke-linecap': 'round' }));
+      svg.appendChild(el('line', { x1: 100, y1: 100, x2: 100 + Math.cos(ma) * 68, y2: 100 + Math.sin(ma) * 68,
+        stroke: '#e2574c', 'stroke-width': 5, 'stroke-linecap': 'round' }));
+      svg.appendChild(el('circle', { cx: 100, cy: 100, r: 7, fill: '#1a3149' }));
+      wrap.appendChild(svg);
+    }
+
+    const fmt = (h, m) => `${h}:${String(m).padStart(2, '0')}`;
+
+    function nextRound() {
+      choicesRow.innerHTML = ''; clearTimeout(roundTimer);
+      let h, m, key;
+      do {
+        h = 1 + Math.floor(Math.random() * 12);
+        m = MINUTE_CHOICES[Math.floor(Math.random() * MINUTE_CHOICES.length)];
+        key = fmt(h, m);
+      } while (key === lastKey);
+      lastKey = key;
+
+      drawClock(h, m);
+      document.getElementById('hint').textContent = 'What time is it?';
+      setTimeout(() => speak('What time is it?'), 400);
+
+      // 4 choices: right one + distractors (different hour, or different minutes)
+      const opts = new Set([key]);
+      while (opts.size < 4) {
+        const wrongH = 1 + Math.floor(Math.random() * 12);
+        const wrongM = MINUTE_CHOICES[Math.floor(Math.random() * MINUTE_CHOICES.length)];
+        const k = fmt(wrongH, wrongM);
+        if (k !== key) opts.add(k);
+      }
+      [...opts].sort(() => Math.random() - 0.5).forEach(k => {
+        const btn = document.createElement('div');
+        btn.className = 'num-btn'; btn.textContent = k;
+        btn.addEventListener('pointerdown', () => {
+          if (k === key) {
+            btn.classList.add('right');
+            playSuccess();
+            if (window.vbProgress) {
+              vbProgress.record('clock');
+              if (m % 15 !== 0) vbProgress.mastery('clock.mastery');  // read a 5-minute time
+            }
+            roundTimer = setTimeout(nextRound, 1800);
+          } else {
+            btn.classList.add('wrong');
+            playBoop();
+            setTimeout(() => btn.classList.remove('wrong'), 350);
+          }
+        });
+        choicesRow.appendChild(btn);
+      });
+    }
+    nextRound();
+    })();
+  </script>
+</body>
+</html>

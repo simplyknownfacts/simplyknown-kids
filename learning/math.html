@@ -85,6 +85,8 @@
     // Op availability: auto-on at age-recommended tier OR parent-opted-in via toggle
     const subOn = tier >= 6 || getProfileFeature(profile, 'math', 'subtract');
     const mulOn = tier >= 8 || getProfileFeature(profile, 'math', 'multiply');
+    const divOn = tier >= 9 || getProfileFeature(profile, 'math', 'divide');
+    const missOn = tier >= 10 || getProfileFeature(profile, 'math', 'missingNumber');
 
     const ITEMS = ['🍎','🍌','🚗','⭐','🐱','🎈','🍦','🦋'];
     const bodyEl = document.getElementById('body');
@@ -107,6 +109,7 @@
       const ops = ['+'];
       if (subOn) ops.push('−');
       if (mulOn) ops.push('×');
+      if (divOn) ops.push('÷');
       return ops[Math.floor(Math.random() * ops.length)];
     }
 
@@ -116,7 +119,11 @@
 
       const op = pickOp();
       let a, b, ans, maxRand;
-      if (op === '×') {
+      if (op === '÷') {
+        // built backwards (divisor × quotient) so every problem divides cleanly
+        b = 2 + Math.floor(Math.random() * 4); ans = 2 + Math.floor(Math.random() * 8);
+        a = b * ans; maxRand = Math.max(12, ans + 5);
+      } else if (op === '×') {
         a = 2 + Math.floor(Math.random() * 4); b = 2 + Math.floor(Math.random() * 4);
         ans = a * b; maxRand = Math.max(20, ans + 5);
       } else if (op === '−') {
@@ -132,13 +139,19 @@
         ans = a + b;
       }
 
-      hint.textContent = op === '−' ? 'How many are left?'
-                       : op === '×' ? 'What\'s the answer?'
+      // Missing-number problems (7 + ▢ = 12): ask for an operand, not the result.
+      const missing = missOn && (op === '+' || op === '−') && Math.random() < 0.35;
+      const target = missing ? b : ans;
+
+      hint.textContent = missing ? 'What\'s the missing number?'
+                       : op === '−' ? 'How many are left?'
+                       : op === '×' || op === '÷' ? 'What\'s the answer?'
                        : tier <= 5 ? 'How many in all?' : 'What\'s the answer?';
 
       const eq = document.createElement('div'); eq.className = 'eq-row';
-      // Visual piles at lower tiers (skip × — groups-of-objects gets confusing)
-      if (tier <= 6 && op !== '×') {
+      const box = document.createElement('div'); box.className = 'answer-box';
+      // Visual piles at lower tiers (skip ×/÷ — groups-of-objects gets confusing)
+      if (!missing && tier <= 6 && op !== '×' && op !== '÷') {
         eq.appendChild(pile(a, item));
         const opEl = document.createElement('span'); opEl.className = 'op'; opEl.textContent = op;
         eq.appendChild(opEl);
@@ -146,32 +159,41 @@
       } else {
         const numA = document.createElement('span'); numA.textContent = a;
         const opEl = document.createElement('span'); opEl.className = 'op'; opEl.textContent = op;
-        const numB = document.createElement('span'); numB.textContent = b;
-        eq.appendChild(numA); eq.appendChild(opEl); eq.appendChild(numB);
+        eq.appendChild(numA); eq.appendChild(opEl);
+        if (missing) {
+          eq.appendChild(box);          // the blank IS an operand: a + ▢ = ans
+        } else {
+          const numB = document.createElement('span'); numB.textContent = b;
+          eq.appendChild(numB);
+        }
       }
       const eqEl = document.createElement('span'); eqEl.className = 'op'; eqEl.textContent = '=';
       eq.appendChild(eqEl);
-      const box = document.createElement('div'); box.className = 'answer-box';
-      eq.appendChild(box);
+      if (missing) {
+        const numAns = document.createElement('span'); numAns.textContent = ans;
+        eq.appendChild(numAns);
+      } else {
+        eq.appendChild(box);
+      }
       bodyEl.appendChild(eq);
 
       // Speak the equation
-      const opWord = op === '+' ? 'plus' : op === '−' ? 'minus' : 'times';
-      setTimeout(() => speak(`${a} ${opWord} ${b}?`), 400);
+      const opWord = op === '+' ? 'plus' : op === '−' ? 'minus' : op === '×' ? 'times' : 'divided by';
+      setTimeout(() => speak(missing ? `${a} ${opWord} what equals ${ans}?` : `${a} ${opWord} ${b}?`), 400);
 
       // Number choices: target + 3 plausible distractors
-      const choices = new Set([ans]);
+      const choices = new Set([target]);
       while (choices.size < 4) {
-        const r = Math.max(0, Math.min(maxRand, ans + Math.floor((Math.random() - 0.5) * 8)));
-        if (r !== ans) choices.add(r);
+        const r = Math.max(0, Math.min(maxRand, target + Math.floor((Math.random() - 0.5) * 8)));
+        if (r !== target) choices.add(r);
       }
       const numRow = document.createElement('div'); numRow.className = 'num-row';
       [...choices].sort(() => Math.random() - 0.5).forEach(n => {
         const btn = document.createElement('div');
         btn.className = 'num-btn'; btn.textContent = n;
         btn.addEventListener('pointerdown', () => {
-          if (n === ans) {
-            box.textContent = ans; box.classList.add('filled');
+          if (n === target) {
+            box.textContent = target; box.classList.add('filled');
             playSuccess();
             if (window.vbProgress) { vbProgress.record('math'); if (op === '−') vbProgress.mastery('math.mastery'); }
             speak(`${a} ${opWord} ${b} equals ${ans}!`);

@@ -28,6 +28,7 @@ const ACTIVITY_FEATURES = [
     { key:'dragMode',      label:'Drag-to-match mode',                      minTier:1 },
   ]},
   { id:'tilt-drive',    name:'Tilt Drive',       icon:'🏎️', file:'tilt-drive.html', section:'games', minTier:1, features:[] },
+  { id:'memory-match',  name:'Memory Match',     icon:'🃏', file:'memory-match.html', section:'games', minTier:2, features:[] },
 
   { id:'hello-colors',  name:'Hello Colors',     icon:'🌈', file:'hello-colors.html',  section:'learn', minTier:1, features:[
     { key:'colorQuiz',     label:'Color quiz mode',                         minTier:4 },
@@ -48,12 +49,16 @@ const ACTIVITY_FEATURES = [
   { id:'math',          name:'Math Mountain',    icon:'➕', file:'math.html',          section:'learn', minTier:4, features:[
     { key:'subtract',      label:'Include subtraction',                     minTier:5 },
     { key:'multiply',      label:'Include multiplication',                  minTier:8 },
+    { key:'divide',        label:'Include division',                        minTier:9 },
+    { key:'missingNumber', label:'Missing-number problems (7 + _ = 12)',    minTier:10 },
   ]},
+  { id:'clock',         name:'Clock Time',       icon:'🕒', file:'clock.html',         section:'learn', minTier:6, features:[] },
   { id:'spelling',      name:'Spelling Bee',     icon:'🐝', file:'spelling.html',      section:'learn', minTier:4, features:[
     { key:'spellMode',     label:'Spell from letter bank',                  minTier:6 },
   ]},
   { id:'money',         name:'Money',            icon:'💰', file:'money.html',         section:'learn', minTier:4, features:[
     { key:'countMode',     label:'Count coin + bill totals',                minTier:6 },
+    { key:'makeChange',    label:'Make change (pay $1, get back…)',         minTier:9 },
   ]},
   { id:'body-parts',    name:'Body Parts',       icon:'👤', file:'body-parts.html',    section:'learn', minTier:2, features:[
     { key:'allParts',      label:'Include extra parts (hair, belly, etc.)', minTier:4 },

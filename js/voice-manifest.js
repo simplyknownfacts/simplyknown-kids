@@ -135,6 +135,11 @@ _phrases.push(`What's the answer?`);
 // Money
 _phrases.push('How much money is here?');
 
+// Memory Match + Clock Time (v107)
+_phrases.push('Find the matching pairs!');
+_phrases.push('A match!');
+_phrases.push('What time is it?');
+
 // Ribbon award — spoken in the child's voice when a ribbon is earned (js/celebrate.js)
 _phrases.push('You earned a new ribbon!');
 

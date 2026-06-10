@@ -302,6 +302,13 @@ function speak(text, rate = 0.85, pitch = 1.2) {
   // call that builds one chain.
   cancelSpeak();
   _showCaption(text);
+  // Big kids (Grade 3+, age tier ≥9) read: captions + SFX only, no spoken
+  // prompts — a 9-year-old finds the narration babyish. Age-based on purpose
+  // (not per-activity override) so one kid gets one consistent experience.
+  try {
+    const p = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
+    if (p && typeof tierForAge === 'function' && tierForAge(getAgeMonths(p.birthday)) >= 9) return;
+  } catch (e) {}
   const v = _getActiveVoice();
   if (v === 'browser') return _browserSpeak(text, rate, pitch);
   return _voiceSpeak(text, v);

@@ -18,7 +18,7 @@ export const VIEWPORTS = {
 
 // Birthday that lands a profile in the middle of each tier's month range.
 export const tierBirthday = (tier) => {
-  const months = [6, 18, 30, 42, 54, 66, 78, 120][tier - 1];
+  const months = [6, 18, 30, 42, 54, 66, 78, 90, 102, 114][tier - 1];
   const d = new Date(2026, 5, 5); d.setMonth(d.getMonth() - months);
   return d.toISOString().slice(0, 10);
 };

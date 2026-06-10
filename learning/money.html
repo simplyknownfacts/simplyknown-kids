@@ -64,6 +64,7 @@
     if (window.vbProgress) { vbProgress.firstPlay('money'); vbProgress.touchStreak(); }
 
     const countOn = tier >= 6 || getProfileFeature(profile, 'money', 'countMode');
+    const changeOn = tier >= 9 || getProfileFeature(profile, 'money', 'makeChange');
 
     // Real-world relative sizes (dime smallest, quarter biggest among coins).
     // Diameters (px) on phones; bills are rectangles.
@@ -166,8 +167,57 @@
     let lastTargetId = null;
     window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
 
+    // Make-change round (Grade 3+): "It costs 65¢, you pay $1 — what's the change?"
+    function changeRound() {
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+      // Grade 4+ sometimes pays $5 for a dollars-range price; otherwise pay $1
+      const bigRound = tier >= 10 && Math.random() < 0.5;
+      const paid = bigRound ? 500 : 100;
+      const price = bigRound
+        ? 25 * (1 + Math.floor(Math.random() * 19))            // 25¢..475¢ step 25
+        : 5 * (1 + Math.floor(Math.random() * 19));            // 5¢..95¢ step 5
+      const change = paid - price;
+
+      hint.textContent = `It costs ${moneyLabel(price)}. You pay ${moneyLabel(paid)}. How much change?`;
+
+      const row = document.createElement('div'); row.className = 'money-row';
+      const tag = document.createElement('div');
+      tag.style.cssText = 'font-size:clamp(34px,8vw,52px);font-weight:900;color:white;display:flex;align-items:center;gap:10px;';
+      tag.textContent = `🏷️ ${moneyLabel(price)}`;
+      row.appendChild(tag);
+      row.appendChild(makeMoney(MONEY.find(m => m.cents === paid) || MONEY[MONEY.length - 1]));
+      bodyEl.appendChild(row);
+
+      const step = bigRound ? 25 : 5;
+      const choices = new Set([change]);
+      while (choices.size < 4) {
+        const r = change + (Math.floor(Math.random() * 7) - 3) * step;
+        if (r > 0 && r < paid && r !== change) choices.add(r);
+      }
+      const numRow = document.createElement('div'); numRow.className = 'num-row';
+      [...choices].sort((a, b) => a - b).forEach(n => {
+        const btn = document.createElement('div');
+        btn.className = 'num-btn'; btn.textContent = moneyLabel(n);
+        btn.addEventListener('pointerdown', () => {
+          if (n === change) {
+            playSuccess();
+            if (window.vbProgress) vbProgress.record('money');
+            btn.style.background = 'rgba(168,230,207,0.5)';
+            roundTimer = setTimeout(nextRound, 2000);
+          } else {
+            btn.classList.add('wrong');
+            playBoop();
+            setTimeout(() => btn.classList.remove('wrong'), 350);
+          }
+        });
+        numRow.appendChild(btn);
+      });
+      bodyEl.appendChild(numRow);
+    }
+
     function nextRound() {
       bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+      if (changeOn && Math.random() < 0.45) { changeRound(); return; }
 
       // Pool by tier
       const pool = tier <= 4

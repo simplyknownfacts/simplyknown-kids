@@ -18,10 +18,10 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, 'out');
-const BASE = (process.env.BASE || 'https://kids.simplyknown.co').replace(/\/$/, '');
+const BASE = (process.env.BASE || process.env.BASE_URL || 'https://kids.simplyknown.co').replace(/\/$/, '');
 const args = process.argv.slice(2);
 const argVal = (n) => { const a = args.find((x) => x.startsWith(`--${n}=`)); return a ? a.split('=')[1] : null; };
-const TIERS = argVal('tiers') ? argVal('tiers').split(',').map(Number) : [1, 2, 3, 4, 5, 6, 7, 8];
+const TIERS = argVal('tiers') ? argVal('tiers').split(',').map(Number) : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const CONC = Number(argVal('conc') || 4);
 const VIEWPORT = { width: 1280, height: 900 }; // wide => settings sidebar layout
 
@@ -30,6 +30,8 @@ const SECTION_DIR = { games: 'games', learn: 'learning', art: 'art' };
 const ACTIVITIES = [
   { id: 'tap-pop', name: 'Tap & Pop', section: 'games', file: 'games/tap-pop.html', minTier: 1 },
   { id: 'shape-match', name: 'Shape Match', section: 'games', file: 'games/shape-match.html', minTier: 1 },
+  { id: 'memory-match', name: 'Memory Match', section: 'games', file: 'games/memory-match.html', minTier: 2 },
+  { id: 'clock', name: 'Clock Time', section: 'learn', file: 'learning/clock.html', minTier: 6 },
   { id: 'hello-colors', name: 'Hello Colors', section: 'learn', file: 'learning/hello-colors.html', minTier: 1 },
   { id: 'animal-sounds', name: 'Animal Sounds', section: 'learn', file: 'learning/animal-sounds.html', minTier: 1 },
   { id: 'count-along', name: 'Count Along', section: 'learn', file: 'learning/count-along.html', minTier: 2 },
@@ -62,16 +64,18 @@ const FEATURES = {
   'color-splash': [{ k: 'colorPicker', t: 2, label: 'Color picker' }],
 };
 const EXPECT_VISIBLE = { // per tier: games/learn/art (for gating assertion)
-  // games: all 7 catalog games are minTier 1 (4 young-kid games added v81-v101, Tilt Drive v104)
-  1: { games: 7, learn: 2, art: 3 }, 2: { games: 7, learn: 5, art: 4 },
-  3: { games: 7, learn: 6, art: 4 }, 4: { games: 7, learn: 9, art: 4 },
-  5: { games: 7, learn: 9, art: 4 }, 6: { games: 7, learn: 9, art: 4 },
-  7: { games: 7, learn: 9, art: 4 }, 8: { games: 7, learn: 9, art: 4 },
+  // games: 7 catalog games minTier 1 + Memory Match minTier 2 (v107).
+  // learn: Clock Time minTier 6 (v107) takes the count to 10 from Kindergarten up.
+  1: { games: 7, learn: 2, art: 3 },  2: { games: 8, learn: 5, art: 4 },
+  3: { games: 8, learn: 6, art: 4 },  4: { games: 8, learn: 9, art: 4 },
+  5: { games: 8, learn: 9, art: 4 },  6: { games: 8, learn: 10, art: 4 },
+  7: { games: 8, learn: 10, art: 4 }, 8: { games: 8, learn: 10, art: 4 },
+  9: { games: 8, learn: 10, art: 4 }, 10: { games: 8, learn: 10, art: 4 },
 };
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 function birthdayForTier(tier) {
-  const months = { 1: 6, 2: 18, 3: 30, 4: 42, 5: 54, 6: 66, 7: 78, 8: 120 }[tier];
+  const months = { 1: 6, 2: 18, 3: 30, 4: 42, 5: 54, 6: 66, 7: 78, 8: 90, 9: 102, 10: 114 }[tier];
   const d = new Date(); d.setDate(15); d.setMonth(d.getMonth() - months);
   return d.toISOString().slice(0, 10);
 }
@@ -145,6 +149,27 @@ async function play(page, act, tier) {
         if (await page.locator(`.target[data-shape="${sh}"].matched`).count()) matched++;
       }
       return { ok: matched > 0 || await bumped(), signal: `drag mode, ${matched}/${shapes.length} matched` };
+    }
+    if (id === 'memory-match') {
+      // cheat via data-face: click a known matching pair
+      const faces = await page.locator('#board .mm-card').evaluateAll((els) => els.map((e) => e.dataset.face));
+      const seen = {};
+      let pair = null;
+      faces.forEach((f, i) => { if (seen[f] != null && !pair) pair = [seen[f], i]; seen[f] = i; });
+      if (pair) {
+        await page.locator('#board .mm-card').nth(pair[0]).click({ timeout: 3000 }).catch(() => {});
+        await sleep(450);
+        await page.locator('#board .mm-card').nth(pair[1]).click({ timeout: 3000 }).catch(() => {});
+        await sleep(600);
+      }
+      return { ok: await bumped(), signal: `flipped a known pair (${faces.length} cards)` };
+    }
+    if (id === 'clock') {
+      // 4 time choices; brute-force until the counter bumps
+      const btns = page.locator('#choices .num-btn');
+      const n = await btns.count();
+      for (let i = 0; i < n && !(await bumped()); i++) { await btns.nth(i).click({ timeout: 3000 }).catch(() => {}); await sleep(300); }
+      return { ok: await bumped(), signal: `clock quiz, tried ${n} times` };
     }
     if (id === 'peek-a-boo') {
       if (tier <= 2) { const solo = await page.locator('.animal-solo').count(); return { ok: solo > 0, signal: 'auto mode (no input)', note: 'tier<=2 auto-cycles' }; }
@@ -232,8 +257,25 @@ async function play(page, act, tier) {
         return { a, b, op };
       }).catch(() => null);
       if (eq && eq.a != null && eq.b != null) {
-        const ans = eq.op.includes('-') || eq.op.includes('−') ? eq.a - eq.b : eq.op.includes('×') || eq.op.includes('x') ? eq.a * eq.b : eq.a + eq.b;
+        // v107: missing-number rounds put the answer-box BEFORE '=' (a op ▢ = total);
+        // there the regex picked up [a, total] and the target is the operand.
+        const missing = await page.evaluate(() => {
+          const kids = [...(document.querySelector('.eq-row') || { children: [] }).children];
+          const bi = kids.findIndex(k => k.classList && k.classList.contains('answer-box'));
+          const ei = kids.findIndex(k => k.textContent === '=');
+          return bi >= 0 && ei > bi;
+        }).catch(() => false);
+        const sub = eq.op.includes('-') || eq.op.includes('−');
+        const ans = missing ? (sub ? eq.a - eq.b : eq.b - eq.a)
+          : sub ? eq.a - eq.b
+          : eq.op.includes('×') || eq.op.includes('x') ? eq.a * eq.b
+          : eq.op.includes('÷') ? eq.a / eq.b
+          : eq.a + eq.b;
         await page.locator('.num-row .num-btn', { hasText: new RegExp(`^${ans}$`) }).first().click({ timeout: 3000 }).catch(() => {});
+      }
+      if (!(await bumped())) { // fallback: brute-force the 4 choices
+        const btns = page.locator('.num-row .num-btn'); const m = await btns.count();
+        for (let i = 0; i < m && !(await bumped()); i++) { await btns.nth(i).click().catch(() => {}); await sleep(250); }
       }
       return { ok: await bumped() || !!(await page.locator('.answer-box.filled').count()), signal: eq ? `${eq.a}${eq.op}${eq.b}` : 'parse failed' };
     }

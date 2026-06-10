@@ -13,6 +13,8 @@
     // counter = cumulative meters driven (crash() records the run's distance),
     // so the shared tap-scale fits: bronze 50m ≈ first run, ★ per 300m.
     { id:'tilt-drive',   name:'Tilt Drive',   icon:'🏎️', section:'games', noun:'meters driven', mastery:null },
+    { id:'memory-match', name:'Memory Match', icon:'🃏', section:'games', noun:'pairs matched',
+      mastery:{ title:'Memory Master', hint:'Clear a whole board' } },
 
     { id:'hello-colors', name:'Hello Colors', icon:'🌈', section:'learn', noun:'colors named',
       mastery:{ title:'Color Whiz', hint:'Win the color quiz' } },
@@ -32,6 +34,8 @@
       mastery:{ title:'Money Smart', hint:'Count a coin total' } },
     { id:'body-parts',   name:'Body Parts',   icon:'👤', section:'learn', noun:'parts named',
       mastery:{ title:'Body Boss', hint:'Name an extra part' } },
+    { id:'clock',        name:'Clock Time',   icon:'🕒', section:'learn', noun:'times read',
+      mastery:{ title:'Time Keeper', hint:'Read a 5-minute time' } },
 
     { id:'stamp-art',    name:'Stamp Art',    icon:'⭐', section:'art', noun:'stamps placed', mastery:null },
     { id:'finger-paint', name:'Finger Paint', icon:'🖌️', section:'art', noun:'strokes painted', mastery:null },
@@ -62,7 +66,8 @@
   var REPEAT_SLOW = 120; // was 50 — too spammy on tap-driven 'slow' activities (e.g. Body Parts: a 6yo earned a ribbon every ~2 min). 120 ≈ a few-minute cadence.
   var SLOW_ACTIVITIES = {
     'shape-match':1, 'hello-colors':1, 'animal-sounds':1, 'count-along':1, 'abcs':1,
-    'days':1, 'math':1, 'spelling':1, 'money':1, 'body-parts':1
+    'days':1, 'math':1, 'spelling':1, 'money':1, 'body-parts':1,
+    'memory-match':1, 'clock':1
   };
   function repeatEveryFor(id) { return SLOW_ACTIVITIES[id] ? REPEAT_SLOW : REPEAT_FAST; }
 

@@ -9,7 +9,9 @@ const TIERS = [
   { tier: 5, label: 'Pre-K+',       ageRange: '4-5 yr',   minMonths: 48,  maxMonths: 60  },
   { tier: 6, label: 'Kindergarten', ageRange: '5-6 yr',   minMonths: 60,  maxMonths: 72  },
   { tier: 7, label: 'Grade 1',      ageRange: '6-7 yr',   minMonths: 72,  maxMonths: 84  },
-  { tier: 8, label: 'Grade 2+',     ageRange: '7+ yr',    minMonths: 84,  maxMonths: 9999},
+  { tier: 8, label: 'Grade 2',      ageRange: '7-8 yr',   minMonths: 84,  maxMonths: 96  },
+  { tier: 9, label: 'Grade 3',      ageRange: '8-9 yr',   minMonths: 96,  maxMonths: 108 },
+  { tier: 10, label: 'Grade 4+',    ageRange: '9+ yr',    minMonths: 108, maxMonths: 9999},
 ];
 
 function getAgeMonths(birthday) {
@@ -23,13 +25,13 @@ function getAgeMonths(birthday) {
 
 function tierForAge(ageMonths) {
   const t = TIERS.find(t => ageMonths >= t.minMonths && ageMonths < t.maxMonths);
-  return t ? t.tier : 8;
+  return t ? t.tier : 10;
 }
 
 function tierLabel(tier) {
-  return (TIERS.find(t => t.tier === tier) || {}).label || 'Grade 2+';
+  return (TIERS.find(t => t.tier === tier) || {}).label || 'Grade 4+';
 }
 
 function tierAgeRange(tier) {
-  return (TIERS.find(t => t.tier === tier) || {}).ageRange || '7+ yr';
+  return (TIERS.find(t => t.tier === tier) || {}).ageRange || '9+ yr';
 }
