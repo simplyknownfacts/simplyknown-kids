@@ -44,6 +44,10 @@ const MASCOTS = {
   bunny:   { name: 'Bunny',   prompt: 'a friendly cartoon baby bunny rabbit sitting upright, big expressive eyes, long soft ears, fluffy white and gray fur, little pink nose, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, sweet happy smile' },
   fox:     { name: 'Fox',     prompt: 'a friendly cartoon fox cub sitting upright, big expressive eyes, orange fur with a white chest and cheeks, fluffy white-tipped tail, dark little paws, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, happy friendly smile' },
   penguin: { name: 'Penguin', prompt: 'a friendly cartoon baby penguin standing upright, big expressive eyes, classic black and white body, little orange beak and orange feet, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, cheerful happy smile' },
+
+  // ── v108 (Scott request 2026-06-09) ──
+  axolotl: { name: 'Axolotl', prompt: 'a friendly cartoon baby axolotl standing upright on its little legs, soft pink body with feathery external gills fanning out from its head like a cute crown, big expressive dark eyes, wide sweet smile, tiny front legs visible, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, happy friendly expression' },
+  tabby:   { name: 'Tabby Cat', prompt: 'a friendly cartoon tabby kitten sitting upright, big expressive green eyes, orange-and-brown striped fur with a classic M marking on the forehead, white chest and paws, fluffy striped tail curled around its feet, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, mouth slightly open in a happy smile' },
 };
 
 const PHRASES = [
@@ -84,6 +88,10 @@ const PITCH_RATIO = 1.189207;
 
 // ───── helpers ──────────────────────────────────────────────────────────
 
+// Every network call gets a hard 3-min timeout — a dropped connection once hung
+// the whole pipeline for 5+ hours (node fetch has NO default timeout).
+const tfetch = (url, opts = {}) => fetch(url, { ...opts, signal: AbortSignal.timeout(180000) });
+
 function b64url(buf) {
   return Buffer.from(buf).toString('base64')
     .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -104,7 +112,7 @@ async function genImage(prompt, outPath) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY missing');
   const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${key}`;
-  const res = await fetch(url, {
+  const res = await tfetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -124,7 +132,7 @@ async function genVoice(text, voiceId, outPath, pitch = true) {
   const key = process.env.ELEVENLABS_API_KEY;
   if (!key) throw new Error('ELEVENLABS_API_KEY missing');
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
-  const res = await fetch(url, {
+  const res = await tfetch(url, {
     method: 'POST',
     headers: { 'xi-api-key': key, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
     body: JSON.stringify({
@@ -156,7 +164,7 @@ async function replicateLipSync(imagePath, audioPath, outPath, motionPrompt) {
   if (!key) throw new Error('REPLICATE_API_TOKEN missing');
 
   // Look up the latest version of prunaai/p-video-avatar (works with cartoon faces).
-  const modelRes = await fetch('https://api.replicate.com/v1/models/prunaai/p-video-avatar', {
+  const modelRes = await tfetch('https://api.replicate.com/v1/models/prunaai/p-video-avatar', {
     headers: { Authorization: `Token ${key}` },
   });
   if (!modelRes.ok) throw new Error(`Replicate model lookup ${modelRes.status}: ${await modelRes.text()}`);
@@ -172,7 +180,7 @@ async function replicateLipSync(imagePath, audioPath, outPath, motionPrompt) {
   // Create prediction, retrying on 429 (Replicate rate-limits to 6/min while balance < $5).
   let prediction;
   for (let attempt = 1; attempt <= 6; attempt++) {
-    const create = await fetch('https://api.replicate.com/v1/predictions', {
+    const create = await tfetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: { Authorization: `Token ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -203,7 +211,7 @@ async function replicateLipSync(imagePath, audioPath, outPath, motionPrompt) {
   while (result.status !== 'succeeded' && result.status !== 'failed' && result.status !== 'canceled') {
     if (Date.now() - start > 10 * 60 * 1000) throw new Error('Replicate timeout');
     await new Promise(r => setTimeout(r, 4000));
-    const poll = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
+    const poll = await tfetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
       headers: { Authorization: `Token ${key}` },
     });
     if (!poll.ok) { console.warn(`  poll ${poll.status}`); continue; }
@@ -214,7 +222,7 @@ async function replicateLipSync(imagePath, audioPath, outPath, motionPrompt) {
   // Output may be a string URL or { video: url } depending on model
   const outputUrl = typeof result.output === 'string' ? result.output : (result.output?.video || result.output?.[0]);
   if (!outputUrl) throw new Error('Replicate no output: ' + JSON.stringify(result.output).slice(0, 200));
-  const vid = await fetch(outputUrl);
+  const vid = await tfetch(outputUrl);
   fs.writeFileSync(outPath, Buffer.from(await vid.arrayBuffer()));
   return outPath;
 }
@@ -224,7 +232,7 @@ async function klingPoll(path, taskId) {
   const start = Date.now();
   while (Date.now() - start < 10 * 60 * 1000) {
     await new Promise(r => setTimeout(r, 6000));
-    const q = await fetch(queryUrl, { headers: { Authorization: `Bearer ${klingJWT()}` } });
+    const q = await tfetch(queryUrl, { headers: { Authorization: `Bearer ${klingJWT()}` } });
     if (!q.ok) { console.warn(`  poll ${q.status}: ${(await q.text()).slice(0,200)}`); continue; }
     const data = (await q.json())?.data;
     const status = data?.task_status;
@@ -247,7 +255,7 @@ async function klingImage2Video(imagePath, prompt, outVidPath) {
     prompt,
     cfg_scale: 0.5,
   };
-  const res = await fetch('https://api.klingai.com/v1/videos/image2video', {
+  const res = await tfetch('https://api.klingai.com/v1/videos/image2video', {
     method: 'POST',
     headers: { Authorization: `Bearer ${klingJWT()}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -260,7 +268,7 @@ async function klingImage2Video(imagePath, prompt, outVidPath) {
   const videoId = data?.task_result?.videos?.[0]?.id;
   const videoUrl = data?.task_result?.videos?.[0]?.url;
   if (!videoId || !videoUrl) throw new Error('image2video no id/url: ' + JSON.stringify(data));
-  const vid = await fetch(videoUrl);
+  const vid = await tfetch(videoUrl);
   fs.writeFileSync(outVidPath, Buffer.from(await vid.arrayBuffer()));
   return { videoId, videoUrl };
 }
@@ -277,7 +285,7 @@ async function klingLipSync(videoId, audioPath, outPath) {
       audio_file: audioB64,
     },
   };
-  const res = await fetch('https://api.klingai.com/v1/videos/lip-sync', {
+  const res = await tfetch('https://api.klingai.com/v1/videos/lip-sync', {
     method: 'POST',
     headers: { Authorization: `Bearer ${klingJWT()}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -289,7 +297,7 @@ async function klingLipSync(videoId, audioPath, outPath) {
   const data = await klingPoll('/v1/videos/lip-sync', taskId);
   const videoUrl = data?.task_result?.videos?.[0]?.url;
   if (!videoUrl) throw new Error('lip-sync no URL: ' + JSON.stringify(data));
-  const vid = await fetch(videoUrl);
+  const vid = await tfetch(videoUrl);
   fs.writeFileSync(outPath, Buffer.from(await vid.arrayBuffer()));
   return outPath;
 }
@@ -312,6 +320,8 @@ const BASE_IDLES = {
   bunny:   { key: 'idle_base', prompt: 'The bunny sits calmly, nose twitching softly, long ears giving the occasional gentle flop, chest breathing slowly, blinking, very subtle minimal motion only.' },
   fox:     { key: 'idle_base', prompt: 'The fox cub sits calmly in resting pose, chest gently rising and falling with breathing, blinking slowly, ears flicking and the fluffy tail giving the occasional gentle swish, very subtle minimal motion.' },
   penguin: { key: 'idle_base', prompt: 'The penguin stands calmly, body gently rocking side to side with slow breathing, blinking, little flippers twitching occasionally, very subtle minimal motion only.' },
+  axolotl: { key: 'idle_base', prompt: 'The axolotl stands calmly, feathery pink gills gently swaying as if in soft water, body rising and falling with slow breathing, blinking peacefully, sweet content smile, very subtle minimal motion only.' },
+  tabby:   { key: 'idle_base', prompt: 'The tabby kitten sits calmly in resting pose, striped tail curled around its feet with the tip flicking occasionally, chest gently rising and falling with slow breathing, blinking slowly, content peaceful expression, very subtle minimal motion only.' },
 };
 
 const UNIVERSAL_IDLES = [
@@ -406,6 +416,18 @@ const SPECIES_IDLES = {
     { key: 'idle_slide',  prompt: 'The penguin flops onto its belly and does a short happy slide in place, then pops back up grinning.' },
     { key: 'idle_preen',  prompt: 'The penguin turns its head and preens its chest feathers with its little beak, tidy grooming motion.' },
   ],
+  axolotl: [
+    { key: 'idle_gills',  prompt: 'The axolotl fans and flutters its feathery pink external gills like a happy little crown, eyes bright, sweet smile.' },
+    { key: 'idle_wiggle', prompt: 'The axolotl does a happy full-body wiggle from head to tail like swimming in place, playful and silly, big smile.' },
+    { key: 'idle_float',  prompt: 'The axolotl gently drifts upward a little as if floating in water, then settles softly back down, tail swaying, peaceful happy expression.' },
+    { key: 'idle_peek',   prompt: 'The axolotl playfully covers its eyes with its tiny front paws, then peeks out with a giggly happy smile.' },
+  ],
+  tabby: [
+    { key: 'idle_purr',    prompt: 'The tabby kitten closes its eyes contentedly and kneads its front paws happily as if purring, gentle rhythmic motion.' },
+    { key: 'idle_stretch', prompt: 'The tabby kitten stretches forward like a cat, front paws extending, back arching, then relaxes back to sitting pose, satisfied expression.' },
+    { key: 'idle_yarn',    prompt: 'The tabby kitten bats playfully at a small red ball of yarn with one front paw, eyes following it, playful pounce-ready posture.' },
+    { key: 'idle_groom',   prompt: 'The tabby kitten licks one front paw with a small pink tongue and rubs it over its ear and face, classic cat grooming motion.' },
+  ],
 };
 
 function _idleSetFor(mascotId) {
@@ -423,7 +445,7 @@ async function klingImage2VideoIdle(imagePath, prompt, outPath) {
     prompt,
     cfg_scale: 0.5,
   };
-  const res = await fetch('https://api.klingai.com/v1/videos/image2video', {
+  const res = await tfetch('https://api.klingai.com/v1/videos/image2video', {
     method: 'POST',
     headers: { Authorization: `Bearer ${klingJWT()}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -435,7 +457,7 @@ async function klingImage2VideoIdle(imagePath, prompt, outPath) {
   const videoUrl = data?.task_result?.videos?.[0]?.url;
   if (!videoUrl) throw new Error('no video url');
   const tmpPath = outPath + '.fwd.mp4';
-  const vid = await fetch(videoUrl);
+  const vid = await tfetch(videoUrl);
   fs.writeFileSync(tmpPath, Buffer.from(await vid.arrayBuffer()));
 
   // Make seamless loop: concat forward + reverse via ffmpeg

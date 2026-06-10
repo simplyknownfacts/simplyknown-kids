@@ -6,10 +6,11 @@
 //   - speak: play speaking clip, then return to base
 //   - Tap mascot: nothing (disabled per user request)
 
-const MASCOT_AVAILABLE = ['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle'];
+const MASCOT_AVAILABLE = ['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle', 'axolotl', 'tabby'];
 const MASCOT_LABELS = {
   dog: '🐶 Dog', tiger: '🐯 Tiger', giraffe: '🦒 Giraffe',
   panda: '🐼 Panda', orca: '🐳 Orca', eagle: '🦅 Eagle',
+  axolotl: '🦎 Axolotl', tabby: '🐈 Tabby Cat',
 };
 
 const UNIVERSAL_IDLES = ['idle_wave', 'idle_bubbles', 'idle_book', 'idle_popcorn'];
@@ -20,11 +21,14 @@ const SPECIES_IDLES = {
   panda:   ['idle_bamboo', 'idle_roll', 'idle_hug', 'idle_somer'],
   orca:    ['idle_flip', 'idle_breach', 'idle_splash', 'idle_swim'],
   eagle:   ['idle_flap', 'idle_preen', 'idle_alert', 'idle_call'],
+  axolotl: ['idle_gills', 'idle_wiggle', 'idle_float', 'idle_peek'],
+  tabby:   ['idle_purr', 'idle_stretch', 'idle_yarn', 'idle_groom'],
 };
 // Animal sound file per mascot — played as overlay when kid taps the mascot
 const MASCOT_SOUND_FILE = {
   dog: 'dog.mp3', tiger: 'tiger.mp3', giraffe: 'giraffe.mp3',
   panda: 'panda.mp3', orca: 'whale.mp3', eagle: 'eagle.mp3',
+  axolotl: 'axolotl.mp3', tabby: 'cat.mp3',
 };
 function _actionKeys(mascotId) {
   return [...UNIVERSAL_IDLES, ...(SPECIES_IDLES[mascotId] || [])];
@@ -33,7 +37,7 @@ function _actionKeys(mascotId) {
 // Mascots whose assets are shot on a green screen: their videos live under
 // mascots/<id>/green/ and are keyed (green removed) per-frame onto a canvas so
 // the character floats with a genuinely transparent background — no circle mask.
-const CHROMA_MASCOTS = new Set(['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle']);
+const CHROMA_MASCOTS = new Set(['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle', 'axolotl', 'tabby']);
 function _isChroma(mascotId) { return CHROMA_MASCOTS.has(mascotId); }
 // Green-screen keyer (tuned in mascot-green-video.html): remove green, despill.
 // _CK_FLOOR clears FAINT residue: a weaker green screen (the giraffe measures
