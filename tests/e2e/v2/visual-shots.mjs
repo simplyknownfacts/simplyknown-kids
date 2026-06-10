@@ -13,6 +13,7 @@ const FEATS = { math: { subtract: true, multiply: true }, spelling: { spellMode:
 
 const ACTS = [
   'games/tap-pop', 'games/peek-a-boo', 'games/magic-touch', 'games/tap-a-tune', 'games/surprise-pop', 'games/shape-match',
+  'games/tilt-drive',
   'learning/hello-colors', 'learning/animal-sounds', 'learning/count-along', 'learning/abcs', 'learning/body-parts',
   'learning/days', 'learning/math', 'learning/spelling', 'learning/money',
   'art/stamp-art', 'art/finger-paint', 'art/color-splash', 'art/color-in',

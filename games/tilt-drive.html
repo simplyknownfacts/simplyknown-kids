@@ -200,7 +200,10 @@
 
     function show(id, on) { document.getElementById(id).classList.toggle('show', on); }
 
+    let _starting = false;  // two simultaneous taps (sibling fingers) must not double-start the loop
     async function startGame(k) {
+      if (_starting) return;
+      _starting = true;
       themeKey = k; theme = THEMES[k];
       best = loadBest(k);
       show('startOv', false); show('overOv', false);
@@ -221,6 +224,7 @@
       state = 'play';
       document.getElementById('hud').style.display = 'block';
       cancelAnimationFrame(animId); animId = requestAnimationFrame(loop);
+      _starting = false;
     }
 
     function spawnObstacle() {
@@ -237,7 +241,7 @@
       if (isBest) { best = m; saveBest(themeKey, m); }
       if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
       if (typeof haptic === 'function') haptic(40);
-      if (window.vbProgress) { try { vbProgress.record('tilt-drive'); } catch (e) {} }
+      if (window.vbProgress) { try { vbProgress.record('tilt-drive', m); } catch (e) {} }  // meters drive the ribbon counter
       if (typeof _showCaption === 'function') _showCaption('Crash! 💥');
       document.getElementById('hud').style.display = 'none';
       document.getElementById('overStat').innerHTML =

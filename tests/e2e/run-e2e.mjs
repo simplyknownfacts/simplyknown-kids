@@ -62,10 +62,11 @@ const FEATURES = {
   'color-splash': [{ k: 'colorPicker', t: 2, label: 'Color picker' }],
 };
 const EXPECT_VISIBLE = { // per tier: games/learn/art (for gating assertion)
-  1: { games: 2, learn: 2, art: 3 }, 2: { games: 2, learn: 5, art: 4 },
-  3: { games: 2, learn: 6, art: 4 }, 4: { games: 2, learn: 9, art: 4 },
-  5: { games: 2, learn: 9, art: 4 }, 6: { games: 2, learn: 9, art: 4 },
-  7: { games: 2, learn: 9, art: 4 }, 8: { games: 2, learn: 9, art: 4 },
+  // games: all 7 catalog games are minTier 1 (4 young-kid games added v81-v101, Tilt Drive v104)
+  1: { games: 7, learn: 2, art: 3 }, 2: { games: 7, learn: 5, art: 4 },
+  3: { games: 7, learn: 6, art: 4 }, 4: { games: 7, learn: 9, art: 4 },
+  5: { games: 7, learn: 9, art: 4 }, 6: { games: 7, learn: 9, art: 4 },
+  7: { games: 7, learn: 9, art: 4 }, 8: { games: 7, learn: 9, art: 4 },
 };
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -333,6 +334,9 @@ async function runTier(browser, tier) {
     await page.waitForSelector('#addForm', { state: 'visible', timeout: 10000 });
     await page.fill('#newName', `Added${tier}`);
     await page.fill('#newBirthday', birthdayForTier(tier));
+    // mascot + voice are REQUIRED since v101 — save silently refuses without them
+    await page.locator('#newMascotPicker div').first().click();
+    await page.locator('#newVoicePicker div').first().click();
     await page.locator('button', { hasText: /^Save$/ }).first().click();
     await sleep(600);
     const count = await page.evaluate(() => JSON.parse(localStorage.getItem('vb_profiles') || '[]').length);

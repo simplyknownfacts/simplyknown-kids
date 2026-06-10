@@ -10,6 +10,9 @@
     { id:'magic-touch',  name:'Magic Touch',  icon:'✨', section:'games', noun:'taps', mastery:null },
     { id:'tap-a-tune',   name:'Tap-a-Tune',   icon:'🎹', section:'games', noun:'notes played', mastery:null },
     { id:'surprise-pop', name:'Surprise Pop', icon:'🥚', section:'games', noun:'surprises', mastery:null },
+    // counter = cumulative meters driven (crash() records the run's distance),
+    // so the shared tap-scale fits: bronze 50m ≈ first run, ★ per 300m.
+    { id:'tilt-drive',   name:'Tilt Drive',   icon:'🏎️', section:'games', noun:'meters driven', mastery:null },
 
     { id:'hello-colors', name:'Hello Colors', icon:'🌈', section:'learn', noun:'colors named',
       mastery:{ title:'Color Whiz', hint:'Win the color quiz' } },
