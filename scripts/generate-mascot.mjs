@@ -112,20 +112,32 @@ async function genImage(prompt, outPath) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY missing');
   const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${key}`;
-  const res = await tfetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      instances: [{ prompt }],
-      parameters: { sampleCount: 1, aspectRatio: '1:1' },
-    }),
-  });
-  if (!res.ok) throw new Error(`Imagen ${res.status}: ${await res.text()}`);
-  const json = await res.json();
-  const b64 = json?.predictions?.[0]?.bytesBase64Encoded;
-  if (!b64) throw new Error('Imagen returned no image: ' + JSON.stringify(json).slice(0, 300));
-  fs.writeFileSync(outPath, Buffer.from(b64, 'base64'));
-  return outPath;
+  // Imagen throws transient 503s (and 429s under burst) — retry with backoff
+  // like animal-green.mjs does, instead of dying on the first hiccup.
+  let lastErr;
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    const res = await tfetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        instances: [{ prompt }],
+        parameters: { sampleCount: 1, aspectRatio: '1:1' },
+      }),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const b64 = json?.predictions?.[0]?.bytesBase64Encoded;
+      if (!b64) throw new Error('Imagen returned no image: ' + JSON.stringify(json).slice(0, 300));
+      fs.writeFileSync(outPath, Buffer.from(b64, 'base64'));
+      return outPath;
+    }
+    lastErr = `Imagen ${res.status}: ${(await res.text()).slice(0, 200)}`;
+    if (res.status !== 503 && res.status !== 429) break;     // hard errors: don't hammer
+    const wait = 15 * attempt;
+    console.log(`  imagen ${res.status}, retry in ${wait}s (attempt ${attempt}/5)`);
+    await new Promise(r => setTimeout(r, wait * 1000));
+  }
+  throw new Error(lastErr);
 }
 
 async function genVoice(text, voiceId, outPath, pitch = true) {
