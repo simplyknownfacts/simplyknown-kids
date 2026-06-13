@@ -18,8 +18,11 @@ play for real → screenshot + look → trace voice vs correct answer → toddle
    in-game ⚙️ gear now need a ~0.7s press (fill-ring animation) via new `holdToActivate()` in
    `js/app.js`. **Game Back/Home stay INSTANT on purpose** (Scott's explicit call — do NOT add
    hold-to-exit to games). Verified: tap ignored, hold opens.
+4. **v113** — **Shape Match is tap-to-name for toddlers** (T1-T2), drag from T3+. Drag-and-drop is
+   ~3yr+ motor skill but was on from tier 2 (Noah, 23mo). `games/shape-match.html` line ~75
+   `dragOn = tier >= 3 || feature`. Verified: T2 → tap (1 shape, no boxes); T4 → drag (boxes) intact.
 
-Next version bump = **vb-v113** (`sw.js` line 1).
+Next version bump = **vb-v114** (`sw.js` line 1).
 
 ## Noah-tier (T2) review — status so far
 Confirmed GOOD for a toddler (big targets, simple, auto-cycle, voiced):
@@ -29,6 +32,11 @@ Confirmed GOOD for a toddler (big targets, simple, auto-cycle, voiced):
   vs the empty screen — could be bigger/more engaging, not a bug.)
 - `art/color-splash.html` — simple splat, big targets. Good.
 - `art/stamp-art.html` — fixed in v111.
+- `games/shape-match.html` — fixed in v113 (now tap mode at T2).
+- `learning/animal-sounds.html` — VOICE/IMAGE VERIFIED GOOD: all 30 manifest animals have a correct
+  emoji (no 🐾 fallbacks) and tap plays "The <name> says," + `audio/sounds/<id>.mp3` (its real sound,
+  e.g. cow→Moo). At T2 it's garden free-play (quiz is T4+). No fix needed. (Didn't byte-verify every
+  sound FILE exists, but audio/ has 1565 files incl. sounds/ — low risk.)
 
 ## OPEN concrete findings (verify by playing before "fixing" — sweeps over-flag)
 1. **finger-paint older-tier toolbar clip** (`art/finger-paint.html`): the `@media (landscape &
@@ -42,8 +50,8 @@ Confirmed GOOD for a toddler (big targets, simple, auto-cycle, voiced):
    game exits (only settings). Leave as-is unless he revisits.
 
 ## STILL TO REVIEW at T2 (then repeat key ones at older tiers)
-- Games: magic-touch, tap-a-tune, surprise-pop, shape-match, memory-match.
-- Learn (heaviest voice/image scrutiny): hello-colors, animal-sounds, count-along, abcs, body-parts.
+- Games: magic-touch, tap-a-tune, surprise-pop, memory-match. (tap-pop ✓, peek-a-boo ✓, shape-match fixed)
+- Learn (heaviest voice/image scrutiny): hello-colors, count-along, abcs, body-parts. (animal-sounds ✓)
   At T2 these are free-play/tap-to-hear (quiz modes are tier ≥4), so voice↔answer mismatch risk is
   lower, but VERIFY each tap speaks the right word + shows a sensible image. **body-parts** has a long
   tap-zone-drift history (per-kid configs) — re-verify the nose/ear zones if touched.
