@@ -8,32 +8,47 @@
   <link rel="stylesheet" href="../css/achievements.css">
   <style>
     #canvas { position:fixed; inset:0; touch-action:none; }
+
+    /* Phone/portrait: a bottom dock stacks the Scene row ABOVE the stamp rows —
+       both in the thumb zone and clear of the top-left Back/Home buttons.
+       (The old design buried Scene at the bottom of the stamp list, so on a
+       tablet you scrolled ~1200px past every stamp to change scenes.) */
+    #bottomdock {
+      position:fixed; left:0; right:0; bottom:0; z-index:10;
+      display:flex; flex-direction:column;
+    }
+    #scenebar {
+      display:none; align-items:center; justify-content:center; gap:10px;
+      flex-wrap:wrap; padding:8px 10px;
+      background:rgba(0,0,0,0.4); backdrop-filter:blur(8px);
+    }
     #stampbar {
-      position:fixed; bottom:0; left:0; right:0;
-      display:none; gap:10px; align-items:center;
-      padding:10px 10px calc(10px + env(safe-area-inset-bottom)) 10px;
-      background:rgba(0,0,0,0.4); backdrop-filter:blur(8px); z-index:10;
-      /* Wrap to multiple rows so every stamp AND the theme switcher stay on
-         screen — young kids don't discover horizontal scroll. */
-      flex-wrap:wrap;
-      justify-content:center;
+      display:none; align-items:center; justify-content:center; gap:10px;
+      flex-wrap:wrap; padding:10px 10px calc(10px + env(safe-area-inset-bottom)) 10px;
+      background:rgba(0,0,0,0.4); backdrop-filter:blur(8px);
     }
-    /* TRUE tablet landscape only: bar moves to right side as a scrollable rail.
-       Phone landscape (~844x390) falls back to the bottom strip above so we
-       don't lose vertical canvas space to a side panel. */
+    /* TRUE tablet/desktop landscape: Scene floats as an always-visible top-center
+       pill; stamps move to a right rail that WRAPS into columns so all 10 fit
+       with NO scrolling. */
     @media (orientation: landscape) and (min-width: 1024px) {
-      #stampbar {
-        flex-direction:column; flex-wrap:nowrap;
-        align-content:flex-start; justify-content:flex-start;
-        top:0; right:0; bottom:0; left:auto;
-        width:auto; max-width:360px; height:100vh;
-        padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) 12px;
-        overflow-x:hidden; overflow-y:auto; gap:12px;
+      #bottomdock { display:contents; }
+      #scenebar {
+        position:fixed; top:0; left:50%; transform:translateX(-50%); z-index:11;
+        flex-wrap:nowrap; max-width:96vw;
+        padding: calc(6px + env(safe-area-inset-top)) 16px 6px;
+        border-radius:0 0 22px 22px;
       }
-      .scene-sep { width:60px; height:2px; margin:6px 0; flex-basis:100%; }
-      .scene-label { flex-basis:100%; text-align:center; }
+      #stampbar {
+        position:fixed; top:0; right:0; bottom:0; left:auto;
+        flex-direction:column; flex-wrap:wrap;
+        align-content:flex-end; justify-content:center;
+        width:auto; max-width:50vw; height:100vh;
+        padding:16px 12px; gap:12px;
+        overflow-x:hidden; overflow-y:auto;
+      }
     }
-    /* Press feedback that doesn't shrink the hit area (toddler fingers are slow + drag a bit) */
+
+    /* Press feedback that doesn't shrink the hit area (toddler fingers drag a bit) */
     .stamp-chip:active, .scene-chip:active {
       background:rgba(255,255,255,0.4);
       box-shadow:0 0 0 4px rgba(78,205,196,0.6);
@@ -48,43 +63,42 @@
       transition:transform 0.1s;
     }
     .stamp-chip.active { border-color:white; background:rgba(255,255,255,0.25); }
-    /* Larger chips on tablets */
+    /* Larger stamp chips on tablets (kept a touch smaller so 10 fit in 2 rail
+       columns without scrolling). */
     @media (min-width: 768px) {
-      .stamp-chip { width:96px; height:96px; font-size:52px; border-radius:22px; border-width:4px; }
-      .scene-chip { width:96px; height:96px; font-size:42px; }
-      .scene-label { font-size:14px; }
-      #stampbar { padding:16px; gap:14px; }
+      .stamp-chip { width:84px; height:84px; font-size:46px; border-radius:22px; border-width:4px; }
+      #stampbar { gap:14px; }
     }
-    /* Theme selector: visually separated, different shape + color.
-       Full-width sep forces the Scene chips onto their own wrapped row. */
-    .scene-sep {
-      flex-basis: 100%;
-      height: 2px; margin: 4px 0 2px;
-      background: rgba(255,255,255,0.35);
-      flex-shrink: 0;
-    }
+
     .scene-label {
-      color: rgba(255,255,255,0.65);
+      color: rgba(255,255,255,0.7);
       font-size: 11px; font-weight: 800;
       text-transform: uppercase; letter-spacing: 1px;
-      margin-right: 4px;
+      margin-right: 2px;
     }
     .scene-chip {
-      width:60px; height:60px; border-radius:50%; /* round vs square stamps */
+      width:56px; height:56px; border-radius:50%; /* round vs square stamps */
       background: linear-gradient(135deg, #4ECDC4, #45B7D1);
       border:3px solid rgba(255,255,255,0.5);
       flex-shrink:0;
-      font-size:28px; cursor:pointer; color:white;
+      font-size:26px; cursor:pointer; color:white;
       display:flex; align-items:center; justify-content:center;
       transition:transform 0.1s;
       box-shadow: 0 2px 12px rgba(78,205,196,0.4);
     }
     .scene-chip.active { border-color:white; box-shadow: 0 0 0 3px white, 0 2px 12px rgba(78,205,196,0.6); }
+    @media (min-width: 768px) {
+      .scene-chip { width:64px; height:64px; font-size:30px; }
+      .scene-label { font-size:13px; }
+    }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  <div id="stampbar"></div>
+  <div id="bottomdock">
+    <div id="scenebar"></div>
+    <div id="stampbar"></div>
+  </div>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>
@@ -161,7 +175,37 @@
 
     if (showPalette) {
       const bar = document.getElementById('stampbar');
+      const sceneBar = document.getElementById('scenebar');
+      // gameSettings.attach dropped the gear into #stampbar; keep a handle so we
+      // can re-append it after each rebuild (innerHTML='' would wipe it).
+      const gear = document.getElementById('gameSettingsGear');
       bar.style.display = 'flex';
+
+      function buildScenes() {
+        if (!showThemes) return;
+        sceneBar.style.display = 'flex';
+        sceneBar.innerHTML = '';
+        const lbl = document.createElement('div');
+        lbl.className = 'scene-label';
+        lbl.textContent = 'Scene';
+        sceneBar.appendChild(lbl);
+        const themeKeys = ['default','farm','ocean','space'];
+        const themeIcons = { default:'✨', farm:'🏡', ocean:'🌊', space:'🚀' };
+        const currentKey = Object.keys(THEMES).find(k => THEMES[k] === theme);
+        themeKeys.forEach(key => {
+          const chip = document.createElement('div');
+          chip.className = 'scene-chip' + (key === currentKey ? ' active' : '');
+          chip.textContent = themeIcons[key];
+          chip.title = key;
+          chip.addEventListener('pointerdown', () => {
+            theme = THEMES[key];
+            activeStamp = theme.stamps[0];
+            setBackground();
+            buildBar();
+          });
+          sceneBar.appendChild(chip);
+        });
+      }
 
       function buildBar() {
         bar.innerHTML = '';
@@ -176,32 +220,8 @@
           });
           bar.appendChild(chip);
         });
-
-        if (showThemes) {
-          const sep = document.createElement('div');
-          sep.className = 'scene-sep';
-          bar.appendChild(sep);
-          const lbl = document.createElement('div');
-          lbl.className = 'scene-label';
-          lbl.textContent = 'Scene';
-          bar.appendChild(lbl);
-          const themeKeys = ['default','farm','ocean','space'];
-          const themeIcons = { default:'✨', farm:'🏡', ocean:'🌊', space:'🚀' };
-          const currentKey = Object.keys(THEMES).find(k => THEMES[k] === theme);
-          themeKeys.forEach(key => {
-            const chip = document.createElement('div');
-            chip.className = 'scene-chip' + (key === currentKey ? ' active' : '');
-            chip.textContent = themeIcons[key];
-            chip.title = key;
-            chip.addEventListener('pointerdown', () => {
-              theme = THEMES[key];
-              activeStamp = theme.stamps[0];
-              setBackground();
-              buildBar();
-            });
-            bar.appendChild(chip);
-          });
-        }
+        if (gear) bar.appendChild(gear);  // restore settings gear (order:999 keeps it last)
+        buildScenes();                     // refresh the always-visible scene pill
       }
       buildBar();
     }
