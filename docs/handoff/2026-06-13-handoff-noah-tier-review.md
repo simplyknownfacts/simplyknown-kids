@@ -71,10 +71,16 @@ hold-to-settings guard (all shipped v110-v113). No new bugs in the games/learn/a
   identify-coin + count-total correct buttons. ✓
 - clock: hands drawn for the same h:m as the right answer (hour hand advances with minutes); tier-gated
   minute granularity (o'clock → half → quarters → 5-min). ✓
+- spelling: picture = the word's own emoji; multi-choice answer = that word; spell-mode taps letters in
+  order from a bank. ✓
+- days quizMode: "after X" = next day, "yesterday" = prev; today auto-highlighted. ✓
+- peek-a-boo multiChoice: plays target's sound + names it; correct = that animal. ✓
+=> EVERY voice/answer path in the app is verified correct. The #1 ask is fully covered.
 
-## STILL TO REVIEW — "the rest" (lower risk; not yet traced)
-- Correctness still to trace: spelling (word vs picture/letters), days quizMode, peek-a-boo multiChoice.
-- Older-tier visual/layout pass (Noah plays older games too).
+## REMAINING (lower risk — visual/polish, NOT correctness)
+- days-of-week emojis are whimsical/adult mnemonics (Mon 😴, Tue 🚌, Wed 🐪 "hump day") — a parent
+  may find them odd, a toddler won't decode them. NOT a bug; Scott's judgment call whether to swap.
+- Older-tier visual/layout pass (Noah plays older games too) — spot-check cramping/clipping.
 - 16-mascot spot-check (transparency/idle/voice/tap), captions readability, ribbon cadence.
 - body-parts per-figure zone overlay audit (finding #3).
 
