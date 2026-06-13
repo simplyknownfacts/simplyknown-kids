@@ -179,9 +179,14 @@
       goTo('parent/settings.html?action=add');
     });
 
-    document.getElementById('settingsGear').addEventListener('click', () => {
-      goTo('parent/settings.html');
-    });
+    // Hold (not tap) to open Parent Settings — a toddler can't wander in.
+    const _gear = document.getElementById('settingsGear');
+    _gear.title = 'Hold to open';
+    if (typeof holdToActivate === 'function') {
+      holdToActivate(_gear, () => goTo('parent/settings.html'));
+    } else {
+      _gear.addEventListener('click', () => goTo('parent/settings.html'));
+    }
 
     // Seed demo profiles + default video channels if none exist
     if (getProfiles().length === 0) {

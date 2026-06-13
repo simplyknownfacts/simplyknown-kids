@@ -344,6 +344,46 @@ function renderBackBtn(dest) {
   document.body.classList.add('vb-chrome');
 }
 
+// ── Hold-to-activate ────────────────────────────────────────────────────────
+// Guards parent-only doors (Parent Settings, in-game settings gear) so a
+// toddler can't tap straight in. Fires onActivate only after a deliberate
+// ~0.7s press; releasing early cancels. A fill ring animates during the hold so
+// a parent sees it working. (Game Back/Home stay instant — only settings hold.)
+let _holdStyleInjected = false;
+function _injectHoldStyle() {
+  if (_holdStyleInjected) return;
+  _holdStyleInjected = true;
+  const s = document.createElement('style');
+  s.textContent =
+    '@keyframes vbHoldFill{from{box-shadow:0 0 0 0 rgba(78,205,196,0);}' +
+    'to{box-shadow:0 0 0 6px rgba(78,205,196,0.85);}}' +
+    '.vb-holding{animation:vbHoldFill var(--vb-hold,700ms) linear forwards;}';
+  document.head.appendChild(s);
+}
+function holdToActivate(el, onActivate, opts) {
+  const ms = (opts && opts.ms) || 700;
+  _injectHoldStyle();
+  el.style.setProperty('--vb-hold', ms + 'ms');
+  let timer = null, active = false;
+  const start = (e) => {
+    if (active) return;
+    active = true;
+    if (e && e.cancelable) e.preventDefault();
+    el.classList.add('vb-holding');
+    timer = setTimeout(() => { stop(); onActivate(); }, ms);
+  };
+  const stop = () => {
+    active = false;
+    if (timer) { clearTimeout(timer); timer = null; }
+    el.classList.remove('vb-holding');
+  };
+  el.addEventListener('pointerdown', start);
+  el.addEventListener('pointerup', stop);
+  el.addEventListener('pointerleave', stop);
+  el.addEventListener('pointercancel', stop);
+  return stop;
+}
+
 // ── Tactile + haptic feedback (shared, reduced-motion safe) ─────────────────
 // haptic(ms): short vibration on supported devices. navigator.vibrate is a
 // no-op/undefined on iOS Safari and desktop, so feature-check + try/catch.

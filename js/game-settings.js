@@ -51,8 +51,8 @@
     _injectGearStyle();
     const gear = document.createElement('button');
     gear.id = 'gameSettingsGear';
-    gear.title = 'Game settings';
-    gear.setAttribute('aria-label', 'Game settings');
+    gear.title = 'Hold for grown-up settings';
+    gear.setAttribute('aria-label', 'Hold for grown-up settings');
     gear.textContent = '⚙️';
     if (container) {
       gear.style.cssText = `
@@ -81,7 +81,13 @@
       `;
       document.body.appendChild(gear);
     }
-    gear.addEventListener('pointerdown', () => _openOverlay(activity));
+    // Hold (not tap) to open — keeps a toddler from opening settings mid-game.
+    // (Game Back/Home stay instant; only the parent door requires a hold.)
+    if (typeof holdToActivate === 'function') {
+      holdToActivate(gear, () => _openOverlay(activity));
+    } else {
+      gear.addEventListener('pointerdown', () => _openOverlay(activity));
+    }
   }
 
   function _openOverlay(activity) {
