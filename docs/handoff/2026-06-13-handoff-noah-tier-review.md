@@ -60,11 +60,18 @@ Confirmed GOOD for a toddler (big targets, simple, auto-cycle, voiced):
 Result: Noah's tier was already well-built. The only real fixes were stamp-art, shape-match, and the
 hold-to-settings guard (all shipped v110-v113). No new bugs in the games/learn/art T2 pass.
 
-## STILL TO REVIEW — "the rest" (beyond Noah's tier)
-- Older tiers (Noah plays them too): higher-tier modes — math (subtract/multiply/divide/missing-num),
-  money (count/make-change), clock, spelling, days quiz — for correctness + voice<->answer.
-- Learn QUIZ modes (tier >=4): hello-colors colorQuiz, animal-sounds quizMode, count-along quizMode,
-  days quizMode — verify the spoken prompt matches the correct on-screen answer (the #1 ask).
+## VOICE<->ANSWER CORRECTNESS (the #1 ask) — VERIFIED CORRECT (code-traced)
+- animal-sounds quizMode: correct answer == the animal whose sound plays (+ replay btn). ✓
+- hello-colors colorQuiz: "Tap the <color> <thing>!" success target IS that item; smart near-miss
+  hints ("that's red but not a rose"). ✓
+- count-along quizMode: dots shown == answer number == correct button. ✓
+- math: ÷ built backwards (a=b*ans) so always divides clean; − never negative; missing-number
+  (a + ▢ = ans) targets operand b, spoken eq matches visual + answer. ✓
+
+## STILL TO REVIEW — "the rest" (lower risk; not yet traced)
+- Correctness still to trace: money (countMode / makeChange), clock (hand positions vs choices),
+  spelling (word vs picture/letters), days quizMode, peek-a-boo multiChoice.
+- Older-tier visual/layout pass (Noah plays older games too).
 - 16-mascot spot-check (transparency/idle/voice/tap), captions readability, ribbon cadence.
 - body-parts per-figure zone overlay audit (finding #3).
 
