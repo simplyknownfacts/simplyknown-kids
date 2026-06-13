@@ -67,10 +67,13 @@ hold-to-settings guard (all shipped v110-v113). No new bugs in the games/learn/a
 - count-along quizMode: dots shown == answer number == correct button. ✓
 - math: ÷ built backwards (a=b*ans) so always divides clean; − never negative; missing-number
   (a + ▢ = ans) targets operand b, spoken eq matches visual + answer. ✓
+- money: make-change = paid − price with paid ALWAYS > price (pay $1 for ≤95¢, $5 for ≤$4.75);
+  identify-coin + count-total correct buttons. ✓
+- clock: hands drawn for the same h:m as the right answer (hour hand advances with minutes); tier-gated
+  minute granularity (o'clock → half → quarters → 5-min). ✓
 
 ## STILL TO REVIEW — "the rest" (lower risk; not yet traced)
-- Correctness still to trace: money (countMode / makeChange), clock (hand positions vs choices),
-  spelling (word vs picture/letters), days quizMode, peek-a-boo multiChoice.
+- Correctness still to trace: spelling (word vs picture/letters), days quizMode, peek-a-boo multiChoice.
 - Older-tier visual/layout pass (Noah plays older games too).
 - 16-mascot spot-check (transparency/idle/voice/tap), captions readability, ribbon cadence.
 - body-parts per-figure zone overlay audit (finding #3).
