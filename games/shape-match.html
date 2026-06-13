@@ -70,9 +70,11 @@
     gameSettings.attach('shape-match');
     if (window.vbProgress) { vbProgress.firstPlay('shape-match'); vbProgress.touchStreak(); }
 
-    // Drag-and-drop from toddler (tier 2) up. Only Sensory babies (tier 1)
-    // get the simpler single-shape tap-to-name mode.
-    const dragOn = tier >= 2 || getProfileFeature(profile, 'shape-match', 'dragMode');
+    // Drag-and-drop needs a pincer grab + aimed release — that's ~3yr+ motor
+    // skill. Sensory babies (T1) AND Explore toddlers (T2, ~1-2yr, e.g. Noah)
+    // get the simpler single-shape tap-to-name mode; drag starts at T3 (2-3yr).
+    // A parent can still force drag earlier via the dragMode feature toggle.
+    const dragOn = tier >= 3 || getProfileFeature(profile, 'shape-match', 'dragMode');
     let shapeTimer = null;
     window.addEventListener('beforeunload', () => clearTimeout(shapeTimer));
 
