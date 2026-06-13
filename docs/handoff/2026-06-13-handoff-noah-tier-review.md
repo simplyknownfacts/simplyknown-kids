@@ -39,24 +39,34 @@ Confirmed GOOD for a toddler (big targets, simple, auto-cycle, voiced):
   sound FILE exists, but audio/ has 1565 files incl. sounds/ — low risk.)
 
 ## OPEN concrete findings (verify by playing before "fixing" — sweeps over-flag)
-1. **finger-paint older-tier toolbar clip** (`art/finger-paint.html`): the `@media (landscape &
-   min-width:768px)` rule makes the toolbar a right rail with `overflow:hidden`, `max-width:200px`,
-   `height:100vh`. At tier ≥3 it holds 8 colors + eraser + Clear (~680px); on a SHORT landscape
-   (e.g. 1024×600) that **clips the Clear button**. Not Noah's tier (T2 has no palette → no toolbar),
-   but it's the same class of bug as stamp-art. Fix: wrap into columns like stamp-art's rail
-   (`flex-wrap:wrap; align-content:flex-end; overflow-y:auto`). Check `art/color-splash.html` and
-   `art/color-in.html` toolbars the same way at older tiers.
+1. ~~finger-paint older-tier toolbar clip~~ **VERIFIED FINE** (false alarm): the right-rail toolbar
+   already has `flex-wrap:wrap` so it wraps into 2 columns. Tested tier 5 @ 1024×600 — all 11
+   buttons incl. Clear on-screen, 0 offscreen, scrollHeight == clientHeight. No fix needed.
 2. **Accidental game exit** (cross-cutting): Back/Home are instant taps. Scott decided NOT to gate
    game exits (only settings). Leave as-is unless he revisits.
+3. **body-parts per-figure zone audit** (deferred): renders fine, 0 overflow at T2, but a rough
+   mouth-tap on body-08 missed — likely my coord guess, NOT confirmed drift. To truly verify, load
+   the per-kid zone config and overlay it on each of the 12 figures (zones have drifted historically).
+   Low priority (Scott didn't flag it; zones professionally re-aligned v97-v100).
 
-## STILL TO REVIEW at T2 (then repeat key ones at older tiers)
-- Games: magic-touch, tap-a-tune, surprise-pop, memory-match. (tap-pop ✓, peek-a-boo ✓, shape-match fixed)
-- Learn (heaviest voice/image scrutiny): hello-colors, count-along, abcs, body-parts. (animal-sounds ✓)
-  At T2 these are free-play/tap-to-hear (quiz modes are tier ≥4), so voice↔answer mismatch risk is
-  lower, but VERIFY each tap speaks the right word + shows a sensible image. **body-parts** has a long
-  tap-zone-drift history (per-kid configs) — re-verify the nose/ear zones if touched.
-- Art: color-in (page-flip arrows layout), finger-paint (see finding #1).
-- Then: older tiers (Noah plays them too), 16-mascot spot-check, captions, ribbons cadence.
+## TIER 2 (Noah) — COMPLETE (all reviewed this session)
+- Games (8): tap-pop, peek-a-boo, magic-touch, surprise-pop, tap-a-tune, memory-match all good;
+  shape-match FIXED v113. Big targets, simple, voiced/auto — toddler-appropriate.
+- Learn (T2-visible): hello-colors (red title+bg+all-red items aligned), animal-sounds (30 animals,
+  emoji+sound aligned), count-along (1/pig aligned), abcs (A->apple/ant/airplane/alligator) all good;
+  body-parts renders fine (zone audit deferred — finding #3).
+- Art (4): stamp-art FIXED v111; color-splash, finger-paint (T2 has no toolbar = simple), color-in
+  (tap-to-fill, page arrows, big swatches) all good.
+Result: Noah's tier was already well-built. The only real fixes were stamp-art, shape-match, and the
+hold-to-settings guard (all shipped v110-v113). No new bugs in the games/learn/art T2 pass.
+
+## STILL TO REVIEW — "the rest" (beyond Noah's tier)
+- Older tiers (Noah plays them too): higher-tier modes — math (subtract/multiply/divide/missing-num),
+  money (count/make-change), clock, spelling, days quiz — for correctness + voice<->answer.
+- Learn QUIZ modes (tier >=4): hello-colors colorQuiz, animal-sounds quizMode, count-along quizMode,
+  days quizMode — verify the spoken prompt matches the correct on-screen answer (the #1 ask).
+- 16-mascot spot-check (transparency/idle/voice/tap), captions readability, ribbon cadence.
+- body-parts per-figure zone overlay audit (finding #3).
 
 ## How to drive it (lessons from this session)
 - Local server: `python -m http.server 8799` from worktree root. Playwright MCP for real clicks.
