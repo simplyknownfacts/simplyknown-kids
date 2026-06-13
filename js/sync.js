@@ -1,9 +1,20 @@
-// Cloud sync — automatic.
-//   - On every page load: if signed in, pull from cloud. Replace local if cloud is newer.
-//   - On every saveProfiles() call: debounced push to cloud (2s of idle = push).
-//   - Sign in returns a sync key + immediately auto-pulls the most recent cloud data.
+// Cloud sync — automatic, progress-aware (v110).
+//   - On every page load: pull from cloud, then MERGE with local so a kid's
+//     progress (ribbons/XP/counters) carried on EITHER device is never lost.
+//     Same kids + newer progress on the other device → the merged result is
+//     written locally (and a safe page reloads so the new progress shows).
+//   - On every saveProfiles() call: debounced push to cloud (2s of idle).
+//   - On app close / background (pagehide + visibilitychange→hidden): an
+//     immediate keepalive push flushes the last play, so closing the phone the
+//     instant a kid finishes does NOT drop that progress.
+//   - "Sync now" (Parent Settings) forces an immediate merge both ways.
+//   - Different SET of kids (added/removed/renamed) = a real conflict → chooser.
 //
-// Parent-facing UI shows status only (signed in as / last synced).
+// Merge rule (per kid, matched by id): progress = best-of-both (counters/xp/
+// repeats = the higher; unlocked ribbons = the union; streak = the more recent).
+// Plain settings (mascot/voice/YouTube/toggles) = the newer device wins. All of
+// the merged progress fields only ever grow, so the merge is order-independent
+// and both devices converge on the same result.
 //
 // localStorage keys:
 //   vb_sync_email           email user signed in with
@@ -13,6 +24,12 @@
 //   vb_cloud_pushed_at      ms timestamp of last successful cloud push
 
 const SYNC_BASE = 'https://simplyknown-kids-sync.simplyknownfacts.workers.dev';
+
+// Don't auto-pull more than once per this window (covers spam navigation AND
+// stops the merge→reload from re-triggering itself: the reloaded page sees a
+// fresh pulled-at and skips). Handoff is unaffected — a freshly opened device
+// has not pulled in far longer than this.
+const PULL_COOLDOWN_MS = 30000;
 
 async function _request(path, opts) {
   const url = SYNC_BASE + path;
@@ -45,13 +62,73 @@ function _esc(s) {
 }
 
 // Stable signature of a profile set: sorted ids + each profile's name/birthday.
-// Used to decide whether cloud and local actually differ (a true conflict) vs
-// are the same set in a different order.
+// Used to decide whether cloud and local are the SAME set of kids (mergeable) or
+// a true roster conflict (added/removed/renamed → chooser).
 function _profilesSignature(list) {
   return (list || [])
     .map(p => `${p.id}:${p.name}:${p.birthday}`)
     .sort()
     .join('|');
+}
+
+function _localProfiles() {
+  try { return JSON.parse(localStorage.getItem('vb_profiles') || '[]'); }
+  catch { return []; }
+}
+function _localUpdatedAt() {
+  return parseInt(localStorage.getItem('vb_local_updated_at') || '0');
+}
+
+// ---------- Progress-aware merge ----------
+// Merge two achievement states keeping the best of each (all fields grow only).
+function _mergeAchievements(a, b) {
+  if (!a && !b) return undefined;
+  a = a || {}; b = b || {};
+  const au = a.unlocked || {}, bu = b.unlocked || {};
+  const unlocked = {};
+  new Set([...Object.keys(au), ...Object.keys(bu)]).forEach(id => {
+    const ats = [au[id] && au[id].at, bu[id] && bu[id].at].filter(x => x > 0);
+    unlocked[id] = { at: ats.length ? Math.min(...ats) : 0 };  // earliest earn time
+  });
+  const maxMap = (x, y) => {
+    x = x || {}; y = y || {}; const o = {};
+    new Set([...Object.keys(x), ...Object.keys(y)]).forEach(k => { o[k] = Math.max(x[k] || 0, y[k] || 0); });
+    return o;
+  };
+  const sa = a.streak || {}, sb = b.streak || {};
+  const best = Math.max(sa.best || 0, sb.best || 0);
+  // keep the streak from whichever device played most recently
+  let streak;
+  if (!sa.last && !sb.last) streak = { last: null, current: 0, best };
+  else if ((sa.last || '') >= (sb.last || '')) streak = { last: sa.last, current: sa.current || 0, best };
+  else streak = { last: sb.last, current: sb.current || 0, best };
+  // xp = the higher of the two. (Re-summing from unlocked needs the defs table,
+  // which isn't loaded here; max is exact unless both devices unlocked DIFFERENT
+  // one-shot ribbons fully offline at once — a rare single-kid edge — and it only
+  // ever self-corrects upward on the next play.)
+  return {
+    unlocked,
+    counters: maxMap(a.counters, b.counters),
+    repeats: maxMap(a.repeats, b.repeats),
+    streak,
+    xp: Math.max(a.xp || 0, b.xp || 0),
+    rank: (a.xp || 0) >= (b.xp || 0) ? (a.rank || 'sprout') : (b.rank || 'sprout'),
+  };
+}
+
+// Merge two profile sets that share the same kids (same signature). Settings come
+// from the newer device; achievements are best-of-both.
+function _mergeProfileSets(local, cloud, cloudNewer) {
+  const cloudById = {};
+  (cloud || []).forEach(p => { cloudById[p.id] = p; });
+  return (local || []).map(lp => {
+    const cp = cloudById[lp.id];
+    if (!cp) return lp;
+    const merged = Object.assign({}, cloudNewer ? cp : lp);  // settings: newer wins
+    const ach = _mergeAchievements(lp.achievements, cp.achievements);
+    if (ach) merged.achievements = ach; else delete merged.achievements;
+    return merged;
+  });
 }
 
 async function _signup(email, password) {
@@ -74,7 +151,7 @@ async function _signin(email, password) {
   // another device. Now we detect a true difference and surface a chooser.
   const pull = await _pull(false);
   if (!pull.ok) return { ok: true, lastSync: r.body.lastSync, pulled: false };
-  const local = JSON.parse(localStorage.getItem('vb_profiles') || '[]');
+  const local = _localProfiles();
   const cloud = pull.profiles || [];
   if (!local.length) {
     // Nothing local — just take the cloud copy.
@@ -88,7 +165,13 @@ async function _signin(email, password) {
     return { ok: true, pushed: true };
   }
   if (_profilesSignature(local) === _profilesSignature(cloud)) {
-    return { ok: true, inSync: true };
+    // Same kids — merge progress so re-signing in also pulls a kid's ribbons.
+    const cloudNewer = (pull.updatedAt || 0) > _localUpdatedAt();
+    const merged = _mergeProfileSets(local, cloud, cloudNewer);
+    localStorage.setItem('vb_profiles', JSON.stringify(merged));
+    localStorage.setItem('vb_local_updated_at', String(Math.max(_localUpdatedAt(), pull.updatedAt || 0)));
+    await _push();
+    return { ok: true, merged: true };
   }
   // Real conflict — stash both sets for the chooser overlay.
   _setConflict(local, cloud, pull.updatedAt);
@@ -107,17 +190,21 @@ async function _signout() {
   return { ok: true };
 }
 
-async function _push() {
+async function _push(opts) {
   const key = localStorage.getItem('vb_sync_key');
   if (!key) return { ok: false, error: 'not signed in' };
-  const profiles = JSON.parse(localStorage.getItem('vb_profiles') || '[]');
+  const profiles = _localProfiles();
   const r = await _request('/push', {
     method: 'POST',
+    // keepalive lets the request survive the page being closed/backgrounded,
+    // so a flush on pagehide actually reaches the server.
+    keepalive: !!(opts && opts.keepalive),
     headers: { Authorization: 'Bearer ' + key },
     body: JSON.stringify({ profiles }),
   });
   if (!r.ok) return { ok: false, error: r.error };
   localStorage.setItem('vb_cloud_pushed_at', String(r.body.updatedAt));
+  _dirty = false;
   return { ok: true, updatedAt: r.body.updatedAt };
 }
 
@@ -138,42 +225,68 @@ async function _pull(replaceLocal = true) {
 
 // Debounced auto-push, invoked by profiles.js whenever saveProfiles runs.
 let _pushTimer = null;
+let _dirty = false;  // local changes not yet confirmed pushed (drives flush-on-close)
 function _onLocalChange() {
   if (!localStorage.getItem('vb_sync_key')) return;
+  _dirty = true;
   clearTimeout(_pushTimer);
   _pushTimer = setTimeout(() => { _push().catch(() => {}); }, 2000);
 }
 
-// Auto-sync on page load: pull from cloud, replace local if cloud is newer.
-async function _autoSync() {
+// Immediate push on app close / background. visibilitychange→hidden is the
+// reliable signal on mobile (pagehide/beforeunload often don't fire there).
+function _flush() {
+  if (!_dirty || !localStorage.getItem('vb_sync_key')) return;
+  clearTimeout(_pushTimer);
+  _push({ keepalive: true }).catch(() => {});
+}
+
+// Core reconcile: pull, then merge-or-conflict. Shared by auto-sync + "Sync now".
+async function _reconcile() {
   if (!localStorage.getItem('vb_sync_key')) return { ok: false, error: 'not signed in' };
-  // Cooldown: don't auto-pull more than once per 30s (covers spam navigation)
-  const lastPull = parseInt(localStorage.getItem('vb_cloud_pulled_at') || '0');
-  if (Date.now() - lastPull < 30000) return { ok: true, skipped: true };
-  const localUpdated = parseInt(localStorage.getItem('vb_local_updated_at') || '0');
-  // Pull WITHOUT replacing; compare timestamps; replace only if cloud is newer
   const r = await _pull(false);
   if (!r.ok) return r;
-  const local = JSON.parse(localStorage.getItem('vb_profiles') || '[]');
+  const local = _localProfiles();
   const cloud = r.profiles || [];
-  // Same set of kids? Nothing to do (ignore pure ordering/timestamp diffs).
-  if (_profilesSignature(local) === _profilesSignature(cloud)) {
-    return { ok: true, inSync: true };
-  }
   if (!local.length) {
     localStorage.setItem('vb_profiles', JSON.stringify(cloud));
-    localStorage.setItem('vb_local_updated_at', String(r.updatedAt));
+    localStorage.setItem('vb_local_updated_at', String(r.updatedAt || Date.now()));
     return { ok: true, pulled: true, reload: true };
   }
   if (!cloud.length) {
     _push().catch(() => {});
     return { ok: true, pushed: true };
   }
-  // Both non-empty AND different — a real conflict. Per Scott's choice, never
-  // silently overwrite: surface a chooser. (Old code auto-replaced on
-  // cloud-newer, which is how devices lost kids.)
-  _setConflict(local, cloud, r.updatedAt);
-  return { ok: true, conflict: true };
+  if (_profilesSignature(local) !== _profilesSignature(cloud)) {
+    // Different SET of kids — never silently overwrite; surface the chooser.
+    _setConflict(local, cloud, r.updatedAt);
+    return { ok: true, conflict: true };
+  }
+  // Same kids → merge progress (best-of) + newer settings.
+  const cloudNewer = (r.updatedAt || 0) > _localUpdatedAt();
+  const merged = _mergeProfileSets(local, cloud, cloudNewer);
+  const mergedStr = JSON.stringify(merged);
+  const changedLocal = mergedStr !== JSON.stringify(local);
+  const changedCloud = mergedStr !== JSON.stringify(cloud);
+  if (changedLocal) {
+    localStorage.setItem('vb_profiles', mergedStr);
+    localStorage.setItem('vb_local_updated_at', String(Math.max(_localUpdatedAt(), r.updatedAt || 0)));
+  }
+  if (changedCloud) await _push();  // converge cloud onto the merged result
+  return { ok: true, merged: true, changedLocal };
+}
+
+// Auto-sync on page load (cooldown-gated).
+async function _autoSync() {
+  if (!localStorage.getItem('vb_sync_key')) return { ok: false, error: 'not signed in' };
+  const lastPull = parseInt(localStorage.getItem('vb_cloud_pulled_at') || '0');
+  if (Date.now() - lastPull < PULL_COOLDOWN_MS) return { ok: true, skipped: true };
+  return _reconcile();
+}
+
+// "Sync now" — forced, ignores the cooldown. Returns the reconcile result.
+async function _syncNow() {
+  return _reconcile();
 }
 
 // ---------- Conflict state + chooser overlay ----------
@@ -271,6 +384,7 @@ window.cloudSync = {
   push: _push,
   pull: () => _pull(true),
   autoSync: _autoSync,
+  syncNow: _syncNow,
   onLocalChange: _onLocalChange,
   status: _status,
   getConflict: _getConflict,
@@ -278,9 +392,20 @@ window.cloudSync = {
   isExpired: () => localStorage.getItem('vb_sync_expired') === '1',
 };
 
+// Activity/hub pages (games/learning/art/videos/listen) still PUSH progress and
+// flush on close, but they do NOT auto-pull/merge/reload — a kid is never yanked
+// out of a game, and a roster-conflict chooser never pops over play. The shell
+// screens (chooser/home/ribbons/settings) do the pull+merge on open.
+function _isActivityArea() {
+  return /\/(games|learning|art|videos|listen)\//.test(location.pathname);
+}
+function _safeToReload() { return !_isActivityArea(); }
+
 // Fire auto-sync as soon as profiles.js + this script have both loaded.
 function _afterAutoSync(r) {
-  if (r && r.reload && !window._vbSyncReloaded) {
+  if (!r) return;
+  const wantReload = r.reload || (r.merged && r.changedLocal && _safeToReload());
+  if (wantReload && !window._vbSyncReloaded) {
     window._vbSyncReloaded = true; location.reload(); return;
   }
   // A pending conflict (from this autoSync OR a prior unresolved one) shows
@@ -290,9 +415,16 @@ function _afterAutoSync(r) {
     else document.addEventListener('DOMContentLoaded', _renderConflictOverlay);
   }
 }
-function _kickAutoSync() { _autoSync().then(_afterAutoSync).catch(() => {}); }
+function _kickAutoSync() {
+  if (_isActivityArea()) return;  // push + flush stay wired below; just no pull here
+  _autoSync().then(_afterAutoSync).catch(() => {});
+}
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', _kickAutoSync);
 } else {
   _kickAutoSync();
 }
+
+// Flush unsaved progress the moment the app is closed or backgrounded.
+window.addEventListener('pagehide', _flush);
+document.addEventListener('visibilitychange', () => { if (document.hidden) _flush(); });
