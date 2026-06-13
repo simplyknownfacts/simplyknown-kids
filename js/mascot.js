@@ -6,11 +6,14 @@
 //   - speak: play speaking clip, then return to base
 //   - Tap mascot: nothing (disabled per user request)
 
-const MASCOT_AVAILABLE = ['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle', 'axolotl', 'tabby'];
+const MASCOT_AVAILABLE = ['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle', 'axolotl', 'tabby',
+  'owl', 'parrot', 'dolphin', 'octopus', 'lion', 'bunny', 'fox', 'penguin'];
 const MASCOT_LABELS = {
   dog: '🐶 Dog', tiger: '🐯 Tiger', giraffe: '🦒 Giraffe',
   panda: '🐼 Panda', orca: '🐳 Orca', eagle: '🦅 Eagle',
   axolotl: '🦎 Axolotl', tabby: '🐈 Tabby Cat',
+  owl: '🦉 Owl', parrot: '🦜 Parrot', dolphin: '🐬 Dolphin', octopus: '🐙 Octopus',
+  lion: '🦁 Lion', bunny: '🐰 Bunny', fox: '🦊 Fox', penguin: '🐧 Penguin',
 };
 
 const UNIVERSAL_IDLES = ['idle_wave', 'idle_bubbles', 'idle_book', 'idle_popcorn'];
@@ -23,12 +26,22 @@ const SPECIES_IDLES = {
   eagle:   ['idle_flap', 'idle_preen', 'idle_alert', 'idle_call'],
   axolotl: ['idle_gills', 'idle_wiggle', 'idle_float', 'idle_peek'],
   tabby:   ['idle_purr', 'idle_stretch', 'idle_yarn', 'idle_groom'],
+  owl:     ['idle_hoot', 'idle_headturn', 'idle_fluff', 'idle_peek'],
+  parrot:  ['idle_squawk', 'idle_dance', 'idle_preen', 'idle_flap'],
+  dolphin: ['idle_jump', 'idle_spin', 'idle_click', 'idle_swim'],
+  octopus: ['idle_wiggle', 'idle_squirt', 'idle_curl', 'idle_colorshift'],
+  lion:    ['idle_roar', 'idle_stretch', 'idle_lick', 'idle_pounce'],
+  bunny:   ['idle_hop', 'idle_munch', 'idle_earwash', 'idle_thump'],
+  fox:     ['idle_pounce', 'idle_tailwrap', 'idle_sniff', 'idle_tilt'],
+  penguin: ['idle_waddle', 'idle_flap', 'idle_slide', 'idle_preen'],
 };
 // Animal sound file per mascot — played as overlay when kid taps the mascot
 const MASCOT_SOUND_FILE = {
   dog: 'dog.mp3', tiger: 'tiger.mp3', giraffe: 'giraffe.mp3',
   panda: 'panda.mp3', orca: 'whale.mp3', eagle: 'eagle.mp3',
   axolotl: 'axolotl.mp3', tabby: 'cat.mp3',
+  owl: 'owl.mp3', parrot: 'parrot.mp3', dolphin: 'dolphin.mp3', octopus: 'octopus.mp3',
+  lion: 'lion.mp3', bunny: 'rabbit.mp3', fox: 'fox.mp3', penguin: 'penguin.mp3',
 };
 function _actionKeys(mascotId) {
   return [...UNIVERSAL_IDLES, ...(SPECIES_IDLES[mascotId] || [])];
@@ -37,7 +50,8 @@ function _actionKeys(mascotId) {
 // Mascots whose assets are shot on a green screen: their videos live under
 // mascots/<id>/green/ and are keyed (green removed) per-frame onto a canvas so
 // the character floats with a genuinely transparent background — no circle mask.
-const CHROMA_MASCOTS = new Set(['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle', 'axolotl', 'tabby']);
+const CHROMA_MASCOTS = new Set(['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle', 'axolotl', 'tabby',
+  'owl', 'parrot', 'dolphin', 'octopus', 'lion', 'bunny', 'fox', 'penguin']);
 function _isChroma(mascotId) { return CHROMA_MASCOTS.has(mascotId); }
 // Green-screen keyer (tuned in mascot-green-video.html): remove green, despill.
 // _CK_FLOOR clears FAINT residue: a weaker green screen (the giraffe measures

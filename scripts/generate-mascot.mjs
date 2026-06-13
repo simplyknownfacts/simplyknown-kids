@@ -37,7 +37,9 @@ const MASCOTS = {
 
   // ── 6 new (2 air, 2 water, 2 land) ──
   owl:     { name: 'Owl',     prompt: 'a friendly cartoon baby owl perched upright, big round expressive eyes, soft brown and cream feathers, small orange beak, little ear tufts, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, happy friendly expression' },
-  parrot:  { name: 'Parrot',  prompt: 'a friendly cartoon baby parrot perched upright, big expressive eyes, bright colorful feathers (red, blue, yellow and green), small curved beak, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, cheerful smile' },
+  // NOTE: no green feathers — anything green on the character gets eaten by the
+  // runtime chroma keyer (hole in the wing).
+  parrot:  { name: 'Parrot',  prompt: 'a friendly cartoon baby parrot perched upright, big expressive eyes, bright colorful feathers in red, blue, yellow and orange only (absolutely NO green feathers anywhere), small curved beak, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, cheerful smile' },
   dolphin: { name: 'Dolphin', prompt: 'a friendly cartoon baby dolphin, smiling, big expressive eyes, smooth blue-gray skin with a light belly, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, playful pose, mouth slightly open in a friendly smile' },
   octopus: { name: 'Octopus', prompt: 'a friendly cartoon baby octopus, big expressive eyes, round head and eight curly tentacles, soft purple and pink color, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, happy curious smile' },
   lion:    { name: 'Lion',    prompt: 'a friendly cartoon lion cub sitting upright, big expressive eyes, golden fur with a small fuzzy mane, a solid flat chroma-green (#00FF00) background, nothing else, kids book illustration style, full body visible, happy friendly smile' },

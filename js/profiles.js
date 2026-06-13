@@ -4,7 +4,8 @@ const _ACTIVE_KEY   = 'vb_active_id';
 // The kid's animal companion (mascot) IS their avatar — its emoji is the icon
 // shown in the kid-chooser, home pill, and settings. Single source of truth =
 // profile.mascot.id, so changing the mascot updates the icon everywhere.
-const MASCOT_EMOJI = { dog:'🐶', tiger:'🐯', giraffe:'🦒', panda:'🐼', orca:'🐳', eagle:'🦅', axolotl:'🦎', tabby:'🐈' };
+const MASCOT_EMOJI = { dog:'🐶', tiger:'🐯', giraffe:'🦒', panda:'🐼', orca:'🐳', eagle:'🦅', axolotl:'🦎', tabby:'🐈',
+  owl:'🦉', parrot:'🦜', dolphin:'🐬', octopus:'🐙', lion:'🦁', bunny:'🐰', fox:'🦊', penguin:'🐧' };
 function mascotEmoji(profile) {
   return (profile && profile.mascot && MASCOT_EMOJI[profile.mascot.id]) || '🐾';
 }

@@ -16,7 +16,8 @@ import { readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, posix } from 'node:path';
 
 const ROOT = process.cwd();
-const MASCOTS = ['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle', 'axolotl', 'tabby'];
+const MASCOTS = ['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle', 'axolotl', 'tabby',
+  'owl', 'parrot', 'dolphin', 'octopus', 'lion', 'bunny', 'fox', 'penguin'];
 const MEDIA_EXT = new Set(['.mp4', '.mp3']);  // skip dev proofs (*.png) + html
 
 function walk(rel) {
