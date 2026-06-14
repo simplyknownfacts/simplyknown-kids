@@ -18,11 +18,14 @@ before the next batch.
 - **Spelling Bee** — now scales by tier: 3-letter (T4–6) → +4 (T7) → 4–5 (T8) →
   5–6 (T9) → 6–8-letter trickiest (T10); decoy bank grows 4→7. Verified T8/T10.
 
+## ✅ DONE — Batch 2 (Hello Colors + Animal Sounds), shipped v118
+- **Hello Colors** — T6+ adds trickier colours (brown/gray/black/white) + odd-one-out
+  ("which is NOT blue?"); T8+ adds colour-MIXING ("red + blue = ?" → tap result swatch).
+  Verified T8: identify/odd/mix all render + correct.
+- **Animal Sounds** — T6+ adds classification ("which is a mammal/bird?"); T8+ adds habitat
+  ("which lives in the ocean?"), via a factual group/habitat table. Verified T8.
+
 ## ⏳ QUEUE — review + level up (batches of 2; pick order with Scott)
-1. **Hello Colors** — caps T4 (color quiz). Ideas: shades/specific colors, "which is NOT red",
-   color mixing (red+blue=purple), spell the color, speed rounds.
-2. **Animal Sounds** — caps T4 (sound quiz). Ideas: more choices, habitats, mammal/reptile/bird,
-   baby-animal names, "which does NOT…", sound→spell.
 3. **Count Along** — caps ~T5 (count to 10). Ideas: skip-counting (2s/5s/10s), bigger numbers,
    "how many more", simple place value, before/after.
 4. **Body Parts** — caps T4 (extra parts). Ideas: harder labels (elbow/wrist/ankle/shoulder),

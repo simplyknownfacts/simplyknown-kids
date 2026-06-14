@@ -210,24 +210,36 @@
     const instruction = document.getElementById('instruction');
     const quizStage   = document.getElementById('quizStage');
 
-    function nextRound() {
-      quizStage.innerHTML = '';
-      const count = tier <= 6 ? (tier === 5 ? 2 : 3) : 4;
-      const group = pickGroup(count);
-      const answerIdx = Math.floor(Math.random() * count);
-      const target = group[answerIdx];
-      instruction.textContent = 'Which animal makes this sound?';
-      setTimeout(() => speakAnimal(target), 400);
+    // Factual metadata so the quiz can grow up: group (biology class) + habitat.
+    // (Whales/dolphins/seals are mammals on purpose — a nice older-kid lesson.)
+    const ANIMAL_INFO = {
+      cow:{g:'mammal',h:'farm'}, dog:{g:'mammal',h:'farm'}, cat:{g:'mammal',h:'farm'},
+      frog:{g:'amphibian',h:'wild'}, lion:{g:'mammal',h:'wild'}, elephant:{g:'mammal',h:'wild'},
+      sheep:{g:'mammal',h:'farm'}, rooster:{g:'bird',h:'farm'}, duck:{g:'bird',h:'farm'},
+      horse:{g:'mammal',h:'farm'}, pig:{g:'mammal',h:'farm'}, bear:{g:'mammal',h:'wild'},
+      owl:{g:'bird',h:'wild'}, snake:{g:'reptile',h:'wild'}, bee:{g:'insect',h:'wild'},
+      monkey:{g:'mammal',h:'wild'}, chicken:{g:'bird',h:'farm'}, goat:{g:'mammal',h:'farm'},
+      donkey:{g:'mammal',h:'farm'}, mouse:{g:'mammal',h:'wild'}, tiger:{g:'mammal',h:'wild'},
+      wolf:{g:'mammal',h:'wild'}, whale:{g:'mammal',h:'ocean'}, dolphin:{g:'mammal',h:'ocean'},
+      seal:{g:'mammal',h:'ocean'}, bird:{g:'bird',h:'wild'}, crow:{g:'bird',h:'wild'},
+      turkey:{g:'bird',h:'farm'}, rabbit:{g:'mammal',h:'wild'}, fox:{g:'mammal',h:'wild'},
+    };
+    const countFor = () => tier <= 6 ? (tier === 5 ? 2 : 3) : 4;
 
-      const row = document.createElement('div');
-      row.className = 'row';
-      group.forEach((a, i) => {
-        const btn = document.createElement('div');
-        btn.className = 'choice-btn';
+    function renderRound(items, answerIdx, promptText, opts) {
+      opts = opts || {};
+      quizStage.innerHTML = '';
+      instruction.textContent = promptText;
+      if (opts.replay) setTimeout(() => speakAnimal(items[answerIdx]), 400);
+      else setTimeout(() => speak(promptText), 400);
+      const row = document.createElement('div'); row.className = 'row';
+      items.forEach((a, i) => {
+        const btn = document.createElement('div'); btn.className = 'choice-btn';
         btn.innerHTML = `<span>${a.emoji}</span><span class="cname">${a.name}</span>`;
         btn.addEventListener('pointerdown', () => {
           if (i === answerIdx) {
-            playSuccess(); speakAnimal(a);
+            playSuccess();
+            if (opts.replay) speakAnimal(a); else speak(`Yes! The ${a.name}.`);
             if (window.vbProgress) { vbProgress.record('animal-sounds'); vbProgress.mastery('animal-sounds.mastery'); }
             btn.style.background = 'rgba(168,230,207,0.4)';
             roundTimer = setTimeout(nextRound, 1800);
@@ -240,13 +252,47 @@
         row.appendChild(btn);
       });
       quizStage.appendChild(row);
+      if (opts.replay) {
+        const r = document.createElement('button'); r.className = 'back-btn';
+        r.style.cssText = 'position:static;font-size:20px;width:56px;height:56px;';
+        r.textContent = '🔊';
+        r.addEventListener('click', () => speakAnimal(items[answerIdx]));
+        quizStage.appendChild(r);
+      }
+    }
 
-      const replayBtn = document.createElement('button');
-      replayBtn.className = 'back-btn';
-      replayBtn.style.cssText = 'position:static;font-size:20px;width:56px;height:56px;';
-      replayBtn.textContent = '🔊';
-      replayBtn.addEventListener('click', () => speakAnimal(target));
-      quizStage.appendChild(replayBtn);
+    // T4-5: sound. T6-7: + group ("which is a bird?"). T8+: + habitat.
+    function soundRound() {
+      const c = countFor(); const g = pickGroup(c);
+      renderRound(g, Math.floor(Math.random() * c), 'Which animal makes this sound?', { replay: true });
+    }
+    function categoryRound(key, phraseFor, groups) {
+      const which = groups[Math.floor(Math.random() * groups.length)];
+      const inSet = ANIMALS.filter(a => ANIMAL_INFO[a.id] && ANIMAL_INFO[a.id][key] === which);
+      const outSet = ANIMALS.filter(a => !ANIMAL_INFO[a.id] || ANIMAL_INFO[a.id][key] !== which);
+      if (!inSet.length || outSet.length < 1) return soundRound();
+      const answer = inSet[Math.floor(Math.random() * inSet.length)];
+      const decoys = [...outSet].sort(() => Math.random() - 0.5).slice(0, countFor() - 1);
+      const items = [answer, ...decoys].sort(() => Math.random() - 0.5);
+      renderRound(items, items.indexOf(answer), phraseFor(which), {});
+    }
+    function groupRound() {
+      const groups = tier >= 8 ? ['mammal','bird','reptile','amphibian','insect'] : ['mammal','bird'];
+      const label = { mammal:'a mammal', bird:'a bird', reptile:'a reptile', amphibian:'an amphibian', insect:'an insect' };
+      categoryRound('g', (w) => `Which one is ${label[w]}?`, groups);
+    }
+    function habitatRound() {
+      const phrase = { farm:'on a farm', ocean:'in the ocean', wild:'in the wild' };
+      categoryRound('h', (w) => `Which one lives ${phrase[w]}?`, ['farm','ocean','wild']);
+    }
+    function nextRound() {
+      const types = tier >= 8 ? ['sound','group','habitat','sound']
+                  : tier >= 6 ? ['sound','group','sound']
+                  : ['sound'];
+      const t = types[Math.floor(Math.random() * types.length)];
+      if (t === 'group') return groupRound();
+      if (t === 'habitat') return habitatRound();
+      return soundRound();
     }
 
     nextRound();

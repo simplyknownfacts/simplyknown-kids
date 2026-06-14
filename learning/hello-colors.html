@@ -89,6 +89,23 @@
       { name:'Orange', hex:'#FF8C00', things:[{e:'🍊',n:'Orange'},{e:'🎃',n:'Pumpkin'},{e:'🦊',n:'Fox'},{e:'🥕',n:'Carrot'}] },
       { name:'Pink',   hex:'#FF69B4', things:[{e:'🐷',n:'Pig'},{e:'🌸',n:'Blossom'},{e:'🦩',n:'Flamingo'},{e:'🩷',n:'Heart'}] },
     ];
+    // Older kids (Tier 6+) also learn the trickier colours.
+    const MORE_COLORS = [
+      { name:'Brown', hex:'#8B5A2B', things:[{e:'🐻',n:'Bear'},{e:'🍫',n:'Chocolate'},{e:'🪵',n:'Log'},{e:'🥔',n:'Potato'}] },
+      { name:'Gray',  hex:'#9AA0A6', things:[{e:'🐘',n:'Elephant'},{e:'🌫️',n:'Fog'},{e:'🦈',n:'Shark'},{e:'🪨',n:'Rock'}] },
+      { name:'Black', hex:'#2B2B33', things:[{e:'🦇',n:'Bat'},{e:'🐈‍⬛',n:'Cat'},{e:'🎩',n:'Hat'},{e:'🕷️',n:'Spider'}] },
+      { name:'White', hex:'#EFEFF3', things:[{e:'☁️',n:'Cloud'},{e:'🦢',n:'Swan'},{e:'🥛',n:'Milk'},{e:'❄️',n:'Snow'}] },
+    ];
+    // Colour-mixing facts (Tier 8+): tap the colour you get.
+    const MIXES = [
+      { a:'Red', b:'Blue',   r:'Purple' },
+      { a:'Red', b:'Yellow', r:'Orange' },
+      { a:'Blue', b:'Yellow', r:'Green' },
+      { a:'Red', b:'White',  r:'Pink' },
+      { a:'Black', b:'White', r:'Gray' },
+    ];
+    const ALL_COLORS = [...COLORS, ...MORE_COLORS];
+    const hexOf = (name) => (ALL_COLORS.find(c => c.name === name) || {}).hex || '#888';
 
     let colorIdx = 0;
     let autoTimer = null;
@@ -148,76 +165,113 @@
         }
 
       } else {
-        // Quiz: alternates between two prompts on each round:
-        //   • "Tap the BLUE thing!" — decoys are different colors (current)
-        //   • "Tap the BLUE BLUEBERRY!" — strict; decoys can be same-color
-        //     other things, which trigger a "that's blue, but not a blueberry"
-        //     correction (custom near-miss hint).
+        // Quiz — round type scales with age:
+        //   T4-5: identify ("tap the blue thing" / strict "tap the blue blueberry")
+        //   T6-7: + bigger colour set + odd-one-out ("which is NOT blue?")
+        //   T8+ : + colour MIXING ("red + blue = ?")
         label.style.display = 'none';
         bg.style.background = '#1a1a2e';
-        const strict = Math.random() < 0.5; // half the rounds use strict-thing mode
-        const targetColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-        const targetThing = targetColor.things[Math.floor(Math.random() * targetColor.things.length)];
-
-        // Build a 4-card lineup.
-        // - Strict mode: target + 1 same-color-different-thing + 2 different-colors
-        // - Color mode: target + 3 different-colors (existing behavior)
-        const lineup = [{ color: targetColor, thing: targetThing, isAnswer: true }];
-        if (strict) {
-          // same-color decoy
-          const sameColorOthers = targetColor.things.filter(t => t.n !== targetThing.n);
-          if (sameColorOthers.length) {
-            lineup.push({
-              color: targetColor,
-              thing: sameColorOthers[Math.floor(Math.random() * sameColorOthers.length)],
-              isAnswer: false, sameColor: true,
-            });
-          }
-        }
-        const otherColors = COLORS.filter(c => c.name !== targetColor.name).sort(() => Math.random() - 0.5);
-        while (lineup.length < 4) {
-          const c = otherColors[lineup.length - 1];
-          lineup.push({
-            color: c,
-            thing: c.things[Math.floor(Math.random() * c.things.length)],
-            isAnswer: false, sameColor: false,
-          });
-        }
-        lineup.sort(() => Math.random() - 0.5);
-
-        const promptText = strict
-          ? `Tap the ${targetColor.name} ${targetThing.n}!`
-          : `Tap the ${targetColor.name} thing!`;
-        quizLbl.textContent = promptText;
-        setTimeout(() => speak(promptText), 300);
-
-        lineup.forEach(slot => {
-          const card = document.createElement('div');
-          card.className = 'thing-card pop-in';
-          card.innerHTML = `<span class="thing-emoji">${slot.thing.e}</span><span class="thing-name">${slot.thing.n}</span>`;
-          card.addEventListener('pointerdown', () => {
-            if (slot.isAnswer) {
-              playSuccess();
-              if (window.vbProgress) { vbProgress.record('hello-colors'); vbProgress.mastery('hello-colors.mastery'); }
-              speak(`Yes! ${slot.thing.n} is ${slot.color.name}!`);
-              bg.style.background = slot.color.hex;
-              label.style.display = 'block';
-              label.textContent = slot.color.name;
-              autoTimer = setTimeout(nextRound, 1800);
-            } else {
-              playBoop();
-              card.classList.add('wrong');
-              setTimeout(() => card.classList.remove('wrong'), 400);
-              if (strict && slot.sameColor) {
-                speak(`That's ${targetColor.name}, but not a ${targetThing.n}. Tap the ${targetColor.name} ${targetThing.n}.`);
-              } else {
-                speak('Try again!');
-              }
-            }
-          });
-          thingsRow.appendChild(card);
-        });
+        const types = tier >= 8 ? ['identify','odd','mix','identify']
+                    : tier >= 6 ? ['identify','odd','identify']
+                    : ['identify'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        if (type === 'mix') return mixRound();
+        if (type === 'odd') return oddRound();
+        return identifyRound();
       }
+    }
+
+    // ── Quiz round types ──────────────────────────────────────────────────────
+    function quizPalette() { return tier >= 6 ? ALL_COLORS : COLORS; }
+    function makeThingCard(thing, onTap) {
+      const card = document.createElement('div');
+      card.className = 'thing-card pop-in';
+      card.innerHTML = `<span class="thing-emoji">${thing.e}</span><span class="thing-name">${thing.n}</span>`;
+      card.addEventListener('pointerdown', () => onTap(card));
+      thingsRow.appendChild(card);
+      return card;
+    }
+    function wrongFlash(card) { playBoop(); card.classList.add('wrong'); setTimeout(() => card.classList.remove('wrong'), 400); }
+
+    // "Tap the <colour> thing" (+ half the rounds: strict "tap the <colour> <thing>")
+    function identifyRound() {
+      const palette = quizPalette();
+      const strict = Math.random() < 0.5;
+      const targetColor = palette[Math.floor(Math.random() * palette.length)];
+      const targetThing = targetColor.things[Math.floor(Math.random() * targetColor.things.length)];
+      const lineup = [{ color: targetColor, thing: targetThing, isAnswer: true }];
+      if (strict) {
+        const others = targetColor.things.filter(t => t.n !== targetThing.n);
+        if (others.length) lineup.push({ color: targetColor, thing: others[Math.floor(Math.random()*others.length)], isAnswer:false, sameColor:true });
+      }
+      const otherColors = palette.filter(c => c.name !== targetColor.name).sort(() => Math.random()-0.5);
+      let oi = 0;
+      while (lineup.length < 4) {
+        const c = otherColors[oi++];
+        lineup.push({ color:c, thing:c.things[Math.floor(Math.random()*c.things.length)], isAnswer:false, sameColor:false });
+      }
+      lineup.sort(() => Math.random()-0.5);
+      const promptText = strict ? `Tap the ${targetColor.name} ${targetThing.n}!` : `Tap the ${targetColor.name} thing!`;
+      quizLbl.textContent = promptText; setTimeout(() => speak(promptText), 300);
+      lineup.forEach(slot => makeThingCard(slot.thing, (card) => {
+        if (slot.isAnswer) {
+          playSuccess();
+          if (window.vbProgress) { vbProgress.record('hello-colors'); vbProgress.mastery('hello-colors.mastery'); }
+          speak(`Yes! ${slot.thing.n} is ${slot.color.name}!`);
+          bg.style.background = slot.color.hex; label.style.display='block'; label.textContent = slot.color.name;
+          autoTimer = setTimeout(nextRound, 1800);
+        } else {
+          wrongFlash(card);
+          if (slot.sameColor) speak(`That's ${targetColor.name}, but not a ${targetThing.n}.`);
+          else speak('Try again!');
+        }
+      }));
+    }
+
+    // "Which one is NOT <colour>?" — 3 things of that colour + 1 odd one out (T6+)
+    function oddRound() {
+      const palette = quizPalette();
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      const odd = palette.filter(x => x.name !== c.name).sort(() => Math.random()-0.5)[0];
+      const lineup = [
+        ...[...c.things].sort(() => Math.random()-0.5).slice(0,3).map(t => ({ thing:t, isAnswer:false })),
+        { thing: odd.things[Math.floor(Math.random()*odd.things.length)], isAnswer:true },
+      ].sort(() => Math.random()-0.5);
+      const promptText = `Which one is NOT ${c.name}?`;
+      quizLbl.textContent = promptText; setTimeout(() => speak(promptText), 300);
+      lineup.forEach(slot => makeThingCard(slot.thing, (card) => {
+        if (slot.isAnswer) {
+          playSuccess();
+          if (window.vbProgress) { vbProgress.record('hello-colors'); vbProgress.mastery('hello-colors.mastery'); }
+          speak(`Yes! That one is not ${c.name}.`);
+          autoTimer = setTimeout(nextRound, 1600);
+        } else { wrongFlash(card); speak(`That one IS ${c.name}. Find the one that is not.`); }
+      }));
+    }
+
+    // Colour mixing: "Red + Blue = ?" → tap the result swatch (T8+)
+    function mixRound() {
+      const mix = MIXES[Math.floor(Math.random() * MIXES.length)];
+      const promptText = `${mix.a} + ${mix.b} = ?`;
+      quizLbl.textContent = promptText; setTimeout(() => speak(`${mix.a} plus ${mix.b} makes what?`), 300);
+      const choices = new Set([mix.r]);
+      const pool = ALL_COLORS.map(c => c.name).filter(n => n !== mix.a && n !== mix.b);
+      while (choices.size < 4) choices.add(pool[Math.floor(Math.random()*pool.length)]);
+      [...choices].sort(() => Math.random()-0.5).forEach(name => {
+        const card = document.createElement('div');
+        card.className = 'thing-card pop-in revealed';
+        card.innerHTML = `<span class="thing-emoji" style="width:clamp(56px,13vw,90px);height:clamp(56px,13vw,90px);border-radius:50%;background:${hexOf(name)};border:3px solid rgba(255,255,255,0.6);"></span><span class="thing-name">${name}</span>`;
+        card.addEventListener('pointerdown', () => {
+          if (name === mix.r) {
+            playSuccess();
+            if (window.vbProgress) { vbProgress.record('hello-colors'); vbProgress.mastery('hello-colors.mastery'); }
+            speak(`Yes! ${mix.a} and ${mix.b} make ${mix.r}!`);
+            bg.style.background = hexOf(mix.r); label.style.display='block'; label.textContent = mix.r;
+            autoTimer = setTimeout(nextRound, 2000);
+          } else { wrongFlash(card); speak('Try again!'); }
+        });
+        thingsRow.appendChild(card);
+      });
     }
 
     label.style.display = quizOn ? 'none' : 'block';
