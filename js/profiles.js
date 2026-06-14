@@ -40,9 +40,8 @@ const ACTIVITY_FEATURES = [
   { id:'count-along',   name:'Count Along',      icon:'🔢', file:'count-along.html',   section:'learn', minTier:2, features:[
     { key:'quizMode',      label:'How-many quiz mode',                      minTier:4 },
   ]},
-  { id:'abcs',          name:'ABCs',             icon:'🔤', file:'abcs.html',          section:'learn', minTier:2, features:[
+  { id:'abcs',          name:'ABCs',             icon:'🔤', file:'abcs.html',          section:'learn', minTier:2, maxTier:6, features:[
     { key:'wordHints',     label:'Show "A is for Apple" word hints',        minTier:3 },
-    { key:'spellMode',     label:'Spell short words',                       minTier:6 },
   ]},
   { id:'days',          name:'Days',             icon:'📅', file:'days.html',          section:'learn', minTier:3, features:[
     { key:'quizMode',      label:'Quiz mode (what comes after Monday?)',    minTier:5 },
@@ -183,7 +182,12 @@ function isActivityVisible(profile, activityId) {
     ? ACTIVITY_FEATURES.find(a => a.id === activityId) : null;
   const minTier = (activity && activity.minTier) || 1;
   const kidTier = tierForAge(getAgeMonths(profile.birthday));
-  return kidTier >= minTier;
+  if (kidTier < minTier) return false;
+  // Some activities cap out (e.g. ABCs letters are mastered by ~age 6) — hide
+  // them by default once a kid is past maxTier; a parent can still force-show
+  // via the per-profile activitiesVisible override.
+  if (activity && activity.maxTier && kidTier > activity.maxTier) return false;
+  return true;
 }
 
 function setActivityVisible(profileId, activityId, visible) {

@@ -98,7 +98,8 @@
     if (window.vbProgress) { vbProgress.firstPlay('abcs'); vbProgress.touchStreak(); }
 
     const wordHintsOn = tier >= 3 || getProfileFeature(profile, 'abcs', 'wordHints');
-    const spellOn     = tier >= 7 || getProfileFeature(profile, 'abcs', 'spellMode');
+    // Spelling moved entirely to the Spelling Bee activity (no duplicate here);
+    // ABCs stays focused on letters + "starts with" and hides for kids past T6.
 
     const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     // 4 kid-recognizable starts-with items per letter
@@ -130,67 +131,13 @@
       Y: [{w:'Yo-yo',e:'🪀'},{w:'Yak',e:'🐂'},{w:'Yarn',e:'🧶'},{w:'Yellow',e:'💛'}],
       Z: [{w:'Zebra',e:'🦓'},{w:'Zipper',e:'🤐'},{w:'Zero',e:'0️⃣'},{w:'Zoo',e:'🦁'}],
     };
-    const SPELL_WORDS = [
-      {w:'CAT',e:'🐱'},{w:'DOG',e:'🐶'},{w:'PIG',e:'🐷'},{w:'SUN',e:'☀️'},
-      {w:'EGG',e:'🥚'},{w:'HAT',e:'🎩'},{w:'BAT',e:'🦇'},{w:'BUG',e:'🐛'},
-    ];
-
     const bodyEl = document.getElementById('body');
     let idx = 0;
 
     function nextRound() {
       bodyEl.innerHTML = '';
 
-      if (spellOn) {
-        // Spell mode: pick a 3-letter word, tap letters from bank in order
-        const word = SPELL_WORDS[Math.floor(Math.random() * SPELL_WORDS.length)];
-        const hint = document.createElement('div'); hint.className = 'subtitle';
-        hint.textContent = `Spell ${word.w.toLowerCase()}!`;
-        bodyEl.appendChild(hint);
-        const pic = document.createElement('div');
-        pic.style.cssText = 'font-size:clamp(80px,20vw,140px);line-height:1;';
-        pic.textContent = word.e;
-        bodyEl.appendChild(pic);
-        const slotRow = document.createElement('div'); slotRow.className = 'row';
-        const slots = [];
-        for (const ch of word.w) {
-          const s = document.createElement('div');
-          s.className = 'spelled-slot'; s.dataset.target = ch;
-          slotRow.appendChild(s); slots.push(s);
-        }
-        bodyEl.appendChild(slotRow);
-        const bank = new Set(word.w.split(''));
-        while (bank.size < word.w.length + 4) bank.add(ALPHABET[Math.floor(Math.random()*26)]);
-        const grid = document.createElement('div'); grid.className = 'letter-grid';
-        [...bank].sort(() => Math.random() - 0.5).forEach(L => {
-          const tile = document.createElement('div');
-          tile.className = 'letter-tile'; tile.textContent = L;
-          tile.addEventListener('pointerdown', () => {
-            const nextEmpty = slots.findIndex(s => !s.textContent);
-            if (nextEmpty === -1) return;
-            if (slots[nextEmpty].dataset.target === L) {
-              slots[nextEmpty].textContent = L;
-              slots[nextEmpty].classList.add('filled');
-              speak(L);
-              if (slots.every(s => s.textContent)) {
-                playSuccess();
-                if (window.vbProgress) { vbProgress.record('abcs'); vbProgress.mastery('abcs.mastery'); }
-                setTimeout(() => speak(word.w), 400);
-                setTimeout(nextRound, 2400);
-              }
-            } else {
-              tile.classList.add('wrong'); playBoop();
-              setTimeout(() => tile.classList.remove('wrong'), 350);
-            }
-          });
-          grid.appendChild(tile);
-        });
-        bodyEl.appendChild(grid);
-        setTimeout(() => speak(`Spell ${word.w}!`), 300);
-        return;
-      }
-
-      // Default mode (tier ≤ 6): big letter + 4 starts-with tiles + Next button
+      // Letter pages: big letter + 4 starts-with tiles + Back/Next
       const letter = ALPHABET[idx % 26];
       const items = STARTS[letter];
 

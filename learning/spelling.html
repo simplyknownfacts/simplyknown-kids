@@ -91,10 +91,33 @@
       {w:'BUG',e:'🐛'},{w:'HAT',e:'🎩'},{w:'BAT',e:'🦇'},{w:'CUP',e:'🥤'},
       {w:'BUS',e:'🚌'},{w:'EGG',e:'🥚'},{w:'BEE',e:'🐝'},{w:'COW',e:'🐮'},
     ];
-    const LONGER = [
+    // Spelling Bee owns ALL spelling (ABCs is letters-only now) and scales up so
+    // it still challenges a 6–10yo: longer words + more decoy letters per tier.
+    const W4 = [
       {w:'FISH',e:'🐟'},{w:'STAR',e:'⭐'},{w:'MOON',e:'🌙'},{w:'BIRD',e:'🐦'},
       {w:'CAKE',e:'🍰'},{w:'TREE',e:'🌳'},{w:'BOOK',e:'📖'},{w:'BALL',e:'⚽'},
+      {w:'FROG',e:'🐸'},{w:'BOAT',e:'⛵'},
     ];
+    const W5 = [
+      {w:'APPLE',e:'🍎'},{w:'TIGER',e:'🐯'},{w:'TRAIN',e:'🚂'},{w:'HOUSE',e:'🏠'},
+      {w:'ROBOT',e:'🤖'},{w:'GRAPE',e:'🍇'},{w:'ZEBRA',e:'🦓'},{w:'SNAKE',e:'🐍'},
+      {w:'CLOUD',e:'☁️'},{w:'HEART',e:'❤️'},
+    ];
+    const W6 = [
+      {w:'ORANGE',e:'🍊'},{w:'FLOWER',e:'🌸'},{w:'ROCKET',e:'🚀'},{w:'MONKEY',e:'🐵'},
+      {w:'GUITAR',e:'🎸'},{w:'PENGUIN',e:'🐧'},{w:'RAINBOW',e:'🌈'},{w:'DOLPHIN',e:'🐬'},
+      {w:'ELEPHANT',e:'🐘'},{w:'DINOSAUR',e:'🦕'},
+    ];
+    // Word pool grows with tier; tier 10 = the longest, trickiest words only.
+    function poolFor(t) {
+      if (t <= 6) return WORDS;
+      if (t === 7) return [...WORDS, ...W4];
+      if (t === 8) return [...W4, ...W5];
+      if (t === 9) return [...W5, ...W6];
+      return W6;
+    }
+    // Extra decoy letters in the bank (more = harder to find the right one).
+    function bankExtra(t) { return t >= 9 ? 7 : t >= 8 ? 6 : t >= 7 ? 5 : 4; }
     const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
     const bodyEl = document.getElementById('body');
@@ -140,8 +163,9 @@
         setTimeout(() => speak(target.w), 400);
 
       } else {
-        // Tier 6+: spell the word — tap letters in order from a bank
-        const pool = tier >= 7 ? [...WORDS, ...LONGER] : WORDS;
+        // Tier 6+: spell the word — tap letters in order from a bank.
+        // Longer words + more decoys as the kid gets older (see poolFor/bankExtra).
+        const pool = poolFor(tier);
         const target = pool[Math.floor(Math.random() * pool.length)];
         hint.textContent = `Spell it!`;
         const pic = document.createElement('div'); pic.className = 'pic-big';
@@ -158,7 +182,7 @@
         bodyEl.appendChild(slotRow);
 
         const bank = new Set(target.w.split(''));
-        while (bank.size < target.w.length + 4) bank.add(ALPHA[Math.floor(Math.random() * 26)]);
+        while (bank.size < target.w.length + bankExtra(tier)) bank.add(ALPHA[Math.floor(Math.random() * 26)]);
         const grid = document.createElement('div'); grid.className = 'letter-grid';
         [...bank].sort(() => Math.random() - 0.5).forEach(L => {
           const tile = document.createElement('div');
