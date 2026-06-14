@@ -87,45 +87,48 @@
     // part; a correct tap glows the zone. Positions are % of the figure box.
     const figure = document.getElementById('figure');
 
-    // Standing-kid tap zones. The AI kids share the "stand straight, arms out,
-    // full body, centred" pose, so most parts are consistent — but each kid's
-    // FACE drifts a bit (head size / hair volume), so every kid carries a small
-    // per-kid offset (CONFIG). Face parts are appended LAST (nose/mouth after
-    // eyes/ears) so the central features sit on top → tapping a feature's
-    // centre resolves to THAT feature, not a neighbour.
-    function standing(o) {
-      o = o || {};
-      const cx = o.cx ?? 50;       // body centre
-      const fcx = o.faceCx ?? cx;  // face centre — differs from body for a turned/off-centre head (e.g. body-07)
-      const f  = o.fy ?? 0;        // face vertical shift (+ = lower on the kid)
-      const eDx = o.earDx ?? 13;   // ear half-spread
-      const hDx = o.handDx ?? 21;  // hand half-spread
-      const aDx = o.armDx ?? 17;   // arm half-spread
+    // Tap zones are MEASURED per figure (v115), not hand-tuned. For each PNG we
+    // detected the EYES (dark pupil beside white sclera) and the ARM/HAND extent
+    // (alpha bbox per height-band), via canvas pixel analysis. Every FACE part is
+    // anchored to the real eye line + eye-spread, so a turned head (body-10/12) or
+    // a big-hair kid with low-set eyes (body-07, eyes at ~31%) still lines up.
+    // Body parts use the shared standing-pose proportions — all figures are framed
+    // identically (content top ~2%, bottom ~98%, centred). The prior per-kid fy/
+    // faceCx offsets had drifted (e.g. body-05 fy was -1 but its eyes sit at ~21%
+    // → 4% too high), which made taps miss; these anchors are freshly measured.
+    // ANCHORS: lx/rx = eye-centre X, y = eye-centre Y; aL/aR = arm extent; hL/hR = hand extent (all % of figure).
+    const ANCHORS = {
+      1:{lx:46,rx:61.2,y:21.8,aL:34.7,aR:69,hL:29.3,hR:75.3},
+      2:{lx:42.8,rx:58,y:22.1,aL:33.7,aR:67,hL:29.7,hR:70.7},
+      3:{lx:45.5,rx:59.4,y:25.2,aL:36.3,aR:67.7,hL:32,hR:72},
+      4:{lx:42.3,rx:56.6,y:21.1,aL:32,aR:68,hL:24,hR:76},
+      5:{lx:41.7,rx:56.6,y:21.2,aL:30.3,aR:70.3,hL:28,hR:72.7},
+      6:{lx:43.3,rx:55.9,y:20.1,aL:34,aR:68.7,hL:26.7,hR:73},
+      7:{lx:51,rx:63.8,y:30.8,aL:41.3,aR:69,hL:38,hR:72},
+      8:{lx:43.7,rx:60.1,y:23.4,aL:31.3,aR:67.7,hL:30.7,hR:68.3},
+      10:{lx:37.5,rx:54.4,y:21,aL:29.7,aR:71,hL:29,hR:71},
+      11:{lx:39.1,rx:54.3,y:23.2,aL:32.3,aR:68,hL:28.7,hR:71.3},
+      12:{lx:38,rx:53.8,y:20.6,aL:32,aR:68,hL:29,hR:70.3},
+    };
+    const _r1 = v => Math.round(v * 10) / 10;
+    // Build a figure's zones from its measured anchors. Face parts are appended
+    // LAST so the small central features (nose/mouth) sit on top of larger
+    // neighbours → tapping a feature's centre resolves to THAT feature.
+    function standing(m) {
+      const midX = (m.lx + m.rx) / 2, sp = m.rx - m.lx;
       return [
-        { n:'hair',  x:cx, y:9, r:24 },
-        { n:'belly', x:cx, y:48, r:14 },
-        { n:'arm',   x:cx-aDx, y:46, r:10 }, { n:'arm',  x:cx+aDx, y:46, r:10 },
-        { n:'hand',  x:cx-hDx, y:58, r:11 }, { n:'hand', x:cx+hDx, y:58, r:11 },
-        { n:'leg',   x:cx-6, y:74, r:12 },   { n:'leg',  x:cx+6, y:74, r:12 },
-        { n:'foot',  x:cx-4, y:92, r:10 },   { n:'foot', x:cx+4, y:92, r:10 },
-        { n:'ear',   x:fcx-eDx, y:19+f, r:6 },{ n:'ear',  x:fcx+eDx, y:19+f, r:6 },
-        { n:'eye',   x:fcx-6, y:18+f, r:7 },  { n:'eye',  x:fcx+6, y:18+f, r:7 },
-        { n:'nose',  x:fcx, y:22+f, r:6 },
-        { n:'mouth', x:fcx, y:26+f, r:7 },
+        { n:'hair',  x:_r1(midX), y:_r1(2 + (m.y - 2) * 0.35), r:20 },
+        { n:'belly', x:50, y:48, r:14 },
+        { n:'arm',   x:_r1(m.aL + 4), y:45, r:11 }, { n:'arm',  x:_r1(m.aR - 4), y:45, r:11 },
+        { n:'hand',  x:_r1(m.hL + 3), y:56, r:11 }, { n:'hand', x:_r1(m.hR - 3), y:56, r:11 },
+        { n:'leg',   x:44, y:78, r:12 }, { n:'leg',  x:56, y:78, r:12 },
+        { n:'foot',  x:45, y:95, r:10 }, { n:'foot', x:55, y:95, r:10 },
+        { n:'ear',   x:_r1(midX - sp), y:_r1(m.y + sp * 0.1), r:6 }, { n:'ear', x:_r1(midX + sp), y:_r1(m.y + sp * 0.1), r:6 },
+        { n:'eye',   x:m.lx, y:m.y, r:7 }, { n:'eye', x:m.rx, y:m.y, r:7 },
+        { n:'nose',  x:_r1(midX), y:_r1(m.y + sp * 0.45), r:6 },
+        { n:'mouth', x:_r1(midX), y:_r1(m.y + sp * 0.85), r:7 },
       ];
     }
-    // Per-kid face offsets, set from automated EYE DETECTION on each PNG
-    // (dark pupils next to white sclera, paired left/right) — not eyeballing,
-    // which left every kid's face zones ~4-6% too high in v97. fy = eyeY%−18;
-    // faceCx shifts only the face for a turned/off-centre head (limbs stay
-    // body-centred). Big-hair kids sit lowest (fy ~+4); the afro kid most (+13).
-    const CONFIG = {
-      1:{fy:4, faceCx:53, handDx:24}, 2:{fy:4, handDx:22}, 3:{fy:4, handDx:20},
-      4:{fy:3, earDx:16, handDx:28, armDx:20}, 5:{fy:-1, earDx:15},
-      6:{fy:-2, earDx:16}, 7:{fy:13, faceCx:58, earDx:16, handDx:19},
-      8:{fy:1, earDx:16}, 10:{fy:3, faceCx:47},
-      11:{fy:5, faceCx:47, earDx:16}, 12:{fy:3, faceCx:46, handDx:19},
-    };
     // Wheelchair child (seated) — head centred ~x48, torso/legs/feet shifted.
     const WHEELCHAIR_ZONES = [
       { n:'hair',  x:48, y:9,  r:20 },
@@ -146,7 +149,7 @@
     for (let n = 1; n <= 12; n++) {
       BODIES.push({
         img: 'img/bodies/body-' + String(n).padStart(2, '0') + '.png',
-        zones: n === 9 ? WHEELCHAIR_ZONES : standing(CONFIG[n]),
+        zones: n === 9 ? WHEELCHAIR_ZONES : standing(ANCHORS[n]),
       });
     }
 
