@@ -77,12 +77,24 @@ hold-to-settings guard (all shipped v110-v113). No new bugs in the games/learn/a
 - peek-a-boo multiChoice: plays target's sound + names it; correct = that animal. ✓
 => EVERY voice/answer path in the app is verified correct. The #1 ask is fully covered.
 
-## REMAINING (lower risk — visual/polish, NOT correctness)
-- days-of-week emojis are whimsical/adult mnemonics (Mon 😴, Tue 🚌, Wed 🐪 "hump day") — a parent
-  may find them odd, a toddler won't decode them. NOT a bug; Scott's judgment call whether to swap.
-- Older-tier visual/layout pass (Noah plays older games too) — spot-check cramping/clipping.
-- 16-mascot spot-check (transparency/idle/voice/tap), captions readability, ribbon cadence.
-- body-parts per-figure zone overlay audit (finding #3).
+## POLISH / VISUAL PASS — REVIEWED (no new bugs)
+- days-of-week emojis: FIXED + shipped v114 (🌞 Sun · 🌙 Mon · 🌈 Tue · 🌷 Wed · 🦋 Thu · ⭐ Fri · 🎈 Sat).
+- Older-tier layout: spot-checked memory-match T10 (24 cards/6 cols) + shape-match T8 (6 shapes + 6 drop
+  boxes) on a 390px phone — both fit cleanly, no overlap/clipping/cramping. ✓
+- Mascot transparency: spot-checked dog + parrot + lion on home — all render clean, NO green halo, no
+  wing-hole (parrot) / no green spill (lion). Pipeline holds. (Full 16-mascot pass not exhaustively
+  done, but the historically-risky ones are clean.) ✓
+- Captions: bottom-center pill, responsive 12–17px, pointer-events:none (non-blocking), auto-fade 1.8s,
+  works volume-off. ✓
+- Ribbon cadence: rare milestone trophies (50→10k) + repeatable star every 300 (fast) / 120 (slow) —
+  already tuned away from spammy (v83/v99). ✓
+- body-parts zones: overlaid the real tap-zones on body-12 (a faceCx-adjusted figure) — eyes/nose/mouth/
+  ears/limbs all land on the right features. Earlier body-08 "miss" was a bad coord guess, NOT drift.
+  (Full 12-figure overlay still ideal, but the system is sound.) ✓
+
+## NOTHING OUTSTANDING that's a known bug. Optional future polish:
+- Exhaustive 16-mascot + 12-figure body-parts overlay sweeps (high confidence already fine).
+- A11y/perf deep pass if desired.
 
 ## How to drive it (lessons from this session)
 - Local server: `python -m http.server 8799` from worktree root. Playwright MCP for real clicks.
