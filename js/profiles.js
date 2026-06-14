@@ -73,9 +73,7 @@ const ACTIVITY_FEATURES = [
     { key:'eraser',        label:'Eraser tool',                             minTier:4 },
   ]},
   { id:'color-splash',  name:'Color Splash',  icon:'💥',  file:'color-splash.html', section:'art', minTier:1, features:[] },
-  { id:'color-in',      name:'Color In',      icon:'🖍️', file:'color-in.html',     section:'art', minTier:2, features:[
-    { key:'extraPics',     label:'Show more coloring pages',                minTier:2 },
-  ]},
+  { id:'color-in',      name:'Color In',      icon:'🖍️', file:'color-in.html',     section:'art', minTier:1, features:[] },
 ];
 
 function getProfiles() {

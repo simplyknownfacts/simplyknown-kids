@@ -35,6 +35,14 @@ before the next batch.
 6. **Shape Match** — caps ~T8 (6 shapes, easy). Ideas: 3D shapes, count sides/vertices,
    pentagon/hexagon/octagon, symmetry, "odd one out".
 
+## ✅ DONE — Art (shipped v119 + v120)
+- Shared **js/paint.js** engine — MS-Paint-lite, toolset scales by tier (palette / 3 sizes T5+ /
+  brush types round·marker·crayon·spray T6+ / eraser T4+ / undo T6+ / clear). DOM bg layer.
+- **Color Splash** → freeform blank paint canvas (was tap-to-splat). v119.
+- **Color In** → opens on a coloring page you brush-colour; 🖼️ flips pages ↔ uploaded photos ↔
+  blank canvas; same scaling tools. v120. Verified T8 (page renders, brush paints, tools).
+- **Finger Paint** kept as the simple toddler finger-draw. **Stamp Art** unchanged (Scott's call).
+
 ## ↔ Decide with Scott (own batch)
 - **Baby games** (Tap & Pop, Magic Touch, Surprise Pop, Peek-a-boo, Tap-a-Tune) are minTier 1
   so they show on a 10yo's hub. Inherently young → likely give them a `maxTier` (hide for big

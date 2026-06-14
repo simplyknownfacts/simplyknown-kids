@@ -5,25 +5,28 @@
 //   tier 5+ : 3 brush sizes
 //   tier 6+ : brush types (marker / crayon / spray) + Undo
 //   all     : Clear
-// Optional coloring-page background (Color In): a line-art layer under the paint
-// layer; Clear wipes only the paint, leaving the picture to colour again.
+// Background is a DOM layer behind the paint canvas: plain paper for a blank
+// canvas, or a coloring-page (inline SVG / line-art image) for Color In. Clear
+// wipes only the paint layer, so a coloring page stays put to colour again.
 //
-// Usage:  vbPaint.mount({ tier, activityId, pages, onStroke })
-//   pages: [{ name, draw(ctx,w,h) }]  — omit/empty for a plain blank canvas.
+// Usage:  vbPaint.mount({ tier, pages, onStroke })
+//   pages: [{ name, svg?, src? }]  — svg = inline SVG markup, src = image URL,
+//          neither = a blank page. Omit `pages` entirely for a plain canvas.
 (function () {
   'use strict';
 
   const PALETTE = ['#FF4444','#FFD93D','#4ECDC4','#45B7D1','#a86cdb','#FF9F43',
                    '#FF69B4','#7bed9f','#8B5A2B','#2b2b33','#ffffff','#9AA0A6'];
   const SIZES = [10, 26, 54];           // small / medium / large (px)
-  const PAPER = '#ffffff';
 
   function injectStyle() {
     if (document.getElementById('vbPaintStyle')) return;
     const s = document.createElement('style'); s.id = 'vbPaintStyle';
     s.textContent =
       '#vbPaintWrap{position:fixed;inset:0;touch-action:none;}' +
-      '#vbBgCanvas,#vbPaintCanvas{position:absolute;inset:0;width:100%;height:100%;}' +
+      '#vbBgLayer{position:absolute;inset:0;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;}' +
+      '#vbBgLayer svg,#vbBgLayer img{width:100%;height:100%;max-height:100%;object-fit:contain;display:block;}' +
+      '#vbPaintCanvas{position:absolute;inset:0;width:100%;height:100%;}' +
       '#vbPaintDock{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;flex-wrap:wrap;' +
       'align-items:center;justify-content:center;gap:8px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));' +
       'background:rgba(0,0,0,0.42);backdrop-filter:blur(8px);}' +
@@ -52,14 +55,13 @@
     injectStyle();
 
     const wrap = document.createElement('div'); wrap.id = 'vbPaintWrap';
-    const bg = document.createElement('canvas'); bg.id = 'vbBgCanvas';
+    const bgLayer = document.createElement('div'); bgLayer.id = 'vbBgLayer';
     const cv = document.createElement('canvas'); cv.id = 'vbPaintCanvas';
-    wrap.appendChild(bg); wrap.appendChild(cv);
+    wrap.appendChild(bgLayer); wrap.appendChild(cv);
     document.body.appendChild(wrap);
     const dock = document.createElement('div'); dock.id = 'vbPaintDock';
     document.body.appendChild(dock);
 
-    const bctx = bg.getContext('2d');
     const ctx = cv.getContext('2d');
 
     // ---- state ----
@@ -70,34 +72,23 @@
     let pageIdx = 0;
     const undo = [];
 
-    // ---- canvas sizing (preserve art on resize) ----
-    function fit(canvas, redraw) {
-      const tmp = document.createElement('canvas');
-      tmp.width = canvas.width || 1; tmp.height = canvas.height || 1;
-      tmp.getContext('2d').drawImage(canvas, 0, 0);
-      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-      if (redraw) redraw();
-      canvas.getContext('2d').drawImage(tmp, 0, 0);
+    // ---- background page (DOM) ----
+    function setPage() {
+      if (!pages) { bgLayer.innerHTML = ''; return; }
+      const p = pages[pageIdx % pages.length];
+      if (p.svg) bgLayer.innerHTML = p.svg;
+      else if (p.src) bgLayer.innerHTML = `<img alt="${p.name || ''}" src="${p.src}">`;
+      else bgLayer.innerHTML = '';   // blank page
     }
-    function drawBg() {
-      bctx.fillStyle = PAPER;
-      bctx.fillRect(0, 0, bg.width, bg.height);
-      if (pages) {
-        const p = pages[pageIdx % pages.length];
-        try { p.draw(bctx, bg.width, bg.height); } catch (e) {}
-      }
-    }
-    function sizeAll() {
-      bg.width = window.innerWidth; bg.height = window.innerHeight; drawBg();
-      cv.width = window.innerWidth; cv.height = window.innerHeight;
-    }
-    sizeAll();
+    setPage();
+
+    // ---- paint canvas sizing (preserve strokes on resize) ----
+    function sizeCanvas() { cv.width = window.innerWidth; cv.height = window.innerHeight; }
+    sizeCanvas();
     window.addEventListener('resize', () => {
-      // keep painting; rescale bg fresh + preserve strokes
       const tmp = document.createElement('canvas'); tmp.width = cv.width; tmp.height = cv.height;
       tmp.getContext('2d').drawImage(cv, 0, 0);
-      bg.width = window.innerWidth; bg.height = window.innerHeight; drawBg();
-      cv.width = window.innerWidth; cv.height = window.innerHeight;
+      sizeCanvas();
       ctx.drawImage(tmp, 0, 0);
     });
 
@@ -138,8 +129,7 @@
     }
     function crayon(x, y, lx, ly) {
       ctx.strokeStyle = color; ctx.globalAlpha = 0.55; ctx.lineCap = 'round';
-      const steps = 3;
-      for (let i = 0; i < steps; i++) {
+      for (let i = 0; i < 3; i++) {
         const j = () => (Math.random() - 0.5) * size * 0.4;
         ctx.lineWidth = size * (0.5 + Math.random() * 0.4);
         ctx.beginPath(); ctx.moveTo(lx + j(), ly + j()); ctx.lineTo(x + j(), y + j()); ctx.stroke();
@@ -147,100 +137,72 @@
       ctx.globalAlpha = 1;
     }
 
-    let drawing = false, lastX = 0, lastY = 0, dirty = false;
-    function pt(e) { return { x: e.clientX, y: e.clientY }; }
+    let drawing = false, lastX = 0, lastY = 0;
     cv.addEventListener('pointerdown', (e) => {
-      drawing = true; dirty = false; pushUndo();
-      const p = pt(e); lastX = p.x; lastY = p.y;
+      drawing = true; pushUndo();
+      lastX = e.clientX; lastY = e.clientY;
       cv.setPointerCapture(e.pointerId);
-      applyStroke(p.x, p.y, p.x, p.y);
+      applyStroke(e.clientX, e.clientY, e.clientX, e.clientY);
     });
     cv.addEventListener('pointermove', (e) => {
       if (!drawing) return;
-      const p = pt(e); applyStroke(p.x, p.y, lastX, lastY);
-      lastX = p.x; lastY = p.y; dirty = true;
+      applyStroke(e.clientX, e.clientY, lastX, lastY);
+      lastX = e.clientX; lastY = e.clientY;
     });
-    function endStroke() {
-      if (!drawing) return;
-      drawing = false;
-      if (dirty || true) onStroke();
-    }
+    function endStroke() { if (drawing) { drawing = false; onStroke(); } }
     cv.addEventListener('pointerup', endStroke);
     cv.addEventListener('pointercancel', endStroke);
 
     // ---- toolbar ----
     function rebuildDock() {
-      // preserve the in-game settings gear (gameSettings.attach drops it here)
-      const gear = dock.querySelector('#gameSettingsGear');
+      const gear = dock.querySelector('#gameSettingsGear');  // preserve settings gear
       dock.innerHTML = '';
-      // colour swatches
       PALETTE.slice(0, paletteN).forEach(c => {
         const sw = document.createElement('div');
         sw.className = 'vb-sw' + (c === color && !erasing ? ' active' : '');
         sw.style.background = c;
-        sw.addEventListener('pointerdown', (e) => {
-          e.stopPropagation();
-          color = c; erasing = false; rebuildDock();
-        });
+        sw.addEventListener('pointerdown', (e) => { e.stopPropagation(); color = c; erasing = false; rebuildDock(); });
         dock.appendChild(sw);
       });
-      // brush sizes
-      if (sizesOn) {
-        SIZES.forEach((s, i) => {
-          const b = document.createElement('div');
-          b.className = 'vb-tool' + (s === size && !erasing ? ' active' : '');
-          b.innerHTML = `<span style="display:inline-block;width:${6 + i * 7}px;height:${6 + i * 7}px;border-radius:50%;background:#fff;"></span>`;
-          b.addEventListener('pointerdown', (e) => { e.stopPropagation(); size = s; rebuildDock(); });
-          dock.appendChild(b);
-        });
-      }
-      // brush types
-      if (brushesOn) {
-        [['round','🖌️'],['marker','🖊️'],['crayon','✏️'],['spray','💨']].forEach(([id, icon]) => {
-          const b = document.createElement('div');
-          b.className = 'vb-tool' + (brush === id && !erasing ? ' active' : '');
-          b.textContent = icon; b.title = id;
-          b.addEventListener('pointerdown', (e) => { e.stopPropagation(); brush = id; erasing = false; rebuildDock(); });
-          dock.appendChild(b);
-        });
-      }
-      // eraser
+      if (sizesOn) SIZES.forEach((s, i) => {
+        const b = document.createElement('div');
+        b.className = 'vb-tool' + (s === size && !erasing ? ' active' : '');
+        b.innerHTML = `<span style="display:inline-block;width:${6 + i * 7}px;height:${6 + i * 7}px;border-radius:50%;background:#fff;"></span>`;
+        b.addEventListener('pointerdown', (e) => { e.stopPropagation(); size = s; rebuildDock(); });
+        dock.appendChild(b);
+      });
+      if (brushesOn) [['round','🖌️'],['marker','🖊️'],['crayon','✏️'],['spray','💨']].forEach(([id, icon]) => {
+        const b = document.createElement('div');
+        b.className = 'vb-tool' + (brush === id && !erasing ? ' active' : '');
+        b.textContent = icon; b.title = id;
+        b.addEventListener('pointerdown', (e) => { e.stopPropagation(); brush = id; erasing = false; rebuildDock(); });
+        dock.appendChild(b);
+      });
       if (eraserOn) {
         const er = document.createElement('div');
         er.className = 'vb-tool' + (erasing ? ' active' : ''); er.textContent = '🧽'; er.title = 'Eraser';
         er.addEventListener('pointerdown', (e) => { e.stopPropagation(); erasing = !erasing; rebuildDock(); });
         dock.appendChild(er);
       }
-      // undo
       if (undoOn) {
         const u = document.createElement('div');
         u.className = 'vb-tool'; u.textContent = '↩️'; u.title = 'Undo';
-        u.addEventListener('pointerdown', (e) => {
-          e.stopPropagation();
-          const img = undo.pop();
-          if (img) ctx.putImageData(img, 0, 0);
-        });
+        u.addEventListener('pointerdown', (e) => { e.stopPropagation(); const img = undo.pop(); if (img) ctx.putImageData(img, 0, 0); });
         dock.appendChild(u);
       }
-      // page switch (Color In only)
       if (pages && pages.length > 1) {
         const pg = document.createElement('div');
         pg.className = 'vb-tool'; pg.textContent = '🖼️'; pg.title = 'Change picture';
         pg.addEventListener('pointerdown', (e) => {
           e.stopPropagation();
           pageIdx = (pageIdx + 1) % pages.length;
-          drawBg(); ctx.clearRect(0, 0, cv.width, cv.height); undo.length = 0;
+          setPage(); ctx.clearRect(0, 0, cv.width, cv.height); undo.length = 0;
         });
         dock.appendChild(pg);
       }
-      // clear (paint layer only — keeps the coloring-page outline)
       const clr = document.createElement('div');
-      clr.className = 'vb-tool'; clr.textContent = '✨'; clr.title = 'Clear';
-      clr.style.order = 999;
-      clr.addEventListener('pointerdown', (e) => {
-        e.stopPropagation();
-        pushUndo(); ctx.clearRect(0, 0, cv.width, cv.height);
-      });
+      clr.className = 'vb-tool'; clr.textContent = '✨'; clr.title = 'Clear'; clr.style.order = 999;
+      clr.addEventListener('pointerdown', (e) => { e.stopPropagation(); pushUndo(); ctx.clearRect(0, 0, cv.width, cv.height); });
       dock.appendChild(clr);
       if (gear) { gear.style.order = 1000; dock.appendChild(gear); }
     }
