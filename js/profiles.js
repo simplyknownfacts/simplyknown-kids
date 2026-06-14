@@ -72,10 +72,7 @@ const ACTIVITY_FEATURES = [
     { key:'colorPalette',  label:'Color palette',                           minTier:2 },
     { key:'eraser',        label:'Eraser tool',                             minTier:4 },
   ]},
-  { id:'color-splash',  name:'Color Splash',  icon:'💥',  file:'color-splash.html', section:'art', minTier:1, features:[
-    { key:'colorPicker',   label:'Color picker',                            minTier:2 },
-    { key:'clearButton',   label:'Clear button',                            minTier:3 },
-  ]},
+  { id:'color-splash',  name:'Color Splash',  icon:'💥',  file:'color-splash.html', section:'art', minTier:1, features:[] },
   { id:'color-in',      name:'Color In',      icon:'🖍️', file:'color-in.html',     section:'art', minTier:2, features:[
     { key:'extraPics',     label:'Show more coloring pages',                minTier:2 },
   ]},
