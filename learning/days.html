@@ -59,14 +59,18 @@
 
     const quizOn = tier >= 5 || getProfileFeature(profile, 'days', 'quizMode');
 
+    // Kid-recognizable pictures (not adult mnemonics like 🐪 "hump day" / 🎉 TGIF).
+    // Sun/Moon anchor Sun-day / Mon-day; the rest are bright, distinct things a
+    // toddler can instantly name. (Days have no inherent picture — these are just
+    // friendly, memorable anchors per day.)
     const DAYS = [
       { n:'Sunday',    e:'🌞' },
-      { n:'Monday',    e:'😴' },
-      { n:'Tuesday',   e:'🚌' },
-      { n:'Wednesday', e:'🐪' },
-      { n:'Thursday',  e:'⚡' },
-      { n:'Friday',    e:'🎉' },
-      { n:'Saturday',  e:'🛌' },
+      { n:'Monday',    e:'🌙' },
+      { n:'Tuesday',   e:'🌈' },
+      { n:'Wednesday', e:'🌷' },
+      { n:'Thursday',  e:'🦋' },
+      { n:'Friday',    e:'⭐' },
+      { n:'Saturday',  e:'🎈' },
     ];
     const todayIdx = new Date().getDay(); // 0 = Sun
 
