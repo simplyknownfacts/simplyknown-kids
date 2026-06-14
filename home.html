@@ -173,7 +173,7 @@
         <div class="label">Art</div>
       </div>
 
-      <div class="section-btn" id="watchTile" onclick="go('videos/index.html')" style="--section-hue: var(--c-watch);">
+      <div class="section-btn" id="watchTile" onclick="openNet('videos/index.html')" style="--section-hue: var(--c-watch);">
         <div class="icon">
           <!-- Vintage TV -->
           <svg viewBox="0 0 64 64" width="56" height="56">
@@ -193,7 +193,7 @@
         <div class="label">Watch</div>
       </div>
 
-      <div class="section-btn" id="listenTile" onclick="go('listen/index.html')" style="display:none; --section-hue: var(--c-listen);">
+      <div class="section-btn" id="listenTile" onclick="openNet('listen/index.html')" style="display:none; --section-hue: var(--c-listen);">
         <div class="icon">
           <!-- Headphones + notes -->
           <svg viewBox="0 0 64 64" width="56" height="56">
@@ -239,6 +239,34 @@
   <script src="js/shelf.js"></script>
   <script>
     function go(section) { playChime(); goTo(section); }
+
+    // Watch (YouTube) + Listen (Yoto) need the internet. On a plane / offline,
+    // show them as a dimmed "Needs wifi" tile and don't navigate into a dead
+    // screen a toddler would tap and melt down over. Updates live on reconnect.
+    function openNet(section) {
+      if (navigator.onLine) { go(section); return; }
+      playChime();
+      const id = section.indexOf('videos') >= 0 ? 'watchTile' : 'listenTile';
+      const t = document.getElementById(id);
+      if (t) { t.classList.remove('nudge'); void t.offsetWidth; t.classList.add('nudge'); }
+    }
+    function updateOnlineTiles() {
+      if (!document.getElementById('netTileStyle')) {
+        const s = document.createElement('style'); s.id = 'netTileStyle';
+        s.textContent = '.section-btn.needs-wifi{filter:grayscale(.85);opacity:.5;}' +
+          '.section-btn.nudge{animation:netNudge .3s ease;}@keyframes netNudge{50%{opacity:.3}}';
+        document.head.appendChild(s);
+      }
+      const off = !navigator.onLine;
+      [['watchTile','Watch'],['listenTile','Listen']].forEach(([id, name]) => {
+        const t = document.getElementById(id); if (!t) return;
+        const lbl = t.querySelector('.label');
+        if (off) { t.classList.add('needs-wifi'); if (lbl) lbl.textContent = 'Needs wifi'; t.setAttribute('aria-disabled', 'true'); }
+        else { t.classList.remove('needs-wifi'); if (lbl) lbl.textContent = name; t.removeAttribute('aria-disabled'); }
+      });
+    }
+    window.addEventListener('online', updateOnlineTiles);
+    window.addEventListener('offline', updateOnlineTiles);
 
     async function _sha256Hex(s) {
       const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
@@ -338,6 +366,9 @@
       if (window.yoto && yoto.isConfigured() && yoto.isConnected()) {
         document.getElementById('listenTile').style.display = '';
       }
+
+      // Dim Watch/Listen to "Needs wifi" when offline (plane mode).
+      updateOnlineTiles();
 
       // Mascot — muted welcome animation + layered greeting (if clip exists)
       if (window.mascot) {
