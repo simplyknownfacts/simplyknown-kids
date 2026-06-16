@@ -311,9 +311,18 @@
             overlay.querySelector('#exitDots').innerHTML = dots();
             if (entry.length === 4) {
               if (await _checkPin(entry)) {
-                overlay.remove();
+                // An installed app can't truly self-close (window.close only works
+                // on script-opened windows). Jumping to about:blank left a dead
+                // black screen. Try close, then show a friendly goodbye instead.
                 try { window.close(); } catch {}
-                setTimeout(() => { location.href = 'about:blank'; }, 200);
+                overlay.innerHTML = `
+                  <div style="background:#1a1a2e;border-radius:18px;padding:32px 24px;max-width:340px;width:100%;color:white;text-align:center;font-family:var(--font-ui);">
+                    <div style="font-size:54px;line-height:1;margin-bottom:10px;">👋</div>
+                    <h2 style="margin:0 0 8px;font-family:var(--font-display);font-style:italic;font-weight:500;">All done!</h2>
+                    <div style="color:rgba(255,255,255,0.7);font-size:14px;line-height:1.5;margin-bottom:18px;">You can close the app now — swipe it away or press the home button.</div>
+                    <button id="exitBack" style="width:100%;padding:13px;border-radius:12px;background:var(--accent,#4ECDC4);color:#10243f;border:none;font-weight:800;font-size:16px;cursor:pointer;font-family:var(--font-ui);">Back to app</button>
+                  </div>`;
+                overlay.querySelector('#exitBack').onclick = () => overlay.remove();
               } else {
                 overlay.querySelector('#exitMsg').textContent = 'Wrong PIN';
                 entry = '';

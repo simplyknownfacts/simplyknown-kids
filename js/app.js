@@ -364,6 +364,13 @@ function holdToActivate(el, onActivate, opts) {
   const ms = (opts && opts.ms) || 700;
   _injectHoldStyle();
   el.style.setProperty('--vb-hold', ms + 'ms');
+  // iOS long-press otherwise pops the native Share/Copy/Download callout instead
+  // of registering the hold — suppress it so the press just opens settings.
+  el.style.webkitTouchCallout = 'none';
+  el.style.userSelect = 'none';
+  el.style.webkitUserSelect = 'none';
+  el.style.touchAction = 'manipulation';
+  el.addEventListener('contextmenu', (e) => e.preventDefault());
   let timer = null, active = false;
   const start = (e) => {
     if (active) return;
