@@ -169,35 +169,42 @@ function playSuccess() {
 function playChime() { playTone(880, 0.4, 0.2); }
 function playBoop()  { _showCaption('Try again 👆'); playTone(330, 0.1, 0.2, 'square'); }
 
-// When a phrase has no recorded clip we fall back to the browser's speech
-// synthesis. Prefer a female English voice so the fallback matches the app's
-// adult-female default instead of whatever (often male/robotic) voice the
-// device would pick by default.
-let _ttsVoice = null, _ttsVoicePicked = false;
-function _pickFemaleVoice() {
-  if (_ttsVoicePicked) return _ttsVoice;
+// Browser-TTS fallback — used when a phrase has no recorded clip (e.g. the
+// dynamic quiz prompts in the colour/animal games). Pick a TTS voice that
+// MATCHES the kid's selected voice gender, so the fallback doesn't randomly
+// flip sex (boy selected → don't suddenly read in a woman's voice). It won't be
+// the exact recorded ElevenLabs voice, but it stays the right character.
+const _femaleRe = /(female|woman|samantha|karen|moira|tessa|victoria|susan|fiona|serena|allison|\bava\b|joanna|salli|kendra|zira|hazel|google uk english female)/i;
+const _maleRe   = /(\bmale\b|\bman\b|daniel|alex|fred|thomas|\btom\b|oliver|arthur|aaron|david|james|reed|rishi|google uk english male)/i;
+let _ttsByGender = { female: undefined, male: undefined };   // undefined = not yet resolved
+function _ttsGenderFor(sel) { return (sel === 'boy' || sel === 'man') ? 'male' : 'female'; }
+function _pickTtsVoice(gender) {
   if (!window.speechSynthesis) return null;
+  if (_ttsByGender[gender] !== undefined) return _ttsByGender[gender];
   const vs = window.speechSynthesis.getVoices() || [];
   if (!vs.length) return null; // voices load async — retry on the next call
-  _ttsVoicePicked = true;
   const en = vs.filter(v => /^en[-_]?/i.test(v.lang));
   const pool = en.length ? en : vs;
-  const female = /(female|woman|samantha|karen|moira|tessa|victoria|susan|fiona|serena|allison|\bava\b|joanna|salli|kendra|zira|hazel|google uk english female)/i;
-  _ttsVoice = pool.find(v => female.test(v.name)) || null;
-  return _ttsVoice;
+  let pick = pool.find(v => (gender === 'male' ? _maleRe : _femaleRe).test(v.name));
+  // Fallback: any voice that isn't clearly the other gender.
+  if (!pick) pick = pool.find(v => !(gender === 'male' ? _femaleRe : _maleRe).test(v.name)) || pool[0] || null;
+  _ttsByGender[gender] = pick || null;
+  return _ttsByGender[gender];
 }
 if (typeof window !== 'undefined' && window.speechSynthesis) {
   try { window.speechSynthesis.getVoices(); } catch (e) {}
-  window.speechSynthesis.onvoiceschanged = () => { _ttsVoicePicked = false; _pickFemaleVoice(); };
+  window.speechSynthesis.onvoiceschanged = () => { _ttsByGender = { female: undefined, male: undefined }; };
 }
 
-function _browserSpeak(text, rate = 0.85, pitch = 1.2) {
+function _browserSpeak(text, rate = 0.85, pitch = 1.2, sel) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  const fv = _pickFemaleVoice();
-  if (fv) u.voice = fv;
-  u.rate = rate; u.pitch = pitch;
+  const gender = _ttsGenderFor(sel || _getActiveVoice());
+  const v = _pickTtsVoice(gender);
+  if (v) u.voice = v;
+  u.rate = rate;
+  u.pitch = gender === 'male' ? 1.0 : pitch;   // don't pitch a man's voice up
   window.speechSynthesis.speak(u);
 }
 
@@ -276,7 +283,7 @@ function cancelSpeak() {
 
 function _voiceSpeak(text, voice) {
   const clips = _matchClips(text);
-  if (!clips) return _browserSpeak(text);
+  if (!clips) return _browserSpeak(text, 0.85, 1.2, voice);
   const hashes = clips.map(c => VOICE_MANIFEST.phraseHash[c]);
   const gen = _speakGen;
   // Fire-and-forget IIFE — no shared queue, so a new speak() never waits for
@@ -310,7 +317,7 @@ function speak(text, rate = 0.85, pitch = 1.2) {
     if (p && typeof tierForAge === 'function' && tierForAge(getAgeMonths(p.birthday)) >= 9) return;
   } catch (e) {}
   const v = _getActiveVoice();
-  if (v === 'browser') return _browserSpeak(text, rate, pitch);
+  if (v === 'browser') return _browserSpeak(text, rate, pitch, v);
   return _voiceSpeak(text, v);
 }
 

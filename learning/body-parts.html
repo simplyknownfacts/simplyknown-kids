@@ -155,19 +155,22 @@
 
     let bodyIdx = Math.floor(Math.random() * BODIES.length);
 
-    // (Re)render the current body's <img> + rebuild its tap-zone buttons, and
-    // re-wire the tap handlers (zones change per body).
+    // (Re)render the current body's <img> + its tap-zone markers. Tap-testing is
+    // done by ONE figure-level handler (nearest-feature), not per-button — see
+    // handleFigureTap — so the buttons are visual/flash only (pointer-events off).
+    let currentHits = [];   // [{z, el}] for the current body
     function renderBody() {
       const body = BODIES[bodyIdx];
       figure.innerHTML = '<img class="body-img" src="' + body.img + '" alt="A child standing">';
-      body.zones.forEach(z => {
+      currentHits = body.zones.map(z => {
         const b = document.createElement('button');
         b.className = 'hit'; b.dataset.name = z.n;
         b.setAttribute('aria-label', z.n);
         b.style.left = z.x + '%'; b.style.top = z.y + '%'; b.style.width = z.r + '%';
+        b.style.pointerEvents = 'none';   // figure-level nearest-feature handler hit-tests
         figure.appendChild(b);
+        return { z, el: b };
       });
-      wireZones();
     }
 
     // What's available per tier. With the new tier scheme, tier 4 = Pre-K (3-4y).
@@ -211,39 +214,46 @@
       });
     }
 
-    // Wire tap handlers for the CURRENT body's zones (called on each renderBody).
-    function wireZones() {
-      figure.querySelectorAll('.hit').forEach(el => {
-        el.addEventListener('pointerdown', () => {
-          const name = el.dataset.name;
-          if (name === target) {
-            el.classList.add('flash');
-            if (typeof haptic === 'function') haptic(25);
-            playSuccess();
-            if (window.vbProgress) {
-              vbProgress.record('body-parts');
-              // "Name an extra part" — any part that only exists in all-parts mode
-              if (allOn && (target === 'arm' || target === 'leg' || target === 'hair' || target === 'belly')) {
-                vbProgress.mastery('body-parts.mastery');
-              }
-            }
-            speak(`Yes! That's the ${PRONOUN(target)}.`);
-            // Rotate to a different random body every 5 correct taps.
-            correctCount++;
-            const rotate = correctCount % 5 === 0;
-            roundTimer = setTimeout(() => {
-              if (rotate) switchBody();
-              nextRound();
-            }, 1800);
-          } else {
-            el.classList.add('wrong');
-            playBoop();
-            setTimeout(() => el.classList.remove('wrong'), 350);
-            if (tier <= 3) speak(`That's the ${PRONOUN(name)}.`);
+    // Nearest-feature tap resolution: a tap anywhere on the figure resolves to the
+    // CLOSEST part centre. So tapping near the nose always counts as the nose even
+    // if the invisible zone is a few % off — far more forgiving than tiny circles,
+    // and the real fix for "tapped the nose, got the ear". (One handler on the
+    // figure; the <img> + .hit buttons are pointer-events:none.)
+    function handleFigureTap(e) {
+      if (!currentHits.length || !target) return;
+      const r = figure.getBoundingClientRect();
+      const px = e.clientX - r.left, py = e.clientY - r.top;
+      let best = null, bestD = Infinity;
+      for (const h of currentHits) {
+        const zx = h.z.x / 100 * r.width, zy = h.z.y / 100 * r.height;
+        const d = (px - zx) * (px - zx) + (py - zy) * (py - zy);
+        if (d < bestD) { bestD = d; best = h; }
+      }
+      if (!best) return;
+      const name = best.z.n;
+      currentHits.forEach(h => h.el.classList.remove('flash', 'wrong'));
+      if (name === target) {
+        best.el.classList.add('flash');
+        if (typeof haptic === 'function') haptic(25);
+        playSuccess();
+        if (window.vbProgress) {
+          vbProgress.record('body-parts');
+          if (allOn && (target === 'arm' || target === 'leg' || target === 'hair' || target === 'belly')) {
+            vbProgress.mastery('body-parts.mastery');
           }
-        });
-      });
+        }
+        speak(`Yes! That's the ${PRONOUN(target)}.`);
+        correctCount++;
+        const rotate = correctCount % 5 === 0;
+        roundTimer = setTimeout(() => { if (rotate) switchBody(); nextRound(); }, 1800);
+      } else {
+        best.el.classList.add('wrong');
+        playBoop();
+        setTimeout(() => best.el.classList.remove('wrong'), 350);
+        if (tier <= 3) speak(`That's the ${PRONOUN(name)}.`);
+      }
     }
+    figure.addEventListener('pointerdown', handleFigureTap);
 
     // Pick a DIFFERENT random body and re-render it.
     function switchBody() {
