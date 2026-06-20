@@ -270,6 +270,39 @@
         }
         stage.appendChild(row);
 
+      } else if (Math.random() < 0.4) {
+        // Tier 7+: before/after number sense ("what comes after 15?"). The prompt
+        // is recorded; the answer number composes from recorded digit clips.
+        const maxN = 30;
+        const isAfter = Math.random() < 0.5;
+        const n0 = 1 + Math.floor(Math.random() * (maxN - 1));
+        const ans = isAfter ? n0 + 1 : n0 - 1;
+        instruction.textContent = isAfter ? `What comes after ${n0}?` : `What comes before ${n0}?`;
+        speak(isAfter ? 'What number comes after?' : 'What number comes before?');
+        const seqEl = document.createElement('div');
+        seqEl.className = 'number-big'; seqEl.style.fontSize = 'clamp(56px, 16vw, 110px)';
+        seqEl.textContent = isAfter ? `${n0}, ?` : `?, ${n0}`;
+        stage.appendChild(seqEl);
+        const choices = new Set([ans]);
+        while (choices.size < 3) { const o = Math.floor(Math.random() * 3) + 1; choices.add(Math.max(0, ans + (Math.random() < 0.5 ? o : -o))); }
+        const numRow = document.createElement('div'); numRow.className = 'row';
+        [...choices].sort((a, b) => a - b).forEach(n => {
+          const btn = document.createElement('div'); btn.className = 'num-btn'; btn.textContent = n;
+          btn.addEventListener('click', () => {
+            if (n === ans) {
+              playSuccess(); speak(`Yes! ${ans}.`);
+              if (window.vbProgress) vbProgress.record('count-along');
+              btn.style.background = 'rgba(168,230,207,0.5)';
+              autoTimer = setTimeout(nextRound, 1600);
+            } else {
+              playBoop(); btn.style.background = 'rgba(255,107,107,0.4)';
+              autoTimer = setTimeout(() => btn.style.background = '', 500);
+            }
+          });
+          numRow.appendChild(btn);
+        });
+        stage.appendChild(numRow);
+
       } else {
         // Tier 7+: skip-counting (by 2s, 5s, or 10s). Keeps the card focused on
         // counting rather than arithmetic. "What number comes next: 2, 4, 6, …?"

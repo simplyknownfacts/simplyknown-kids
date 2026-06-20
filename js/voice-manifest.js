@@ -95,6 +95,9 @@ SHAPE_NAMES.forEach(s => _phrases.push(s));
 // Shape Match level-up (tier 7+): harder polygons + "count the sides"
 ['Pentagon', 'Hexagon', 'Octagon'].forEach(s => _phrases.push(s));
 _phrases.push('How many sides?');
+// Shape Match (tier 8+): 3D shapes + odd-one-out
+['Cube', 'Sphere', 'Cone'].forEach(s => _phrases.push(s));
+_phrases.push('Which one is different?');
 ANIMAL_PHRASES.forEach(p => _phrases.push(p));
 _phrases.push('Try again!');
 KID_NAMES.forEach(n => {
@@ -195,8 +198,8 @@ _DAYS.forEach(d => _phrases.push(`What day comes after ${d}?`, `What was the day
 ['Dollar Bill','Five Dollar Bill','Ten Dollar Bill'].forEach(m => _phrases.push(m, `Tap the ${m}.`));
 ['Penny','Nickel','Dime','Quarter','Dollar Bill','Five Dollar Bill','Ten Dollar Bill'].forEach(m => _phrases.push(`Yes! That's the ${m}.`));
 ['It costs','You pay','How much change?','dollars','cents'].forEach(p => _phrases.push(p));
-// Count Along — skip counting
-['Counting by 2s. What number comes next?','Counting by 5s. What number comes next?','Counting by 10s. What number comes next?'].forEach(p => _phrases.push(p));
+// Count Along — skip counting + before/after (numbers compose the answer)
+['Counting by 2s. What number comes next?','Counting by 5s. What number comes next?','Counting by 10s. What number comes next?','What number comes after?','What number comes before?'].forEach(p => _phrases.push(p));
 // Math — operator atom + missing-number wrapper (numbers/operators compose)
 _phrases.push('divided by', 'what equals');
 

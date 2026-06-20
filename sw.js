@@ -1,4 +1,11 @@
-const CACHE = 'vb-v130';
+const CACHE = 'vb-v131';
+// v131 Count Along + Shape Match extras (new recorded voice). Count Along T7+: added
+// before/after rounds ("what comes after 18?") — prompt recorded, answer composes from
+// digit clips. Shape Match T8+: added 3D shapes (cube/sphere/cone) to the drag pool +
+// an odd-one-out round ("which one is different?"). New phrases recorded in all 4 voices
+// ($0.10). (Body Parts wrist/ankle were evaluated + skipped: they'd sit too close to
+// hand/foot/elbow and hurt tap accuracy — the thing v130 just fixed.) Prior v130:
+//
 // v130 BODY PARTS accuracy rebuild (Scott: "zones always not on right"). The AI
 // figures are framed inconsistently (some fill the 3:4 box, some sit smaller/lower/
 // off-centre), so the stale ANCHORS table + fixed-% body zones drifted off the body.

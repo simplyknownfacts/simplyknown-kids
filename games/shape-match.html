@@ -124,6 +124,15 @@
     ];
     const sidesOn = tier >= 7;
 
+    // 3D shapes (tier 8+): join the drag pool so big kids match + name them.
+    const SHAPES3D = [
+      { name: 'Cube',   color: '#FF6B6B', path: () => `<g fill="currentColor"><polygon points="26,42 54,42 54,80 26,80"/><polygon points="26,42 46,26 74,26 54,42" opacity="0.7"/><polygon points="54,42 74,26 74,64 54,80" opacity="0.5"/></g>` },
+      { name: 'Sphere', color: '#4ECDC4', path: () => `<circle cx="50" cy="52" r="34" fill="currentColor"/><ellipse cx="40" cy="41" rx="11" ry="8" fill="rgba(255,255,255,0.55)"/>` },
+      { name: 'Cone',   color: '#FF9F43', path: () => `<ellipse cx="50" cy="80" rx="28" ry="9" fill="currentColor" opacity="0.65"/><polygon points="50,18 78,82 22,82" fill="currentColor"/>` },
+    ];
+    const threeDOn = tier >= 8;
+    const oddOn = tier >= 8;
+
     function makeSVG(shape, size, useColor = true) {
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('width', size); svg.setAttribute('height', size);
@@ -173,8 +182,41 @@
       targetsRow.appendChild(row);
     }
 
+    // Tier 8+: odd-one-out — three of one shape + one different; tap the different.
+    function oddRound() {
+      const shapesRow = document.getElementById('shapesRow');
+      const targetsRow = document.getElementById('targetsRow');
+      const hint = document.getElementById('hint');
+      shapesRow.innerHTML = ''; targetsRow.innerHTML = '';
+      document.querySelectorAll('.target').forEach(t => t.remove());
+      const pool = SHAPES.concat(SHAPES3D);
+      const pick = [...pool].sort(() => Math.random() - 0.5).slice(0, 2);
+      const majority = pick[0], odd = pick[1];
+      const items = [odd, majority, majority, majority].sort(() => Math.random() - 0.5);
+      hint.textContent = 'Which one is different?'; speak('Which one is different?');
+      const row = document.createElement('div'); row.className = 'shapes-row'; row.style.gap = '20px';
+      items.forEach(s => {
+        const svg = makeSVG(s, 92); svg.style.cursor = 'pointer'; svg.style.transition = 'transform .12s, opacity .2s';
+        svg.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          if (s === odd) {
+            playSuccess(); speak(s.name);
+            if (window.vbProgress) { vbProgress.record('shape-match'); vbProgress.mastery('shape-match.mastery'); }
+            svg.style.transform = 'scale(1.2)';
+            clearTimeout(shapeTimer); shapeTimer = setTimeout(nextRound, 1500);
+          } else {
+            playBoop(); svg.style.opacity = '0.35';
+            setTimeout(() => { svg.style.opacity = '1'; }, 500);
+          }
+        });
+        row.appendChild(svg);
+      });
+      shapesRow.appendChild(row);
+    }
+
     function nextRound() {
-      if (sidesOn && Math.random() < 0.4) { sidesRound(); return; }
+      if (sidesOn && Math.random() < 0.33) { sidesRound(); return; }
+      if (oddOn && Math.random() < 0.33) { oddRound(); return; }
       const shapesRow = document.getElementById('shapesRow');
       const targetsRow = document.getElementById('targetsRow');
       const hint = document.getElementById('hint');
@@ -188,7 +230,8 @@
       //   tier 6 -> 4, tier 7 -> 5, tier 8 -> 6
       const DRAG_COUNT = { 2: 2, 3: 2, 4: 3, 5: 3, 6: 4, 7: 5, 8: 6 };
       const count = !dragOn ? 1 : (DRAG_COUNT[tier] || 2);
-      const selected = [...SHAPES].sort(() => Math.random() - 0.5).slice(0, count);
+      const pool = threeDOn ? SHAPES.concat(SHAPES3D) : SHAPES;
+      const selected = [...pool].sort(() => Math.random() - 0.5).slice(0, count);
 
       if (!dragOn) {
         const s = selected[0];
