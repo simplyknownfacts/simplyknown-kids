@@ -149,7 +149,7 @@
     canvas.addEventListener('pointerdown', e => {
       painting = true;
       lastX = e.clientX; lastY = e.clientY;
-      canvas.setPointerCapture(e.pointerId);
+      try { canvas.setPointerCapture(e.pointerId); } catch {}
     });
     canvas.addEventListener('pointermove', e => {
       if (!painting) return;

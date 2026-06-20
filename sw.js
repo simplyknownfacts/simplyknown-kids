@@ -1,4 +1,10 @@
-const CACHE = 'vb-v131';
+const CACHE = 'vb-v132';
+// v132 hardening from a full press-everything QA sweep (all 22 activities × ages):
+// no functional bugs found — every activity renders + responds at toddler AND school-
+// age tiers. Defensive fix: wrapped the 3 unguarded setPointerCapture() calls (paint.js,
+// finger-paint, shape-match drag) in try/catch so a cancelled/already-released pointer
+// can't throw mid-stroke (mascot.js already did this). Prior v131:
+//
 // v131 Count Along + Shape Match extras (new recorded voice). Count Along T7+: added
 // before/after rounds ("what comes after 18?") — prompt recorded, answer composes from
 // digit clips. Shape Match T8+: added 3D shapes (cube/sphere/cone) to the drag pool +

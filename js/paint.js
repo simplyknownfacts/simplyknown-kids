@@ -141,7 +141,7 @@
     cv.addEventListener('pointerdown', (e) => {
       drawing = true; pushUndo();
       lastX = e.clientX; lastY = e.clientY;
-      cv.setPointerCapture(e.pointerId);
+      try { cv.setPointerCapture(e.pointerId); } catch {}
       applyStroke(e.clientX, e.clientY, e.clientX, e.clientY);
     });
     cv.addEventListener('pointermove', (e) => {
