@@ -1,4 +1,10 @@
-const CACHE = 'vb-v127';
+const CACHE = 'vb-v128';
+// v128 BABY-GAME level-ups (evolve, don't hide). Tap-a-Tune: added a Simon-style
+// MEMORY game for tier 7+ (watch a growing note sequence, repeat from memory) on top
+// of the existing free-play + follow-the-song modes. Magic Touch: added a CONNECT-THE-
+// DOTS mode for tier 6+ (tap numbered dots in order → reveal a shape) on top of the
+// sensory fireworks. Both visual/SFX only (no new voice). Prior v127:
+//
 // v127 TAP & POP level-up: added a target-colour CHALLENGE for tier 5+ ("Pop only
 // the Blue ones!") with a combo multiplier — wrong-colour taps don't pop and reset
 // the combo, shiny golds are wildcards. Turns the toddler pop-toy into an attention

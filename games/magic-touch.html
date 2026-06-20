@@ -15,10 +15,18 @@
       color: rgba(255,255,255,0.82); text-shadow: 0 2px 10px rgba(0,0,0,0.6);
       pointer-events: none; letter-spacing: 0.4px; transition: opacity 600ms ease;
     }
+    #dotsBtn {
+      position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%);
+      display: none; padding: 11px 20px; border-radius: 999px; border: none; cursor: pointer;
+      font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 15px; color: #fff;
+      background: linear-gradient(180deg, #6fd3ff, #3aa0e0); box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+    }
+    #dotsBtn:active { transform: translateX(-50%) translateY(1px); }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
+  <button id="dotsBtn" style="display:none">🔗 Connect the dots</button>
   <div id="hint">✨ Touch the sky! ✨</div>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
@@ -46,7 +54,10 @@
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    // Connect-the-dots state — declared BEFORE resize() (which calls layoutDots) to
+    // avoid a temporal-dead-zone error on the first resize.
+    let dotsMode = false, dots = [], dotShape = null, dotProgress = 0, dotDone = false;
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; layoutDots(); }
     resize();
 
     const COLORS = ['#FF6B6B', '#FFE66D', '#4ECDC4', '#a86cdb', '#FF9F43', '#45B7D1', '#FF69B4', '#7BD389'];
@@ -65,6 +76,57 @@
     };
 
     let parts = [], rockets = [], stars = [], animId, down = false, lastTrail = 0, bursts = 0;
+
+    // ── Connect-the-dots (tier 6+): tap numbered dots in order → reveal a shape.
+    // Turns the sensory toy into a goal/sequence puzzle for school age. No voice.
+    const canConnect = tier >= 6;
+    const DOT_SHAPES = [
+      { name: 'Triangle', pts: [[0.5,0.22],[0.8,0.76],[0.2,0.76]] },
+      { name: 'Square',   pts: [[0.27,0.32],[0.73,0.32],[0.73,0.76],[0.27,0.76]] },
+      { name: 'House',    pts: [[0.3,0.46],[0.5,0.26],[0.7,0.46],[0.7,0.78],[0.3,0.78]] },
+      { name: 'Heart',    pts: [[0.5,0.36],[0.36,0.26],[0.23,0.4],[0.5,0.72],[0.77,0.4],[0.64,0.26]] },
+      { name: 'Star',     pts: [[0.5,0.16],[0.61,0.42],[0.9,0.43],[0.67,0.6],[0.75,0.87],[0.5,0.7],[0.25,0.87],[0.33,0.6],[0.1,0.43],[0.39,0.42]] },
+    ];
+
+    function pickDotShape() {
+      const pool = DOT_SHAPES.filter(s => tier >= 8 || s.pts.length <= 6);
+      dotShape = pool[Math.floor(Math.random() * pool.length)];
+      dotProgress = 0; dotDone = false;
+      layoutDots();
+    }
+    function layoutDots() {
+      if (!dotShape) return;
+      const m = Math.min(canvas.width, canvas.height);
+      const ox = (canvas.width - m) / 2, oy = (canvas.height - m) / 2;
+      dots = dotShape.pts.map((p, i) => ({ x: ox + p[0] * m, y: oy + p[1] * m, n: i + 1 }));
+    }
+    function enterDots() {
+      dotsMode = true; parts = []; rockets = [];
+      document.getElementById('dotsBtn').textContent = '✨ Free play';
+      pickDotShape();
+      const h = document.getElementById('hint'); if (h) { h.textContent = '🔗 Tap the dots: 1 → 2 → 3 …'; h.style.opacity = '1'; }
+    }
+    function exitDots() {
+      dotsMode = false; dots = []; dotShape = null;
+      document.getElementById('dotsBtn').textContent = '🔗 Connect the dots';
+      const h = document.getElementById('hint'); if (h) { h.textContent = '✨ Touch the sky! ✨'; h.style.opacity = '1'; }
+    }
+    function handleDotTap(x, y) {
+      if (dotDone || !dots.length) return;
+      const next = dots[dotProgress];
+      if (Math.hypot(x - next.x, y - next.y) < 52) {
+        dotProgress++;
+        if (typeof playChime === 'function') { try { playChime(); } catch (e) {} }
+        if (typeof haptic === 'function') haptic(12);
+        if (dotProgress >= dots.length) {
+          dotDone = true;
+          if (window.vbProgress) vbProgress.record('magic-touch');
+          burst(canvas.width / 2, canvas.height * 0.5, true);
+          const h = document.getElementById('hint'); if (h) h.textContent = '✨ A ' + dotShape.name + '! ✨';
+          setTimeout(() => { if (dotsMode) { pickDotShape(); const h2 = document.getElementById('hint'); if (h2) h2.textContent = '🔗 Tap the dots: 1 → 2 → 3 …'; } }, 2200);
+        }
+      } else if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
+    }
 
     // ambient twinkling background stars (all ages — calm, never overwhelming)
     const STAR_N = reduce ? 0 : (tier <= 2 ? 26 : 40);
@@ -101,8 +163,9 @@
     }
 
     function onDown(e) {
-      down = true;
       const x = e.clientX, y = e.clientY;
+      if (dotsMode) { handleDotTap(x, y); return; }   // connect-the-dots: no free-play burst
+      down = true;
       if (TUNE.rockets && y > canvas.height * 0.6 && Math.random() < 0.6) launchRocket(x);
       else burst(x, y, Math.random() < 0.12);
     }
@@ -172,8 +235,40 @@
       });
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1;
+      drawDots();
       animId = requestAnimationFrame(draw);
     }
+
+    function drawDots() {
+      if (!dotsMode || !dots.length) return;
+      // completed connecting lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.92)'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      if (dotProgress > 1) {
+        ctx.beginPath(); ctx.moveTo(dots[0].x, dots[0].y);
+        for (let i = 1; i < dotProgress; i++) ctx.lineTo(dots[i].x, dots[i].y);
+        if (dotDone) ctx.lineTo(dots[0].x, dots[0].y);   // close the shape
+        ctx.stroke();
+      }
+      const t = Date.now() / 1000;
+      dots.forEach((d, i) => {
+        const doneDot = i < dotProgress, isNext = i === dotProgress && !dotDone;
+        const r = isNext ? 18 + 3 * Math.sin(t * 6) : 15;
+        ctx.beginPath(); ctx.arc(d.x, d.y, r, 0, 6.28);
+        ctx.fillStyle = doneDot ? '#7BD389' : (isNext ? '#FFD93D' : 'rgba(255,255,255,0.22)');
+        ctx.fill();
+        ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.stroke();
+        ctx.fillStyle = doneDot ? '#08310f' : '#0b1026';
+        ctx.font = '900 16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(String(d.n), d.x, d.y);
+      });
+    }
+
+    if (canConnect) {
+      const db = document.getElementById('dotsBtn');
+      db.style.display = 'block';
+      db.addEventListener('click', () => { if (dotsMode) exitDots(); else enterDots(); });
+    }
+
     draw();
 
     window.addEventListener('beforeunload', () => cancelAnimationFrame(animId));

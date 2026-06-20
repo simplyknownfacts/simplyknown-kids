@@ -27,12 +27,14 @@
     @keyframes padGlow { 0%,100% { filter: brightness(1); transform: translateY(0); } 50% { filter: brightness(1.6); transform: translateY(-6px); } }
     .pad.wrong { animation: padShake 0.3s; }
     @keyframes padShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-    #songBtn {
-      margin: 12px auto 0; padding: 12px 22px; border-radius: 999px; border: none; cursor: pointer;
+    #songBtn, #memBtn {
+      margin: 12px 6px 0; padding: 12px 22px; border-radius: 999px; border: none; cursor: pointer;
       font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 16px; color: #fff;
       background: linear-gradient(180deg, #FF8FA8, #FF6B8A); box-shadow: 0 6px 16px rgba(0,0,0,0.3);
     }
-    #songBtn:active { transform: translateY(1px); }
+    #memBtn { background: linear-gradient(180deg, #9b8cff, #6C5CE7); }
+    #btnRow { display: flex; justify-content: center; flex-wrap: wrap; }
+    #songBtn:active, #memBtn:active { transform: translateY(1px); }
     .note-pop { position: fixed; font-size: 30px; pointer-events: none; animation: noteRise 0.9s ease-out forwards; }
     @keyframes noteRise { 0%{opacity:1;transform:translateY(0) scale(0.6)} 100%{opacity:0;transform:translateY(-90px) scale(1.3)} }
     @media (prefers-reduced-motion: reduce) {
@@ -44,7 +46,10 @@
   <div id="wrap">
     <div id="hint"></div>
     <div id="pads"></div>
-    <button id="songBtn" style="display:none">🎵 Play a song</button>
+    <div id="btnRow">
+      <button id="songBtn" style="display:none">🎵 Play a song</button>
+      <button id="memBtn" style="display:none">🧠 Memory game</button>
+    </div>
   </div>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
@@ -86,6 +91,7 @@
     ];
     const showLabels = tier >= 5;     // bigger kids see note names
     const canSong = tier >= 3;        // toddlers+ get the guided song mode
+    const canMemory = tier >= 7;      // school age: a Simon-style memory challenge
 
     // ── WebAudio synth (soft, kid-friendly) ──
     let actx;
@@ -108,6 +114,7 @@
     const padsEl = document.getElementById('pads');
     const hintEl = document.getElementById('hint');
     const songBtn = document.getElementById('songBtn');
+    const memBtn = document.getElementById('memBtn');
     const pads = NOTES.map((n, i) => {
       const p = document.createElement('button');
       p.className = 'pad'; p.dataset.i = i;
@@ -118,6 +125,7 @@
     });
 
     let song = null, pos = 0;
+    let memMode = false, memSeq = [], memPos = 0, memBusy = false;
 
     function notePop(padEl, emoji) {
       if (reduce) return;
@@ -154,6 +162,55 @@
       } else { hintEl.textContent = canSong ? 'Tap the keys! 🎹' : ''; }
     }
 
+    // ── Memory (Simon) mode, tier 7+ ──
+    // App plays a growing sequence (watch), kid repeats from memory. +1 note each
+    // round. A miss just replays the same sequence (no harsh game-over).
+    function flashPad(i, cb) {
+      const p = pads[i];
+      note(NOTES[i].f);
+      p.classList.add('active');
+      setTimeout(() => { p.classList.remove('active'); cb && cb(); }, 420);
+    }
+    function memPlayback() {
+      memBusy = true; clearGuide(); hintEl.textContent = '👀 Watch the colors…';
+      let k = 0;
+      (function step() {
+        if (k >= memSeq.length) { memBusy = false; memPos = 0; hintEl.textContent = '🧠 Your turn!'; return; }
+        flashPad(memSeq[k], () => { k++; setTimeout(step, 200); });
+      })();
+    }
+    function startMemory() {
+      memMode = true; song = null; clearGuide();
+      memSeq = [Math.floor(Math.random() * NOTES.length)];
+      memBtn.textContent = '✋ Stop';
+      songBtn.style.display = 'none';
+      setTimeout(memPlayback, 450);
+    }
+    function stopMemory() {
+      memMode = false; memBusy = false; memSeq = []; memPos = 0; clearGuide();
+      memBtn.textContent = '🧠 Memory game';
+      if (canSong) songBtn.style.display = 'block';
+      hintEl.textContent = 'Tap the keys! 🎹';
+    }
+    function memTap(i) {
+      if (memBusy) return;
+      if (i === memSeq[memPos]) {
+        hitPad(i); memPos++;
+        if (memPos >= memSeq.length) {
+          if (typeof playSuccess === 'function') { try { playSuccess(); } catch (e) {} }
+          if (window.vbProgress) vbProgress.record('tap-a-tune');
+          hintEl.textContent = '✅ ' + memSeq.length + ' in a row!';
+          memSeq.push(Math.floor(Math.random() * NOTES.length));
+          setTimeout(memPlayback, 950);
+        }
+      } else {
+        const p = pads[i]; p.classList.add('wrong'); setTimeout(() => p.classList.remove('wrong'), 300);
+        if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
+        hintEl.textContent = '❌ Watch again…';
+        memPos = 0; setTimeout(memPlayback, 950);
+      }
+    }
+
     // Pointer handling: tap a key, OR — in free play — slide your finger across
     // the keys to play them in order like a real piano (glissando), no lifting.
     let dragging = false, lastI = -1;
@@ -179,11 +236,12 @@
       e.preventDefault();
       // drop implicit pointer-capture so moves retarget to whichever key the finger is over
       try { if (e.pointerId != null) e.target.releasePointerCapture(e.pointerId); } catch (_) {}
-      if (song) { songTap(i); return; }   // guided song mode stays tap-to-follow
+      if (memMode) { memTap(i); return; }  // memory mode: tap to repeat the sequence
+      if (song) { songTap(i); return; }    // guided song mode stays tap-to-follow
       dragging = true; lastI = i; hitPad(i);
     });
     padsEl.addEventListener('pointermove', (e) => {
-      if (!dragging || song) return;
+      if (!dragging || song || memMode) return;
       const i = padIndexAt(e.clientX, e.clientY);
       if (i >= 0 && i !== lastI) { lastI = i; hitPad(i); }   // play only when the finger enters a NEW key
     });
@@ -197,6 +255,10 @@
       hintEl.textContent = 'Tap the keys! 🎹';
     } else {
       hintEl.textContent = '🎹 Tap to make music! 🎶';
+    }
+    if (canMemory) {
+      memBtn.style.display = 'block';
+      memBtn.addEventListener('click', () => { if (memMode) stopMemory(); else startMemory(); });
     }
   })();
   </script>
