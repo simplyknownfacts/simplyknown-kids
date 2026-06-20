@@ -1,4 +1,12 @@
-const CACHE = 'vb-v124';
+const CACHE = 'vb-v125';
+// v125 DIFFERENTIATE Peek-a-boo vs Surprise Pop (they were both "tap → reveal a
+// thing"). Peek-a-boo is now the FIND-the-hidden-animal game: the youngest tier
+// (≤2) now taps a curtain to reveal (was auto-cycling with no tap — a baby should
+// still tap), older tiers keep the listen-and-find quiz. Surprise Pop is now
+// HATCH/GUESS/COLLECT: tap egg → surprise (babies, unchanged); T3+ fill a 16-item
+// collection (persisted per kid); T5+ get a black-silhouette clue + 3 guesses
+// before the reveal. No new spoken phrases (only the recorded "Yes!"). Prior v124:
+//
 // v124 ALL-RECORDED VOICE: every spoken phrase is now a real recorded clip in the
 // chosen voice (4 voices fully recorded). Removed the "Browser default" robotic TTS
 // option from Parent Settings; legacy profiles on it migrate to a real voice. The

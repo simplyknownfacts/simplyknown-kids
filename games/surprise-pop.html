@@ -18,10 +18,27 @@
     #reveal { display: none; flex-direction: column; align-items: center; gap: 14px; }
     #surprise { font-size: 150px; line-height: 1; animation: pop 0.5s cubic-bezier(0.22,1,0.36,1) both;
       filter: drop-shadow(0 14px 18px rgba(0,0,0,0.4)); }
+    /* Guess clue: the surprise shown as a black silhouette to match against the choices. */
+    #surprise.shadow { filter: brightness(0); opacity: 0.9; animation: jiggle 0.7s ease-in-out infinite; }
+    @keyframes jiggle { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
     @keyframes pop { 0%{transform:scale(0.1) rotate(-30deg);opacity:0} 60%{transform:scale(1.2) rotate(8deg);opacity:1} 100%{transform:scale(1) rotate(0)} }
     #name { font-family: var(--font-display, sans-serif); font-weight: 800; font-size: 40px; color: #fff;
       text-shadow: 0 3px 12px rgba(0,0,0,0.5); text-align: center; }
-    #sub { font-family: var(--font-ui, sans-serif); font-weight: 700; font-size: 18px; color: rgba(255,255,255,0.8); }
+    #sub { font-family: var(--font-ui, sans-serif); font-weight: 700; font-size: 20px; color: rgba(255,255,255,0.85); }
+    /* Guess choices (tier 5+) */
+    #choices { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+    .choice { font-size: 60px; line-height: 1; background: rgba(255,255,255,0.10);
+      border: 3px solid rgba(255,255,255,0.25); border-radius: 24px; padding: 10px 16px; cursor: pointer;
+      transition: transform .12s ease; }
+    .choice:active { transform: scale(0.9); }
+    .choice:disabled { opacity: 0.45; }
+    /* Collection strip (tier 3+) — pointer-events:none so taps fall through to Back. */
+    #collection { position: fixed; top: 58px; left: 0; right: 0; display: flex; flex-wrap: wrap;
+      gap: 5px 7px; justify-content: center; align-items: center; padding: 0 12px; pointer-events: none; }
+    .col-count { font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 15px; color: #fff;
+      background: rgba(255,255,255,0.16); padding: 3px 11px; border-radius: 999px; margin-right: 4px; }
+    .col-item { font-size: 22px; line-height: 1; opacity: 0.3; filter: grayscale(1); transition: opacity .3s; }
+    .col-item.got { opacity: 1; filter: none; }
     #hint { position: fixed; left: 0; right: 0; bottom: 30px; text-align: center; pointer-events: none;
       font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 17px; color: rgba(255,255,255,0.85);
       text-shadow: 0 2px 8px rgba(0,0,0,0.5); transition: opacity .4s; }
@@ -32,9 +49,15 @@
   </style>
 </head>
 <body>
+  <div id="collection"></div>
   <div id="stage">
     <button id="egg" aria-label="Tap the egg">🥚</button>
-    <div id="reveal"><div id="surprise"></div><div id="name"></div><div id="sub"></div></div>
+    <div id="reveal">
+      <div id="surprise"></div>
+      <div id="name"></div>
+      <div id="sub"></div>
+      <div id="choices"></div>
+    </div>
   </div>
   <div id="hint">👆 Tap the egg!</div>
   <script src="../js/tiers.js"></script>
@@ -61,9 +84,12 @@
     if (window.vbProgress) { vbProgress.firstPlay('surprise-pop'); vbProgress.touchStreak(); }
 
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const showName = tier >= 3;   // toddlers+ see what popped out (first words)
-    const showLetter = tier >= 5; // bigger kids get a "starts with…" literacy nudge
+    const showName       = tier >= 3;  // toddlers+ see what popped out (first words)
+    const showCollection = tier >= 3;  // toddlers+ fill a collection of all 16
+    const showGuess      = tier >= 5;  // big kids guess from a silhouette clue before it pops
 
+    // Broad mix (animals + objects + magic) on purpose — keeps this game's content
+    // distinct from Peek-a-boo, which is the find-the-hidden-ANIMAL game.
     const SURPRISES = [
       { e: '🐤', n: 'Chick' }, { e: '🐶', n: 'Puppy' }, { e: '🐱', n: 'Kitten' }, { e: '🐰', n: 'Bunny' },
       { e: '🦆', n: 'Duck' }, { e: '🐸', n: 'Frog' }, { e: '🐢', n: 'Turtle' }, { e: '🐝', n: 'Bee' },
@@ -78,8 +104,23 @@
     const surpriseEl = document.getElementById('surprise');
     const nameEl = document.getElementById('name');
     const subEl = document.getElementById('sub');
+    const choicesEl = document.getElementById('choices');
     const hintEl = document.getElementById('hint');
+    const colEl = document.getElementById('collection');
     let busy = false, pops = 0, lastIdx = -1;
+
+    // ── Collection (persisted per child) ──────────────────────────────────────
+    const FKEY = 'vb_sppop_' + profile.id;
+    let found = {};
+    try { found = JSON.parse(localStorage.getItem(FKEY) || '{}'); } catch (e) { found = {}; }
+    const saveFound = () => { try { localStorage.setItem(FKEY, JSON.stringify(found)); } catch (e) {} };
+    const foundCount = () => SURPRISES.filter(s => found[s.n]).length;
+
+    function renderCollection() {
+      if (!showCollection) return;
+      colEl.innerHTML = `<span class="col-count">✨ ${foundCount()} / ${SURPRISES.length}</span>` +
+        SURPRISES.map(s => `<span class="col-item ${found[s.n] ? 'got' : ''}">${found[s.n] ? s.e : '❔'}</span>`).join('');
+    }
 
     function confetti() {
       if (reduce) return;
@@ -96,6 +137,81 @@
       }
     }
 
+    function resetEgg() {
+      revealEl.style.display = 'none';
+      choicesEl.innerHTML = '';
+      surpriseEl.className = '';
+      eggEl.textContent = EGGS[pops % EGGS.length];
+      eggEl.style.display = '';
+      busy = false;
+    }
+
+    // correct: true = guessed right, false = guessed wrong, null = no guess (just tapped)
+    function finishReveal(s, correct) {
+      surpriseEl.className = '';
+      surpriseEl.textContent = s.e;
+      nameEl.textContent = showName ? s.n + '!' : '';
+      subEl.textContent = correct === true ? 'Yes!' : correct === false ? ('It was a ' + s.n + '!') : '';
+      revealEl.style.display = 'flex';
+      confetti();
+      if (typeof playSuccess === 'function') { try { playSuccess(); } catch (e) {} }
+      if (typeof haptic === 'function') haptic(24);
+      if (window.vbProgress) vbProgress.record('surprise-pop');
+      // Only speak phrases that have a recorded clip — surprise NAMES aren't recorded,
+      // so we keep naming visual-only (no robotic TTS). "Yes!" is recorded.
+      if (correct === true) { try { speak('Yes!'); } catch (e) {} }
+
+      const wasNew = showCollection && !found[s.n];
+      if (wasNew) { found[s.n] = 1; saveFound(); }
+      renderCollection();
+      pops++;
+
+      if (showCollection && foundCount() === SURPRISES.length) {
+        setTimeout(celebrateComplete, 1700);
+      } else {
+        setTimeout(resetEgg, showGuess ? 2100 : 1700);
+      }
+    }
+
+    function celebrateComplete() {
+      surpriseEl.className = '';
+      surpriseEl.textContent = '🏆';
+      nameEl.textContent = 'You found them all!';
+      subEl.textContent = '✨ New set ✨';
+      choicesEl.innerHTML = '';
+      revealEl.style.display = 'flex';
+      confetti(); setTimeout(confetti, 250); setTimeout(confetti, 500);
+      if (typeof playSuccess === 'function') { try { playSuccess(); } catch (e) {} }
+      found = {}; saveFound(); renderCollection();
+      pops++;
+      setTimeout(resetEgg, 2600);
+    }
+
+    function showGuessStep(s) {
+      surpriseEl.className = 'shadow';      // black silhouette clue
+      surpriseEl.textContent = s.e;
+      nameEl.textContent = "What's inside?";
+      subEl.textContent = '🤔 Guess!';
+      // 3 choices: the answer + 2 distractors, shuffled
+      const others = SURPRISES.filter(x => x.n !== s.n).sort(() => Math.random() - 0.5).slice(0, 2);
+      const opts = [s, ...others].sort(() => Math.random() - 0.5);
+      choicesEl.innerHTML = '';
+      opts.forEach(o => {
+        const b = document.createElement('button');
+        b.className = 'choice'; b.textContent = o.e; b.setAttribute('aria-label', 'Guess ' + o.n);
+        b.addEventListener('pointerdown', (ev) => {
+          ev.preventDefault();
+          choicesEl.querySelectorAll('button').forEach(x => x.disabled = true);
+          const ok = o.n === s.n;
+          if (!ok && typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
+          choicesEl.innerHTML = '';
+          finishReveal(s, ok);
+        });
+        choicesEl.appendChild(b);
+      });
+      revealEl.style.display = 'flex';
+    }
+
     function pop() {
       if (busy) return;
       busy = true;
@@ -104,25 +220,12 @@
       lastIdx = idx;
       const s = SURPRISES[idx];
       eggEl.style.display = 'none';
-      surpriseEl.textContent = s.e;
-      nameEl.textContent = showName ? s.n + '!' : '';
-      subEl.textContent = showLetter ? ('starts with ' + s.n[0]) : '';
-      revealEl.style.display = 'flex';
-      confetti();
-      if (typeof playSuccess === 'function') { try { playSuccess(); } catch (e) {} }
-      if (typeof haptic === 'function') haptic(24);
-      if (window.vbProgress) vbProgress.record('surprise-pop');
-      // (voice-naming can hook in here once per-word clips exist in the child's voice)
-      pops++;
-      setTimeout(() => {
-        revealEl.style.display = 'none';
-        eggEl.textContent = EGGS[pops % EGGS.length];
-        eggEl.style.display = '';
-        busy = false;
-      }, 1700);
+      if (showGuess) showGuessStep(s);
+      else finishReveal(s, null);
     }
 
     eggEl.addEventListener('pointerdown', (e) => { e.preventDefault(); pop(); });
+    renderCollection();
   })();
   </script>
 </body>

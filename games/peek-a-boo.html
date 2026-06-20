@@ -36,6 +36,15 @@
       transform-origin:top center;
     }
     .curtain.open { transform:scaleY(0); }
+    /* Littles (tier ≤2): a bigger, friendlier curtain that wiggles to invite the tap. */
+    .curtain-wrap.big { width:240px; height:240px; }
+    .curtain-wrap.big .animal { width:240px; height:240px; }
+    .curtain-wrap.big .animal > span:first-child { font-size:120px; }
+    .curtain-wrap.big .curtain { font-size:72px; }
+    .curtain.wiggle { animation:cwiggle 1.1s ease-in-out infinite; }
+    .curtain.open { animation:none; }
+    @keyframes cwiggle { 0%,100%{transform:rotate(-3deg) scale(1)} 50%{transform:rotate(3deg) scale(1.04)} }
+    @media (prefers-reduced-motion: reduce) { .curtain.wiggle { animation:none; } }
     .hint { font-size:18px; font-weight:800; color:white; text-align:center; min-height:28px; }
   </style>
 </head>
@@ -96,26 +105,23 @@
       const hint  = document.getElementById('hint');
       stage.innerHTML = '';
 
-      if (tier <= 2) {
+      if (!multiOn) {
+        // Tiers 1-4: ONE hidden animal, TAP the curtain to reveal it. (Littles
+        // used to auto-cycle with no tap — but a baby should still tap to make
+        // the animal pop out; that's the whole point of peek-a-boo.)
+        const little = tier <= 2;
         const a = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-        const div = document.createElement('div');
-        div.className = 'animal-solo pop-in';
-        div.innerHTML = `<span>${a.emoji}</span><span class="animal-name">${a.name}</span>`;
-        stage.appendChild(div);
-        hint.textContent = '';
-        speak(`${a.name}! ${a.sound}`);
-        roundTimer = setTimeout(nextRound, 2800);
-
-      } else if (!multiOn) {
-        const a = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-        hint.textContent = 'Who is hiding? Tap to see!';
+        hint.textContent = little ? '👆 Tap to peek!' : 'Who is hiding? Tap to see!';
         const wrap = document.createElement('div');
-        wrap.className = 'curtain-wrap';
+        wrap.className = 'curtain-wrap' + (little ? ' big' : '');
         wrap.innerHTML = `
           <div class="animal"><span>${a.emoji}</span><span class="animal-name">${a.name}</span></div>
-          <div class="curtain">🎀</div>`;
+          <div class="curtain wiggle">🎀</div>`;
         wrap.querySelector('.curtain').addEventListener('click', () => {
-          reveal(wrap, () => { speak(a.name); setTimeout(nextRound, 1500); });
+          reveal(wrap, () => {
+            speak(little ? `${a.name}! ${a.sound}` : a.name);
+            setTimeout(nextRound, little ? 1900 : 1500);
+          });
         });
         stage.appendChild(wrap);
 
