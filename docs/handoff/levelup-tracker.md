@@ -6,8 +6,17 @@ Latest directive: **"do it all. dont hide games"** — finish the whole queue, a
 **EVOLVE the toddler games for older kids rather than hiding them.**
 
 ## ✅ CAMPAIGN COMPLETE (2026-06-20) — every activity now evolves for 6–10yos
-- Live = **v129** (`sw.js` line 1 → next bump **v130**). Branch work pushed to `main`;
+- Live = **v131** (`sw.js` line 1 → next bump **v132**). Branch work pushed to `main`;
   worktree HEAD == origin/main.
+- **v130 BODY PARTS accuracy rebuild** (Scott: zones "always not on right"): the AI
+  figures are framed inconsistently, so the old ANCHORS table/fixed-% zones drifted.
+  Now SELF-CALIBRATING — each PNG is measured from its alpha pixels at render (head-top→
+  feet + per-row centre/width) and zones placed by proportion (`_PARTS`). Wheelchair child
+  re-tuned. Verify by overlaying `.hit` borders + screenshotting (wiring tests don't catch
+  visual drift). See [[body-parts-zones]] memory.
+- **v131 extras**: Count Along before/after rounds (T7+); Shape Match 3D shapes + odd-one-out
+  (T8+). Body Parts wrist/ankle were evaluated + SKIPPED (too close to hand/foot/elbow →
+  would hurt tap accuracy).
 - Final batch shipped this session: **v125** Peek-a-boo (find-the-animal, baby tap-to-reveal)
   + Surprise Pop (hatch/guess/collect); **v126** Days (months, T6+) + no-robot-voice hardening;
   **v127** Tap & Pop (target-colour challenge + combo, T5+); **v128** Tap-a-Tune (memory game, T7+)
