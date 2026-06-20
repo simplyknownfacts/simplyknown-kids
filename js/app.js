@@ -196,16 +196,15 @@ if (typeof window !== 'undefined' && window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => { _ttsByGender = { female: undefined, male: undefined }; };
 }
 
-function _browserSpeak(text, rate = 0.85, pitch = 1.2, sel) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  const gender = _ttsGenderFor(sel || _getActiveVoice());
-  const v = _pickTtsVoice(gender);
-  if (v) u.voice = v;
-  u.rate = rate;
-  u.pitch = gender === 'male' ? 1.0 : pitch;   // don't pitch a man's voice up
-  window.speechSynthesis.speak(u);
+// NO-OP ON PURPOSE. The app speaks ONLY real recorded clips (see _voiceSpeak).
+// Scott's rule is "no computer/robot voice ANYWHERE", so when a phrase has no
+// recorded clip we stay SILENT rather than fall back to the device's robotic
+// text-to-speech. speak() already showed the on-screen caption before reaching
+// here, so a reader still gets the prompt, and every pre-reader (toddler) phrase
+// is recorded. The console hint makes any still-uncovered phrase easy to find +
+// record later. (Gender-TTS helpers above are now unused but harmless.)
+function _browserSpeak(text) {
+  try { console.warn('[voice] no recorded clip (stayed silent):', text); } catch (e) {}
 }
 
 // Decompose count-along style "5 ducks" or "Yes! 5 ducks!" into clip list.

@@ -74,10 +74,45 @@
     ];
     const todayIdx = new Date().getDay(); // 0 = Sun
 
+    // School age: the YEAR is the next step up from the week. Only the month name
+    // + "What month comes after ___?" are spoken (both are recorded clips); the
+    // correct-answer feedback speaks the bare month name (we never recorded
+    // "Yes! <month>."), so it stays all-recorded-voice.
+    const MONTHS = ['January','February','March','April','May','June','July',
+                    'August','September','October','November','December'];
+
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
     let roundTimer = null;
     window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+
+    function renderMonthRound() {
+      const mi = Math.floor(Math.random() * 12);
+      const target = (mi + 1) % 12;
+      const promptText = `What month comes after ${MONTHS[mi]}?`;
+      hint.textContent = promptText;
+      setTimeout(() => speak(promptText), 400);
+      const row = document.createElement('div'); row.className = 'day-row';
+      MONTHS.forEach((m, i) => {
+        const tile = document.createElement('div');
+        tile.className = 'day-tile';
+        tile.innerHTML = `<span class="day-emoji">📅</span><span>${m}</span>`;
+        tile.addEventListener('pointerdown', () => {
+          if (i === target) {
+            tile.classList.add('matched'); playSuccess();
+            if (window.vbProgress) { vbProgress.record('days'); vbProgress.mastery('days.mastery'); }
+            speak(MONTHS[target]);
+            roundTimer = setTimeout(nextRound, 1800);
+          } else {
+            tile.classList.add('wrong'); playBoop();
+            setTimeout(() => tile.classList.remove('wrong'), 350);
+            speak('Try again!');
+          }
+        });
+        row.appendChild(tile);
+      });
+      bodyEl.appendChild(row);
+    }
 
     function nextRound() {
       bodyEl.innerHTML = ''; clearTimeout(roundTimer);
@@ -99,14 +134,18 @@
         bodyEl.appendChild(row);
         setTimeout(() => speak(`Today is ${DAYS[todayIdx].n}!`), 400);
 
+      } else if (tier >= 6 && Math.random() < 0.4) {
+        // T6+: mix in months of the year (recorded prompts).
+        renderMonthRound();
+
       } else if (tier <= 6) {
-        // "What comes after Monday?" / "What was yesterday?"
+        // "What comes after Monday?" / "What was the day before Monday?"
         const isAfter = Math.random() < 0.5;
         const baseIdx = Math.floor(Math.random() * 7);
         const target  = isAfter ? (baseIdx + 1) % 7 : (baseIdx + 6) % 7;
         const promptText = isAfter
           ? `What day comes after ${DAYS[baseIdx].n}?`
-          : `What day comes before ${DAYS[baseIdx].n}?`;
+          : `What was the day before ${DAYS[baseIdx].n}?`;
         hint.textContent = promptText;
         setTimeout(() => speak(promptText), 400);
         const row = document.createElement('div'); row.className = 'day-row';

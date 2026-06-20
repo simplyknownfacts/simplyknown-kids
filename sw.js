@@ -1,4 +1,12 @@
-const CACHE = 'vb-v125';
+const CACHE = 'vb-v126';
+// v126 NO-ROBOT-VOICE HARDENING + Days level-up. (1) The browser-TTS fallback in
+// js/app.js is now a NO-OP: if a phrase has no recorded clip the app stays SILENT
+// (caption still shows) instead of ever using the device's robotic voice — closes
+// gaps the v124 audit missed (it enumerated the intended phrases, not every actual
+// speak() call). (2) Days: fixed the "before" prompt to the RECORDED wording ("What
+// was the day before X?") and added a Months-of-the-Year round for T6+ (recorded
+// month prompts). Prior v125:
+//
 // v125 DIFFERENTIATE Peek-a-boo vs Surprise Pop (they were both "tap → reveal a
 // thing"). Peek-a-boo is now the FIND-the-hidden-animal game: the youngest tier
 // (≤2) now taps a curtain to reveal (was auto-cycling with no tap — a baby should
