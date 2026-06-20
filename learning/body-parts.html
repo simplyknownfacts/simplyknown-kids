@@ -71,7 +71,7 @@
   <script src="../js/sync.js"></script>
   <script>window.VB_ASSET_BASE='../';</script>
   <script>
-    (function() {
+    (async function() {
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'body-parts');
@@ -87,78 +87,86 @@
     // part; a correct tap glows the zone. Positions are % of the figure box.
     const figure = document.getElementById('figure');
 
-    // Tap zones are MEASURED per figure (v115), not hand-tuned. For each PNG we
-    // detected the EYES (dark pupil beside white sclera) and the ARM/HAND extent
-    // (alpha bbox per height-band), via canvas pixel analysis. Every FACE part is
-    // anchored to the real eye line + eye-spread, so a turned head (body-10/12) or
-    // a big-hair kid with low-set eyes (body-07, eyes at ~31%) still lines up.
-    // Body parts use the shared standing-pose proportions — all figures are framed
-    // identically (content top ~2%, bottom ~98%, centred). The prior per-kid fy/
-    // faceCx offsets had drifted (e.g. body-05 fy was -1 but its eyes sit at ~21%
-    // → 4% too high), which made taps miss; these anchors are freshly measured.
-    // ANCHORS: lx/rx = eye-centre X, y = eye-centre Y; aL/aR = arm extent; hL/hR = hand extent (all % of figure).
-    const ANCHORS = {
-      1:{lx:46,rx:61.2,y:21.8,aL:34.7,aR:69,hL:29.3,hR:75.3},
-      2:{lx:42.8,rx:58,y:22.1,aL:33.7,aR:67,hL:29.7,hR:70.7},
-      3:{lx:45.5,rx:59.4,y:25.2,aL:36.3,aR:67.7,hL:32,hR:72},
-      4:{lx:42.3,rx:56.6,y:21.1,aL:32,aR:68,hL:24,hR:76},
-      5:{lx:41.7,rx:56.6,y:21.2,aL:30.3,aR:70.3,hL:28,hR:72.7},
-      6:{lx:43.3,rx:55.9,y:20.1,aL:34,aR:68.7,hL:26.7,hR:73},
-      7:{lx:51,rx:63.8,y:30.8,aL:41.3,aR:69,hL:38,hR:72},
-      8:{lx:43.7,rx:60.1,y:23.4,aL:31.3,aR:67.7,hL:30.7,hR:68.3},
-      10:{lx:37.5,rx:54.4,y:21,aL:29.7,aR:71,hL:29,hR:71},
-      11:{lx:39.1,rx:54.3,y:23.2,aL:32.3,aR:68,hL:28.7,hR:71.3},
-      12:{lx:38,rx:53.8,y:20.6,aL:32,aR:68,hL:29,hR:70.3},
-    };
     const _r1 = v => Math.round(v * 10) / 10;
-    // Build a figure's zones from its measured anchors. Face parts are appended
-    // LAST so the small central features (nose/mouth) sit on top of larger
-    // neighbours → tapping a feature's centre resolves to THAT feature.
-    function standing(m) {
-      const midX = (m.lx + m.rx) / 2, sp = m.rx - m.lx;
-      return [
-        { n:'hair',  x:_r1(midX), y:_r1(2 + (m.y - 2) * 0.35), r:20 },
-        { n:'belly', x:50, y:48, r:14 },
-        { n:'arm',   x:_r1(m.aL + 4), y:45, r:11 }, { n:'arm',  x:_r1(m.aR - 4), y:45, r:11 },
-        { n:'hand',  x:_r1(m.hL + 3), y:56, r:11 }, { n:'hand', x:_r1(m.hR - 3), y:56, r:11 },
-        { n:'leg',   x:44, y:78, r:12 }, { n:'leg',  x:56, y:78, r:12 },
-        { n:'foot',  x:45, y:95, r:10 }, { n:'foot', x:55, y:95, r:10 },
-        // Harder joints for the tier-6+ advanced list (well-separated centres so
-        // the nearest-feature handler resolves each cleanly).
-        { n:'shoulder', x:_r1(m.aL + 6), y:39, r:8 }, { n:'shoulder', x:_r1(m.aR - 6), y:39, r:8 },
-        { n:'elbow', x:_r1(m.aL + 4), y:52, r:8 }, { n:'elbow', x:_r1(m.aR - 4), y:52, r:8 },
-        { n:'knee',  x:44, y:87, r:9 }, { n:'knee', x:56, y:87, r:9 },
-        { n:'ear',   x:_r1(midX - sp), y:_r1(m.y + sp * 0.1), r:6 }, { n:'ear', x:_r1(midX + sp), y:_r1(m.y + sp * 0.1), r:6 },
-        { n:'eye',   x:m.lx, y:m.y, r:7 }, { n:'eye', x:m.rx, y:m.y, r:7 },
-        { n:'nose',  x:_r1(midX), y:_r1(m.y + sp * 0.45), r:6 },
-        { n:'mouth', x:_r1(midX), y:_r1(m.y + sp * 0.85), r:7 },
-      ];
-    }
     // Wheelchair child (seated) — head centred ~x48, torso/legs/feet shifted.
     const WHEELCHAIR_ZONES = [
-      { n:'hair',  x:48, y:9,  r:20 },
-      { n:'belly', x:47, y:44, r:13 },
-      { n:'arm',   x:37, y:42, r:10 }, { n:'arm',  x:58, y:43, r:10 },
-      { n:'hand',  x:39, y:51, r:10 }, { n:'hand', x:57, y:52, r:10 },
-      { n:'leg',   x:43, y:61, r:12 }, { n:'leg',  x:54, y:63, r:12 },
-      { n:'foot',  x:43, y:78, r:10 }, { n:'foot', x:57, y:79, r:10 },
-      { n:'shoulder', x:36, y:37, r:8 }, { n:'shoulder', x:59, y:38, r:8 },
-      { n:'elbow', x:37, y:47, r:8 }, { n:'elbow', x:58, y:48, r:8 },
-      { n:'knee',  x:43, y:70, r:9 }, { n:'knee', x:55, y:71, r:9 },
-      { n:'ear',   x:39, y:19, r:6 },  { n:'ear',  x:57, y:19, r:6 },
-      { n:'eye',   x:44, y:18, r:7 },  { n:'eye',  x:53, y:18, r:7 },
-      { n:'nose',  x:48, y:22, r:6 },
-      { n:'mouth', x:48, y:25, r:7 },
+      { n:'hair',  x:50, y:32, r:16 },
+      { n:'eye',   x:45, y:36, r:6 }, { n:'eye',  x:55, y:36, r:6 },
+      { n:'ear',   x:41, y:37, r:5 }, { n:'ear',  x:59, y:37, r:5 },
+      { n:'nose',  x:50, y:39, r:5 },
+      { n:'mouth', x:50, y:42, r:6 },
+      { n:'shoulder', x:40, y:47, r:7 }, { n:'shoulder', x:60, y:47, r:7 },
+      { n:'arm',   x:36, y:51, r:9 }, { n:'arm',  x:64, y:51, r:9 },
+      { n:'belly', x:50, y:51, r:11 },
+      { n:'elbow', x:35, y:55, r:7 }, { n:'elbow', x:64, y:55, r:7 },
+      { n:'hand',  x:42, y:58, r:9 }, { n:'hand', x:57, y:58, r:9 },
+      { n:'leg',   x:43, y:63, r:11 }, { n:'leg',  x:56, y:63, r:11 },
+      { n:'knee',  x:42, y:67, r:8 }, { n:'knee', x:57, y:67, r:8 },
+      { n:'foot',  x:44, y:73, r:9 }, { n:'foot', x:58, y:73, r:9 },
     ];
 
-    // 12 kids (body-01..12). #9 is the seated wheelchair child (own zones);
-    // the rest use the standing template + their per-kid CONFIG tweaks.
+    // SELF-CALIBRATING zones (replaces the stale ANCHORS table + standing()): for
+    // each figure we MEASURE its real body box from the PNG's alpha pixels at
+    // runtime — head-top → feet, plus the content centre/width at each height — then
+    // place every zone by body proportion. The AI figures are framed inconsistently
+    // (some fill the 3:4 box, some sit smaller/lower/off-centre), so any fixed or
+    // eye-anchored template drifted ("zones not on the body"). Measuring per figure
+    // can't go stale. _PARTS = [name, vertical fraction head→feet, side offset (×row
+    // width) or 'c' for centred, radius]. The seated wheelchair child keeps its
+    // own hand-tuned zones.
+    const _PARTS = [
+      ['hair',0.06,'c',20],
+      ['eye',0.14,0.20,7], ['ear',0.15,0.46,6], ['nose',0.18,'c',6], ['mouth',0.22,'c',7],
+      ['shoulder',0.31,0.40,8], ['arm',0.37,0.46,11], ['belly',0.45,'c',14],
+      ['elbow',0.49,0.46,8], ['hand',0.55,0.47,11],
+      ['leg',0.73,0.18,12], ['knee',0.84,0.16,9], ['foot',0.96,0.16,10],
+    ];
+    function _zonesFromImg(img) {
+      const W=120, H=160, c=document.createElement('canvas'); c.width=W; c.height=H;
+      const cx=c.getContext('2d'); cx.drawImage(img,0,0,W,H);
+      const d=cx.getImageData(0,0,W,H).data, rows=[];
+      for (let y=0;y<H;y++){ let l=W,r=0,cnt=0;
+        for (let x=0;x<W;x++){ if(d[(y*W+x)*4+3]>140){ cnt++; if(x<l)l=x; if(x>r)r=x; } }
+        rows.push({cnt, cx:(l+r)/2, w:(r-l)});
+      }
+      const TH=0.06*W; let hT=0; while(hT<H&&rows[hT].cnt<TH)hT++; let fB=H-1; while(fB>0&&rows[fB].cnt<TH)fB--;
+      const span=Math.max(1,fB-hT);
+      const at=f=>{ const y=Math.max(0,Math.min(H-1,Math.round(hT+f*span))); const row=rows[y];
+        return { y:+(y/H*100).toFixed(1), cx:+(row.cx/W*100).toFixed(1), w:row.w/W*100 }; };
+      const Z=[];
+      for (const [n,f,k,r] of _PARTS) {
+        const a=at(f);
+        if (k==='c') Z.push({n, x:a.cx, y:a.y, r});
+        else { Z.push({n, x:+(a.cx-k*a.w).toFixed(1), y:a.y, r}); Z.push({n, x:+(a.cx+k*a.w).toFixed(1), y:a.y, r}); }
+      }
+      return Z;
+    }
+    // Used only if a figure PNG fails to load (shouldn't happen — same-origin +
+    // precached). A reasonable centred standing set so the game still works.
+    const FALLBACK_ZONES = [
+      {n:'hair',x:50,y:8,r:20},{n:'eye',x:45,y:17,r:7},{n:'eye',x:55,y:17,r:7},
+      {n:'ear',x:38,y:18,r:6},{n:'ear',x:62,y:18,r:6},{n:'nose',x:50,y:21,r:6},{n:'mouth',x:50,y:25,r:7},
+      {n:'shoulder',x:40,y:32,r:8},{n:'shoulder',x:60,y:32,r:8},{n:'arm',x:34,y:38,r:11},{n:'arm',x:66,y:38,r:11},
+      {n:'belly',x:50,y:46,r:14},{n:'elbow',x:34,y:50,r:8},{n:'elbow',x:66,y:50,r:8},
+      {n:'hand',x:32,y:56,r:11},{n:'hand',x:68,y:56,r:11},
+      {n:'leg',x:44,y:74,r:12},{n:'leg',x:56,y:74,r:12},{n:'knee',x:44,y:85,r:9},{n:'knee',x:56,y:85,r:9},
+      {n:'foot',x:45,y:96,r:10},{n:'foot',x:55,y:96,r:10},
+    ];
+    function _loadImg(src){ return new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; }); }
+
+    // 12 kids (body-01..12). #9 (index 8) is the seated wheelchair child.
     const BODIES = [];
     for (let n = 1; n <= 12; n++) {
-      BODIES.push({
-        img: 'img/bodies/body-' + String(n).padStart(2, '0') + '.png',
-        zones: n === 9 ? WHEELCHAIR_ZONES : standing(ANCHORS[n]),
-      });
+      BODIES.push({ img: 'img/bodies/body-' + String(n).padStart(2, '0') + '.png', seated: n === 9 });
+    }
+    const _zoneCache = {};
+    async function getZones(idx) {
+      if (_zoneCache[idx]) return _zoneCache[idx];
+      let zones;
+      if (BODIES[idx].seated) zones = WHEELCHAIR_ZONES;
+      else { const img = await _loadImg(BODIES[idx].img); zones = img ? _zonesFromImg(img) : FALLBACK_ZONES; }
+      _zoneCache[idx] = zones;
+      return zones;
     }
 
     let bodyIdx = Math.floor(Math.random() * BODIES.length);
@@ -167,10 +175,11 @@
     // done by ONE figure-level handler (nearest-feature), not per-button — see
     // handleFigureTap — so the buttons are visual/flash only (pointer-events off).
     let currentHits = [];   // [{z, el}] for the current body
-    function renderBody() {
+    async function renderBody() {
       const body = BODIES[bodyIdx];
       figure.innerHTML = '<img class="body-img" src="' + body.img + '" alt="A child standing">';
-      currentHits = body.zones.map(z => {
+      const zones = await getZones(bodyIdx);
+      currentHits = zones.map(z => {
         const b = document.createElement('button');
         b.className = 'hit'; b.dataset.name = z.n;
         b.setAttribute('aria-label', z.n);
@@ -184,7 +193,8 @@
     // What's available per tier. With the new tier scheme, tier 4 = Pre-K (3-4y).
     const TODDLER_PARTS = ['eye','nose','mouth','ear','hand','foot'];
     const ALL_PARTS = ['eye','nose','mouth','ear','hand','foot','arm','leg','hair','belly'];
-    // Tier 6+: add the harder joints (zones added to standing()/wheelchair above).
+    // Tier 6+: add the harder joints (zones produced by the measured _PARTS table
+    // for standing figures, and present in WHEELCHAIR_ZONES for the seated child).
     const ADV_PARTS = ALL_PARTS.concat(['shoulder','elbow','knee']);
     const allOn = tier >= 4 || getProfileFeature(profile, 'body-parts', 'allParts');
     const advOn = tier >= 6 || getProfileFeature(profile, 'body-parts', 'advParts');
@@ -256,7 +266,7 @@
         speak(`Yes! That's the ${PRONOUN(target)}.`);
         correctCount++;
         const rotate = correctCount % 5 === 0;
-        roundTimer = setTimeout(() => { if (rotate) switchBody(); nextRound(); }, 1800);
+        roundTimer = setTimeout(async () => { if (rotate) await switchBody(); nextRound(); }, 1800);
       } else {
         best.el.classList.add('wrong');
         playBoop();
@@ -267,15 +277,15 @@
     figure.addEventListener('pointerdown', handleFigureTap);
 
     // Pick a DIFFERENT random body and re-render it.
-    function switchBody() {
+    async function switchBody() {
       if (BODIES.length < 2) return;
       let next = bodyIdx;
       while (next === bodyIdx) next = Math.floor(Math.random() * BODIES.length);
       bodyIdx = next;
-      renderBody();
+      await renderBody();
     }
 
-    renderBody();
+    await renderBody();
     nextRound();
     })();
   </script>

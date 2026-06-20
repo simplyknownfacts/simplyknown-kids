@@ -1,4 +1,13 @@
-const CACHE = 'vb-v129';
+const CACHE = 'vb-v130';
+// v130 BODY PARTS accuracy rebuild (Scott: "zones always not on right"). The AI
+// figures are framed inconsistently (some fill the 3:4 box, some sit smaller/lower/
+// off-centre), so the stale ANCHORS table + fixed-% body zones drifted off the body.
+// Replaced with SELF-CALIBRATING zones: at render we measure each PNG's real body
+// box from its alpha pixels (head-top → feet, plus content centre/width per height)
+// and place every zone by body proportion — can't go stale. The seated wheelchair
+// child (body-09) got its own zones re-tuned to the current art. Verified visually
+// (overlay screenshots) across the cast. Prior v129:
+//
 // v129 Body Parts + Shape Match level-ups (with new recorded voice). Body Parts:
 // added shoulder/elbow/knee for tier 6+ (zones added to the standing + wheelchair
 // figures; verified each resolves cleanly via nearest-feature). Shape Match: added
