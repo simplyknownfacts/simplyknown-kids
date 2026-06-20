@@ -14,11 +14,23 @@
       text-shadow: 0 2px 8px rgba(0,0,0,0.4);
       display: none;
     }
+    #combo { color: #FFD93D; }
+    /* Target-colour challenge banner (tier 5+) */
+    #target {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      display: none; align-items: center; gap: 9px;
+      background: rgba(0,0,0,0.45); color: #fff; font-weight: 900; font-size: 19px;
+      padding: 8px 18px; border-radius: 999px; pointer-events: none;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.4); transition: background 0.15s;
+    }
+    #target.miss { background: rgba(255,70,70,0.7); }
+    #target .swatch { width: 26px; height: 26px; border-radius: 50%; border: 3px solid #fff; }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  <div id="score">⭐ <span id="scoreVal">0</span></div>
+  <div id="target"><span>Pop only</span><span class="swatch"></span><span id="targetName"></span><span>!</span></div>
+  <div id="score">⭐ <span id="scoreVal">0</span><span id="combo"></span></div>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>
@@ -59,6 +71,28 @@
     const scoreEl = document.getElementById('score');
     const scoreVal = document.getElementById('scoreVal');
     scoreEl.style.display = 'block';
+
+    // Target-colour challenge for older kids (tier 5+): "Pop only the RED ones!"
+    // — wrong-colour taps don't pop and break your combo; right ones build a combo
+    // multiplier. Shiny golds are always wildcards. Turns the toddler pop-toy into
+    // an attention/impulse-control game for 6-10yos. (Banner is visual — no voice.)
+    const COLOR_NAMES = { '#FF6B6B':'Red','#FFE66D':'Yellow','#4ECDC4':'Green','#a86cdb':'Purple','#FF9F43':'Orange','#45B7D1':'Blue' };
+    const challengeOn = tier >= 5;
+    const targetEl = document.getElementById('target');
+    const targetSwatch = targetEl.querySelector('.swatch');
+    const targetNameEl = document.getElementById('targetName');
+    const comboEl = document.getElementById('combo');
+    let combo = 0, targetColor = null, correctSincePick = 0;
+    const comboMult = () => 1 + Math.floor(combo / 5);
+    function showCombo() { comboEl.textContent = combo >= 2 ? `  🔥 x${comboMult()}` : ''; }
+    function pickTarget() {
+      let c; do { c = COLORS[Math.floor(Math.random() * COLORS.length)]; } while (c === targetColor && COLORS.length > 1);
+      targetColor = c;
+      targetSwatch.style.background = c;
+      targetNameEl.textContent = COLOR_NAMES[c] || '';
+      correctSincePick = 0;
+    }
+    if (challengeOn) { targetEl.style.display = 'flex'; pickTarget(); }
 
     function randColor() { return COLORS[Math.floor(Math.random() * COLORS.length)]; }
 
@@ -172,7 +206,16 @@
       playPop();
       if (typeof haptic === 'function') haptic(b.shiny ? 30 : 18); // satisfying pop tick
       if (window.vbProgress) vbProgress.record('tap-pop');
-      if (scoreOn) { score += b.shiny ? 3 : 1; scoreVal.textContent = score; }
+      if (scoreOn) {
+        let pts = b.shiny ? 3 : 1;
+        if (challengeOn) {
+          combo++;
+          pts *= comboMult();
+          showCombo();
+          if (++correctSincePick >= 8) pickTarget();  // fresh target after a streak
+        }
+        score += pts; scoreVal.textContent = score;
+      }
     }
 
     function drawPop(b) {
@@ -432,7 +475,17 @@
       for (let i = bubbles.length - 1; i >= 0; i--) {
         const b = bubbles[i];
         if (!b.popping && Math.hypot(x - b.x, y - b.y) < b.r) {
-          popBubble(b); hit = true; break;
+          // Challenge mode: only the target colour (or a shiny wildcard) may be
+          // popped. A wrong-colour tap doesn't pop — it just breaks the combo.
+          if (challengeOn && !b.shiny && b.color !== targetColor) {
+            combo = 0; showCombo();
+            if (typeof playBoop === 'function') playBoop();
+            targetEl.classList.add('miss');
+            setTimeout(() => targetEl.classList.remove('miss'), 250);
+          } else {
+            popBubble(b);
+          }
+          hit = true; break;
         }
       }
       if (!hit && tier <= 2) {

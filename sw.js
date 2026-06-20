@@ -1,4 +1,10 @@
-const CACHE = 'vb-v126';
+const CACHE = 'vb-v127';
+// v127 TAP & POP level-up: added a target-colour CHALLENGE for tier 5+ ("Pop only
+// the Blue ones!") with a combo multiplier — wrong-colour taps don't pop and reset
+// the combo, shiny golds are wildcards. Turns the toddler pop-toy into an attention
+// game for 6-10yos; toddler "pop anything" mode unchanged for T1-4. Banner is visual
+// (no new voice). Prior v126:
+//
 // v126 NO-ROBOT-VOICE HARDENING + Days level-up. (1) The browser-TTS fallback in
 // js/app.js is now a NO-OP: if a phrase has no recorded clip the app stays SILENT
 // (caption still shows) instead of ever using the device's robotic voice — closes
