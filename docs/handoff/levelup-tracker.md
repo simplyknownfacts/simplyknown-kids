@@ -6,7 +6,7 @@ Latest directive: **"do it all. dont hide games"** — finish the whole queue, a
 **EVOLVE the toddler games for older kids rather than hiding them.**
 
 ## ▶ RESUME HERE (next session)
-- Live = **v126** (`sw.js` line 1 → next bump **v127**). Branch work pushed to `main`;
+- Live = **v127** (`sw.js` line 1 → next bump **v128**). Branch work pushed to `main`;
   worktree HEAD == origin/main.
 - ⚠️ **NEW HARD CONSTRAINT (v126): no robot voice anywhere.** The browser-TTS fallback
   is now a NO-OP — any phrase with no recorded clip plays SILENT (caption still shows).
@@ -20,9 +20,9 @@ Latest directive: **"do it all. dont hide games"** — finish the whole queue, a
     clips ("Where's the elbow?", "Tap the elbows!", "Yes! That's the elbows." etc.) or they'll be silent.
   - **Shape Match** — sides/vertices, polygons (pentagon/hexagon/octagon), 3D, odd-one-out.
     ⚠️ needs NEW recorded clips for the shape vocab + "How many sides?" or silent.
-  - **Baby games (mostly NO new voice → cheapest next):** Tap & Pop (target/score mode),
-    Tap-a-Tune (follow-the-notes), Magic Touch (trace/connect-dots). Use SFX + captions; avoid
-    new spoken prompts (or record them).
+  - **Baby games (mostly NO new voice → cheapest):** ✅ Tap & Pop DONE (v127: target-colour
+    challenge + combo for T5+). Remaining: Tap-a-Tune (follow-the-notes "play the song"),
+    Magic Touch (trace/connect-dots). Use SFX + captions; avoid new spoken prompts (or record them).
 - Seed a test kid: `vb_profiles` + `tierOverrides[id]=6/8/10` to test older tiers.
 - Pattern that worked (Hello Colors/Animal Sounds/Days): keep the toddler mode unchanged,
   add a tier-gated round-type dispatcher for older kids; reuse already-recorded phrases where possible.
