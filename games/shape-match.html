@@ -39,6 +39,15 @@
     .target.matched { border-style: solid; opacity: 1; }
     .target.matched svg.shape { opacity: 1; }
     .drag-hint { font-size: 24px; color: rgba(255,255,255,0.5); margin: 4px 0; }
+    /* "How many sides?" number choices (tier 7+) */
+    .num-choice {
+      min-width: 74px; min-height: 74px; border-radius: 18px; border: 3px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.12); color: #fff; font-size: 30px; font-weight: 900;
+      cursor: pointer; transition: transform .1s;
+    }
+    .num-choice:active { transform: scale(0.92); }
+    .num-choice.ok  { background: rgba(168,230,207,0.55); border-color: #a8e6cf; }
+    .num-choice.bad { background: rgba(255,107,107,0.45); }
   </style>
 </head>
 <body>
@@ -95,6 +104,26 @@
       { name: 'Diamond',  color: '#45B7D1', path: (s) => `<polygon points="${s/2},${s*0.08} ${s*0.92},${s/2} ${s/2},${s*0.92} ${s*0.08},${s/2}" fill="currentColor"/>` },
     ];
 
+    // Polygons for the tier-7+ "How many sides?" round (kept separate from the
+    // drag pool so toddler drag mode is unchanged). Square uses an axis-aligned
+    // rect; the rest are regular polygons.
+    function regPoly(n, r) {
+      const pts = [];
+      for (let i = 0; i < n; i++) {
+        const a = (Math.PI * 2 * i) / n - Math.PI / 2;
+        pts.push(`${(50 + r * Math.cos(a)).toFixed(1)},${(50 + r * Math.sin(a)).toFixed(1)}`);
+      }
+      return pts.join(' ');
+    }
+    const POLY = [
+      { name: 'Triangle', sides: 3, color: '#4ECDC4', path: () => `<polygon points="${regPoly(3, 44)}" fill="currentColor"/>` },
+      { name: 'Square',   sides: 4, color: '#FFE66D', path: () => `<rect x="14" y="14" width="72" height="72" fill="currentColor"/>` },
+      { name: 'Pentagon', sides: 5, color: '#FF9F43', path: () => `<polygon points="${regPoly(5, 45)}" fill="currentColor"/>` },
+      { name: 'Hexagon',  sides: 6, color: '#a86cdb', path: () => `<polygon points="${regPoly(6, 45)}" fill="currentColor"/>` },
+      { name: 'Octagon',  sides: 8, color: '#45B7D1', path: () => `<polygon points="${regPoly(8, 45)}" fill="currentColor"/>` },
+    ];
+    const sidesOn = tier >= 7;
+
     function makeSVG(shape, size, useColor = true) {
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('width', size); svg.setAttribute('height', size);
@@ -105,7 +134,47 @@
       return svg;
     }
 
+    // Tier 7+: "How many sides?" — show a polygon, tap the right side count.
+    function sidesRound() {
+      const shapesRow = document.getElementById('shapesRow');
+      const targetsRow = document.getElementById('targetsRow');
+      const hint = document.getElementById('hint');
+      shapesRow.innerHTML = ''; targetsRow.innerHTML = '';
+      document.querySelectorAll('.target').forEach(t => t.remove());
+
+      const s = POLY[Math.floor(Math.random() * POLY.length)];
+      const svg = makeSVG(s, 170); svg.classList.add('pulse');
+      shapesRow.appendChild(svg);
+      hint.textContent = 'How many sides?';
+      speak('How many sides?');
+
+      const choices = new Set([s.sides]);
+      while (choices.size < 3) {
+        const off = Math.floor(Math.random() * 3) + 1;
+        choices.add(Math.max(3, Math.min(8, s.sides + (Math.random() < 0.5 ? off : -off))));
+      }
+      const row = document.createElement('div'); row.className = 'shapes-row'; row.style.marginTop = '24px';
+      [...choices].sort((a, b) => a - b).forEach(n => {
+        const btn = document.createElement('button');
+        btn.className = 'num-choice'; btn.textContent = n;
+        btn.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          if (n === s.sides) {
+            btn.classList.add('ok'); playSuccess(); speak(String(s.sides));
+            if (window.vbProgress) { vbProgress.record('shape-match'); vbProgress.mastery('shape-match.mastery'); }
+            clearTimeout(shapeTimer); shapeTimer = setTimeout(nextRound, 1500);
+          } else {
+            btn.classList.add('bad'); playBoop();
+            setTimeout(() => btn.classList.remove('bad'), 400);
+          }
+        });
+        row.appendChild(btn);
+      });
+      targetsRow.appendChild(row);
+    }
+
     function nextRound() {
+      if (sidesOn && Math.random() < 0.4) { sidesRound(); return; }
       const shapesRow = document.getElementById('shapesRow');
       const targetsRow = document.getElementById('targetsRow');
       const hint = document.getElementById('hint');

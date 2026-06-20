@@ -92,6 +92,9 @@ COLOR_NAMES.forEach(c => _phrases.push(`Tap the ${c} thing!`));
 COLOR_THING_PROMPTS.forEach(p => _phrases.push(p));
 COLOR_THING_NEAR_MISS.forEach(p => _phrases.push(p));
 SHAPE_NAMES.forEach(s => _phrases.push(s));
+// Shape Match level-up (tier 7+): harder polygons + "count the sides"
+['Pentagon', 'Hexagon', 'Octagon'].forEach(s => _phrases.push(s));
+_phrases.push('How many sides?');
 ANIMAL_PHRASES.forEach(p => _phrases.push(p));
 _phrases.push('Try again!');
 KID_NAMES.forEach(n => {
@@ -110,6 +113,13 @@ _DAYS.forEach(d => { _phrases.push(d); _phrases.push(`Today is ${d}!`); _phrases
 ['Penny','Nickel','Dime','Quarter'].forEach(c => {
   _phrases.push(c);
   _phrases.push(`Tap the ${c}.`);
+});
+// Body Parts level-up (tier 6+): harder joints (singular — PRONOUN leaves them as-is)
+['elbow','knee','shoulder'].forEach(p => {
+  _phrases.push(`Where's the ${p}?`);
+  _phrases.push(`Tap the ${p}!`);
+  _phrases.push(`Yes! That's the ${p}.`);
+  _phrases.push(`That's the ${p}.`);
 });
 // Body parts (plural form spoken to kids)
 const _BODY = ['eyes','ears','hands','feet','nose','mouth','arms','legs','hair','belly'];

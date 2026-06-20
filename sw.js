@@ -1,4 +1,11 @@
-const CACHE = 'vb-v128';
+const CACHE = 'vb-v129';
+// v129 Body Parts + Shape Match level-ups (with new recorded voice). Body Parts:
+// added shoulder/elbow/knee for tier 6+ (zones added to the standing + wheelchair
+// figures; verified each resolves cleanly via nearest-feature). Shape Match: added
+// a "How many sides?" round for tier 7+ with polygons (triangle→octagon). New spoken
+// phrases (joint names + "How many sides?" + Pentagon/Hexagon/Octagon) recorded in
+// all 4 voices ($0.31). Prior v128:
+//
 // v128 BABY-GAME level-ups (evolve, don't hide). Tap-a-Tune: added a Simon-style
 // MEMORY game for tier 7+ (watch a growing note sequence, repeat from memory) on top
 // of the existing free-play + follow-the-song modes. Magic Touch: added a CONNECT-THE-

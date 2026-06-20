@@ -123,6 +123,11 @@
         { n:'hand',  x:_r1(m.hL + 3), y:56, r:11 }, { n:'hand', x:_r1(m.hR - 3), y:56, r:11 },
         { n:'leg',   x:44, y:78, r:12 }, { n:'leg',  x:56, y:78, r:12 },
         { n:'foot',  x:45, y:95, r:10 }, { n:'foot', x:55, y:95, r:10 },
+        // Harder joints for the tier-6+ advanced list (well-separated centres so
+        // the nearest-feature handler resolves each cleanly).
+        { n:'shoulder', x:_r1(m.aL + 6), y:39, r:8 }, { n:'shoulder', x:_r1(m.aR - 6), y:39, r:8 },
+        { n:'elbow', x:_r1(m.aL + 4), y:52, r:8 }, { n:'elbow', x:_r1(m.aR - 4), y:52, r:8 },
+        { n:'knee',  x:44, y:87, r:9 }, { n:'knee', x:56, y:87, r:9 },
         { n:'ear',   x:_r1(midX - sp), y:_r1(m.y + sp * 0.1), r:6 }, { n:'ear', x:_r1(midX + sp), y:_r1(m.y + sp * 0.1), r:6 },
         { n:'eye',   x:m.lx, y:m.y, r:7 }, { n:'eye', x:m.rx, y:m.y, r:7 },
         { n:'nose',  x:_r1(midX), y:_r1(m.y + sp * 0.45), r:6 },
@@ -137,6 +142,9 @@
       { n:'hand',  x:39, y:51, r:10 }, { n:'hand', x:57, y:52, r:10 },
       { n:'leg',   x:43, y:61, r:12 }, { n:'leg',  x:54, y:63, r:12 },
       { n:'foot',  x:43, y:78, r:10 }, { n:'foot', x:57, y:79, r:10 },
+      { n:'shoulder', x:36, y:37, r:8 }, { n:'shoulder', x:59, y:38, r:8 },
+      { n:'elbow', x:37, y:47, r:8 }, { n:'elbow', x:58, y:48, r:8 },
+      { n:'knee',  x:43, y:70, r:9 }, { n:'knee', x:55, y:71, r:9 },
       { n:'ear',   x:39, y:19, r:6 },  { n:'ear',  x:57, y:19, r:6 },
       { n:'eye',   x:44, y:18, r:7 },  { n:'eye',  x:53, y:18, r:7 },
       { n:'nose',  x:48, y:22, r:6 },
@@ -176,8 +184,11 @@
     // What's available per tier. With the new tier scheme, tier 4 = Pre-K (3-4y).
     const TODDLER_PARTS = ['eye','nose','mouth','ear','hand','foot'];
     const ALL_PARTS = ['eye','nose','mouth','ear','hand','foot','arm','leg','hair','belly'];
+    // Tier 6+: add the harder joints (zones added to standing()/wheelchair above).
+    const ADV_PARTS = ALL_PARTS.concat(['shoulder','elbow','knee']);
     const allOn = tier >= 4 || getProfileFeature(profile, 'body-parts', 'allParts');
-    const partList = allOn ? ALL_PARTS : TODDLER_PARTS;
+    const advOn = tier >= 6 || getProfileFeature(profile, 'body-parts', 'advParts');
+    const partList = advOn ? ADV_PARTS : (allOn ? ALL_PARTS : TODDLER_PARTS);
     const PRONOUN = (p) => ({
       eye:'eyes', ear:'ears', hand:'hands', foot:'feet', arm:'arms', leg:'legs',
     }[p] || p);
