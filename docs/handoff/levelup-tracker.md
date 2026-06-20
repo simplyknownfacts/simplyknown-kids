@@ -6,14 +6,37 @@ Latest directive: **"do it all. dont hide games"** — finish the whole queue, a
 **EVOLVE the toddler games for older kids rather than hiding them.**
 
 ## ▶ RESUME HERE (next session)
-- Live = **v120** (`sw.js` line 1 → next bump **v121**). Branch work pushed to `main`;
+- Live = **v126** (`sw.js` line 1 → next bump **v127**). Branch work pushed to `main`;
   worktree HEAD == origin/main.
+- ⚠️ **NEW HARD CONSTRAINT (v126): no robot voice anywhere.** The browser-TTS fallback
+  is now a NO-OP — any phrase with no recorded clip plays SILENT (caption still shows).
+  So **every NEW spoken prompt you add MUST be recorded** or it won't be heard: add the
+  phrase (or atoms) to `js/voice-manifest.js`, run `VOICE_BUDGET=N node scripts/generate-voices.mjs`
+  (auto-finds the key in the main-repo .env), regen `gen-offline-manifest.mjs`, redeploy.
+  Verify a phrase is covered in-browser with `_matchClips('...') != null`.
 - Remaining to build (verify each in-browser at a high tier via Playwright + `?cb=`,
   then bump sw + commit + `git push origin HEAD:main`):
-  Count Along, Days, Body Parts, Shape Match, then the 5 baby games (evolve, don't hide).
-- Seed a test kid: `vb_profiles` Noah (`2024-07-11`) + `tierOverrides[id]=8/10` to test older tiers.
-- Pattern that worked (see Hello Colors/Animal Sounds): keep the toddler mode unchanged,
-  add a tier-gated round-type dispatcher for older kids.
+  - **Body Parts** — add elbow/knee/wrist/shoulder/ankle for older. ⚠️ needs NEW recorded
+    clips ("Where's the elbow?", "Tap the elbows!", "Yes! That's the elbows." etc.) or they'll be silent.
+  - **Shape Match** — sides/vertices, polygons (pentagon/hexagon/octagon), 3D, odd-one-out.
+    ⚠️ needs NEW recorded clips for the shape vocab + "How many sides?" or silent.
+  - **Baby games (mostly NO new voice → cheapest next):** Tap & Pop (target/score mode),
+    Tap-a-Tune (follow-the-notes), Magic Touch (trace/connect-dots). Use SFX + captions; avoid
+    new spoken prompts (or record them).
+- Seed a test kid: `vb_profiles` + `tierOverrides[id]=6/8/10` to test older tiers.
+- Pattern that worked (Hello Colors/Animal Sounds/Days): keep the toddler mode unchanged,
+  add a tier-gated round-type dispatcher for older kids; reuse already-recorded phrases where possible.
+
+## ✅ DONE — Batch (this session, shipped v125 + v126)
+- **Peek-a-boo** (v125) — now the FIND-the-hidden-animal game; youngest tier (≤2) TAPS a big
+  wiggling curtain to reveal (was auto-cycling, no tap). T3-4 single-curtain reveal; T5+ listen quiz.
+- **Surprise Pop** (v125) — now HATCH/GUESS/COLLECT (was a Peek-a-boo clone): babies tap (unchanged);
+  T3+ fill a 16-item collection (persisted per kid, celebrates+resets at full); T5+ get a black
+  silhouette clue + 3 picture guesses before reveal. Broad content (animals+objects+magic).
+- **Days** (v126) — fixed "before" to recorded wording; added Months-of-the-Year round (T6+).
+- **No-robot-voice hardening** (v126) — TTS fallback neutralized (see constraint above).
+- **Count Along** — reviewed: already evolves (tap-count → "how many?" quiz T5-6 → skip-counting T7+).
+  No change needed. (Optional future: before/after + "+10" rounds, but they'd need recorded prompts.)
 
 ## ✅ Already scales well (no work needed)
 - Math Mountain (+ → −,×,÷, missing-number, to T10)
