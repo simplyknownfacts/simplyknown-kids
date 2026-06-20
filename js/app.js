@@ -237,6 +237,36 @@ function _matchClips(text) {
     if (phrases['How many'] && phrases[noun]) return ['How many', noun];
   }
 
+  // ── Composed phrases (assemble from atom clips — no TTS) ──
+  const has = (...ks) => ks.every(k => phrases[k] !== undefined);
+  let m;
+  const OP = '(plus|minus|times|divided by)';
+  // Math: "3 plus 5?"  /  "3 plus 5 equals 8!"  /  "7 plus what equals 12?"
+  if ((m = text.match(new RegExp(`^(\\d+) ${OP} (\\d+) equals (\\d+)!?$`)))) {
+    if (has(m[1], m[2], m[3], 'equals', m[4])) return [m[1], m[2], m[3], 'equals', m[4]];
+  }
+  if ((m = text.match(new RegExp(`^(\\d+) ${OP} what equals (\\d+)\\??$`)))) {
+    if (has(m[1], m[2], 'what equals', m[3])) return [m[1], m[2], 'what equals', m[3]];
+  }
+  if ((m = text.match(new RegExp(`^(\\d+) ${OP} (\\d+)\\??$`)))) {
+    if (has(m[1], m[2], m[3])) return [m[1], m[2], m[3]];
+  }
+  // Count skip-count success: "Yes! 8."
+  if ((m = text.match(/^Yes! (\d+)\.?$/))) {
+    if (has('Yes!', m[1])) return ['Yes!', m[1]];
+  }
+  // Money totals: "Yes! 65¢."  /  "Yes! $1.30."  /  "Yes! $5."
+  if ((m = text.match(/^Yes! (\d+)¢\.?$/))) {
+    if (has('Yes!', m[1], 'cents')) return ['Yes!', m[1], 'cents'];
+  }
+  if ((m = text.match(/^Yes! \$(\d+)\.(\d+)\.?$/))) {
+    const c = String(Number(m[2]));
+    if (has('Yes!', m[1], 'dollars', c, 'cents')) return ['Yes!', m[1], 'dollars', c, 'cents'];
+  }
+  if ((m = text.match(/^Yes! \$(\d+)\.?$/))) {
+    if (has('Yes!', m[1], 'dollars')) return ['Yes!', m[1], 'dollars'];
+  }
+
   return null;
 }
 
@@ -298,7 +328,9 @@ function _voiceSpeak(text, voice) {
 
 function _getActiveVoice() {
   const p = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
-  return (p && p.voice) || 'woman'; // default to adult female (Rachel) when none selected, not robotic browser TTS
+  let v = (p && p.voice) || 'woman'; // default to adult female (Rachel) when none selected
+  if (v === 'browser') v = 'woman';  // legacy profiles on the removed "Browser default" robot voice → migrate to a real one
+  return v;
 }
 
 function speak(text, rate = 0.85, pitch = 1.2) {
@@ -317,7 +349,6 @@ function speak(text, rate = 0.85, pitch = 1.2) {
     if (p && typeof tierForAge === 'function' && tierForAge(getAgeMonths(p.birthday)) >= 9) return;
   } catch (e) {}
   const v = _getActiveVoice();
-  if (v === 'browser') return _browserSpeak(text, rate, pitch, v);
   return _voiceSpeak(text, v);
 }
 

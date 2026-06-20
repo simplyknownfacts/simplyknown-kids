@@ -1,4 +1,11 @@
-const CACHE = 'vb-v123';
+const CACHE = 'vb-v124';
+// v124 ALL-RECORDED VOICE: every spoken phrase is now a real recorded clip in the
+// chosen voice (4 voices fully recorded). Removed the "Browser default" robotic TTS
+// option from Parent Settings; legacy profiles on it migrate to a real voice. The
+// browser-TTS path remains only as a never-hit safety net (all phrases are recorded
+// or composed from recorded atoms). Recorded clips download via "Download family for
+// offline use" (they're media, in vb-offline). Prior v123 OFFLINE FIX below.
+//
 // v123 OFFLINE FIX: app did not work offline even after downloading. Two causes:
 //  (1) install precache used addAll() (all-or-nothing) - one failed fetch (e.g. the
 //      cross-origin Google-fonts URL) aborted the WHOLE precache -> no offline shell.

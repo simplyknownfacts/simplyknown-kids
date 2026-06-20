@@ -13,7 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
-import { spawn } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 
 async function _pitchShift(inPath, outPath, ratio) {
   return new Promise((resolve, reject) => {
@@ -30,9 +30,24 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const require = createRequire(import.meta.url);
 const { VOICE_MANIFEST } = require(path.join(PROJECT_ROOT, 'js', 'voice-manifest.js'));
 
-// Load .env if present
-const ENV_PATH = path.join(PROJECT_ROOT, '.env');
-if (fs.existsSync(ENV_PATH)) {
+// Load .env — check this checkout's root first, then (when running inside a git
+// worktree) the MAIN repo root. Shared secrets like ELEVENLABS_API_KEY live in
+// the main checkout's .env, not the per-worktree copy. git-common-dir gives the
+// main .git dir for any worktree; its parent is the main repo root. First value
+// set wins (||=), so a worktree .env still overrides the main one.
+function mainRepoRoot() {
+  try {
+    const common = execSync('git rev-parse --git-common-dir', { cwd: PROJECT_ROOT })
+      .toString().trim();
+    const abs = path.isAbsolute(common) ? common : path.resolve(PROJECT_ROOT, common);
+    return path.dirname(abs);
+  } catch { return null; }
+}
+const ENV_PATHS = [path.join(PROJECT_ROOT, '.env')];
+const _mr = mainRepoRoot();
+if (_mr && _mr !== PROJECT_ROOT) ENV_PATHS.push(path.join(_mr, '.env'));
+for (const ENV_PATH of ENV_PATHS) {
+  if (!fs.existsSync(ENV_PATH)) continue;
   for (const line of fs.readFileSync(ENV_PATH, 'utf8').split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*?)"?\s*$/);
     if (m) process.env[m[1]] ||= m[2];
@@ -108,8 +123,9 @@ if (isDry) {
   process.exit(0);
 }
 
-if (estCost > 8) {
-  console.error(`Cost estimate ($${estCost.toFixed(2)}) exceeds $8 budget. Aborting.`);
+const BUDGET = Number(process.env.VOICE_BUDGET || 8);
+if (estCost > BUDGET) {
+  console.error(`Cost estimate ($${estCost.toFixed(2)}) exceeds $${BUDGET} budget. Aborting.`);
   process.exit(1);
 }
 

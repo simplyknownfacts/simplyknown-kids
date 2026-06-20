@@ -143,12 +143,59 @@ _phrases.push('What time is it?');
 // Ribbon award — spoken in the child's voice when a ribbon is earned (js/celebrate.js)
 _phrases.push('You earned a new ribbon!');
 
-// Numbers 1-50 spoken as digits
-const _numbers = [];
-for (let i = 1; i <= 50; i++) _numbers.push(String(i));
+// ─────────────────────────────────────────────────────────────────────────────
+// v123: FULL recorded-voice coverage (no browser TTS anywhere). Every string the
+// activities pass to speak() must exist here verbatim, OR compose from atoms
+// (math equations + money totals — see app.js _matchClips). Strings below mirror
+// exactly what each activity speaks (e.g. Hello Colors says "Heart", not "Blue
+// Heart" — the old prefixed entries above were drifted and silently fell to TTS).
+// ─────────────────────────────────────────────────────────────────────────────
+// Hello Colors — exact spoken thing names + older colours + odd-one-out + mixing
+const _HC = {
+  Red:['Apple','Rose','Fire Truck','Heart'], Blue:['Blueberry','Ocean','Dolphin','Heart'],
+  Yellow:['Sunflower','Lemon','Star','Bee'], Green:['Frog','Leaf','Broccoli','Turtle'],
+  Purple:['Grapes','Unicorn','Flower','Heart'], Orange:['Orange','Pumpkin','Fox','Carrot'],
+  Pink:['Pig','Blossom','Flamingo','Heart'], Brown:['Bear','Chocolate','Log','Potato'],
+  Gray:['Elephant','Fog','Shark','Rock'], Black:['Bat','Cat','Hat','Spider'],
+  White:['Cloud','Swan','Milk','Snow'],
+};
+Object.keys(_HC).forEach(c => {
+  _phrases.push(c, `Tap the ${c} thing!`,
+    `Which one is NOT ${c}?`, `Yes! That one is not ${c}.`,
+    `That one IS ${c}. Find the one that is not.`);
+  _HC[c].forEach(t => _phrases.push(`${t}! ${c}.`, `Yes! ${t} is ${c}!`, `Tap the ${c} ${t}!`, `That's ${c}, but not a ${t}.`));
+});
+[['Red','Blue','Purple'],['Red','Yellow','Orange'],['Blue','Yellow','Green'],['Red','White','Pink'],['Black','White','Gray']]
+  .forEach(([a,b,r]) => _phrases.push(`${a} plus ${b} makes what?`, `Yes! ${a} and ${b} make ${r}!`));
+// Animal Sounds — success + classification + habitat
+ANIMALS.forEach(a => _phrases.push(`Yes! The ${a.name}.`, `${a.name}! ${a.sound}`, `Yes! ${a.name}!`, a.name, `${a.sound}! ${a.sound}! Who am I?`));
+['a mammal','a bird','a reptile','an amphibian','an insect'].forEach(g => _phrases.push(`Which one is ${g}?`));
+['on a farm','in the ocean','in the wild'].forEach(h => _phrases.push(`Which one lives ${h}?`));
+_phrases.push('Which animal makes this sound?');
+// Body Parts — singular "Where's the X?"
+['eye','ear','hand','foot','arm','leg','hair','belly'].forEach(p => _phrases.push(`Where's the ${p}?`));
+// Days — quiz prompts + month names (for the Days level-up)
+_DAYS.forEach(d => _phrases.push(`What day comes after ${d}?`, `What was the day before ${d}?`));
+['January','February','March','April','May','June','July','August','September','October','November','December']
+  .forEach(m => _phrases.push(m, `What month comes after ${m}?`));
+// Spelling — longer words
+['FROG','BOAT','APPLE','TIGER','TRAIN','HOUSE','ROBOT','GRAPE','ZEBRA','SNAKE','CLOUD','HEART','ORANGE','FLOWER','ROCKET','MONKEY','GUITAR','PENGUIN','RAINBOW','DOLPHIN','ELEPHANT','DINOSAUR']
+  .forEach(w => _phrases.push(w, `Spell ${w}!`));
+// Money — bills + identify + success
+['Dollar Bill','Five Dollar Bill','Ten Dollar Bill'].forEach(m => _phrases.push(m, `Tap the ${m}.`));
+['Penny','Nickel','Dime','Quarter','Dollar Bill','Five Dollar Bill','Ten Dollar Bill'].forEach(m => _phrases.push(`Yes! That's the ${m}.`));
+['It costs','You pay','How much change?','dollars','cents'].forEach(p => _phrases.push(p));
+// Count Along — skip counting
+['Counting by 2s. What number comes next?','Counting by 5s. What number comes next?','Counting by 10s. What number comes next?'].forEach(p => _phrases.push(p));
+// Math — operator atom + missing-number wrapper (numbers/operators compose)
+_phrases.push('divided by', 'what equals');
 
-// Prefix atoms for count-along assembly
-const _prefixes = ['Yes!', 'How many'];
+// Numbers 0-100 spoken as digits (count-along to 50, math/money compose to 100)
+const _numbers = [];
+for (let i = 0; i <= 100; i++) _numbers.push(String(i));
+
+// Prefix/connector atoms for runtime phrase assembly (count, math, money)
+const _prefixes = ['Yes!', 'How many', 'plus', 'minus', 'times', 'divided by', 'equals', 'what equals', 'dollars', 'cents'];
 
 // Generate stable hashes (must match generate-voices.mjs)
 async function _sha1(s) {

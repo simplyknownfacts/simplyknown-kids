@@ -1439,14 +1439,14 @@
 
     // Voice picker — one set of tappable CARDS for the ACTIVE settings child.
     // Tapping a card BOTH selects the voice (persists) AND plays a short sample
-    // in that voice. Real voices play the mascot welcome clip; 'browser' uses
-    // speechSynthesis. Only one sample plays at a time.
+    // in that voice (the mascot welcome clip). Only one sample plays at a time.
+    // No "Browser default" option on purpose: every prompt in the app is a real
+    // recorded voice, so we never expose the robotic device TTS as a choice.
     const VOICES = [
       { id:'girl',    name:'Nurturing Girl',  desc:'Sarah · warm, gentle',  icon:'▶' },
       { id:'boy',     name:'Nurturing Boy',   desc:'Josh · bright, kind',   icon:'▶' },
       { id:'woman',   name:'Grown-up Woman',  desc:'Rachel · calm, adult',  icon:'▶' },
       { id:'man',     name:'Grown-up Man',    desc:'Adam · steady, adult',  icon:'▶' },
-      { id:'browser', name:'Browser default', desc:"Device's built-in voice", icon:'🌐', full:true },
     ];
     let _voiceAudio = null;       // currently-playing HTMLAudioElement
     let _voicePlayingCard = null; // its .vcard element
@@ -1637,20 +1637,7 @@
       const p = getProfiles().find(x => x.id === profileId);
       const label = (VOICES.find(v => v.id === voiceId) || {}).name || 'voice';
 
-      if (voiceId === 'browser') {
-        if (!('speechSynthesis' in window)) { if (hint) hint.textContent = 'This device has no built-in voice.'; return; }
-        const u = new SpeechSynthesisUtterance('Yes! Apple is red!');
-        u.rate = 0.9; u.pitch = 1.15;
-        card.classList.add('playing'); _voicePlayingCard = card;
-        if (hint) hint.innerHTML = `🔊 Browser voice is playing a sample…`;
-        u.onend = u.onerror = () => {
-          if (_voicePlayingCard === card) { card.classList.remove('playing'); _voicePlayingCard = null; if (hint) hint.textContent = ''; }
-        };
-        try { window.speechSynthesis.speak(u); } catch(e) { card.classList.remove('playing'); }
-        return;
-      }
-
-      // Real voices: play the active child's mascot welcome clip in that voice.
+      // Play the active child's mascot welcome clip in that voice.
       // Path mirrors the app: mascots/<mascotId>/green/audio/<voiceId>_welcome.mp3
       const mascotId = (p && p.mascot && p.mascot.id) || 'dog';
       const base = (typeof rootPath === 'function') ? rootPath() : '../';
