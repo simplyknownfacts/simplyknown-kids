@@ -5,9 +5,22 @@ harder/interesting for 6–10yos. Goal: every activity should evolve with age.
 Latest directive: **"do it all. dont hide games"** — finish the whole queue, and
 **EVOLVE the toddler games for older kids rather than hiding them.**
 
-## ▶ RESUME HERE (next session)
-- Live = **v127** (`sw.js` line 1 → next bump **v128**). Branch work pushed to `main`;
+## ✅ CAMPAIGN COMPLETE (2026-06-20) — every activity now evolves for 6–10yos
+- Live = **v129** (`sw.js` line 1 → next bump **v130**). Branch work pushed to `main`;
   worktree HEAD == origin/main.
+- Final batch shipped this session: **v125** Peek-a-boo (find-the-animal, baby tap-to-reveal)
+  + Surprise Pop (hatch/guess/collect); **v126** Days (months, T6+) + no-robot-voice hardening;
+  **v127** Tap & Pop (target-colour challenge + combo, T5+); **v128** Tap-a-Tune (memory game, T7+)
+  + Magic Touch (connect-the-dots, T6+); **v129** Body Parts (shoulder/elbow/knee, T6+) + Shape Match
+  ("how many sides?" polygons, T7+). Count Along confirmed already-evolved (skip-counting T7+).
+- ⚠️ STILL TRUE — no robot voice anywhere: any NEW spoken prompt must be recorded (manifest →
+  generate-voices.mjs → gen-offline-manifest.mjs → bump sw) or it plays SILENT. Verify with
+  `_matchClips('...') != null` against the ACTUAL speak() strings.
+- Possible future polish (optional, not requested): Count Along before/after rounds; Shape Match
+  3D shapes / odd-one-out; more Body Parts joints (wrist/ankle — keep centres well-separated).
+
+## ▶ (archived) RESUME HERE
+- Was: Live = **v127**.
 - ⚠️ **NEW HARD CONSTRAINT (v126): no robot voice anywhere.** The browser-TTS fallback
   is now a NO-OP — any phrase with no recorded clip plays SILENT (caption still shows).
   So **every NEW spoken prompt you add MUST be recorded** or it won't be heard: add the
