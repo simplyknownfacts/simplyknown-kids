@@ -87,22 +87,22 @@
     // part; a correct tap glows the zone. Positions are % of the figure box.
     const figure = document.getElementById('figure');
 
-    const _r1 = v => Math.round(v * 10) / 10;
-    // Wheelchair child (seated) — head centred ~x48, torso/legs/feet shifted.
+    // Wheelchair child (seated) — own ellipse zones {cx,cy,rx,ry} (% of figure;
+    // rx is %width, ry is %height). The standing measure can't model a seated pose,
+    // so these are hand-placed; limbs slightly taller so they're easy to tap.
     const WHEELCHAIR_ZONES = [
-      { n:'hair',  x:50, y:32, r:16 },
-      { n:'eye',   x:45, y:36, r:6 }, { n:'eye',  x:55, y:36, r:6 },
-      { n:'ear',   x:41, y:37, r:5 }, { n:'ear',  x:59, y:37, r:5 },
-      { n:'nose',  x:50, y:39, r:5 },
-      { n:'mouth', x:50, y:42, r:6 },
-      { n:'shoulder', x:40, y:47, r:7 }, { n:'shoulder', x:60, y:47, r:7 },
-      { n:'arm',   x:36, y:51, r:9 }, { n:'arm',  x:64, y:51, r:9 },
-      { n:'belly', x:50, y:51, r:11 },
-      { n:'elbow', x:35, y:55, r:7 }, { n:'elbow', x:64, y:55, r:7 },
-      { n:'hand',  x:42, y:58, r:9 }, { n:'hand', x:57, y:58, r:9 },
-      { n:'leg',   x:43, y:63, r:11 }, { n:'leg',  x:56, y:63, r:11 },
-      { n:'knee',  x:42, y:67, r:8 }, { n:'knee', x:57, y:67, r:8 },
-      { n:'foot',  x:44, y:73, r:9 }, { n:'foot', x:58, y:73, r:9 },
+      {n:'hair',cx:50,cy:28,rx:8,ry:5},
+      {n:'eye',cx:45,cy:33,rx:4,ry:3},{n:'eye',cx:55,cy:33,rx:4,ry:3},
+      {n:'ear',cx:40,cy:34,rx:3,ry:3},{n:'ear',cx:60,cy:34,rx:3,ry:3},
+      {n:'nose',cx:50,cy:36,rx:4,ry:2.5},{n:'mouth',cx:50,cy:39,rx:5,ry:3},
+      {n:'shoulder',cx:39,cy:44,rx:5,ry:3},{n:'shoulder',cx:61,cy:44,rx:5,ry:3},
+      {n:'arm',cx:33,cy:51,rx:5,ry:6},{n:'arm',cx:67,cy:51,rx:5,ry:6},
+      {n:'belly',cx:50,cy:49,rx:8,ry:5},
+      {n:'elbow',cx:34,cy:56,rx:4,ry:3},{n:'elbow',cx:66,cy:56,rx:4,ry:3},
+      {n:'hand',cx:40,cy:58,rx:5,ry:4},{n:'hand',cx:60,cy:58,rx:5,ry:4},
+      {n:'leg',cx:44,cy:64,rx:6,ry:7},{n:'leg',cx:56,cy:64,rx:6,ry:7},
+      {n:'knee',cx:43,cy:69,rx:4,ry:3},{n:'knee',cx:57,cy:69,rx:4,ry:3},
+      {n:'foot',cx:45,cy:73,rx:5,ry:3},{n:'foot',cx:57,cy:73,rx:5,ry:3},
     ];
 
     // SELF-CALIBRATING zones (replaces the stale ANCHORS table + standing()): for
@@ -114,43 +114,68 @@
     // can't go stale. _PARTS = [name, vertical fraction head→feet, side offset (×row
     // width) or 'c' for centred, radius]. The seated wheelchair child keeps its
     // own hand-tuned zones.
+    // Each part is an ELLIPSE {n,cx,cy,rx,ry} (% of figure) shaped like the part —
+    // arms/legs are TALL so you can tap anywhere along them; face features are small.
+    // _PARTS spec: [name, [region, fraction], side, rxFactor, ryFactor]
+    //   region 'head' → fraction of the detected HEAD (top→chin); 'body' → fraction
+    //   of chin→feet. side: 'c' centred · number = ±(n×headWidth) for paired face
+    //   parts · 'edge' = at the silhouette edge (paired L/R) · 'edgeIn' = just inside
+    //   the edge · 'legs' = the two legs near centre. rx scales with headWidth (face)
+    //   or the row width (body); ry scales with headSpan or bodySpan.
     const _PARTS = [
-      ['hair',0.06,'c',20],
-      ['eye',0.14,0.20,7], ['ear',0.15,0.46,6], ['nose',0.18,'c',6], ['mouth',0.22,'c',7],
-      ['shoulder',0.31,0.40,8], ['arm',0.37,0.46,11], ['belly',0.45,'c',14],
-      ['elbow',0.49,0.46,8], ['hand',0.55,0.47,11],
-      ['leg',0.73,0.18,12], ['knee',0.84,0.16,9], ['foot',0.96,0.16,10],
+      ['hair',['head',0.20],'c',0.42,0.22],
+      ['eye',['head',0.52],0.20,0.17,0.13], ['ear',['head',0.56],0.47,0.11,0.17],
+      ['nose',['head',0.69],'c',0.15,0.11], ['mouth',['head',0.83],'c',0.27,0.12],
+      ['shoulder',['body',0.06],'edgeIn',0.18,0.06],
+      ['arm',['body',0.28],'edge',0.11,0.17], ['belly',['body',0.22],'c',0.24,0.13],
+      ['elbow',['body',0.40],'edge',0.10,0.07], ['hand',['body',0.51],'edge',0.12,0.09],
+      ['leg',['body',0.76],'legs',0.14,0.20], ['knee',['body',0.87],'legs',0.12,0.07],
+      ['foot',['body',0.975],'legs',0.14,0.05],
     ];
     function _zonesFromImg(img) {
-      const W=120, H=160, c=document.createElement('canvas'); c.width=W; c.height=H;
-      const cx=c.getContext('2d'); cx.drawImage(img,0,0,W,H);
+      const W=160, H=213, c=document.createElement('canvas'); c.width=W; c.height=H;
+      const cx=c.getContext('2d',{willReadFrequently:true}); cx.drawImage(img,0,0,W,H);
       const d=cx.getImageData(0,0,W,H).data, rows=[];
       for (let y=0;y<H;y++){ let l=W,r=0,cnt=0;
         for (let x=0;x<W;x++){ if(d[(y*W+x)*4+3]>140){ cnt++; if(x<l)l=x; if(x>r)r=x; } }
-        rows.push({cnt, cx:(l+r)/2, w:(r-l)});
+        rows.push({cnt, l:l/W*100, r:r/W*100, cx:(l+r)/2/W*100, w:(r-l)/W*100});
       }
       const TH=0.06*W; let hT=0; while(hT<H&&rows[hT].cnt<TH)hT++; let fB=H-1; while(fB>0&&rows[fB].cnt<TH)fB--;
-      const span=Math.max(1,fB-hT);
-      const at=f=>{ const y=Math.max(0,Math.min(H-1,Math.round(hT+f*span))); const row=rows[y];
-        return { y:+(y/H*100).toFixed(1), cx:+(row.cx/W*100).toFixed(1), w:row.w/W*100 }; };
+      const hTp=hT/H*100, fBp=fB/H*100, span=Math.max(1,fBp-hTp);
+      // head bottom (chin) = narrowest row between the head blob and the shoulders
+      let chin=hTp+0.22*span, minW=999;
+      for (let y=Math.round((hTp+0.10*span)/100*H); y<Math.round((hTp+0.42*span)/100*H); y++){ if(rows[y] && rows[y].w<minW){ minW=rows[y].w; chin=y/H*100; } }
+      const headSpan=Math.max(1,chin-hTp), bodySpan=Math.max(1,fBp-chin);
+      let headW=0,cxs=0,nn=0; for(let y=hT;y<Math.round(chin/100*H);y++){ if(rows[y].w>headW)headW=rows[y].w; cxs+=rows[y].cx; nn++; }
+      const headCx=nn?cxs/nn:50;
+      const rowAt=p=>rows[Math.max(0,Math.min(H-1,Math.round(p/100*H)))];
+      const r1=v=>+v.toFixed(1), r2=v=>+v.toFixed(2);
       const Z=[];
-      for (const [n,f,k,r] of _PARTS) {
-        const a=at(f);
-        if (k==='c') Z.push({n, x:a.cx, y:a.y, r});
-        else { Z.push({n, x:+(a.cx-k*a.w).toFixed(1), y:a.y, r}); Z.push({n, x:+(a.cx+k*a.w).toFixed(1), y:a.y, r}); }
+      for (const [n,where,side,rxF,ryF] of _PARTS) {
+        const head = where[0]==='head';
+        const cy = head ? hTp + where[1]*headSpan : chin + where[1]*bodySpan;
+        const row = rowAt(cy);
+        const rx = r2(rxF * (head ? headW : Math.max(8,row.w)));
+        const ry = r2(ryF * (head ? headSpan : bodySpan));
+        const push=(x)=>Z.push({n, cx:r1(x), cy:r1(cy), rx, ry});
+        if (side==='c') push(head ? headCx : row.cx);
+        else if (typeof side==='number') { push(headCx - side*headW); push(headCx + side*headW); }
+        else if (side==='edge')   { push(row.l + (row.r-row.l)*0.10); push(row.r - (row.r-row.l)*0.10); }
+        else if (side==='edgeIn') { push(row.l + (row.r-row.l)*0.24); push(row.r - (row.r-row.l)*0.24); }
+        else if (side==='legs')   { push(headCx - 0.09*headW - 2); push(headCx + 0.09*headW + 2); }
       }
       return Z;
     }
     // Used only if a figure PNG fails to load (shouldn't happen — same-origin +
     // precached). A reasonable centred standing set so the game still works.
     const FALLBACK_ZONES = [
-      {n:'hair',x:50,y:8,r:20},{n:'eye',x:45,y:17,r:7},{n:'eye',x:55,y:17,r:7},
-      {n:'ear',x:38,y:18,r:6},{n:'ear',x:62,y:18,r:6},{n:'nose',x:50,y:21,r:6},{n:'mouth',x:50,y:25,r:7},
-      {n:'shoulder',x:40,y:32,r:8},{n:'shoulder',x:60,y:32,r:8},{n:'arm',x:34,y:38,r:11},{n:'arm',x:66,y:38,r:11},
-      {n:'belly',x:50,y:46,r:14},{n:'elbow',x:34,y:50,r:8},{n:'elbow',x:66,y:50,r:8},
-      {n:'hand',x:32,y:56,r:11},{n:'hand',x:68,y:56,r:11},
-      {n:'leg',x:44,y:74,r:12},{n:'leg',x:56,y:74,r:12},{n:'knee',x:44,y:85,r:9},{n:'knee',x:56,y:85,r:9},
-      {n:'foot',x:45,y:96,r:10},{n:'foot',x:55,y:96,r:10},
+      {n:'hair',cx:50,cy:8,rx:11,ry:7},{n:'eye',cx:45,cy:16,rx:4,ry:3},{n:'eye',cx:55,cy:16,rx:4,ry:3},
+      {n:'ear',cx:37,cy:18,rx:3,ry:4},{n:'ear',cx:63,cy:18,rx:3,ry:4},{n:'nose',cx:50,cy:21,rx:4,ry:3},{n:'mouth',cx:50,cy:25,rx:6,ry:3},
+      {n:'shoulder',cx:40,cy:32,rx:6,ry:3},{n:'shoulder',cx:60,cy:32,rx:6,ry:3},{n:'arm',cx:33,cy:42,rx:5,ry:9},{n:'arm',cx:67,cy:42,rx:5,ry:9},
+      {n:'belly',cx:50,cy:44,rx:9,ry:7},{n:'elbow',cx:33,cy:50,rx:4,ry:4},{n:'elbow',cx:67,cy:50,rx:4,ry:4},
+      {n:'hand',cx:32,cy:58,rx:5,ry:5},{n:'hand',cx:68,cy:58,rx:5,ry:5},
+      {n:'leg',cx:44,cy:74,rx:6,ry:11},{n:'leg',cx:56,cy:74,rx:6,ry:11},{n:'knee',cx:44,cy:85,rx:5,ry:4},{n:'knee',cx:56,cy:85,rx:5,ry:4},
+      {n:'foot',cx:45,cy:96,rx:6,ry:3},{n:'foot',cx:55,cy:96,rx:6,ry:3},
     ];
     function _loadImg(src){ return new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; }); }
 
@@ -183,8 +208,10 @@
         const b = document.createElement('button');
         b.className = 'hit'; b.dataset.name = z.n;
         b.setAttribute('aria-label', z.n);
-        b.style.left = z.x + '%'; b.style.top = z.y + '%'; b.style.width = z.r + '%';
-        b.style.pointerEvents = 'none';   // figure-level nearest-feature handler hit-tests
+        // Ellipse: cx/cy centre, rx (%width) / ry (%height) radii → w=2rx, h=2ry.
+        b.style.left = z.cx + '%'; b.style.top = z.cy + '%';
+        b.style.width = (z.rx * 2) + '%'; b.style.height = (z.ry * 2) + '%';
+        b.style.pointerEvents = 'none';   // figure-level size-aware handler hit-tests
         figure.appendChild(b);
         return { z, el: b };
       });
@@ -235,19 +262,22 @@
       });
     }
 
-    // Nearest-feature tap resolution: a tap anywhere on the figure resolves to the
-    // CLOSEST part centre. So tapping near the nose always counts as the nose even
-    // if the invisible zone is a few % off — far more forgiving than tiny circles,
-    // and the real fix for "tapped the nose, got the ear". (One handler on the
-    // figure; the <img> + .hit buttons are pointer-events:none.)
+    // SIZE-AWARE tap resolution: each part is an ELLIPSE (cx,cy,rx,ry). A tap picks
+    // the part with the smallest NORMALISED distance — ((dx/rx)² + (dy/ry)²) — i.e.
+    // the ellipse it's "most inside". This makes a tall arm/leg ellipse catch taps
+    // anywhere along its length, and a small mouth ellipse win over the eye for a
+    // tap on the mouth (the old nearest-CENTRE test mis-fired on clustered faces).
+    // One handler on the figure; the <img> + .hit buttons are pointer-events:none.
     function handleFigureTap(e) {
       if (!currentHits.length || !target) return;
       const r = figure.getBoundingClientRect();
-      const px = e.clientX - r.left, py = e.clientY - r.top;
+      const px = (e.clientX - r.left) / r.width * 100;   // tap as % of figure (x)
+      const py = (e.clientY - r.top) / r.height * 100;   // and y
       let best = null, bestD = Infinity;
       for (const h of currentHits) {
-        const zx = h.z.x / 100 * r.width, zy = h.z.y / 100 * r.height;
-        const d = (px - zx) * (px - zx) + (py - zy) * (py - zy);
+        const z = h.z;
+        const dx = (px - z.cx) / z.rx, dy = (py - z.cy) / z.ry;
+        const d = dx * dx + dy * dy;       // normalised ellipse distance²
         if (d < bestD) { bestD = d; best = h; }
       }
       if (!best) return;

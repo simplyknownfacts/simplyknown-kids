@@ -1,4 +1,14 @@
-const CACHE = 'vb-v132';
+const CACHE = 'vb-v133';
+// v133 BODY PARTS matching rebuilt (Scott: "still very bad — touched mouth, got eye";
+// must work on phones). Three changes: (1) each part is now an ELLIPSE shaped like the
+// part — arms/legs are TALL so a tap anywhere along them counts; face features small.
+// (2) the FACE is anchored to the figure's detected HEAD region (head-top → chin via
+// the neck narrowing), so eyes/nose/mouth line up per figure instead of guessing off
+// the whole body. (3) hit-test is SIZE-AWARE: picks the part with the smallest
+// normalised ellipse distance, so a tap on the mouth beats the eye. Verified on a phone
+// viewport across 9 figures (all parts self-resolve; mouth/eye/nose correct) + the
+// seated wheelchair child re-tuned. Prior v132:
+//
 // v132 hardening from a full press-everything QA sweep (all 22 activities × ages):
 // no functional bugs found — every activity renders + responds at toddler AND school-
 // age tiers. Defensive fix: wrapped the 3 unguarded setPointerCapture() calls (paint.js,
