@@ -3,7 +3,7 @@
   'use strict';
 
   var ACTIVITIES = [
-    { id:'tap-pop',      name:'Tap & Pop',    icon:'🫧', section:'games', noun:'bubbles popped', mastery:null },
+    { id:'tap-pop',      name:'Bubble Pop',   icon:'🫧', section:'games', noun:'bubbles popped', mastery:null },
     { id:'shape-match',  name:'Shape Match',  icon:'🔷', section:'games', noun:'shapes matched',
       mastery:{ title:'Shape Master', hint:'Finish a 6-shape round' } },
     { id:'peek-a-boo',   name:'Peek-a-Boo',   icon:'👀', section:'games', noun:'peeks', mastery:null },

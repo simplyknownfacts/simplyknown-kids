@@ -1,4 +1,8 @@
-const CACHE = 'vb-v133';
+const CACHE = 'vb-v134';
+// v134 rename: "Tap & Pop" → "Bubble Pop" everywhere kids/parents see it (menu card,
+// ribbons/achievements, page title). Internal id stays 'tap-pop' so progress, ribbons,
+// tier overrides and the precache list are untouched. Prior v133:
+//
 // v133 BODY PARTS matching rebuilt (Scott: "still very bad — touched mouth, got eye";
 // must work on phones). Three changes: (1) each part is now an ELLIPSE shaped like the
 // part — arms/legs are TALL so a tap anywhere along them counts; face features small.

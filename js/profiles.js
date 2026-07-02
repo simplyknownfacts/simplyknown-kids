@@ -18,7 +18,7 @@ function mascotEmoji(profile) {
 // `minTier` at the activity level = the kid's tier needed for this game to
 // appear by default. Parent can override per-child in Parent Settings.
 const ACTIVITY_FEATURES = [
-  { id:'tap-pop',       name:'Tap & Pop',        icon:'🫧', file:'tap-pop.html',     section:'games', minTier:1, features:[] },
+  { id:'tap-pop',       name:'Bubble Pop',       icon:'🫧', file:'tap-pop.html',     section:'games', minTier:1, features:[] },
   { id:'peek-a-boo',    name:'Peek-a-boo',       icon:'🙈', file:'peek-a-boo.html', section:'games', minTier:1, features:[
     { key:'multiChoice',   label:'Multiple-choice mode',                    minTier:5 },
   ]},
