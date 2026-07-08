@@ -1,4 +1,12 @@
-const CACHE = 'vb-v134';
+const CACHE = 'vb-v135';
+// v135 THEMES: parent-selectable per-kid shell themes (Parent Settings → 🎨 Theme).
+// 5 options: Storybook Night (original, default = no attribute), Candy Toy-Box,
+// Paper Playground, Neon Arcade, Soft Clouds. Implemented as css/themes.css blocks
+// keyed by html[data-vbtheme] × the EXISTING html[data-tod] — so the time-of-day
+// skies (morning/afternoon/evening/night) + greetings keep working in every theme;
+// each theme redefines the sky/paper/card tokens the atmosphere + cards already
+// read. Shell pages stamp data-vbtheme from profile.theme pre-paint. Prior v134:
+//
 // v134 rename: "Tap & Pop" → "Bubble Pop" everywhere kids/parents see it (menu card,
 // ribbons/achievements, page title). Internal id stays 'tap-pop' so progress, ribbons,
 // tier overrides and the precache list are untouched. Prior v133:
@@ -86,7 +94,7 @@ const CACHE = 'vb-v134';
 // Full version history: git log.
 const ASSETS = [
   './', './index.html', './home.html', './achievements.html',
-  './css/style.css', './css/achievements.css',
+  './css/style.css', './css/achievements.css', './css/themes.css',
   './js/atmosphere.js',
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',
   './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',

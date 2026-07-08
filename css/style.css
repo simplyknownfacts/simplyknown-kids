@@ -418,8 +418,11 @@ body.vb-chrome .title { margin-top: clamp(26px, 7vw, 44px); }
 /* ---------- Section hub: cards-row grid ---------- */
 .cards-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 18px; max-width: 720px; width: 100%;
+  /* minmax(136px) — NOT 150px: on a 390px phone the row is ~310px wide inside
+     its paddings, and 150×2+gap missed two columns by ~8px, collapsing every
+     hub to ONE giant card per screen (~8 screens of scrolling to see 8 games). */
+  grid-template-columns: repeat(auto-fit, minmax(136px, 1fr));
+  gap: 14px; max-width: 720px; width: 100%;
   padding: 0 8px;
 }
 

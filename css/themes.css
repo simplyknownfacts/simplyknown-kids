@@ -1,0 +1,542 @@
+/* themes.css — optional visual themes for Valiant Breeze.
+   <html data-vbtheme="candy|paper|arcade|cloud"> + existing data-tod pick a palette block below;
+   the SVG sky reads --bg/--hill/--star/--orb/--accent vars, cards read --paper/--ink/--text.
+   No data-vbtheme attribute = default look (every rule here requires [data-vbtheme]). */
+
+/* ============================================================
+   1. CANDY — "Candy Toy-Box": bright, glossy, chunky 3D
+   ============================================================ */
+
+html[data-vbtheme="candy"][data-tod="morning"] {
+  --bg-0: #FFD9A6;
+  --bg-1: #FFB7D9;
+  --bg-2: #7EC8FF;
+  --hill-0: #57C989;
+  --hill-1: #7FDCA9;
+  --hill-2: #A9EDC7;
+  --star: #FFF6D8;
+  --orb-color: #FFCE4F;
+  --orb-rim: #FFEFAF;
+  --accent: #FF6FB5;
+  --accent-soft: #FFC9E4;
+  --paper: #FFFFFF;
+  --paper-deep: #EFF4FF;
+  --paper-shadow: #2D2A6633;
+  --ink: #2D2A66;
+  --text: #4A3070;
+}
+
+html[data-vbtheme="candy"][data-tod="afternoon"] {
+  --bg-0: #C4EDFF;
+  --bg-1: #7FD3FF;
+  --bg-2: #45B1FB;
+  --hill-0: #3FC97E;
+  --hill-1: #66DBA0;
+  --hill-2: #98ECC2;
+  --star: #FFFFFF;
+  --orb-color: #FFD23F;
+  --orb-rim: #FFF3BC;
+  --accent: #FF5FA8;
+  --accent-soft: #FFC0DD;
+  --paper: #FFFFFF;
+  --paper-deep: #EFF4FF;
+  --paper-shadow: #2D2A6633;
+  --ink: #2D2A66;
+  --text: #1F3F73;
+}
+
+html[data-vbtheme="candy"][data-tod="evening"] {
+  --bg-0: #FFB35C;
+  --bg-1: #FF7EB0;
+  --bg-2: #7E5FD9;
+  --hill-0: #6F44A8;
+  --hill-1: #8A5FC4;
+  --hill-2: #A87FDB;
+  --star: #FFEFC2;
+  --orb-color: #FF9438;
+  --orb-rim: #FFD9A0;
+  --accent: #FFB84A;
+  --accent-soft: #FFE1A8;
+  --paper: #FFFFFF;
+  --paper-deep: #F4EFFF;
+  --paper-shadow: #2D2A6640;
+  --ink: #2D2A66;
+  --text: #FFF6FA;
+}
+
+html[data-vbtheme="candy"][data-tod="night"] {
+  --bg-0: #4A3B94;
+  --bg-1: #362C78;
+  --bg-2: #221C58;
+  --hill-0: #2C2368;
+  --hill-1: #3A2F80;
+  --hill-2: #4A3D96;
+  --star: #FFE9A8;
+  --orb-color: #F5F0FF;
+  --orb-rim: #CBBDF9;
+  --accent: #FFD75E;
+  --accent-soft: #FFF0B8;
+  --paper: #FFFFFF;
+  --paper-deep: #EEEAFF;
+  --paper-shadow: #12103F66;
+  --ink: #2D2A66;
+  --text: #F1ECFF;
+}
+
+html[data-vbtheme="candy"] .section-btn {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--section-hue) 55%, #FFFFFF), var(--section-hue));
+  border: none;
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--section-hue) 72%, #34294F), 0 14px 22px #2D2A6640;
+}
+
+html[data-vbtheme="candy"] .section-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--section-hue) 72%, #34294F), 0 6px 12px #2D2A6640;
+}
+
+html[data-vbtheme="candy"] .section-btn::before {
+  background: linear-gradient(180deg, #FFFFFFB3, #FFFFFF00 62%);
+}
+
+html[data-vbtheme="candy"] .section-btn::after {
+  display: none;
+}
+
+html[data-vbtheme="candy"] .section-btn .icon {
+  filter: drop-shadow(0 3px 0 #00000026);
+}
+
+html[data-vbtheme="candy"] .section-btn .label {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 0 #00000033;
+}
+
+html[data-vbtheme="candy"] .activity-card {
+  background: #FFFFFF;
+  border: none;
+  border-bottom: 5px solid hsl(var(--card-hue, 210), 82%, 55%);
+  box-shadow: 0 8px 18px #2D2A6626;
+}
+
+html[data-vbtheme="candy"] .activity-card::before {
+  background: linear-gradient(180deg, hsl(var(--card-hue, 210), 100%, 93%), #FFFFFF00 72%);
+}
+
+html[data-vbtheme="candy"] .activity-card .icon {
+  filter: drop-shadow(0 2px 0 #00000021);
+}
+
+html[data-vbtheme="candy"] .activity-card .label {
+  color: #2D2A66 !important;
+}
+
+html[data-vbtheme="candy"] .cards-row .activity-card:nth-child(8n+1) { --card-hue: 340; }
+html[data-vbtheme="candy"] .cards-row .activity-card:nth-child(8n+2) { --card-hue: 200; }
+html[data-vbtheme="candy"] .cards-row .activity-card:nth-child(8n+3) { --card-hue: 130; }
+html[data-vbtheme="candy"] .cards-row .activity-card:nth-child(8n+4) { --card-hue: 40; }
+html[data-vbtheme="candy"] .cards-row .activity-card:nth-child(8n+5) { --card-hue: 275; }
+html[data-vbtheme="candy"] .cards-row .activity-card:nth-child(8n+6) { --card-hue: 15; }
+html[data-vbtheme="candy"] .cards-row .activity-card:nth-child(8n+7) { --card-hue: 180; }
+html[data-vbtheme="candy"] .cards-row .activity-card:nth-child(8n+8) { --card-hue: 305; }
+
+/* ============================================================
+   2. PAPER — "Paper Playground": construction-paper stickers
+   ============================================================ */
+
+html[data-vbtheme="paper"][data-tod="morning"] {
+  --bg-0: #FFD79A;
+  --bg-1: #FFBC72;
+  --bg-2: #E88F55;
+  --hill-0: #D95F3B;
+  --hill-1: #E88A47;
+  --hill-2: #F2AE68;
+  --star: #FFF3CF;
+  --orb-color: #FFC945;
+  --orb-rim: #FFEBAE;
+  --accent: #E86A5E;
+  --accent-soft: #F7B8AE;
+  --paper: #FBF3E1;
+  --paper-deep: #F1E4C8;
+  --paper-shadow: #513B2833;
+  --ink: #513B28;
+  --text: #5C3A20;
+}
+
+html[data-vbtheme="paper"][data-tod="afternoon"] {
+  --bg-0: #A8DCEF;
+  --bg-1: #74C4E4;
+  --bg-2: #4FA9D6;
+  --hill-0: #5FA843;
+  --hill-1: #7CBF5C;
+  --hill-2: #9CD37E;
+  --star: #FFFFFF;
+  --orb-color: #F7C63C;
+  --orb-rim: #FCEBB0;
+  --accent: #E85D75;
+  --accent-soft: #F5B4C0;
+  --paper: #FBF3E1;
+  --paper-deep: #F1E4C8;
+  --paper-shadow: #513B2833;
+  --ink: #513B28;
+  --text: #274A63;
+}
+
+html[data-vbtheme="paper"][data-tod="evening"] {
+  --bg-0: #F79A5B;
+  --bg-1: #E06E8A;
+  --bg-2: #7C5BA6;
+  --hill-0: #6E3D66;
+  --hill-1: #8A5580;
+  --hill-2: #A8729B;
+  --star: #FFE9BE;
+  --orb-color: #F08A33;
+  --orb-rim: #F9CE92;
+  --accent: #F2A24E;
+  --accent-soft: #F9D3A4;
+  --paper: #FBF3E1;
+  --paper-deep: #F1E4C8;
+  --paper-shadow: #3A254466;
+  --ink: #513B28;
+  --text: #FFF4EA;
+}
+
+html[data-vbtheme="paper"][data-tod="night"] {
+  --bg-0: #41508A;
+  --bg-1: #303C6E;
+  --bg-2: #232B52;
+  --hill-0: #262E56;
+  --hill-1: #333D6C;
+  --hill-2: #424D82;
+  --star: #FFE6A0;
+  --orb-color: #F6F0DC;
+  --orb-rim: #D8CFAE;
+  --accent: #F2C94C;
+  --accent-soft: #F9E6A8;
+  --paper: #FBF3E1;
+  --paper-deep: #EFE0C2;
+  --paper-shadow: #10142E80;
+  --ink: #513B28;
+  --text: #F3EEE0;
+}
+
+html[data-vbtheme="paper"] .section-btn {
+  background: color-mix(in srgb, var(--section-hue) 80%, #FFFFFF);
+  border: 5px solid #FFFFFF;
+  border-radius: 18px;
+  box-shadow: 0 6px 14px #513B2833;
+}
+
+html[data-vbtheme="paper"] .section-btn:nth-child(odd) {
+  transform: rotate(-1.2deg);
+}
+
+html[data-vbtheme="paper"] .section-btn:nth-child(even) {
+  transform: rotate(1.1deg);
+}
+
+html[data-vbtheme="paper"] .section-btn::before {
+  background: none;
+}
+
+html[data-vbtheme="paper"] .section-btn .icon {
+  filter: drop-shadow(0 2px 0 #00000021);
+}
+
+html[data-vbtheme="paper"] .section-btn .label {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 0 #00000030;
+}
+
+html[data-vbtheme="paper"] .activity-card {
+  background: hsl(var(--card-hue, 200), 68%, 87%);
+  border: 4px solid #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 5px 12px #513B282E;
+}
+
+html[data-vbtheme="paper"] .cards-row .activity-card:nth-child(odd) {
+  transform: rotate(-1.2deg);
+}
+
+html[data-vbtheme="paper"] .cards-row .activity-card:nth-child(even) {
+  transform: rotate(1.1deg);
+}
+
+html[data-vbtheme="paper"] .activity-card::before {
+  background: none;
+}
+
+html[data-vbtheme="paper"] .activity-card .label {
+  color: #513B28 !important;
+}
+
+html[data-vbtheme="paper"] .cards-row .activity-card:nth-child(8n+1) { --card-hue: 8; }
+html[data-vbtheme="paper"] .cards-row .activity-card:nth-child(8n+2) { --card-hue: 95; }
+html[data-vbtheme="paper"] .cards-row .activity-card:nth-child(8n+3) { --card-hue: 205; }
+html[data-vbtheme="paper"] .cards-row .activity-card:nth-child(8n+4) { --card-hue: 42; }
+html[data-vbtheme="paper"] .cards-row .activity-card:nth-child(8n+5) { --card-hue: 315; }
+html[data-vbtheme="paper"] .cards-row .activity-card:nth-child(8n+6) { --card-hue: 160; }
+html[data-vbtheme="paper"] .cards-row .activity-card:nth-child(8n+7) { --card-hue: 255; }
+html[data-vbtheme="paper"] .cards-row .activity-card:nth-child(8n+8) { --card-hue: 350; }
+
+/* ============================================================
+   3. ARCADE — "Neon Night Arcade": always dark, neon glow
+   ============================================================ */
+
+html[data-vbtheme="arcade"][data-tod="morning"] {
+  --bg-0: #2E2B66;
+  --bg-1: #232055;
+  --bg-2: #191741;
+  --hill-0: #1C1840;
+  --hill-1: #241F50;
+  --hill-2: #2D2760;
+  --star: #8CF0FF;
+  --orb-color: #FFC93C;
+  --orb-rim: #FFE896;
+  --accent: #29F3FF;
+  --accent-soft: #9FF9FF;
+  --paper: #171233;
+  --paper-deep: #100C26;
+  --paper-shadow: #000000A6;
+  --ink: #FFFFFF;
+  --text: #EAE6FF;
+}
+
+html[data-vbtheme="arcade"][data-tod="afternoon"] {
+  --bg-0: #292660;
+  --bg-1: #1F1C4E;
+  --bg-2: #16133C;
+  --hill-0: #1A1638;
+  --hill-1: #221D48;
+  --hill-2: #2A2458;
+  --star: #9FF3FF;
+  --orb-color: #FFD23F;
+  --orb-rim: #FFEC9E;
+  --accent: #39FF88;
+  --accent-soft: #A8FFC9;
+  --paper: #171233;
+  --paper-deep: #100C26;
+  --paper-shadow: #000000A6;
+  --ink: #FFFFFF;
+  --text: #EAE6FF;
+}
+
+html[data-vbtheme="arcade"][data-tod="evening"] {
+  --bg-0: #3A2158;
+  --bg-1: #291A48;
+  --bg-2: #191034;
+  --hill-0: #1E1440;
+  --hill-1: #281B50;
+  --hill-2: #332560;
+  --star: #FF9AD5;
+  --orb-color: #FF5FA8;
+  --orb-rim: #FFA8D2;
+  --accent: #FF3D9A;
+  --accent-soft: #FF9ACB;
+  --paper: #171233;
+  --paper-deep: #100C26;
+  --paper-shadow: #000000A6;
+  --ink: #FFFFFF;
+  --text: #EAE6FF;
+}
+
+html[data-vbtheme="arcade"][data-tod="night"] {
+  --bg-0: #171130;
+  --bg-1: #0F0B22;
+  --bg-2: #080613;
+  --hill-0: #0D0A1E;
+  --hill-1: #131028;
+  --hill-2: #1A1534;
+  --star: #B8F6FF;
+  --orb-color: #ECE8FF;
+  --orb-rim: #9C8CFF;
+  --accent: #29F3FF;
+  --accent-soft: #9FF9FF;
+  --paper: #14102A;
+  --paper-deep: #0D0A1E;
+  --paper-shadow: #000000BF;
+  --ink: #FFFFFF;
+  --text: #EAE6FF;
+}
+
+html[data-vbtheme="arcade"] .section-btn {
+  background: #14102A;
+  border: 2px solid var(--section-hue);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--section-hue) 50%, transparent), inset 0 0 10px color-mix(in srgb, var(--section-hue) 18%, transparent);
+}
+
+html[data-vbtheme="arcade"] .section-btn::before {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--section-hue) 18%, transparent), #00000000 60%);
+}
+
+html[data-vbtheme="arcade"] .section-btn::after {
+  display: none;
+}
+
+html[data-vbtheme="arcade"] .section-btn .icon {
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--section-hue) 85%, transparent));
+}
+
+html[data-vbtheme="arcade"] .section-btn .label {
+  color: #FFFFFF !important;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--section-hue) 60%, transparent);
+}
+
+html[data-vbtheme="arcade"] .activity-card {
+  background: #14102A;
+  border: 2px solid hsl(var(--card-hue, 185), 100%, 60%);
+  box-shadow: 0 0 14px hsla(var(--card-hue, 185), 100%, 58%, 0.45), inset 0 0 8px hsla(var(--card-hue, 185), 100%, 58%, 0.16);
+}
+
+html[data-vbtheme="arcade"] .activity-card::before {
+  background: linear-gradient(180deg, hsla(var(--card-hue, 185), 100%, 70%, 0.16), #00000000 60%);
+}
+
+html[data-vbtheme="arcade"] .activity-card .icon {
+  filter: drop-shadow(0 0 7px hsla(var(--card-hue, 185), 100%, 65%, 0.85));
+}
+
+html[data-vbtheme="arcade"] .activity-card .label {
+  color: #FFFFFF !important;
+  text-shadow: 0 0 7px hsla(var(--card-hue, 185), 100%, 70%, 0.55);
+}
+
+html[data-vbtheme="arcade"] .cards-row .activity-card:nth-child(8n+1) { --card-hue: 325; }
+html[data-vbtheme="arcade"] .cards-row .activity-card:nth-child(8n+2) { --card-hue: 185; }
+html[data-vbtheme="arcade"] .cards-row .activity-card:nth-child(8n+3) { --card-hue: 95; }
+html[data-vbtheme="arcade"] .cards-row .activity-card:nth-child(8n+4) { --card-hue: 40; }
+html[data-vbtheme="arcade"] .cards-row .activity-card:nth-child(8n+5) { --card-hue: 300; }
+html[data-vbtheme="arcade"] .cards-row .activity-card:nth-child(8n+6) { --card-hue: 200; }
+html[data-vbtheme="arcade"] .cards-row .activity-card:nth-child(8n+7) { --card-hue: 120; }
+html[data-vbtheme="arcade"] .cards-row .activity-card:nth-child(8n+8) { --card-hue: 28; }
+
+/* ============================================================
+   4. CLOUD — "Soft Cloud Pastel": airy puffy blobs
+   ============================================================ */
+
+html[data-vbtheme="cloud"][data-tod="morning"] {
+  --bg-0: #FFE8D3;
+  --bg-1: #FFD9E4;
+  --bg-2: #CBE4FF;
+  --hill-0: #AEDDBE;
+  --hill-1: #C6EAD1;
+  --hill-2: #DDF4E3;
+  --star: #FFF7DF;
+  --orb-color: #FFD98F;
+  --orb-rim: #FFF0CC;
+  --accent: #F9B8C8;
+  --accent-soft: #FDE0E8;
+  --paper: #FFFFFF;
+  --paper-deep: #F6F3FC;
+  --paper-shadow: #4A446826;
+  --ink: #4A4468;
+  --text: #5C5480;
+}
+
+html[data-vbtheme="cloud"][data-tod="afternoon"] {
+  --bg-0: #E0F3FF;
+  --bg-1: #C7E8FF;
+  --bg-2: #AFDBFF;
+  --hill-0: #B5E3C6;
+  --hill-1: #CBEED6;
+  --hill-2: #E0F7E6;
+  --star: #FFFFFF;
+  --orb-color: #FFE49A;
+  --orb-rim: #FFF6D6;
+  --accent: #F7A8C4;
+  --accent-soft: #FBD3E1;
+  --paper: #FFFFFF;
+  --paper-deep: #F6F3FC;
+  --paper-shadow: #4A446826;
+  --ink: #4A4468;
+  --text: #4E6482;
+}
+
+html[data-vbtheme="cloud"][data-tod="evening"] {
+  --bg-0: #FFDCC5;
+  --bg-1: #F2C4DE;
+  --bg-2: #C3B4EE;
+  --hill-0: #C7A8D8;
+  --hill-1: #D8BEE5;
+  --hill-2: #E8D4F0;
+  --star: #FFF0D0;
+  --orb-color: #FFB27D;
+  --orb-rim: #FFDCBA;
+  --accent: #F2B8D8;
+  --accent-soft: #F9DCEB;
+  --paper: #FFFFFF;
+  --paper-deep: #F8F3FB;
+  --paper-shadow: #4A446833;
+  --ink: #4A4468;
+  --text: #5A4E7C;
+}
+
+html[data-vbtheme="cloud"][data-tod="night"] {
+  --bg-0: #6D689F;
+  --bg-1: #555088;
+  --bg-2: #403C6E;
+  --hill-0: #494474;
+  --hill-1: #5A5588;
+  --hill-2: #6C679C;
+  --star: #FFF3C9;
+  --orb-color: #FDF8EC;
+  --orb-rim: #D8D2F2;
+  --accent: #F6E3A8;
+  --accent-soft: #FBF1CE;
+  --paper: #FFFFFF;
+  --paper-deep: #F1EDFA;
+  --paper-shadow: #2B265266;
+  --ink: #4A4468;
+  --text: #F4F1FB;
+}
+
+html[data-vbtheme="cloud"] .section-btn {
+  background: linear-gradient(180deg, #FFFFFF, color-mix(in srgb, var(--section-hue) 14%, #FFFFFF));
+  border: none;
+  border-radius: 46% 54% 52% 48% / 54% 46% 54% 46%;
+  box-shadow: 0 18px 40px -18px #4A446866;
+}
+
+html[data-vbtheme="cloud"] .section-btn::before {
+  background: none;
+}
+
+html[data-vbtheme="cloud"] .section-btn::after {
+  display: none;
+}
+
+html[data-vbtheme="cloud"] .section-btn .icon {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--section-hue) 24%, #FFFFFF), #FFFFFF00);
+}
+
+html[data-vbtheme="cloud"] .section-btn .label {
+  color: #4A4468 !important;
+}
+
+html[data-vbtheme="cloud"] .activity-card {
+  background: linear-gradient(180deg, #FFFFFF, hsl(var(--card-hue, 210), 55%, 96%));
+  border: none;
+  border-radius: 44% 56% 52% 48% / 52% 48% 52% 48%;
+  box-shadow: 0 18px 40px -18px #4A446859;
+}
+
+html[data-vbtheme="cloud"] .activity-card::before {
+  background: none;
+}
+
+html[data-vbtheme="cloud"] .activity-card .icon {
+  background: radial-gradient(closest-side, hsl(var(--card-hue, 210), 72%, 91%), #FFFFFF00);
+}
+
+html[data-vbtheme="cloud"] .activity-card .label {
+  color: #4A4468 !important;
+}
+
+html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+1) { --card-hue: 210; }
+html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+2) { --card-hue: 340; }
+html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+3) { --card-hue: 150; }
+html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+4) { --card-hue: 45; }
+html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+5) { --card-hue: 265; }
+html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+6) { --card-hue: 190; }
+html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+7) { --card-hue: 15; }
+html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+8) { --card-hue: 300; }

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Parent Settings</title>
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/themes.css">
+  <script>/* apply the active kid's theme before first paint (default storybook = no attribute) */try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook")document.documentElement.setAttribute("data-vbtheme",_t)}catch(e){}</script>
   <style>
     /* Parent Settings is a grown-up utility on a fixed dark base. Pin the night
        palette so text stays light/readable regardless of the time-of-day theme
@@ -468,6 +470,15 @@
           </div>
         </section>
 
+        <!-- 🎨 Theme -->
+        <section class="settings-panel" id="panel-theme" data-key="theme" data-icon="🎨" data-title="Theme">
+          <div class="acc-title"><span class="ic">🎨</span><span class="acc-label">Theme</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>🎨 Theme <span class="who panel-who"></span></h2>
+            <div id="themeSection"></div>
+          </div>
+        </section>
+
         <!-- 🐾 Mascot Buddy -->
         <section class="settings-panel" id="panel-mascot" data-key="mascot" data-icon="🐾" data-title="Mascot buddy">
           <div class="acc-title"><span class="ic">🐾</span><span class="acc-label">Mascot buddy</span><span class="chev">▾</span></div>
@@ -757,6 +768,7 @@
       buildAddForm();
       buildFeaturesTable();
       buildVoiceSection();
+      buildThemeSection();
       buildMascotSection();
       buildActivitiesSection();
       buildYoutubeSection();
@@ -841,6 +853,7 @@
       buildActivitiesSection();
       buildFeaturesTable();
       buildVoiceSection();
+      buildThemeSection();
       buildMascotSection();
       buildColoringSection();
       buildYoutubeSection();
@@ -1631,6 +1644,57 @@
       playVoiceSample(profileId, voiceId, card);
     }
 
+    // ─── Theme picker ───────────────────────────────────────────────────────
+    // Per-kid look for the app shell (home + section menus). The time-of-day
+    // skies and greetings stay in every theme — a theme only re-skins the
+    // colors/cards. 'storybook' = the original look (no data-vbtheme attribute).
+    const THEMES = [
+      { id:'storybook', name:'Storybook Night', desc:'Cozy skies · paper cards (original)', icon:'🌙' },
+      { id:'candy',     name:'Candy Toy-Box',   desc:'Bright & glossy · chunky push-buttons', icon:'🍬' },
+      { id:'paper',     name:'Paper Playground',desc:'Construction paper · sticker cards',    icon:'✂️' },
+      { id:'arcade',    name:'Neon Arcade',     desc:'Glowing cards on a starry dark',        icon:'🕹️' },
+      { id:'cloud',     name:'Soft Clouds',     desc:'Airy pastel · puffy cloud buttons',     icon:'☁️' },
+    ];
+
+    function buildThemeSection() {
+      const section = document.getElementById('themeSection');
+      if (!section) return;
+      section.innerHTML = '';
+      const p = _settingsChild();
+      if (!p) {
+        section.innerHTML = '<button class="btn btn-primary" onclick="openAddChild()">＋ Add a child to get started</button>';
+        return;
+      }
+      const current = p.theme || 'storybook';
+      const cards = THEMES.map(t => `
+        <div class="vcard${t.id === current ? ' sel' : ''}" data-theme-id="${t.id}">
+          <div class="play">${t.icon}</div>
+          <div class="vinfo"><div class="vn">${esc(t.name)}</div><div class="vd">${esc(t.desc)}</div></div>
+          <div class="check">✓</div>
+        </div>`).join('');
+      section.innerHTML = `
+        <p class="subtitle" style="margin:0 0 16px;color:rgba(255,255,255,0.7);font-size:13.5px;">
+          How the home screen and menus look for this child. Day/night skies and greetings work in every theme.
+        </p>
+        <div class="voices">${cards}</div>`;
+      section.querySelectorAll('.vcard').forEach(card => {
+        card.addEventListener('click', () => {
+          const themeId = card.dataset.themeId;
+          updateProfile(p.id, { theme: themeId });
+          section.querySelectorAll('.vcard').forEach(c => c.classList.toggle('sel', c === card));
+          // Live-apply when editing the ACTIVE kid so the parent sees it instantly.
+          try {
+            const active = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
+            if (active && active.id === p.id) {
+              if (themeId === 'storybook') document.documentElement.removeAttribute('data-vbtheme');
+              else document.documentElement.setAttribute('data-vbtheme', themeId);
+              if (window.vbAtmosphere) vbAtmosphere.refresh();
+            }
+          } catch (e) {}
+        });
+      });
+    }
+
     function playVoiceSample(profileId, voiceId, card) {
       _stopVoiceSample();
       const hint = document.getElementById('voiceHint');
@@ -1848,6 +1912,7 @@
       buildSidebar();
       buildFeaturesTable();
       buildVoiceSection();
+      buildThemeSection();
       buildActivitiesSection();
       buildMascotSection();
       buildColoringSection();
@@ -1865,6 +1930,7 @@
         buildSidebar();
         buildFeaturesTable();
         buildVoiceSection();
+      buildThemeSection();
         buildActivitiesSection();
         buildMascotSection();
         buildColoringSection();
