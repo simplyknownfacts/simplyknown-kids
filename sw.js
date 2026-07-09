@@ -1,4 +1,16 @@
-const CACHE = 'vb-v135';
+const CACHE = 'vb-v136';
+// v136 THEME DIFFERENTIATION + THEMES INSIDE ACTIVITIES (Level A+B). Each theme is
+// now unmistakable: candy = flat sunny sky + confetti dots + fat round type;
+// paper = saturated construction-paper hills + scalloped paper-cut edge + Comic Sans
+// craft type + tilted titles; arcade = spaced glowing caps + neon horizon grid;
+// cloud = fluffy white patches + light rounded type. Level A: all 22 activity pages
+// now load themes.css + a pre-paint stamp (data-vbtheme AND data-tod — activities
+// don't run atmosphere.js) and their hard-coded body backgrounds defer to the theme
+// sky tokens when a theme is active (default storybook unchanged). Level B: shared
+// quiz/tool elements (.num-btn .day-tile .dot .pad .choice .num-choice .mm-back/
+// .mm-front + the paint.js dock #vbPaintDock/.vb-tool/.vb-sw) get per-theme card
+// skins — colors/borders/shadows/fonts only, sizes + tap targets untouched. Prior v135:
+//
 // v135 THEMES: parent-selectable per-kid shell themes (Parent Settings → 🎨 Theme).
 // 5 options: Storybook Night (original, default = no attribute), Candy Toy-Box,
 // Paper Playground, Neon Arcade, Soft Clouds. Implemented as css/themes.css blocks

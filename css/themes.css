@@ -147,9 +147,9 @@ html[data-vbtheme="paper"][data-tod="morning"] {
   --bg-0: #FFD79A;
   --bg-1: #FFBC72;
   --bg-2: #E88F55;
-  --hill-0: #D95F3B;
-  --hill-1: #E88A47;
-  --hill-2: #F2AE68;
+  --hill-0: #E1502A;
+  --hill-1: #F07E33;
+  --hill-2: #FFAB4E;
   --star: #FFF3CF;
   --orb-color: #FFC945;
   --orb-rim: #FFEBAE;
@@ -166,9 +166,9 @@ html[data-vbtheme="paper"][data-tod="afternoon"] {
   --bg-0: #A8DCEF;
   --bg-1: #74C4E4;
   --bg-2: #4FA9D6;
-  --hill-0: #5FA843;
-  --hill-1: #7CBF5C;
-  --hill-2: #9CD37E;
+  --hill-0: #3AA32B;
+  --hill-1: #5FC344;
+  --hill-2: #8ADF5C;
   --star: #FFFFFF;
   --orb-color: #F7C63C;
   --orb-rim: #FCEBB0;
@@ -185,9 +185,9 @@ html[data-vbtheme="paper"][data-tod="evening"] {
   --bg-0: #F79A5B;
   --bg-1: #E06E8A;
   --bg-2: #7C5BA6;
-  --hill-0: #6E3D66;
-  --hill-1: #8A5580;
-  --hill-2: #A8729B;
+  --hill-0: #8A3E9C;
+  --hill-1: #A85BB8;
+  --hill-2: #C77FD4;
   --star: #FFE9BE;
   --orb-color: #F08A33;
   --orb-rim: #F9CE92;
@@ -204,9 +204,9 @@ html[data-vbtheme="paper"][data-tod="night"] {
   --bg-0: #41508A;
   --bg-1: #303C6E;
   --bg-2: #232B52;
-  --hill-0: #262E56;
-  --hill-1: #333D6C;
-  --hill-2: #424D82;
+  --hill-0: #2C3B8C;
+  --hill-1: #3F51AC;
+  --hill-2: #5568C8;
   --star: #FFE6A0;
   --orb-color: #F6F0DC;
   --orb-rim: #D8CFAE;
@@ -540,3 +540,404 @@ html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+5) { --card-hu
 html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+6) { --card-hue: 190; }
 html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+7) { --card-hue: 15; }
 html[data-vbtheme="cloud"] .cards-row .activity-card:nth-child(8n+8) { --card-hue: 300; }
+
+/* ============================================================
+   5. THEME DIFFERENTIATION (v136) — typography + shell backdrops.
+   Each theme is unmistakable at a glance. Everything requires
+   [data-vbtheme] so the default Storybook look stays untouched.
+   ============================================================ */
+
+/* ---- CANDY: flat sunny candy sky, confetti dots, fat round type ---- */
+
+/* Replace the realistic SVG sky with a flat CSS candy backdrop:
+   confetti dots + flat sun disc + two round candy mounds. */
+html[data-vbtheme="candy"] #vbSky svg { display: none; }
+
+html[data-vbtheme="candy"] #vbSky {
+  background-image:
+    radial-gradient(circle at 11px 11px, rgba(255,255,255,0.42) 3.5px, transparent 4.5px),
+    radial-gradient(circle at 9px 9px, rgba(255,111,181,0.38) 3px, transparent 4px),
+    radial-gradient(circle at 7px 7px, rgba(255,215,94,0.42) 2.5px, transparent 3.5px),
+    radial-gradient(circle at 78% 15%, var(--orb-color) 44px, transparent 45px),
+    radial-gradient(circle at 78% 15%, var(--orb-rim) 58px, transparent 59px),
+    radial-gradient(120% 46% at 12% 114%, var(--hill-1) 54%, transparent 55%),
+    radial-gradient(140% 52% at 90% 118%, var(--hill-0) 54%, transparent 55%),
+    linear-gradient(180deg, var(--bg-2), var(--bg-1) 55%, var(--bg-0));
+  background-size: 76px 76px, 92px 92px, 58px 58px, auto, auto, auto, auto, auto;
+  background-position: 0 0, 30px 44px, 18px 26px, 0 0, 0 0, 0 0, 0 0, 0 0;
+  background-repeat: repeat, repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+}
+
+html[data-vbtheme="candy"] .title,
+html[data-vbtheme="candy"] .hub-title,
+html[data-vbtheme="candy"] .home-greeting .where,
+html[data-vbtheme="candy"] .section-btn .label,
+html[data-vbtheme="candy"] .activity-card .label {
+  font-family: 'Arial Rounded MT Bold', ui-rounded, 'Trebuchet MS', var(--font-ui);
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+/* ---- PAPER: scalloped paper-cut edge + handwritten craft type ---- */
+
+html[data-vbtheme="paper"] #vbSky::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0; height: 64px;
+  background:
+    radial-gradient(circle at 22px 36px, var(--hill-0) 23px, transparent 24px) 0 0 / 44px 64px repeat-x,
+    linear-gradient(var(--hill-0), var(--hill-0)) 0 36px / 100% 28px no-repeat;
+}
+
+html[data-vbtheme="paper"] .title,
+html[data-vbtheme="paper"] .hub-title,
+html[data-vbtheme="paper"] .home-greeting .where,
+html[data-vbtheme="paper"] .section-btn .label,
+html[data-vbtheme="paper"] .activity-card .label {
+  font-family: 'Comic Sans MS', 'Segoe Print', 'Comic Neue', cursive;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+html[data-vbtheme="paper"] .title,
+html[data-vbtheme="paper"] .hub-title,
+html[data-vbtheme="paper"] .home-greeting .where {
+  transform: rotate(-1.2deg);
+}
+
+/* ---- ARCADE: spaced glowing caps + neon horizon grid ---- */
+
+html[data-vbtheme="arcade"] #vbSky::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0; height: 38%;
+  background:
+    repeating-linear-gradient(0deg, var(--accent) 0 1.5px, transparent 1.5px 46px),
+    repeating-linear-gradient(90deg, var(--accent) 0 1.5px, transparent 1.5px 58px);
+  opacity: 0.16;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 60%);
+  mask-image: linear-gradient(180deg, transparent, #000 60%);
+}
+
+html[data-vbtheme="arcade"] .title,
+html[data-vbtheme="arcade"] .hub-title,
+html[data-vbtheme="arcade"] .home-greeting .where,
+html[data-vbtheme="arcade"] .section-btn .label,
+html[data-vbtheme="arcade"] .activity-card .label {
+  font-family: var(--font-ui);
+  font-style: normal;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+html[data-vbtheme="arcade"] .title,
+html[data-vbtheme="arcade"] .hub-title,
+html[data-vbtheme="arcade"] .home-greeting .where {
+  text-shadow:
+    0 0 10px color-mix(in srgb, var(--accent) 80%, transparent),
+    0 0 30px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* ---- CLOUD: soft sky, fluffy white patches, light rounded type ---- */
+
+html[data-vbtheme="cloud"] #vbSky::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(46% 30% at 18% 20%, rgba(255,255,255,0.45), transparent 68%),
+    radial-gradient(38% 24% at 78% 30%, rgba(255,255,255,0.40), transparent 70%),
+    radial-gradient(56% 32% at 50% 68%, rgba(255,255,255,0.30), transparent 72%);
+}
+
+html[data-vbtheme="cloud"] .title,
+html[data-vbtheme="cloud"] .hub-title,
+html[data-vbtheme="cloud"] .home-greeting .where,
+html[data-vbtheme="cloud"] .section-btn .label,
+html[data-vbtheme="cloud"] .activity-card .label {
+  font-family: ui-rounded, 'Arial Rounded MT Bold', 'Trebuchet MS', var(--font-ui);
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   6. LEVEL A (v136) — themes inside every activity page.
+   The 22 activity pages hard-code a body background; when a theme
+   is active the body uses the theme sky tokens instead. Activity
+   pages stamp data-tod in their pre-paint snippet (shell pages get
+   it from atmosphere.js) so the tokens below always resolve.
+   ============================================================ */
+
+html[data-vbtheme="paper"] body,
+html[data-vbtheme="arcade"] body,
+html[data-vbtheme="cloud"] body {
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1) 55%, var(--bg-0)) !important;
+}
+
+/* Candy gets its confetti dots inside activities too. */
+html[data-vbtheme="candy"] body {
+  background-color: var(--bg-0) !important;
+  background-image:
+    radial-gradient(circle at 11px 11px, rgba(255,255,255,0.30) 3.5px, transparent 4.5px),
+    radial-gradient(circle at 9px 9px, rgba(255,111,181,0.26) 3px, transparent 4px),
+    radial-gradient(circle at 7px 7px, rgba(255,215,94,0.30) 2.5px, transparent 3.5px),
+    linear-gradient(180deg, var(--bg-2), var(--bg-1) 55%, var(--bg-0)) !important;
+  background-size: 76px 76px, 92px 92px, 58px 58px, auto !important;
+  background-position: 0 0, 30px 44px, 18px 26px, 0 0 !important;
+  background-repeat: repeat, repeat, repeat, no-repeat !important;
+}
+
+/* ============================================================
+   7. LEVEL B (v136) — shared quiz/tool elements themed.
+   .num-btn (count-along/math)  .day-tile (days)  .dot (count-along)
+   .pad (tap-a-tune)  .choice (surprise-pop)  .num-choice (shape-match)
+   .mm-back/.mm-front (memory-match)  #vbPaintDock/.vb-tool/.vb-sw
+   (paint.js toolbar in color-splash/color-in).
+   Only color/border/shadow/radius/font — sizes, layout and pointer
+   behavior untouched. :where() keeps these at low specificity so the
+   pages' own state rules (.wrong/.ok/.today/.counted/.active…) still win.
+   ============================================================ */
+
+/* ---- CANDY: white cards + colored 3D bottom edge ---- */
+
+html[data-vbtheme="candy"] :where(.num-btn, .num-choice, .day-tile, .choice, .vb-tool) {
+  background: #FFFFFF;
+  border: 3px solid #FFFFFF;
+  border-bottom: 6px solid var(--accent);
+  border-radius: 18px;
+  color: #2D2A66;
+  box-shadow: 0 6px 14px rgba(45,42,102,0.22);
+  text-shadow: none;
+}
+
+html[data-vbtheme="candy"] :where(.dot) {
+  background: #FFFFFF;
+  border-color: var(--accent-soft);
+  color: #2D2A66;
+  box-shadow: 0 6px 14px rgba(45,42,102,0.18);
+}
+
+html[data-vbtheme="candy"] :where(.pad) {
+  border-radius: 18px;
+  box-shadow: inset 0 -8px 0 rgba(0,0,0,0.16), inset 0 8px 16px rgba(255,255,255,0.55), 0 8px 16px rgba(45,42,102,0.30);
+  font-family: 'Arial Rounded MT Bold', ui-rounded, 'Trebuchet MS', var(--font-ui);
+}
+
+html[data-vbtheme="candy"] :where(.mm-back) {
+  background: linear-gradient(180deg, #FF9FCB, #FF5FA8);
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 6px 14px rgba(45,42,102,0.25);
+}
+
+html[data-vbtheme="candy"] :where(.mm-front) {
+  background: #FFFFFF;
+  border: 3px solid #FFE2F0;
+  border-bottom: 6px solid var(--accent);
+}
+
+html[data-vbtheme="candy"] #vbPaintDock {
+  background: rgba(255,255,255,0.88);
+  box-shadow: 0 -4px 0 var(--accent), 0 -10px 30px rgba(45,42,102,0.18);
+}
+
+html[data-vbtheme="candy"] :where(.vb-sw) {
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 3px 8px rgba(45,42,102,0.35);
+}
+
+/* ---- PAPER: paper cards + white sticker border ---- */
+
+html[data-vbtheme="paper"] :where(.num-btn, .num-choice, .day-tile, .choice, .dot, .vb-tool) {
+  background: var(--paper);
+  border: 4px solid #FFFFFF;
+  border-radius: 16px;
+  color: #513B28;
+  box-shadow: 0 5px 12px rgba(81,59,40,0.30);
+  font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+  text-shadow: none;
+}
+
+html[data-vbtheme="paper"] :where(.pad) {
+  border: 4px solid #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 6px 14px rgba(81,59,40,0.35);
+  font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+}
+
+html[data-vbtheme="paper"] :where(.mm-back) {
+  background: color-mix(in srgb, var(--accent) 75%, #FFFFFF);
+  border: 4px solid #FFFFFF;
+  box-shadow: 0 5px 12px rgba(81,59,40,0.30);
+}
+
+html[data-vbtheme="paper"] :where(.mm-front) {
+  background: var(--paper);
+  border: 4px solid #FFFFFF;
+  box-shadow: 0 5px 12px rgba(81,59,40,0.30);
+}
+
+html[data-vbtheme="paper"] #vbPaintDock {
+  background: rgba(251,243,225,0.92);
+  box-shadow: 0 -6px 18px rgba(81,59,40,0.25);
+}
+
+html[data-vbtheme="paper"] :where(.vb-sw) {
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 3px 8px rgba(81,59,40,0.30);
+}
+
+/* ---- ARCADE: dark + neon border/glow + white text ---- */
+
+html[data-vbtheme="arcade"] :where(.num-btn, .num-choice, .day-tile, .choice, .dot, .vb-tool) {
+  background: #14102A;
+  border: 2px solid var(--accent);
+  color: #FFFFFF;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 40%, transparent), inset 0 0 8px color-mix(in srgb, var(--accent) 14%, transparent);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+html[data-vbtheme="arcade"] :where(.pad) {
+  border-radius: 12px;
+  box-shadow: inset 0 -10px 24px rgba(0,0,0,0.28), inset 0 6px 14px rgba(255,255,255,0.35), 0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+html[data-vbtheme="arcade"] :where(.mm-back) {
+  background: #14102A;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent), inset 0 0 10px color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+html[data-vbtheme="arcade"] :where(.mm-front) {
+  background: #1C1638;
+  border: 2px solid rgba(255,255,255,0.35);
+}
+
+html[data-vbtheme="arcade"] #vbPaintDock {
+  background: rgba(8,6,19,0.82);
+  box-shadow: 0 -1px 0 var(--accent), 0 -8px 24px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+html[data-vbtheme="arcade"] :where(.vb-sw) {
+  border: 3px solid rgba(255,255,255,0.6);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* ---- CLOUD: white blobs + pastel tint ---- */
+
+html[data-vbtheme="cloud"] :where(.num-btn, .num-choice, .day-tile, .choice, .vb-tool) {
+  background: linear-gradient(180deg, #FFFFFF, color-mix(in srgb, var(--accent-soft) 45%, #FFFFFF));
+  border: 3px solid #FFFFFF;
+  border-radius: 24px;
+  color: #4A4468;
+  box-shadow: 0 14px 28px -14px rgba(74,68,104,0.55);
+  text-shadow: none;
+}
+
+html[data-vbtheme="cloud"] :where(.dot) {
+  background: #FFFFFF;
+  border-color: #FFFFFF;
+  color: #4A4468;
+  box-shadow: 0 14px 28px -14px rgba(74,68,104,0.55);
+}
+
+html[data-vbtheme="cloud"] :where(.pad) {
+  border-radius: 26px;
+  box-shadow: inset 0 6px 14px rgba(255,255,255,0.5), 0 14px 30px -12px rgba(74,68,104,0.5);
+  font-family: ui-rounded, 'Arial Rounded MT Bold', 'Trebuchet MS', var(--font-ui);
+  font-weight: 700;
+}
+
+html[data-vbtheme="cloud"] :where(.mm-back) {
+  background: linear-gradient(180deg, #FFFFFF, var(--accent-soft));
+  border: 3px solid #FFFFFF;
+  border-radius: 22px;
+  box-shadow: 0 14px 30px -14px rgba(74,68,104,0.5);
+  color: #4A4468;
+}
+
+html[data-vbtheme="cloud"] :where(.mm-front) {
+  background: #FFFFFF;
+  border: 3px solid #FFFFFF;
+  border-radius: 22px;
+  box-shadow: 0 14px 30px -14px rgba(74,68,104,0.4);
+}
+
+html[data-vbtheme="cloud"] #vbPaintDock {
+  background: rgba(255,255,255,0.78);
+  box-shadow: 0 -10px 30px rgba(74,68,104,0.25);
+}
+
+html[data-vbtheme="cloud"] :where(.vb-sw) {
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 3px 10px rgba(74,68,104,0.35);
+}
+
+/* Dots must stay circles in every theme (border-radius set above per theme). */
+html[data-vbtheme] :where(.dot) { border-radius: 50%; }
+
+/* ---- Light-theme state re-skins ----
+   The pages' translucent state colors were designed for dark backgrounds;
+   on the light candy/paper/cloud cards they wash out, so solidify them.
+   (Arcade keeps the originals — its cards are dark like the default.) */
+
+html[data-vbtheme="candy"] .num-btn.wrong,
+html[data-vbtheme="paper"] .num-btn.wrong,
+html[data-vbtheme="cloud"] .num-btn.wrong,
+html[data-vbtheme="candy"] .num-choice.bad,
+html[data-vbtheme="paper"] .num-choice.bad,
+html[data-vbtheme="cloud"] .num-choice.bad {
+  background: #FF7B7B;
+  border-color: #FF6B6B;
+  color: #FFFFFF;
+}
+
+html[data-vbtheme="candy"] .num-choice.ok,
+html[data-vbtheme="paper"] .num-choice.ok,
+html[data-vbtheme="cloud"] .num-choice.ok {
+  background: #7ED9AC;
+  border-color: #5FC894;
+  color: #1F5C3D;
+}
+
+html[data-vbtheme="candy"] .day-tile.today,
+html[data-vbtheme="paper"] .day-tile.today,
+html[data-vbtheme="cloud"] .day-tile.today {
+  background: #FFD93D;
+  border-color: #FFC93C;
+}
+
+html[data-vbtheme="candy"] .day-tile.matched,
+html[data-vbtheme="paper"] .day-tile.matched,
+html[data-vbtheme="cloud"] .day-tile.matched {
+  background: #A8E6CF;
+  border-color: #8FD9BC;
+}
+
+html[data-vbtheme="candy"] .vb-tool.active,
+html[data-vbtheme="paper"] .vb-tool.active,
+html[data-vbtheme="cloud"] .vb-tool.active {
+  background: #4ECDC4;
+  border-color: #4ECDC4;
+  color: #FFFFFF;
+}
+
+/* Hard-coded white info text in count-along / shape-match reads badly on the
+   light daytime skies of the light themes — follow the tod-aware text token. */
+html[data-vbtheme="candy"] :where(.number-big, .thing-label, .drag-hint),
+html[data-vbtheme="paper"] :where(.number-big, .thing-label, .drag-hint),
+html[data-vbtheme="cloud"] :where(.number-big, .thing-label, .drag-hint) {
+  color: var(--text);
+}
+
+/* ---- Text contrast inside activities (subtitle/instruction lines) ----
+   Activities set their own text colors tuned to their hard-coded dark
+   backgrounds; when a THEME repaints the body those can go illegible
+   (e.g. dark instruction text on arcade's near-black). Force per-theme. */
+html[data-vbtheme="arcade"] .subtitle, html[data-vbtheme="arcade"] .title { color: #EAE6FF !important; }
+html[data-vbtheme="candy"] .subtitle, html[data-vbtheme="candy"] .title { color: #2D2A66 !important; }
+html[data-vbtheme="paper"] .subtitle, html[data-vbtheme="paper"] .title { color: #3A2E27 !important; }
+html[data-vbtheme="cloud"] .subtitle, html[data-vbtheme="cloud"] .title { color: #4A4468 !important; }
