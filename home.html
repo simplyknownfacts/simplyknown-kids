@@ -390,6 +390,18 @@
       } else if (hasGreetingClip) {
         setTimeout(() => speak(greetText), 600);
       }
+      // Phones block un-gestured audio, so the load-time greeting above can be
+      // silently rejected ("can't hear the mascot"). If that happened, replay
+      // the greeting (+ mascot mouth) on the kid's FIRST tap anywhere.
+      if (hasGreetingClip) {
+        document.addEventListener('pointerdown', () => {
+          if (window._vbAudioBlocked) {
+            window._vbAudioBlocked = false;
+            if (window.mascot) mascot.play('welcome', { muted: true });
+            speak(greetText);
+          }
+        }, { once: true, capture: true });
+      }
 
       // Floating ribbon shelf — all earned ribbons (rotating selection), tap = gallery
       if (window.vbShelf) {

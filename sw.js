@@ -1,4 +1,9 @@
-const CACHE = 'vb-v136';
+const CACHE = 'vb-v137';
+// v137 MASCOT GREETING audible on phones: browsers block un-gestured audio, so the
+// home greeting was silently rejected on mobile. _playClip now flags the block
+// (NotAllowedError -> window._vbAudioBlocked) and home.html replays the greeting +
+// mascot mouth on the kid's FIRST tap anywhere. Prior v136:
+//
 // v136 THEME DIFFERENTIATION + THEMES INSIDE ACTIVITIES (Level A+B). Each theme is
 // now unmistakable: candy = flat sunny sky + confetti dots + fat round type;
 // paper = saturated construction-paper hills + scalloped paper-cut edge + Comic Sans

@@ -298,7 +298,12 @@ function _playClip(voice, hash, gen) {
     a.onended = () => { if (gen === _speakGen) resolve(); };
     a.onerror = () => resolve();
     // play() returns a promise that may reject if cancelSpeak fires mid-load.
-    a.play().catch(() => resolve());
+    a.play().catch((e) => {
+      // Phones block un-gestured audio (NotAllowedError) — flag it so pages can
+      // replay the phrase on the first real tap (see home.html greeting retry).
+      if (e && e.name === 'NotAllowedError') window._vbAudioBlocked = true;
+      resolve();
+    });
   });
 }
 
