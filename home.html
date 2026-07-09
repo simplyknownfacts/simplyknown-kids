@@ -382,27 +382,53 @@
       updateOnlineTiles();
 
       // Mascot — muted welcome animation + layered greeting (if clip exists)
+      // Purchased name-voice ("~10¢ real voice" at add-kid): greeting clips for
+      // names outside the static KID_NAMES set live on the sync Worker. Play
+      // the welcome phrase (i=2) from there, caching it into vb-offline so it
+      // keeps working on a plane.
+      const dynGreetUrl = (!hasGreetingClip && profile.nameVoice && typeof SYNC_BASE !== 'undefined')
+        ? SYNC_BASE + '/voice-clip?name=' + encodeURIComponent(profile.name) + '&voice=' + (profile.voice || 'woman') + '&i=2'
+        : null;
+      async function playDynGreet() {
+        try {
+          let resp = null;
+          try { const c = await caches.open('vb-offline'); resp = await c.match(dynGreetUrl); } catch (e) {}
+          if (!resp) {
+            resp = await fetch(dynGreetUrl);
+            if (!resp || !resp.ok) return;
+            try { const c = await caches.open('vb-offline'); await c.put(dynGreetUrl, resp.clone()); } catch (e) {}
+          }
+          const a = new Audio(URL.createObjectURL(await resp.blob()));
+          a.play().catch((e) => { if (e && e.name === 'NotAllowedError') window._vbAudioBlocked = true; });
+        } catch (e) {}
+      }
       if (window.mascot) {
         setTimeout(() => {
           mascot.play('welcome', { muted: true });
           if (hasGreetingClip) setTimeout(() => speak(greetText), 250);
+          else if (dynGreetUrl) setTimeout(playDynGreet, 250);
         }, 600);
       } else if (hasGreetingClip) {
         setTimeout(() => speak(greetText), 600);
+      } else if (dynGreetUrl) {
+        setTimeout(playDynGreet, 600);
       }
       // Phones block un-gestured audio, so the load-time greeting above can be
       // silently rejected ("can't hear the mascot"). And kids whose NAME has no
-      // recorded clip (only names in voice-manifest KID_NAMES are recorded, and
-      // we never use robot TTS) would stay silent forever. On the kid's FIRST
-      // tap anywhere: named kids replay the name greeting if it was blocked;
-      // clip-less kids get the mascot's OWN recorded voice (generic welcome,
-      // unmuted video) so every kid hears their companion.
+      // clip anywhere (static or purchased) would stay silent forever. On the
+      // kid's FIRST tap anywhere: named kids replay their greeting if it was
+      // blocked; clip-less kids get the mascot's OWN recorded voice (generic
+      // welcome, unmuted video) so every kid hears their companion.
       document.addEventListener('pointerdown', () => {
         if (hasGreetingClip && window._vbAudioBlocked) {
           window._vbAudioBlocked = false;
           if (window.mascot) mascot.play('welcome', { muted: true });
           speak(greetText);
-        } else if (!hasGreetingClip && window.mascot) {
+        } else if (dynGreetUrl && window._vbAudioBlocked) {
+          window._vbAudioBlocked = false;
+          if (window.mascot) mascot.play('welcome', { muted: true });
+          playDynGreet();
+        } else if (!hasGreetingClip && !dynGreetUrl && window.mascot) {
           mascot.play('welcome', { muted: false });
         }
       }, { once: true, capture: true });

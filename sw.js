@@ -1,4 +1,11 @@
-const CACHE = 'vb-v138';
+const CACHE = 'vb-v139';
+// v139 PAID NAME-VOICE at add-kid (Scott option 1): adding a kid whose name has no
+// pre-recorded greeting now prompts "spend ~10c for real voices?". Yes -> POST
+// /voice-name on the sync Worker (ElevenLabs key lives there as a secret; 3 phrases
+// x 4 voices stored in D1 name_clips; 5 names/day limit; idempotent). home.html
+// plays the purchased welcome via /voice-clip, cached into vb-offline for planes.
+// No -> unchanged v138 behavior (mascot own-voice greeting). Prior v138:
+//
 // v138 NEW-KID GREETING: kids whose name has no recorded clip (only KID_NAMES in
 // voice-manifest are recorded; robot TTS is banned) were greeted in SILENCE. Now on
 // their first tap the mascot plays its OWN recorded welcome (unmuted video, generic

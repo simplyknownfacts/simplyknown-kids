@@ -1900,6 +1900,30 @@
       if (!selectedMascot) { alert('Please pick an animal companion.'); return; }
       if (!selectedVoice)  { alert('Please pick a voice.'); return; }
       const created = addProfile({ name, birthday, color: selectedColor, voice: selectedVoice, mascot: { id: selectedMascot } });
+      // "~10¢ real voice" offer (Scott's spec): names WITHOUT a pre-recorded
+      // greeting clip get offered instant server-side generation (the sync
+      // Worker holds the ElevenLabs key as a secret; ~$0.10/name, all 4 voices).
+      // No = current behavior (mascot's generic recorded voice greets instead).
+      (function offerNameVoice() {
+        try {
+          const greetKey = 'Hi ' + created.name + '! Welcome to your play space.';
+          const hasStatic = typeof VOICE_MANIFEST !== 'undefined' && VOICE_MANIFEST.phraseHash
+            && VOICE_MANIFEST.phraseHash[greetKey] !== undefined;
+          if (hasStatic || !created || !created.id) return;
+          const wants = confirm('Spend about 10¢ to have "' + created.name + '" greeted BY NAME in real recorded voices?\n\nNo = the animal companion greets with its own voice instead (free).');
+          if (!wants) return;
+          const syncKey = localStorage.getItem('vb_sync_key');
+          if (!syncKey) { alert('This needs Cloud Sync connected first (☁️ Cloud Sync panel below). Connect, then delete + re-add the child, or ask Claude to add the name.'); return; }
+          fetch(SYNC_BASE + '/voice-name', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + syncKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: created.name }),
+          }).then(r => r.json()).then(j => {
+            if (j && j.ok) { updateProfile(created.id, { nameVoice: true }); alert('🎉 ' + created.name + "'s name voice is ready!"); }
+            else alert('Voice generation failed: ' + ((j && j.error) || 'unknown') + ' — the mascot will greet instead.');
+          }).catch(() => alert('Voice generation failed (offline?) — the mascot will greet instead.'));
+        } catch (e) {}
+      })();
       document.getElementById('newName').value = '';
       document.getElementById('newBirthday').value = '';
       selectedMascot = null; selectedVoice = null;
