@@ -1,4 +1,10 @@
-const CACHE = 'vb-v137';
+const CACHE = 'vb-v138';
+// v138 NEW-KID GREETING: kids whose name has no recorded clip (only KID_NAMES in
+// voice-manifest are recorded; robot TTS is banned) were greeted in SILENCE. Now on
+// their first tap the mascot plays its OWN recorded welcome (unmuted video, generic
+// line, correct voice). Named kids keep the name greeting + blocked-autoplay retry.
+// To add a name greeting: add to KID_NAMES + run generate-voices.mjs. Prior v137:
+//
 // v137 MASCOT GREETING audible on phones: browsers block un-gestured audio, so the
 // home greeting was silently rejected on mobile. _playClip now flags the block
 // (NotAllowedError -> window._vbAudioBlocked) and home.html replays the greeting +
