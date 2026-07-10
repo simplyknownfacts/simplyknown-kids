@@ -44,8 +44,12 @@ const ACTIVITIES = [
   { id: 'stamp-art', name: 'Stamp Art', section: 'art', file: 'art/stamp-art.html', minTier: 1 },
   { id: 'finger-paint', name: 'Finger Paint', section: 'art', file: 'art/finger-paint.html', minTier: 1 },
   { id: 'color-splash', name: 'Color Splash', section: 'art', file: 'art/color-splash.html', minTier: 1 },
-  { id: 'color-in', name: 'Color In', section: 'art', file: 'art/color-in.html', minTier: 2 },
+  { id: 'color-in', name: 'Color In', section: 'art', file: 'art/color-in.html', minTier: 1 },
   { id: 'peek-a-boo', name: 'Peek-a-boo', section: 'games', file: 'games/peek-a-boo.html', minTier: 1, orphan: true },
+  { id: 'magic-touch', name: 'Magic Touch', section: 'games', file: 'games/magic-touch.html', minTier: 1 },
+  { id: 'tap-a-tune', name: 'Tap-a-Tune', section: 'games', file: 'games/tap-a-tune.html', minTier: 1 },
+  { id: 'surprise-pop', name: 'Surprise Pop', section: 'games', file: 'games/surprise-pop.html', minTier: 1 },
+  { id: 'tilt-drive', name: 'Tilt Drive', section: 'games', file: 'games/tilt-drive.html', minTier: 1 },
 ];
 // features per activity (key, label text in #featuresTable, minTier)
 const FEATURES = {
@@ -65,12 +69,14 @@ const FEATURES = {
 };
 const EXPECT_VISIBLE = { // per tier: games/learn/art (for gating assertion)
   // games: 7 catalog games minTier 1 + Memory Match minTier 2 (v107).
-  // learn: Clock Time minTier 6 (v107) takes the count to 10 from Kindergarten up.
-  1: { games: 7, learn: 2, art: 3 },  2: { games: 8, learn: 5, art: 4 },
+  // learn: Clock Time minTier 6 (v107) → 10 at T6; ABCs auto-hides ≥T7 (maxTier 6,
+  // v117 dedupe with Spelling Bee) → back to 9. art: all 4 are minTier 1 (Color In
+  // moved to 1 with the v120 paint engine).
+  1: { games: 7, learn: 2, art: 4 },  2: { games: 8, learn: 5, art: 4 },
   3: { games: 8, learn: 6, art: 4 },  4: { games: 8, learn: 9, art: 4 },
   5: { games: 8, learn: 9, art: 4 },  6: { games: 8, learn: 10, art: 4 },
-  7: { games: 8, learn: 10, art: 4 }, 8: { games: 8, learn: 10, art: 4 },
-  9: { games: 8, learn: 10, art: 4 }, 10: { games: 8, learn: 10, art: 4 },
+  7: { games: 8, learn: 9, art: 4 },  8: { games: 8, learn: 9, art: 4 },
+  9: { games: 8, learn: 9, art: 4 },  10: { games: 8, learn: 9, art: 4 },
 };
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -131,7 +137,17 @@ async function play(page, act, tier) {
     if (id === 'shape-match') {
       // detect drag vs tap mode
       const hasTargets = await page.locator('.target').count();
-      if (!hasTargets) { // tap mode (t1)
+      if (!hasTargets) {
+        const hint0 = (await page.textContent('#hint').catch(() => '')) || '';
+        if (/How many sides|different/i.test(hint0)) {
+          // T7+ "How many sides?" / T8+ odd-one-out rounds (v129/v131): answer
+          // by trying the number choices / tapping shapes until progress bumps.
+          const btns = page.locator('.num-choice, #shapesRow svg.shape');
+          const n = await btns.count();
+          for (let i = 0; i < n && !(await bumped()); i++) { await btns.nth(i).dispatchEvent('pointerdown').catch(() => {}); await sleep(300); }
+          return { ok: await bumped(), signal: `quiz round ("${hint0.trim()}"), tried ${n}` };
+        }
+        // tap mode (t1-2)
         await page.locator('#shapesRow svg.shape').first().click({ timeout: 5000 }).catch(() => {});
         const hint = await page.textContent('#hint').catch(() => '');
         return { ok: /Circle|Square|Triangle|Star|Heart|Diamond/.test(hint || '') || await bumped(), signal: `tap mode, #hint="${(hint || '').trim()}"` };
@@ -172,8 +188,7 @@ async function play(page, act, tier) {
       return { ok: await bumped(), signal: `clock quiz, tried ${n} times` };
     }
     if (id === 'peek-a-boo') {
-      if (tier <= 2) { const solo = await page.locator('.animal-solo').count(); return { ok: solo > 0, signal: 'auto mode (no input)', note: 'tier<=2 auto-cycles' }; }
-      // single (3-4) or multi (>=5)
+      // v125: every tier taps a curtain now (littles get one big wiggling one).
       const curtains = page.locator('#stage .curtain-wrap .curtain');
       const n = await curtains.count();
       for (let i = 0; i < Math.max(1, n); i++) {
@@ -184,7 +199,9 @@ async function play(page, act, tier) {
       return { ok: await bumped(), signal: 'clicked curtains' };
     }
     if (id === 'abcs') {
-      if (tier >= 7 || await page.locator('.spelled-slot').count()) {
+      // ABCs is LETTERS-ONLY since v117 (Spelling Bee owns spelling) and
+      // auto-hides ≥T7 — only use the spell path if slots actually exist.
+      if (await page.locator('.spelled-slot').count()) {
         const slots = await page.locator('.spelled-slot').evaluateAll((els) => els.map((e) => e.dataset.target));
         for (const ch of slots) { await page.locator(`.letter-grid .letter-tile`, { hasText: new RegExp(`^${ch}$`, 'i') }).first().click({ timeout: 3000 }).catch(() => {}); await sleep(150); }
         return { ok: await bumped(), signal: `spell "${slots.join('')}"` };
@@ -206,9 +223,15 @@ async function play(page, act, tier) {
     if (id === 'body-parts') {
       const hint = (await page.textContent('#hint').catch(() => '')) || '';
       const map = { eyes: 'eye', feet: 'foot', hands: 'hand', ears: 'ear', arms: 'arm', legs: 'leg' };
-      let part = (hint.match(/\b(eyes?|nose|mouth|ears?|hands?|feet|foot|arms?|legs?|hair|belly)\b/i) || [])[1] || '';
+      let part = (hint.match(/\b(eyes?|nose|mouth|ears?|hands?|feet|foot|arms?|legs?|hair|belly|shoulder|elbow|knee)\b/i) || [])[1] || '';
       part = part.toLowerCase(); part = map[part] || part.replace(/s$/, '');
-      if (part) await page.locator(`#figure .hit[data-name="${part}"]`).first().click({ timeout: 4000 }).catch(() => {});
+      // Since v122 the .hit zones are pointer-events:none — taps are resolved by
+      // ONE figure-level handler (nearest ellipse). Click the zone's CENTER with
+      // the mouse so the event lands on #figure, exactly like a real finger.
+      if (part) {
+        const hb = await page.locator(`#figure .hit[data-name="${part}"]`).first().boundingBox().catch(() => null);
+        if (hb) { await page.mouse.click(hb.x + hb.width / 2, hb.y + hb.height / 2); await sleep(350); }
+      }
       return { ok: await bumped() || !!(await page.locator('#figure .hit.flash').count()), signal: `tapped "${part}" (hint="${hint.trim()}")` };
     }
     if (id === 'count-along') {
@@ -301,26 +324,53 @@ async function play(page, act, tier) {
       for (let i = 0; i < m && !(await bumped()); i++) { await cards.nth(i).click({ timeout: 2500 }).catch(() => {}); await sleep(250); }
       return { ok: await bumped() || !!(await page.locator('.word-card.matched').count()), signal: `MC, tried ${m} words` };
     }
-    if (id === 'color-in') {
-      const region = page.locator('#pageA:not([style*="display: none"]) svg.pic-svg .region, #pageB:not([style*="display: none"]) svg.pic-svg .region').first();
-      const has = await region.count();
-      if (has) {
-        await region.click({ timeout: 4000 }).catch(() => {});
-        const filled = await region.evaluate((el) => getComputedStyle(el).fill).catch(() => '');
-        return { ok: filled && !/255,\s*255,\s*255|#fff/i.test(filled), signal: `region fill=${filled}` };
-      }
-      return { ok: false, signal: 'no svg region found' };
-    }
-    if (['color-splash', 'finger-paint', 'stamp-art'].includes(id)) {
+    if (id === 'magic-touch') {
+      // Sensory fireworks: tap the sky canvas, expect a progress bump.
       const box = await page.locator('#canvas').boundingBox();
+      await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.35);
+      await sleep(300);
+      await page.mouse.click(box.x + box.width * 0.3, box.y + box.height * 0.5);
+      await sleep(400);
+      return { ok: await bumped(), signal: 'sky taps (bursts/rockets)' };
+    }
+    if (id === 'tap-a-tune') {
+      const pads = page.locator('#pads .pad');
+      const n = await pads.count();
+      for (let i = 0; i < Math.min(3, n); i++) { await pads.nth(i).click({ timeout: 3000 }).catch(() => {}); await sleep(200); }
+      return { ok: await bumped(), signal: `played ${Math.min(3, n)} of ${n} keys` };
+    }
+    if (id === 'surprise-pop') {
+      const egg = page.locator('#egg');
+      await egg.dispatchEvent('pointerdown').catch(() => {});
+      await sleep(500);
+      // T5+ guess round: tap choices until the reveal fires.
+      const ch = page.locator('#choices .choice');
+      const c = await ch.count();
+      for (let i = 0; i < c && !(await bumped()); i++) { await ch.nth(i).dispatchEvent('pointerdown').catch(() => {}); await sleep(400); }
+      return { ok: await bumped(), signal: c ? `egg + guess (${c} choices)` : 'egg popped' };
+    }
+    if (id === 'tilt-drive') {
+      // Style picker (if shown) then confirm the game canvas runs; distance-based
+      // progress takes seconds, so accept canvas + no page errors as the signal.
+      await page.locator('.style-card, .card, button', { hasText: /road|river|space/i }).first().click({ timeout: 3000 }).catch(() => {});
+      await sleep(800);
+      const hasCanvas = !!(await page.locator('canvas').count());
+      return { ok: hasCanvas || await bumped(), signal: hasCanvas ? 'game canvas running' : 'no canvas' };
+    }
+    // color-in switched to the shared freeform paint engine in v120 — it's
+    // brush-tested with the other art below (canvas id vbPaintCanvas).
+    if (['color-splash', 'finger-paint', 'stamp-art', 'color-in'].includes(id)) {
+      // finger-paint & stamp-art keep their own #canvas; color-splash & color-in
+      // use the shared paint engine's #vbPaintCanvas (v119/v120).
+      const box = await page.locator('#canvas, #vbPaintCanvas').first().boundingBox();
       if (!box) return { ok: false, signal: 'no canvas' };
       const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
-      if (id === 'finger-paint') { await page.mouse.move(cx - 130, cy); await page.mouse.down(); await page.mouse.move(cx + 130, cy, { steps: 14 }); await page.mouse.up(); }
+      if (id === 'finger-paint' || id === 'color-splash' || id === 'color-in') { await page.mouse.move(cx - 130, cy); await page.mouse.down(); await page.mouse.move(cx + 130, cy, { steps: 14 }); await page.mouse.up(); }
       else { await page.mouse.move(cx, cy); await page.mouse.down(); await page.mouse.up(); }
       await sleep(300);
       // sample a box centered on canvas center (where the stroke/stamp/splash lands)
       const painted = await page.evaluate((boxsz) => {
-        const c = document.querySelector('#canvas'); if (!c) return false; const ctx = c.getContext('2d'); if (!ctx) return false;
+        const c = document.querySelector('#canvas, #vbPaintCanvas'); if (!c) return false; const ctx = c.getContext('2d'); if (!ctx) return false;
         const px = Math.floor(c.width / 2), py = Math.floor(c.height / 2), half = Math.floor(boxsz / 2);
         const sx = Math.max(0, px - half), sy = Math.max(0, py - half);
         const w = Math.min(boxsz, c.width - sx), h = Math.min(boxsz, c.height - sy);
