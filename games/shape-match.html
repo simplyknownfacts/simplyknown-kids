@@ -155,6 +155,16 @@
 
       const s = POLY[Math.floor(Math.random() * POLY.length)];
       const svg = makeSVG(s, 170); svg.classList.add('pulse');
+      // Kids instinctively grab the big shape (it drags in other rounds) — give a
+      // bounce + chime so it feels alive instead of broken, then eyes go to the
+      // number buttons.
+      svg.style.transition = 'transform 0.15s ease';
+      svg.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        svg.style.transform = 'scale(1.15)';
+        setTimeout(() => { svg.style.transform = 'scale(1)'; }, 160);
+        if (typeof playChime === 'function') { try { playChime(); } catch (err) {} }
+      });
       shapesRow.appendChild(svg);
       hint.textContent = 'How many sides?';
       speak('How many sides?');
@@ -293,14 +303,26 @@
           svg.style.zIndex = 999;
           svg.style.left = r.left + 'px'; svg.style.top = r.top + 'px';
           try { svg.setPointerCapture(e.pointerId); } catch {}
+          // WINDOW-level move/up while dragging: if pointer capture fails (some
+          // phones/touch stacks), the svg alone stops receiving moves the moment
+          // the finger outruns it — the shape "won't drag". Window listeners keep
+          // the drag glued to the finger regardless; removed on release.
+          window.addEventListener('pointermove', onMove);
+          window.addEventListener('pointerup', onUp);
+          window.addEventListener('pointercancel', onUp);
         });
-        svg.addEventListener('pointermove', e => {
+        function onMove(e) {
           if (!dragging) return;
+          if (e.cancelable) e.preventDefault();
           svg.style.left = (origX + e.clientX - startX) + 'px';
           svg.style.top  = (origY + e.clientY - startY)  + 'px';
-        });
-        svg.addEventListener('pointerup', e => {
+        }
+        function onUp(e) {
+          if (!dragging) return;
           dragging = false;
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+          window.removeEventListener('pointercancel', onUp);
           const target = targetEls[s.name];
           if (!target) return;
           const tr = target.getBoundingClientRect();
@@ -320,7 +342,7 @@
             playBoop();
             svg.style.position = ''; svg.style.left = ''; svg.style.top = '';
           }
-        });
+        }
         shapesRow.appendChild(svg);
       });
 

@@ -17,7 +17,19 @@
 
   const PALETTE = ['#FF4444','#FFD93D','#4ECDC4','#45B7D1','#a86cdb','#FF9F43',
                    '#FF69B4','#7bed9f','#8B5A2B','#2b2b33','#ffffff','#9AA0A6'];
-  const SIZES = [10, 26, 54];           // small / medium / large (px)
+  // small / medium / large — SCALED to the screen, not fixed px. Fixed [10,26,54]
+  // made the large brush ~14% of a phone's width ("the pen takes up the whole
+  // page") while feeling thin on a desktop. ~[2.2%, 5%, 9.5%] of the short side,
+  // clamped so desktop doesn't get comical and phones keep a fine-detail brush.
+  function SIZES_now() {
+    const m = Math.min(window.innerWidth, window.innerHeight);
+    return [
+      Math.max(5,  Math.round(m * 0.022)),
+      Math.min(34, Math.max(14, Math.round(m * 0.05))),
+      Math.min(64, Math.max(28, Math.round(m * 0.095))),
+    ];
+  }
+  const SIZES = SIZES_now();
 
   function injectStyle() {
     if (document.getElementById('vbPaintStyle')) return;
@@ -66,7 +78,7 @@
 
     // ---- state ----
     let color = PALETTE[0];
-    let size = sizesOn ? SIZES[1] : SIZES[2];   // littles paint fat
+    let size = SIZES[1];   // everyone starts MEDIUM (fat 'large' overwhelmed phone coloring pages)
     let brush = 'round';
     let erasing = false;
     let pageIdx = 0;

@@ -63,7 +63,9 @@
     // Keep the canvas filling the screen on rotate/resize (bubbles read canvas.width live).
     window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
 
-    const COLORS = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1'];
+    // '#4ECDC4' used to sit in the "Green" slot but reads as TEAL — kids hunting
+    // "Green" couldn't find it. Swapped for an unmistakable green.
+    const COLORS = ['#FF6B6B','#FFE66D','#3EC65E','#a86cdb','#FF9F43','#45B7D1'];
     let bubbles = [], score = 0, animId;
 
     // Score counter is always on now (every age), no parent toggle.
@@ -78,7 +80,7 @@
     // — wrong-colour taps don't pop and break your combo; right ones build a combo
     // multiplier. Shiny golds are always wildcards. Turns the toddler pop-toy into
     // an attention/impulse-control game for 6-10yos. (Banner is visual — no voice.)
-    const COLOR_NAMES = { '#FF6B6B':'Red','#FFE66D':'Yellow','#4ECDC4':'Green','#a86cdb':'Purple','#FF9F43':'Orange','#45B7D1':'Blue' };
+    const COLOR_NAMES = { '#FF6B6B':'Red','#FFE66D':'Yellow','#3EC65E':'Green','#a86cdb':'Purple','#FF9F43':'Orange','#45B7D1':'Blue' };
     const challengeOn = tier >= 5;
     const targetEl = document.getElementById('target');
     const targetSwatch = targetEl.querySelector('.swatch');
@@ -117,6 +119,14 @@
         popping: false, popProgress: 0,
         shiny,
       };
+      // Challenge fairness: with 6 random colors across ~6 bubbles, the TARGET
+      // color was absent from the screen ~1/3 of the time ("pop only Green" with
+      // no green anywhere = feels broken). If no live target-color bubble exists,
+      // this spawn becomes one.
+      if (challengeOn && !shiny && targetColor
+          && !bubbles.some(x => !x.popping && !x.shiny && x.color === targetColor)) {
+        b.color = targetColor;
+      }
 
       // Age-based speed scaling: younger tiers move noticeably slower, older
       // faster. tier3=0.70 ... tier8=1.15. (tiers 1-2 use their own slow float.)

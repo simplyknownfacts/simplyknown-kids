@@ -1,4 +1,13 @@
-const CACHE = 'vb-v139';
+const CACHE = 'vb-v140';
+// v140 DEEP-DIVE FIXES (Scott bug reports). (1) Bubble Pop challenge fairness: the
+// target color was absent from screen ~1/3 of the time (random spawns) — spawner now
+// guarantees a live target-color bubble; also swapped the teal-looking "Green" for a
+// real green. (2) Paint brush sizes now SCALE to the screen (fixed 54px large ~14%
+// of a phone width, wrecked coloring pages); everyone defaults to medium. (3) Shape
+// Match drag: window-level move/up listeners keep drags glued to the finger even if
+// pointer capture fails (touch); quiz-round polygons bounce+chime on tap instead of
+// feeling dead. Prior v139:
+//
 // v139 PAID NAME-VOICE at add-kid (Scott option 1): adding a kid whose name has no
 // pre-recorded greeting now prompts "spend ~10c for real voices?". Yes -> POST
 // /voice-name on the sync Worker (ElevenLabs key lives there as a secret; 3 phrases
