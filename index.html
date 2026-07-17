@@ -138,6 +138,12 @@
       document.addEventListener('DOMContentLoaded', updateGreetingCopy);
     }
 
+    // Only allow a valid #rgb / #rrggbb color into inline CSS (profile colors
+    // round-trip through cloud sync); fall back to a safe default otherwise.
+    function safeHexColor(c) {
+      return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c) ? c : '#c8b8f0';
+    }
+
     function renderProfiles() {
       const row = document.getElementById('profilesRow');
       row.innerHTML = '';
@@ -157,14 +163,17 @@
 
         const btn = document.createElement('div');
         btn.className = 'avatar-btn';
-        // Per-child glow + body color
+        // Per-child glow + body color. Validate the color and escape the name:
+        // both round-trip through the shared family cloud-sync record, so a
+        // poisoned record must not be able to inject CSS or markup/script.
+        const color = safeHexColor(p.color);
         btn.style.setProperty('--avatar-bg',
-          `radial-gradient(circle at 35% 30%, ${p.color}ff 0%, ${p.color} 60%, ${p.color}cc 100%)`);
-        btn.style.setProperty('--avatar-glow', `${p.color}cc`);
+          `radial-gradient(circle at 35% 30%, ${color}ff 0%, ${color} 60%, ${color}cc 100%)`);
+        btn.style.setProperty('--avatar-glow', `${color}cc`);
         btn.innerHTML =
           `<span class="emoji">${mascotEmoji(p)}</span>` +
-          `<span class="name">${p.name}</span>` +
-          `<span class="age-label">${ageLabel}</span>`;
+          `<span class="name">${_esc(p.name)}</span>` +
+          `<span class="age-label">${_esc(ageLabel)}</span>`;
         btn.addEventListener('click', () => {
           playChime();
           setActiveProfile(p.id);

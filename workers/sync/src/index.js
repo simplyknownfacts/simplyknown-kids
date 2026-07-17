@@ -203,6 +203,120 @@ async function handleYTFeed(req) {
   return resp;
 }
 
+// ─── Name-voice generation ("~10¢ real voice" add-kid option) ────────────────
+// POST /voice-name  Auth: Bearer <syncKey>, { name } → generates the 3 greeting
+//   phrases × 4 voices via ElevenLabs (key = Worker secret ELEVENLABS_API_KEY),
+//   stores mp3s in D1 name_clips. Idempotent per (name, voice, i) — re-adding a
+//   name is free. Rate-limited to 5 NEW names per account per 24h.
+// GET  /voice-clip?name=&voice=&i=0..2 → audio/mpeg (public read; clips are just
+//   a first name spoken aloud — cache hard so repeat plays are free).
+// NOTE: girl/boy static clips in the app are pitch-shifted +3 semitones offline
+// (ffmpeg); Workers can't run ffmpeg, so name clips play at ElevenLabs' natural
+// pitch. Greetings are standalone (never stitched mid-sentence), so it's fine.
+
+const NV_VOICES = {
+  girl:  'EXAVITQu4vr4xnSDxMaL',
+  boy:   'TX3LPaxmHKxFdv7VOQHJ',
+  woman: '21m00Tcm4TlvDq8ikWAM',
+  man:   'pNInz6obpgDQGcFmaJgB',
+};
+const NV_MODEL = 'eleven_turbo_v2_5';
+function nvPhrases(name) {
+  return [
+    'Hi ' + name + '!',
+    'Hi ' + name + "! Let's play!",
+    'Hi ' + name + '! Welcome to your play space.',
+  ];
+}
+function nvNormName(n) {
+  n = (n || '').trim();
+  if (!/^[A-Za-z][A-Za-z' -]{0,19}$/.test(n)) return null;
+  // Title-case first letter, keep the rest as typed (matches profile display).
+  return n[0].toUpperCase() + n.slice(1);
+}
+async function nvEnsureTable(env) {
+  await env.DB.prepare(
+    'CREATE TABLE IF NOT EXISTS name_clips (clip_key TEXT PRIMARY KEY, name_norm TEXT, voice TEXT, i INTEGER, mp3 BLOB, acct_hash TEXT, created_at INTEGER)'
+  ).run();
+}
+
+async function handleVoiceName(req, env) {
+  const token = extractToken(req);
+  const acc = await getAccountBySyncKey(env, token);
+  if (!acc) return err('unauthorized', 401);
+  if (!env.ELEVENLABS_API_KEY) return err('voice generation not configured', 503);
+  const body = await readJson(req);
+  const name = nvNormName(body && body.name);
+  if (!name) return err('invalid name (letters, max 20 chars)', 400);
+  await nvEnsureTable(env);
+
+  // Already generated (any account)? Then this is free — report ready.
+  const have = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM name_clips WHERE name_norm = ?'
+  ).bind(name).first();
+  if (have && have.n >= 12) return jsonResp({ ok: true, name, ready: true, generated: 0 });
+
+  // Rate limit: max 5 NEW names per account per 24h (money guard).
+  const since = Date.now() - 24 * 3600 * 1000;
+  const recent = await env.DB.prepare(
+    'SELECT COUNT(DISTINCT name_norm) AS n FROM name_clips WHERE acct_hash = ? AND created_at > ?'
+  ).bind(acc.email_hash, since).first();
+  if (recent && recent.n >= 5) return err('daily limit reached — try again tomorrow', 429);
+
+  const phrases = nvPhrases(name);
+  let generated = 0;
+  for (const [voice, voiceId] of Object.entries(NV_VOICES)) {
+    for (let i = 0; i < phrases.length; i++) {
+      const clipKey = await sha256Hex('nv1:' + name + '|' + voice + '|' + i);
+      const exists = await env.DB.prepare('SELECT clip_key FROM name_clips WHERE clip_key = ?')
+        .bind(clipKey).first();
+      if (exists) continue;
+      const r = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + voiceId, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': env.ELEVENLABS_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'audio/mpeg',
+        },
+        body: JSON.stringify({
+          text: phrases[i],
+          model_id: NV_MODEL,
+          voice_settings: { stability: 0.55, similarity_boost: 0.75, style: 0.30 },
+        }),
+      });
+      if (!r.ok) return err('voice generation failed (' + r.status + ') after ' + generated + ' clips — tap Yes again to resume', 502);
+      const buf = await r.arrayBuffer();
+      await env.DB.prepare(
+        'INSERT INTO name_clips (clip_key, name_norm, voice, i, mp3, acct_hash, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind(clipKey, name, voice, i, buf, acc.email_hash, Date.now()).run();
+      generated++;
+    }
+  }
+  return jsonResp({ ok: true, name, ready: true, generated });
+}
+
+async function handleVoiceClip(req, env) {
+  const url = new URL(req.url);
+  const name = nvNormName(url.searchParams.get('name'));
+  const voice = url.searchParams.get('voice');
+  const i = parseInt(url.searchParams.get('i'), 10);
+  if (!name || !NV_VOICES[voice] || !(i >= 0 && i <= 2)) return err('bad params', 400);
+  await nvEnsureTable(env);
+  const clipKey = await sha256Hex('nv1:' + name + '|' + voice + '|' + i);
+  const row = await env.DB.prepare('SELECT mp3 FROM name_clips WHERE clip_key = ?')
+    .bind(clipKey).first();
+  if (!row || !row.mp3) return err('no clip', 404);
+  // D1 returns BLOB as ArrayBuffer (or array) depending on driver — normalise.
+  const bytes = row.mp3 instanceof ArrayBuffer ? row.mp3 : new Uint8Array(row.mp3).buffer;
+  return new Response(bytes, {
+    status: 200,
+    headers: {
+      'Content-Type': 'audio/mpeg',
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    },
+  });
+}
+
 export default {
   async fetch(req, env) {
     const origin = env.ALLOWED_ORIGIN || '*';
@@ -220,6 +334,8 @@ export default {
         case '/signout': response = await handleSignout(req, env); break;
         case '/reset':   response = await handleReset(); break;
         case '/yt-feed': response = await handleYTFeed(req); break;
+        case '/voice-name': response = await handleVoiceName(req, env); break;
+        case '/voice-clip': response = await handleVoiceClip(req, env); break;
         case '/health':  response = jsonResp({ ok: true }); break;
         default:         response = err('not found', 404);
       }

@@ -1,4 +1,12 @@
-const CACHE = 'vb-v140';
+const CACHE = 'vb-v141';
+// v141 RECONCILE: fold in two fixes that were STRANDED in the root working tree
+// (never committed) while the live site ran ahead. (1) Profile-name XSS: index.html
+// now escapes p.name via _esc (js/sync.js) and validates p.color via safeHexColor
+// before inline CSS — both round-trip through the shared family sync record.
+// (2) workers/sync/src/index.js now CONTAINS the /voice-name + /voice-clip endpoints
+// that were deployed live from an uncommitted root file since v139 — so the committed
+// worker source finally matches the running Cloudflare deployment. Prior v140:
+//
 // v140 DEEP-DIVE FIXES (Scott bug reports). (1) Bubble Pop challenge fairness: the
 // target color was absent from screen ~1/3 of the time (random spawns) — spawner now
 // guarantees a live target-color bubble; also swapped the teal-looking "Green" for a
