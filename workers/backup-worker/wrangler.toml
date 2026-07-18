@@ -1,0 +1,18 @@
+name = "simplyknown-kids-backup"
+main = "index.js"
+compatibility_date = "2026-07-01"
+
+# nightly at 08:37 UTC — dumps prod D1 'sync' to the R2 backup bucket (staggered
+# from the other SimplyKnown apps so they don't all fire the same minute).
+[triggers]
+crons = ["37 8 * * *"]
+
+# The CLOUD family-sync database (profiles / settings / progress).
+[[d1_databases]]
+binding = "DB"
+database_name = "sync"
+database_id = "5306dec6-cab7-43fd-8bbb-9fe25dccfa6d"
+
+[[r2_buckets]]
+binding = "BACKUPS"
+bucket_name = "simplyknown-kids-backups"
