@@ -13,7 +13,7 @@ A kids' learning PWA (ages 0–10): games, art, learning activities, recorded vo
 | Node.js scripts | `scripts/*.mjs` (`generate-voices.mjs`, mascot/asset generators) | Pre-generating ElevenLabs voice MP3s + art assets |
 
 ## Architecture
-1. **Hosting = GitHub Pages** (NOT Cloudflare Pages): push to `main` on `github.com/simplyknownfacts/valiant-breeze` → auto-deploys to kids.simplyknown.co. No CI, no build.
+1. **Hosting = GitHub Pages** (NOT Cloudflare Pages): push to `main` on `github.com/simplyknownfacts/simplyknown-kids` (renamed from `valiant-breeze` 2026-08-12) → auto-deploys to kids.simplyknown.co. No CI, no build.
 2. **State lives in `localStorage`** (`vb_profiles`, `vb_active_profile`, `vb_pin`…) — the app works fully offline. PWA: `manifest.json` + service worker `sw.js`.
 3. **Cloudflare Worker `simplyknown-kids-sync`** (optional cloud layer): signup/signin/push/pull family sync → D1 database `sync`; also `/yt-feed` proxy (Watch page) and `/voice-name` + `/voice-clip` (paid name-voice generation; ElevenLabs key lives as a Worker secret, never client-side).
 4. **Voices are pre-generated MP3s** (`audio/{girl,boy,woman,man}/`) committed to the repo. There is NO runtime TTS fallback — unrecorded phrases stay silent + captioned (by design, v124+). New kid names need a voice pre-gen run (`scripts/generate-voices.mjs`).
