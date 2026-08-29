@@ -2,10 +2,12 @@ name = "simplyknown-kids-backup"
 main = "index.js"
 compatibility_date = "2026-07-01"
 
-# nightly at 08:37 UTC — dumps prod D1 'sync' to the R2 backup bucket (staggered
-# from the other SimplyKnown apps so they don't all fire the same minute).
-[triggers]
-crons = ["37 8 * * *"]
+# No cron here on purpose. The nightly D1 'sync' -> R2 dump is owned by the fleet
+# backup-orchestrator (Video Bot repo, cron 22 8 UTC); this Worker's own 08:37
+# trigger was folded out when that landed. Confirmed against the live Worker on
+# 2026-08-29: its schedule list is empty. Leaving the old [triggers] block here
+# meant the next `wrangler deploy` would silently re-add it and we would back up
+# twice a night. This Worker now exists only for the manual /run trigger.
 
 # The CLOUD family-sync database (profiles / settings / progress).
 [[d1_databases]]
