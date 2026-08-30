@@ -1,0 +1,10 @@
+{
+  "name": "simplyknown-kids",
+  "private": true,
+  "description": "SimplyKnown Kids — static offline-first PWA. Scripts only: this project has no dependencies and no build step.",
+  "scripts": {
+    "test": "node --test \"tests/*.test.*\"",
+    "stage": "node scripts/stage-site.mjs",
+    "deploy:dev1": "npm run stage && wrangler pages deploy .publish --project-name=simplyknown-kids1 --branch=main --commit-dirty=true"
+  }
+}

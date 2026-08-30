@@ -27,8 +27,11 @@ secrets/
 *_secret.txt
 *_token.txt
 *_credentials.json
-# dev tooling for the verification sweep (vanilla-JS repo stays dependency-free)
-package.json
+# package.json IS committed as of 2026-08-29 — scripts only, still zero
+# dependencies (see docs/superpowers/specs/2026-08-29-cloudflare-migration-design.md,
+# decision 9). It was ignored before because the only reason to have one was a
+# throwaway `npm i playwright --no-save` for the sweep harness. The lock file
+# stays ignored: with no dependencies there should never be one to commit.
 package-lock.json
 # sweep screenshots + report are regenerable artifacts — keep run-sweep.mjs, drop output
 tests/sweep/**/*.png
@@ -45,3 +48,6 @@ scripts/_*.mjs
 # mascots/ committed for preview — will move to R2 once Worker is built
 # visual-sweep screenshots — regenerable
 tests/e2e/v2/visual/
+
+# staged copy uploaded to Cloudflare Pages — regenerable, never committed
+.publish/
