@@ -1,4 +1,5 @@
-const CACHE = 'vb-v141';
+importScripts('./js/sw-cache-policy.js');
+const CACHE = 'vb-v142';
 // v141 RECONCILE: fold in two fixes that were STRANDED in the root working tree
 // (never committed) while the live site ran ahead. (1) Profile-name XSS: index.html
 // now escapes p.name via _esc (js/sync.js) and validates p.color via safeHexColor
@@ -145,7 +146,7 @@ const ASSETS = [
   './js/atmosphere.js',
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',
   './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',
-  './js/game-settings.js', './js/paint.js',
+  './js/game-settings.js', './js/paint.js', './js/sw-cache-policy.js',
   './js/yoto.js', './js/yoto-config.js', './js/yoto-player.js',
   './games/index.html', './games/tap-pop.html', './games/peek-a-boo.html',
   './games/magic-touch.html', './games/tap-a-tune.html', './games/surprise-pop.html', './games/shape-match.html',
@@ -213,8 +214,13 @@ self.addEventListener('fetch', e => {
     // to the cached copy only when offline / the network fails.
     e.respondWith(
       fetch(e.request, { cache: 'no-store' }).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+        // Never cache a login redirect or an error page. Behind Cloudflare Access
+        // an expired session answers with one, and a cached login page would make
+        // the app unopenable offline. See js/sw-cache-policy.js.
+        if (self.vbShouldCache(res)) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+        }
         return res;
       }).catch(() => caches.match(e.request))
     );
