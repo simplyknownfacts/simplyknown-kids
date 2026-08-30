@@ -23,7 +23,13 @@
 //   vb_cloud_pulled_at      ms timestamp of last successful cloud pull
 //   vb_cloud_pushed_at      ms timestamp of last successful cloud push
 
-const SYNC_BASE = 'https://simplyknown-kids-sync.simplyknownfacts.workers.dev';
+// Which backend this copy of the app talks to is decided by the page's own
+// hostname -- kids1.simplyknown.co and simplyknown-kids1.pages.dev are the dev
+// site and get the dev Worker and dev database. Rule 8.10: dev must never write
+// real family data. A runtime check, so there is still no build step.
+const SYNC_BASE = /^(kids1\.|simplyknown-kids1\.)/.test(location.hostname)
+  ? 'https://simplyknown-kids-sync-dev.simplyknownfacts.workers.dev'
+  : 'https://simplyknown-kids-sync.simplyknownfacts.workers.dev';
 
 // Don't auto-pull more than once per this window (covers spam navigation AND
 // stops the merge→reload from re-triggering itself: the reloaded page sees a
