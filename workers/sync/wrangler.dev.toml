@@ -1,0 +1,14 @@
+# The DEV twin of the family-sync Worker. Same committed source as production,
+# second name, its own database. Rule 8.10: dev never touches real family data.
+#
+# Deliberately has NO ElevenLabs secret. The same Worker hosts the paid
+# voice-generation endpoints, and a dev environment must not be able to spend
+# money -- without the key those endpoints fail and nothing else is affected.
+name = "simplyknown-kids-sync-dev"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sync-dev"
+database_id = "a2fc1027-7378-4858-a880-fe08ab1d2ca4"
