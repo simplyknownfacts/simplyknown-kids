@@ -145,16 +145,29 @@
 
       subtitle.textContent = `${profile.name}'s shows`;
 
+      // The channel emoji and label are typed by a grown-up and round-trip through
+      // cloud sync, so they are untrusted. Build the nodes and set their TEXT —
+      // never innerHTML, or a name containing markup would run as code on this
+      // origin (where the sync key and Yoto tokens live).
+      const cell = (cls, text) => {
+        const el = document.createElement('div');
+        el.className = cls;
+        el.textContent = text;
+        return el;
+      };
+
       channels.forEach(ch => {
         const tile = document.createElement('div');
         tile.className = 'channel-tile';
-        tile.innerHTML = `
-          <div class="ct-screen">${ch.emoji || '📺'}</div>
-          <div class="ct-info">
-            <div class="ct-label">${ch.label}</div>
-            <div class="ct-play">▶</div>
-          </div>
-        `;
+
+        const info = document.createElement('div');
+        info.className = 'ct-info';
+        info.appendChild(cell('ct-label', ch.label == null ? '' : ch.label));
+        info.appendChild(cell('ct-play', '▶'));
+
+        tile.appendChild(cell('ct-screen', ch.emoji || '📺'));
+        tile.appendChild(info);
+
         tile.addEventListener('click', () => openChannel(ch));
         grid.appendChild(tile);
       });
