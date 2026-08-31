@@ -18,11 +18,12 @@ started) · **PARKED** (real, deliberately deferred, with the reason).
 | 1 | Backup Worker `/run` — no authentication, anyone could dump the DB | **FIXED.** `X-Backup-Secret` header required, fails closed if unset. Proved live: unauthed 401, wrong-secret 401, correct 200, nightly cron unaffected. Commit `b1fb4ae`. |
 | 2 | Stored XSS in 4 screens (videos channel label, game-settings profile name, parent-settings sync email, listen/Yoto titles+covers) | **FIXED**, all four plus one more found in passing (a coloring-page image address). `tests/hostile-input.test.mjs` proves it by reverting each fix and watching the test fail, then restoring it. Commits `a9bb07e`, `31361b7`, `0a2f4dc`, `59b6001`, `688220e`. |
 | 3 | Cloud sign-in is single-device — a new sign-in silently kicks the old one | **OPEN.** This is Stage 1b of the hosting migration spec and is the literal meaning of Scott's "sign in on any device" ask. Needs a sessions table (one hashed token per device) replacing the single `sync_key`. Not started. |
-| 4 | No brute-force protection on signup/signin; sign-in errors reveal which emails exist | **PARTLY FIXED.** Signup now needs an invite word (`SIGNUP_CODE`, fails closed) plus per-IP and global daily caps — closes the "mint accounts to guess passwords at scale" path. **Still open:** no lockout on repeated wrong-password attempts against one *existing* account, and `no account for that email` (404) vs `wrong password` (401) still tells a caller which is true. |
-| 5 | Voice clips served with no auth, predictable key, cached publicly for a year | **OPEN.** `GET /voice-clip` still takes name+voice+index with no session check. |
-| 6 | No account deletion or password recovery, while `privacy.html` implies both | **OPEN.** `/reset` is a stub; sign-out does not delete data. Needs a real reset flow, an authenticated delete endpoint, and a rewrite of the privacy copy to say exactly what happens to backups. |
+| 4 | No brute-force protection on signup/signin; sign-in errors reveal which emails exist | **FIXED, 2026-08-31.** Signup needs an invite word (`SIGNUP_CODE`, fails closed) plus per-IP/global daily caps. Sign-in: "no account" and "wrong password" now return the identical status+message, pbkdf2 always runs (timing-safe), and 8 failed attempts in 15 min locks the account out — proved live to block even the *correct* password while locked. Commit `356c3b1`. |
+| 5 | Voice clips served with no auth, predictable key, cached publicly for a year | **PARTLY FIXED, 2026-08-31.** Hashed-IP daily cap (50/day) added, and the response is no longer publicly cacheable. **Deliberately not full session auth** — the endpoint is fetched from a child's own home screen, possibly signed-out/offline, and a stricter fix couldn't be verified without a real device. Master's ruling: check at the tablet-in-hand step of the Cloudflare migration. Commit `356c3b1`. |
+| 6 | No account deletion or password recovery, while `privacy.html` implies both | **PARTLY FIXED, 2026-08-31.** Real authenticated `POST /delete-account` ships — proved live end to end (signup → delete → sign-in on that email fails). `privacy.html` rewritten to describe it. **Password recovery still open** — needs an email-sending vendor this Worker doesn't have; spec written (`docs/superpowers/specs/2026-08-31-password-recovery.md`, proposes Resend, ~$0/mo, Kids-scoped key), nothing built, rides to Scott through master. Commit `356c3b1`. |
 | 7 | Sign-in hangs on "Working…" forever offline | **FIXED.** `_request` in `js/sync.js` never throws now; every failure returns `{ok:false, error}`. 15s abort timeout added. Proved with a real browser against both a dead connection and a stalled one. Commit `c887d87`. |
-| 8 | Core child navigation not reachable by keyboard or screen reader | **OPEN.** Clickable `<div>`s throughout `index.html`, `home.html`, the section hubs. Real `<button>`/`<a>` elements needed. Not started — this is the largest remaining HIGH by surface area. |
+| 8 | Core child navigation not reachable by keyboard or screen reader | **IN PROGRESS, 2026-08-31.** An agent is mid-edit on `index.html`, `home.html`, and the three section hubs converting clickable `<div>`s to real `<button>`/`<a>` elements. Not yet landed/verified as of this ledger update. |
+| — | (2026-08-31) Tier gating only ever proven from the allowed side — nothing stopped a direct URL/bookmark opening an above-tier activity | **FIXED.** Investigation found NO activity page enforced its own tier at all — only menus hid the card. One shared guard added in `js/app.js` (every activity page already loads it), reusing the app's own `isActivityVisible()`. Proved 4 directions: below-min blocked by URL and by menu, past-maxTier (ABCs) blocked the same way, parent override still works. Commit `c6b94d8`. |
 | — | (2026-08-30 sweep) Deploy could publish untracked/ignored files — `stage-site.mjs` copied whole working-tree directories | **FIXED.** Now builds the staged copy from `git ls-files`, not the filesystem. Proved by planting a junk file inside an allowed directory and confirming it does not appear in the build. Commit `18e4970`. |
 
 ## MEDIUM
@@ -63,13 +64,16 @@ curl -s -o /dev/null -w "%{http_code}\n" https://simplyknown-kids-backup.simplyk
 `X-Backup-Secret`. The nightly scheduled backup runs through a separate code
 path (`scheduled()`) untouched by this change.
 
-## What Phase 1(b) still needs, in the order the work order asked for
+## What Phase 1(b) still needs — updated 2026-08-31, end of day
 
-1. Voice-clip enumeration (HIGH #5) — add a session check, stop public year-long caching.
-2. Account deletion + password recovery (HIGH #6) — real endpoints, honest privacy copy.
-3. Keyboard/screen-reader core navigation (HIGH #8) — the largest item, touches `index.html`, `home.html`, every section hub.
-4. Sign-in brute force + account-enumeration (rest of HIGH #4) — lockout on repeated wrong passwords, uniform error text.
-5. Single-device sync (HIGH #3) — the sessions-table rework, already scoped as migration Stage 1b.
+1. ~~Voice-clip enumeration (HIGH #5)~~ — partly closed (rate limit); full session auth parked to the migration's tablet-in-hand step.
+2. ~~Account deletion (HIGH #6)~~ — shipped. Password recovery still open, spec written, needs Scott's yes on Resend + a Kids-scoped key.
+3. **Keyboard/screen-reader core navigation (HIGH #8)** — the one item still genuinely in progress. Largest by surface area.
+4. ~~Sign-in brute force + account-enumeration (HIGH #4)~~ — shipped and proven.
+5. Single-device sync (HIGH #3) — the sessions-table rework, already scoped as migration Stage 1b. Not started.
+
+Everything in this Phase-1(b) list except #3 and #5 is now closed. #3 is the
+last blocker before Phase 1 can be reported done.
 
 ## Extending the verify drive — the discrepancy to flag
 
