@@ -41,10 +41,24 @@ published to the web, and that hostile text typed into a name or synced from the
 cloud is displayed as words rather than run as code.
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8866/index.html
+curl -s http://localhost:8866/__health.json
 ```
 
-Expected: **200**. Anything else means step 1 did not work and nothing below is meaningful.
+Expected: a small JSON block whose `app` is **`kids`**.
+
+This is the identity check, and it is not decoration. Every app in the fleet runs a
+dev server on a similar port, and a sibling's server answering here would let a whole
+verify run drive the wrong application and report a confident pass — which is exactly
+what happened to Land, and is now a fleet non-negotiable. The Drive step in section 3
+asserts this before it opens a single page and stops dead if anything else replies.
+
+`scripts/serve.mjs` also refuses to start on a busy port rather than quietly
+attaching to whatever is already there. Both take `PORT=`:
+
+```bash
+PORT=8877 node scripts/serve.mjs
+BASE=http://localhost:8877 node tests/verify-drive.mjs
+```
 
 ```bash
 node --check sw.js

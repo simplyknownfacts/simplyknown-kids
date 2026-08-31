@@ -60,6 +60,33 @@ const IGNORE = [
 ];
 const ignorable = (t) => IGNORE.some(i => i.match.test(t));
 
+/* ---- Prove we are pointed at THIS app, before driving anything. ----
+   Every app in the fleet defaults to a similar dev port. A sibling's server
+   answering here would let this run drive the wrong application and report a
+   confident pass. Fleet Verification Standard §2: assert the identity, and
+   exit non-zero if anything else replies. */
+{
+  let who = null, why = '';
+  try {
+    const r = await fetch(BASE + '/__health.json', { cache: 'no-store' });
+    if (!r.ok) why = 'HTTP ' + r.status;
+    else who = await r.json();
+  } catch (e) { why = e.message; }
+
+  if (!who) {
+    console.error('Nothing identifiable is serving at ' + BASE + ' (' + why + ').');
+    console.error('Start it first:  node scripts/serve.mjs');
+    process.exit(1);
+  }
+  if (who.app !== 'kids') {
+    console.error('WRONG APP at ' + BASE + ' — it says app="' + who.app + '", expected "kids".');
+    console.error('Another project is serving on this port. Stop it, or point elsewhere:');
+    console.error('  PORT=8877 node scripts/serve.mjs   then   BASE=http://localhost:8877 node tests/verify-drive.mjs');
+    process.exit(1);
+  }
+  console.log('serving: ' + (who.name || who.app) + '  (' + BASE + ')\n');
+}
+
 const results = [];
 let failures = 0;
 

@@ -1,0 +1,6 @@
+{
+  "app": "kids",
+  "name": "SimplyKnown Kids",
+  "ok": true,
+  "note": "Identity marker. The verify pass asserts app==kids before driving anything, so it can never grade a different app that happens to be answering on the same port. Fleet Verification Standard §2."
+}

@@ -49,4 +49,17 @@ const server = createServer(async (req, res) => {
   }
 });
 
+// Refuse a busy port rather than quietly attaching to whatever is there.
+// A sibling app's dev server answering on our port is how a verify pass ends up
+// grading the wrong application and reporting a confident pass.
+server.on('error', (e) => {
+  if (e.code === 'EADDRINUSE') {
+    console.error('port ' + PORT + ' is already in use — something else is serving there.');
+    console.error('Stop it, or pick another port:  PORT=8877 node scripts/serve.mjs');
+    process.exit(1);
+  }
+  console.error('server failed:', e.message);
+  process.exit(1);
+});
+
 server.listen(PORT, () => console.log('serving ' + ROOT + ' on http://localhost:' + PORT));

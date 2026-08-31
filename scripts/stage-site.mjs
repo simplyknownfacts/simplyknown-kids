@@ -27,6 +27,9 @@ const PUBLISH = [
   'yoto-callback.html',
   // PWA plumbing
   'manifest.json', 'offline-manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png',
+  // Identity marker, so the verify pass can prove it is grading THIS app.
+  // Shipped on purpose: it must be reachable on a deployed environment too.
+  '__health.json',
   // app directories
   'css', 'js', 'assets', 'audio', 'mascots',
   'art', 'games', 'learning', 'listen', 'parent', 'videos',
