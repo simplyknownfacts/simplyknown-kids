@@ -119,8 +119,19 @@
     const profile = getActiveProfile();
     if (!profile) { goProfiles(); return; }
     const tier = getActivityTier(profile, 'stamp-art');
+
+    // Feature switches, read the way every other activity reads them: on by
+    // itself at the age js/profiles.js advertises for the toggle, or early if a
+    // grown-up ticked the box in Parent Settings. The stamp picker used to be
+    // hardcoded on, which made its switch in Parent Settings do nothing at all.
+    const showPalette = tier >= 2 || getProfileFeature(profile, 'stamp-art', 'stampPalette');
+    const showThemes  = tier >= 5 || getProfileFeature(profile, 'stamp-art', 'themeSwitcher');
+
     renderBackBtn('index.html');
-    gameSettings.attach('stamp-art', { container: '#stampbar' });
+    // The gear normally rides inside the stamp toolbar so the two can never
+    // overlap. With the picker off there IS no toolbar — it stays hidden — so
+    // fall back to the floating gear, or the grown-up door would be invisible.
+    gameSettings.attach('stamp-art', showPalette ? { container: '#stampbar' } : undefined);
     if (window.vbProgress) { vbProgress.firstPlay('stamp-art'); vbProgress.touchStreak(); }
 
     const canvas = document.getElementById('canvas');
@@ -171,9 +182,6 @@
         );
       }, 1200);
     }
-
-    const showPalette = true; // always show — toddlers benefit most from tapping big colorful stamps
-    const showThemes  = tier >= 5 || getProfileFeature(profile, 'stamp-art', 'themeSwitcher');
 
     if (showPalette) {
       const bar = document.getElementById('stampbar');
