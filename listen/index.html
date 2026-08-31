@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>SimplyKnown Kids — Listen</title>
+  <title>SimplyKnown Kids — Song Hut</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/themes.css">
   <script>/* apply the active kid's theme before first paint (default storybook = no attribute) */try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook")document.documentElement.setAttribute("data-vbtheme",_t)}catch(e){}</script>
@@ -62,6 +62,112 @@
       color: var(--text); font-family: var(--font-display); font-style: italic;
       font-weight: 500; font-size: 22px; margin-bottom: 10px;
     }
+
+    /* ── Song Hut rooms: sleep timer, make-music link, coming soon ────────── */
+    .hut-block {
+      width: 100%; max-width: 800px; margin: 0 0 30px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .hut-head {
+      font-family: var(--font-display); font-style: italic; font-weight: 600;
+      font-size: 24px; color: var(--text); margin: 0 0 14px; text-align: center;
+    }
+    .hut-note {
+      font-family: var(--font-ui); font-size: 14px; line-height: 1.55;
+      color: var(--text-soft); text-align: center;
+      margin: 14px auto 0; max-width: 430px;
+    }
+
+    /* Sleep timer — a grown-up control, so plain and obvious beats clever. */
+    .sleep-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    /* Paper cards like every other tappable thing in the app — a translucent
+       chip disappears into the sky, and this is the control a grown-up has to
+       find in a dim room. */
+    .sleep-btn {
+      min-width: 84px; min-height: 84px; padding: 10px;
+      border-radius: 22px; cursor: pointer;
+      background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+      border: 3px solid transparent; box-shadow: var(--paper-shadow);
+      color: var(--ink); font-family: var(--font-ui);
+      font-size: 26px; font-weight: 800; line-height: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    .sleep-btn .unit { font-size: 13px; font-weight: 700; opacity: 0.7; }
+    .sleep-btn:active { transform: scale(0.94); }
+    .sleep-btn[aria-pressed="true"] {
+      background: var(--accent); border-color: var(--ink); color: var(--ink);
+    }
+    .sleep-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .sleep-status {
+      font-family: var(--font-ui); font-size: 15px; font-weight: 600;
+      color: var(--text-soft); text-align: center; margin: 16px 0 0;
+    }
+
+    /* Link out to the music-making activity (it still lives in Games). */
+    .hut-link {
+      display: flex; align-items: center; gap: 16px;
+      width: 100%; max-width: 430px; min-height: 88px; padding: 14px 20px;
+      border-radius: 22px; text-decoration: none; color: var(--ink);
+      background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+      box-shadow: var(--paper-shadow);
+      transition: transform 0.12s ease;
+    }
+    .hut-link:active { transform: scale(0.96); }
+    .hut-link:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .hut-link .hut-link-icon { font-size: 42px; line-height: 1; }
+    .hut-link .hut-link-name {
+      font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: 21px;
+    }
+    .hut-link .hut-link-sub { font-family: var(--font-ui); font-size: 13px; opacity: 0.75; }
+
+    /* Coming soon — must read as "not built yet", never as "broken". Dashed
+       outline + no tap target + a plain-English note under it. */
+    .soon-list {
+      list-style: none; margin: 0; padding: 0; width: 100%;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px;
+    }
+    .soon-card {
+      border-radius: 22px; padding: 22px 12px;
+      background: var(--chip-bg); border: 2px dashed var(--chip-border);
+      display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+    }
+    .soon-card .soon-icon { font-size: 42px; line-height: 1; opacity: 0.55; }
+    .soon-card .soon-name {
+      font-family: var(--font-display); font-style: italic; font-weight: 500;
+      font-size: 19px; color: var(--text);
+    }
+    .soon-card .soon-tag {
+      font-family: var(--font-ui); font-size: 12px; font-weight: 800;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-soft);
+      border: 1px solid var(--chip-border); border-radius: 999px; padding: 5px 12px;
+    }
+
+    /* The calm state after the sleep timer runs out. */
+    .sleep-veil {
+      position: fixed; inset: 0; z-index: 300; padding: 28px;
+      background: color-mix(in srgb, var(--bg-0) 88%, transparent);
+      backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sleep-veil[hidden] { display: none; }
+    .sleep-veil-inner { text-align: center; max-width: 380px; }
+    .sleep-veil-moon { font-size: 76px; line-height: 1; margin-bottom: 10px; }
+    .sleep-veil h2 {
+      font-family: var(--font-display); font-style: italic; font-weight: 600;
+      font-size: 34px; color: var(--text); margin: 0 0 10px;
+    }
+    .sleep-veil p {
+      font-family: var(--font-ui); font-size: 16px; line-height: 1.5;
+      color: var(--text-soft); margin: 0 0 28px;
+    }
+    .sleep-veil-btn {
+      min-height: 64px; min-width: 180px; padding: 0 28px;
+      border-radius: 999px; cursor: pointer;
+      background: var(--chip-bg); border: 2px solid var(--chip-border); color: var(--text);
+      font-family: var(--font-ui); font-size: 18px; font-weight: 800;
+    }
+    .sleep-veil-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
     /* Mini player */
     #player {
@@ -141,9 +247,56 @@
 </head>
 <body class="section-listen">
   <div class="listen-screen">
-    <h1 class="hub-title">Listen</h1>
+    <h1 class="hub-title">Song Hut</h1>
     <div class="hub-subtitle" id="subtitle"></div>
-    <div id="grid" class="cards-grid"></div>
+
+    <!-- What a child came for goes first; the sleep timer is a grown-up control
+         and sits under it, still well above the fold on a tablet. -->
+    <section class="hut-block" aria-labelledby="cardsHead">
+      <h2 class="hut-head" id="cardsHead">🎧 Yoto cards</h2>
+      <div id="grid" class="cards-grid"></div>
+    </section>
+
+    <section class="hut-block" aria-labelledby="sleepHead">
+      <h2 class="hut-head" id="sleepHead">😴 Sleep timer</h2>
+      <div class="sleep-row" id="sleepRow">
+        <button type="button" class="sleep-btn" data-mins="5"  aria-pressed="false">5<span class="unit">min</span></button>
+        <button type="button" class="sleep-btn" data-mins="10" aria-pressed="false">10<span class="unit">min</span></button>
+        <button type="button" class="sleep-btn" data-mins="20" aria-pressed="false">20<span class="unit">min</span></button>
+        <button type="button" class="sleep-btn" data-mins="30" aria-pressed="false">30<span class="unit">min</span></button>
+        <button type="button" class="sleep-btn" data-mins="0"  aria-pressed="true">Off</button>
+      </div>
+      <p class="sleep-status" id="sleepStatus" role="status">Sleep timer is off</p>
+    </section>
+
+    <section class="hut-block" id="makeMusic" aria-labelledby="makeHead" hidden>
+      <h2 class="hut-head" id="makeHead">🎹 Make your own music</h2>
+      <a class="hut-link" href="../games/tap-a-tune.html">
+        <span class="hut-link-icon" aria-hidden="true">🎹</span>
+        <span>
+          <span class="hut-link-name">Tap-a-Tune</span><br>
+          <span class="hut-link-sub">Play the keys and make a song</span>
+        </span>
+      </a>
+    </section>
+
+    <section class="hut-block" aria-labelledby="soonHead">
+      <h2 class="hut-head" id="soonHead">Coming soon</h2>
+      <ul class="soon-list">
+        <li class="soon-card">
+          <span class="soon-icon" aria-hidden="true">🌙</span>
+          <span class="soon-name">Lullabies</span>
+          <span class="soon-tag">Coming soon</span>
+        </li>
+        <li class="soon-card">
+          <span class="soon-icon" aria-hidden="true">🎤</span>
+          <span class="soon-name">Sing-along</span>
+          <span class="soon-tag">Coming soon</span>
+        </li>
+      </ul>
+      <p class="hut-note">These two are not built yet — there are no songs in the app so far.
+        Nothing is broken; they will appear here once there is music to play.</p>
+    </section>
   </div>
 
   <div id="player">
@@ -158,6 +311,15 @@
     <button class="btn-skip" id="nextChap" aria-label="Next chapter">⏭</button>
   </div>
 
+  <div class="sleep-veil" id="sleepVeil" hidden>
+    <div class="sleep-veil-inner" role="dialog" aria-modal="true" aria-labelledby="sleepVeilTitle">
+      <div class="sleep-veil-moon" aria-hidden="true">🌙</div>
+      <h2 id="sleepVeilTitle">Time to sleep</h2>
+      <p>The music has faded out. Goodnight.</p>
+      <button type="button" class="sleep-veil-btn" id="sleepVeilBtn">Okay</button>
+    </div>
+  </div>
+
   <script src="../js/atmosphere.js"></script>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
@@ -165,6 +327,7 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/mascot.js"></script>
+  <script src="../js/sleep-timer.js"></script>
   <script src="../js/yoto-config.js"></script>
   <script src="../js/yoto.js"></script>
   <script src="../js/yoto-player.js"></script>
@@ -216,7 +379,7 @@
       }
 
       if (!yoto.isConfigured()) {
-        emptyState('🎧', 'Listen tab not set up yet',
+        emptyState('🎧', 'Yoto cards are not set up yet',
           'A grown-up needs to add a Yoto client ID in:<br>' +
           '<strong style="color:var(--text);">⚙️ Parent Settings → 🎧 Yoto</strong>');
         return;
@@ -356,6 +519,97 @@
       audio.addEventListener('ended', () => {
         if (currentIdx + 1 >= currentChapters.length && window.yotoPlayer) window.yotoPlayer.clear();
       });
+    })();
+  </script>
+  <script>
+    // ── Song Hut furniture ────────────────────────────────────────────────
+    // Everything that is not the Yoto player. Kept in its own block on purpose:
+    // the Yoto block above returns early whenever a family has no Yoto (which
+    // is every family today — the integration is blocked on Yoto verifying the
+    // app), and the sleep timer must still work on that page.
+    (function () {
+      const profile = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
+      if (!profile) return;   // the Yoto block already sent us to the profile picker
+
+      const subtitle = document.getElementById('subtitle');
+      if (subtitle && !subtitle.textContent) subtitle.textContent = `${profile.name}'s songs`;
+
+      // Tap-a-Tune stays in Games — this is only a door to it. It obeys the same
+      // age/parent gate as the Games menu, so a hidden activity is not smuggled
+      // in through here. (If the registry is missing the page is broken anyway,
+      // so an unreadable gate shows the link rather than hiding music.)
+      let showTune = true;
+      try {
+        if (typeof isActivityVisible === 'function') showTune = isActivityVisible(profile, 'tap-a-tune');
+      } catch (e) {}
+      const makeMusic = document.getElementById('makeMusic');
+      if (makeMusic) makeMusic.hidden = !showTune;
+
+      // ── Sleep timer UI. The clock itself lives in js/sleep-timer.js ───────
+      const timer = window.vbSleepTimer;
+      if (!timer) return;
+
+      const buttons = Array.prototype.slice.call(document.querySelectorAll('.sleep-btn'));
+      const statusEl = document.getElementById('sleepStatus');
+      const veil = document.getElementById('sleepVeil');
+      const veilBtn = document.getElementById('sleepVeilBtn');
+
+      function statusText() {
+        if (timer.isFading()) return 'Fading the music out…';
+        const ms = timer.remainingMs();
+        if (!ms) return 'Sleep timer is off';
+        const mins = Math.ceil(ms / 60000);
+        return mins <= 1 ? 'Music stops in less than a minute'
+                         : 'Music stops in ' + mins + ' minutes';
+      }
+
+      function render() {
+        const active = timer.minutes();
+        buttons.forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.mins) === active)));
+        // Only write when it actually changed — this repaints every second, and
+        // role="status" would otherwise nag a screen reader non-stop.
+        const text = statusText();
+        if (statusEl.textContent !== text) statusEl.textContent = text;
+      }
+
+      function showVeil() {
+        veil.hidden = false;
+        try { veilBtn.focus(); } catch (e) {}
+      }
+      function hideVeil() {
+        if (veil.hidden) return;
+        veil.hidden = true;
+        timer.dismiss();
+      }
+
+      buttons.forEach(b => b.addEventListener('click', () => {
+        const mins = Number(b.dataset.mins);
+        hideVeil();
+        // No chime here on purpose: this button is pressed at bedtime.
+        if (mins > 0) timer.set(mins); else timer.cancel();
+        render();
+      }));
+
+      veilBtn.addEventListener('click', () => { hideVeil(); render(); });
+
+      document.addEventListener('vb:sleep-timer', (e) => {
+        render();
+        if (e.detail && e.detail.phase === 'done') showVeil();
+      });
+
+      // The Yoto play/pause button only repaints itself when it is tapped, so
+      // after the sleep timer pauses the tape it would still read ⏸ — and the
+      // next tap on a button that looks like "pause" would start the music
+      // again, at bedtime. Keep the glyph honest from out here instead of
+      // reaching into the player's own code.
+      const audio = document.getElementById('audio');
+      const playPauseBtn = document.getElementById('playPause');
+      if (audio && playPauseBtn) {
+        audio.addEventListener('play', () => { playPauseBtn.textContent = '⏸'; });
+        audio.addEventListener('pause', () => { playPauseBtn.textContent = '▶'; });
+      }
+
+      render();
     })();
   </script>
 </body>
