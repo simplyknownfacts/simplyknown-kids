@@ -60,3 +60,6 @@ docs/verify/shots/
 # not have ignored them and a stray `git add .` would have published a raw audit.
 CODEX-NOTES.md
 CODEX-TASKS.md
+
+# per-run staging folders made by tests — regenerable, never committed
+.publish-test-*/

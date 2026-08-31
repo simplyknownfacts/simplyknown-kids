@@ -1,25 +1,35 @@
 // Publishing the wrong files to a public children's site is a leak, not a bug.
 // This pins exactly what reaches Cloudflare Pages.
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const OUT = path.join(ROOT, '.publish');
 
-// Stage ONCE per run, not once per test. All three tests inspect the same
-// .publish/ folder, and rebuilding a 5,000-file tree three times over gave
-// Windows a chance to still be holding handles from the previous wipe --
-// which showed up as an intermittent ENOTEMPTY that looked like a real
-// failure. One build, three readers, no race, and it finishes far quicker.
+// Build into a folder of OUR OWN, never the real .publish.
+//
+// Two reasons. First, .publish is the deploy output: a test run should not wipe
+// what someone is about to upload. Second, and the actual bug this fixes, two
+// `npm test` runs at once -- easy to hit with more than one agent in the repo --
+// had both processes wiping and rebuilding the same 5,000-file directory. On
+// Windows the recursive delete then failed with ENOTEMPTY while the other run
+// was still writing into it, and all three tests in this file failed together
+// for a reason that had nothing to do with the app.
+//
+// The pid makes it unique per process, so concurrent runs cannot collide.
+const OUT = path.join(ROOT, '.publish-test-' + process.pid);
+
+// Stage once, read three times. Cheaper, and there is nothing to race.
 let staged = false;
 function stage() {
   if (staged) return;
-  execFileSync(process.execPath, ['scripts/stage-site.mjs'], { cwd: ROOT, stdio: 'pipe' });
+  execFileSync(process.execPath, ['scripts/stage-site.mjs', OUT], { cwd: ROOT, stdio: 'pipe' });
   staged = true;
 }
+
+after(() => { fs.rmSync(OUT, { recursive: true, force: true }); });
 const has = (p) => fs.existsSync(path.join(OUT, p));
 
 test('the app itself is published', () => {
