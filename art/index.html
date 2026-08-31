@@ -68,10 +68,11 @@
       document.getElementById('emptyMsg').style.display = 'block';
     } else {
       visible.forEach(a => {
-        const card = document.createElement('div');
+        const card = document.createElement('button');
+        card.type = 'button';
         card.className = 'activity-card';
         card.onclick = () => go(a.file);
-        card.innerHTML = `<div class="icon">${a.icon}</div><div class="label">${a.name}</div>`;
+        card.innerHTML = `<div class="icon" aria-hidden="true">${a.icon}</div><div class="label">${a.name}</div>`;
         row.appendChild(card);
       });
     }
