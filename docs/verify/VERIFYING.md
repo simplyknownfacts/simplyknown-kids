@@ -68,19 +68,40 @@ Expected: no output. A service worker that does not parse silently kills offline
 
 ## 3. Drive
 
-Open the app in a real browser, at phone size, as a child would use it.
+Open the app in a real browser, as a child (and a parent glancing at a tablet or a
+laptop) would use it.
 
 ```bash
 node tests/verify-drive.mjs
 ```
 
-It seeds two test children (a three-year-old and an eight-year-old, so tier-gated
-screens are exercised at both ends), then opens ten screens: the profile picker, the
-child home, all three section menus, one activity from each section, the achievements
-shelf and the parent area. On each it watches for errors the browser itself reports,
+It seeds **ten test children, one per tier** (birthdays landing mid-tier, never on a
+boundary), then drives **53 screen loads** in four passes:
+
+1. Every activity page — 21 of them, plus Watch and Listen — opened **once each**,
+   signed in as the youngest tier allowed to see it. This is the main coverage
+   requirement: every real destination proven to load, correctly tier-gated.
+2. The child home screen, opened **once per tier** (10 loads) — home is the one screen
+   whose whole job is deciding what a kid's age may see.
+3. The seven shell screens (profile picker, the three section menus, the achievements
+   shelf, the parent PIN gate) opened once at phone size.
+4. The same seven shell screens again at **tablet size** and again at **PC size**, to
+   prove the responsive layout holds.
+
+The activity pages themselves are only ever opened at phone size, and each one only at
+the single tier used to pick it — see
+[`features/NOT-COVERED.md`](features/NOT-COVERED.md) for exactly what that trade-off
+leaves unproven. On every screen it watches for errors the browser itself reports,
 confirms something was actually drawn, and saves a screenshot.
 
-Expected: **10 screens driven, 10 passed, 0 failed**, and **exit code 0**.
+Expected: **53 screens driven, 53 passed, 0 failed**, and **exit code 0**. Takes a
+little over a minute.
+
+The screen list is not hand-typed — it's built from `js/profiles.js`'s
+`ACTIVITY_FEATURES` (the app's own activity registry) and `js/tiers.js`'s `TIERS` (the
+app's own age boundaries), with every path double-checked against disk before the
+browser opens. See the long comment at the top of `tests/verify-drive.mjs` for the
+full reasoning behind the four-pass scope.
 
 To drive a deployed environment instead of your machine:
 
@@ -94,14 +115,20 @@ BASE=https://kids1.simplyknown.co node tests/verify-drive.mjs
 BASE=http://localhost:8866/does-not-exist node tests/verify-drive.mjs; echo "exit $?"
 ```
 
-Expected: **10 failed, exit 1.** If that prints exit 0, the checker is lying and must be
-fixed before it is trusted again.
+Expected: **exit 1**, with a message saying nothing identifiable is serving at that
+address — the `__health.json` identity check (§2) catches a broken address before a
+single browser tab opens, so this is *not* "N screens failed"; it never gets that far.
+If that prints exit 0, the checker is lying and must be fixed before it is trusted again.
+A wrong-app stub (something else answering `/__health.json` with a different `app`
+value) is caught the same way, with a "WRONG APP" message instead.
 
 Deeper per-area recipes live in [`features/`](features/). They cover the parent PIN gate,
 profile switching, an activity with voice, and the achievements shelf. **Cloud sync,
-offline mode, the Yoto integration and the Watch section are deliberately NOT written up
-yet** — see [`features/NOT-COVERED.md`](features/NOT-COVERED.md) for why and what that
-leaves unproven.
+offline mode, and the Yoto integration are deliberately NOT written up yet** — see
+[`features/NOT-COVERED.md`](features/NOT-COVERED.md) for why and what that leaves
+unproven. The Watch and Listen screens *are* now opened by the automated drive (as of
+2026-08-31), but only their empty/default state — no hand-written deep-dive recipe for
+either exists yet.
 
 ## 4. Evidence
 
@@ -139,7 +166,9 @@ Ways this app has produced, or can produce, a false pass. Read before trusting a
    migration spec.
 3. **The tier count disagrees between code and docs.** `js/tiers.js` defines **ten** tiers.
    Parts of the documentation, and `about.html`, still say eight or "ages 1-8". Trusting the
-   docs gives you a wrong expected value. The code is right.
+   docs gives you a wrong expected value. The code is right. (`tests/verify-drive.mjs` reads
+   `TIERS` straight out of `js/tiers.js` rather than hand-copying the count, precisely so it
+   can't develop this same disagreement.)
 4. **Cloudflare Pages answers 200 for URLs that do not exist**, serving the app's HTML
    instead. A missing file therefore looks fine in production while failing locally, where
    `scripts/serve.mjs` returns a real 404. Verify missing-asset problems locally, never on
@@ -162,3 +191,49 @@ Run end to end on Windows, Node v24.15.0, against `http://localhost:8866`.
    a pipe and wrongly reported 0 on a fully failing run.
 5. **Not yet proven:** everything listed in `features/NOT-COVERED.md`, most importantly
    offline mode and cloud sync.
+
+---
+
+## Second run — 2026-08-31: extended to every activity, all ten tiers, three widths
+
+The first run above proved ten hand-picked screens at one phone size, for two
+hand-picked ages. This run rebuilt the Drive step to prove the whole app instead: every
+activity, every tier, and that the layout survives a tablet or a PC.
+
+Run end to end on Windows, Node v24.15.0, against `http://localhost:8866`.
+
+1. **Recount against the repo, not the old doc.** The activity/tier numbers this task
+   started from didn't match reality: `js/profiles.js`'s `ACTIVITY_FEATURES` has 21 live
+   activities (7 games + 10 learning + 4 art; `peek-a-boo.html` is still registered but
+   has had no menu link since commit `5e37113`, so it's deliberately excluded), not 22.
+   `js/tiers.js` defines 10 tiers, confirming trap 3 above. `tests/verify-drive.mjs` now
+   pulls both lists straight from that source code instead of a hand-typed copy.
+2. **Scope chosen to avoid the cross-product.** 21 activities x Watch x Listen x 10
+   tiers x 3 widths would be 690+ page loads. Instead: every destination once at phone
+   width (tier-gated correctly), the child home screen once per tier, and the shell
+   screens (picker + 3 menus + achievements + parent) once at phone and again at tablet
+   + PC. Total: **53 screen loads**. Full reasoning in the header comment of
+   `tests/verify-drive.mjs`.
+3. **Drive:** 53 screens driven, **53 passed, 0 failed**, exit 0, in **1m17s**.
+4. **Negative controls, both re-confirmed:** a broken address exits 1 at the
+   `__health.json` check before any screen opens; a stub server answering
+   `/__health.json` with `app: "not-kids"` is caught the same way ("WRONG APP") and also
+   exits 1. The identity-check block itself was not touched — same logic as the first run.
+5. **`npm test`:** unaffected — 53 tests passed, 0 failed (a coincidence that it's also
+   53; that suite doesn't depend on this file).
+6. **Fixed while doing this:** the activity `section` field ('games' | 'learn' | 'art')
+   is a logical category, not a folder name — `learn` activities actually live in
+   `learning/`. Assuming otherwise on the first pass produced ten false "file not found"
+   failures against real, working pages; caught immediately by the registry-vs-disk
+   check because it fails loud instead of silently skipping.
+7. **Not yet proven:** everything already listed in `features/NOT-COVERED.md`, which was
+   rewritten alongside this run to describe the new, larger gap accurately — most
+   importantly, no activity is driven at more than one tier or at more than phone width,
+   and no activity's optional feature toggles (quiz modes, drag-to-match, etc.) are
+   switched on by this pass.
+8. **Observed, not mine to touch:** another worker was concurrently editing
+   `home.html`, `index.html`, and the three section-menu `index.html` files (accessibility
+   changes — converting section tiles to real `<button>` elements) while this run was in
+   progress. Those files were not modified, committed, or reverted by this work — this
+   task's scope is `tests/verify-drive.mjs` and the two `docs/verify/` files only, and the
+   drive passed cleanly against their in-progress state either way.
