@@ -30,6 +30,17 @@
     document.head.appendChild(s);
   }
 
+  // Escape a value on its way into an HTML attribute. A profile id is generated
+  // by the app, but it round-trips through cloud sync, so a poisoned record could
+  // hand back an id carrying a quote and break out of the attribute. Same shape
+  // as _esc in js/sync.js. Reading it back through element.dataset returns the
+  // original characters, so the ids still match the ones in storage.
+  function _esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function _findActivity(activityId) {
     if (typeof ACTIVITY_FEATURES === 'undefined') return null;
     return ACTIVITY_FEATURES.find(a => a.id === activityId);
@@ -274,7 +285,7 @@
           <span style="margin-left:auto;font-size:11px;color:rgba(255,255,255,0.4);">${isCustom ? '✏️ custom' : '📅 from age'}</span>
         </div>
         <label style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.45);display:block;margin-bottom:5px;">Level</label>
-        <select data-pid="${p.id}" class="gs-tier-sel" style="
+        <select data-pid="${_esc(p.id)}" class="gs-tier-sel" style="
           width:100%;padding:9px 12px;border-radius:10px;
           background:rgba(255,255,255,0.1);color:white;
           border:1px solid rgba(255,255,255,0.25);font-size:14px;cursor:pointer;
@@ -299,7 +310,7 @@
                   padding:1px 8px;border-radius:999px;">${tierAgeRange(f.minTier)}+</span>`
             : '';
           html += `<label style="display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer;">
-            <input type="checkbox" data-pid="${p.id}" data-fk="${f.key}" ${on ? 'checked' : ''}
+            <input type="checkbox" data-pid="${_esc(p.id)}" data-fk="${_esc(f.key)}" ${on ? 'checked' : ''}
                    style="width:20px;height:20px;accent-color:#4ECDC4;cursor:pointer;">
             <span style="font-size:14px;color:rgba(255,255,255,0.85);">${f.label}${ageChip}</span>
           </label>`;

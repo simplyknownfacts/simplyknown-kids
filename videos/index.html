@@ -204,7 +204,11 @@
         wrap.classList.add('active');
         let ids = [];
         try {
-          const res = await fetch(`${FEED_WORKER}?channel=${ch.channelId}`);
+          // The channel id is typed by a grown-up and round-trips through cloud
+          // sync, so it is untrusted text, not a safe token: encode it or an id
+          // containing & or # would rewrite the rest of the address. Same as
+          // home.html does with a child's name on the voice-clip URL.
+          const res = await fetch(`${FEED_WORKER}?channel=${encodeURIComponent(ch.channelId == null ? '' : ch.channelId)}`);
           const data = await res.json();
           if (data && data.videos && data.videos.length) {
             ids = data.videos.map(v => v.id);
