@@ -94,10 +94,10 @@
 
     <div class="profiles-row" id="profilesRow"></div>
 
-    <div class="add-btn" id="addBtn" title="Add child">
-      <div class="plus">+</div>
+    <button type="button" class="add-btn" id="addBtn" title="Add child">
+      <div class="plus" aria-hidden="true">+</div>
       <div class="label">Add a child</div>
-    </div>
+    </button>
   </div>
 
   <button class="settings-gear" id="settingsGear" aria-label="Parent settings" title="Parent settings">
@@ -161,7 +161,8 @@
         string.className = 'profile-string';
         stack.appendChild(string);
 
-        const btn = document.createElement('div');
+        const btn = document.createElement('button');
+        btn.type = 'button';
         btn.className = 'avatar-btn';
         // Per-child glow + body color. Validate the color and escape the name:
         // both round-trip through the shared family cloud-sync record, so a
@@ -170,8 +171,11 @@
         btn.style.setProperty('--avatar-bg',
           `radial-gradient(circle at 35% 30%, ${color}ff 0%, ${color} 60%, ${color}cc 100%)`);
         btn.style.setProperty('--avatar-glow', `${color}cc`);
+        // aria-label (not innerHTML) so it can't be broken out of by a
+        // crafted name — setAttribute never parses its value as markup.
+        btn.setAttribute('aria-label', `Play as ${p.name}, ${ageLabel}`);
         btn.innerHTML =
-          `<span class="emoji">${mascotEmoji(p)}</span>` +
+          `<span class="emoji" aria-hidden="true">${mascotEmoji(p)}</span>` +
           `<span class="name">${_esc(p.name)}</span>` +
           `<span class="age-label">${_esc(ageLabel)}</span>`;
         btn.addEventListener('click', () => {
@@ -198,6 +202,18 @@
     } else {
       _gear.addEventListener('click', () => goTo('parent/settings.html'));
     }
+    // Keyboard accessibility (HIGH #8): the 3s hold-to-open guard is a
+    // touchscreen gesture (pointerdown/pointerup) — Enter/Space never fires
+    // those, so a keyboard user could reach this control but never open it.
+    // Reaching it already requires deliberately tabbing to a hidden,
+    // low-opacity control, so a direct keypress here doesn't weaken the
+    // toddler-proofing that the hold protects against for touch/mouse users.
+    _gear.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        goTo('parent/settings.html');
+      }
+    });
 
     // Seed demo profiles + default video channels if none exist
     if (getProfiles().length === 0) {
