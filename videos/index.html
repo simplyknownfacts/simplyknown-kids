@@ -37,6 +37,12 @@
       cursor: pointer;
       box-shadow: var(--paper-shadow);
       transition: transform 0.15s;
+      /* Accessibility (HIGH #8): now a real <button> — undo default button
+         chrome (border + centered text) that would otherwise change how
+         this tile looks. */
+      border: none;
+      text-align: left;
+      font: inherit;
     }
     .channel-tile:active { transform: scale(0.96); }
     .channel-tile .ct-screen {
@@ -157,15 +163,23 @@
       };
 
       channels.forEach(ch => {
-        const tile = document.createElement('div');
+        const tile = document.createElement('button');
+        tile.type = 'button';
         tile.className = 'channel-tile';
+        // Explicit accessible name (with a safe fallback) rather than relying
+        // on the emoji + play glyph, which are hidden below as decorative.
+        tile.setAttribute('aria-label', (ch.label == null || ch.label === '') ? 'Channel' : String(ch.label));
 
         const info = document.createElement('div');
         info.className = 'ct-info';
         info.appendChild(cell('ct-label', ch.label == null ? '' : ch.label));
-        info.appendChild(cell('ct-play', '▶'));
+        const playBadge = cell('ct-play', '▶');
+        playBadge.setAttribute('aria-hidden', 'true');
+        info.appendChild(playBadge);
 
-        tile.appendChild(cell('ct-screen', ch.emoji || '📺'));
+        const screen = cell('ct-screen', ch.emoji || '📺');
+        screen.setAttribute('aria-hidden', 'true');
+        tile.appendChild(screen);
         tile.appendChild(info);
 
         tile.addEventListener('click', () => openChannel(ch));
@@ -232,10 +246,21 @@
         });
       }
 
-      document.getElementById('playerBack').addEventListener('pointerdown', () => {
+      function closePlayer() {
         if (_player) { try { _player.stopVideo(); _player.destroy(); } catch {} _player = null; }
         document.getElementById('playerHost').innerHTML = '';
         document.getElementById('playerWrap').classList.remove('active');
+      }
+      const _playerBackBtn = document.getElementById('playerBack');
+      _playerBackBtn.addEventListener('pointerdown', closePlayer);
+      // Accessibility (HIGH #8): this is a real <button> already, but its
+      // action is wired to pointerdown, which Enter/Space never fires —
+      // add the keyboard equivalent explicitly.
+      _playerBackBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          closePlayer();
+        }
       });
     })();
   </script>
