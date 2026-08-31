@@ -1,4 +1,5 @@
-// Drive the real app in a real browser at phone size, as a child would.
+// Drive the real app in a real browser, as a child (and a parent glancing at a
+// tablet or a laptop) would.
 //
 // This is the Drive step of docs/verify/VERIFYING.md, and it is the one command
 // that answers "is the app actually working?". It opens each screen, watches for
@@ -14,42 +15,182 @@
 // Needs a browser, installed locally and never committed:
 //   npm i playwright --no-save
 //   npx playwright install chromium-headless-shell
+//
+// ---------------------------------------------------------------------------
+// SCOPE (2026-08-31 rewrite — read this before changing the numbers below)
+// ---------------------------------------------------------------------------
+// The screen list is no longer hand-typed. It is built from js/profiles.js's
+// ACTIVITY_FEATURES (the app's own registry of every activity + its minTier/
+// maxTier) and js/tiers.js's TIERS (the app's own age-to-tier boundaries), so
+// this file cannot quietly drift from the app the way the old hand-typed list
+// and the old "8 tiers" docs did. Every path pulled from the registry is also
+// checked with fs.existsSync before it's trusted (see checkRegistryMatchesDisk
+// below) — a registry entry with no file on disk fails the run loudly instead
+// of silently skipping.
+//
+// A full cross-product of every destination x every tier x every width would
+// be 700+ page loads (15-30+ minutes, a huge shots/ folder) for very little
+// extra confidence: the thing that actually breaks per-tier is gating (does
+// this tier see the right activities?), and the thing that breaks per-width
+// is layout (does the shell still fit?) — not "does every activity re-break
+// differently at every combination of the two". So this run is scoped in four
+// passes instead of one cross-product:
+//
+//   1. Every activity + Watch + Listen, ONCE each, at phone width, signed in
+//      as the youngest tier allowed to see it (its ACTIVITY_FEATURES minTier).
+//      This is the main coverage requirement: every real destination proven
+//      to load, correctly tier-gated — not a gated-away tier finding it
+//      "missing", which would be the gate working, not a bug.
+//   2. The child home screen for all TEN tiers, at phone width. Home is the
+//      one screen whose entire job is deciding what a kid's age may see, so
+//      it's the one screen worth opening once per tier rather than once
+//      overall — every other activity page looks the same regardless of
+//      which eligible tier opened it.
+//   3. The shell screens (profile picker, the three section menus, the
+//      achievements shelf, the parent PIN gate) ONCE at phone width.
+//   4. The same shell screens again at tablet width and again at PC width,
+//      to prove the responsive layout holds, without re-driving all 24
+//      destinations at those widths too.
+//
+// Counted at the bottom of this file's startup log every run. As of this
+// rewrite: 21 activity pages (7 games + 10 learning + 4 art — NOT 22; see
+// "Known traps" #6 in VERIFYING.md for why that number in the original work
+// order didn't add up) + Watch + Listen = 23 destinations driven once each,
+// + 10 tier homes, + 7 shell screens x 3 widths (1 phone + 2 responsive) = 21
+// shell loads. Total: 23 + 10 + 21 = 54 screen loads, one real browser tab
+// each. NOT driven: peek-a-boo.html (registered in ACTIVITY_FEATURES but has
+// had no menu link since commit 5e37113 — deliberately excluded, not drift).
+// Full list of what this run does NOT prove is in features/NOT-COVERED.md.
 import { chromium } from 'playwright';
-import { mkdir, rm } from 'node:fs/promises';
+import { mkdir, rm, readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 const BASE = process.env.BASE || 'http://localhost:8866';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SHOTS = path.join(ROOT, 'docs', 'verify', 'shots');
 
-/* Two children, so tier-gated screens are exercised at both ends. Birthdays are
-   computed from today so the ages never drift stale. */
-function birthdayYearsAgo(years) {
+/* ---------------------------------------------------------------------------
+   Pull ACTIVITY_FEATURES and TIERS straight out of the app's own source, so
+   this file has exactly one source of truth for "what activities exist" and
+   "what a tier's age range is" — the app's code, not a hand-copied list that
+   can go stale the moment someone adds or re-tiers an activity.
+
+   js/profiles.js is written for the browser (plain <script> tag, no export),
+   and its top-level code touches `localStorage`, which doesn't exist in
+   Node. Rather than stub the whole browser environment to run the whole
+   file, this pulls out ONLY the ACTIVITY_FEATURES array literal by matching
+   brackets (tracking string literals so a stray [ or ] inside a label can't
+   confuse it) and evaluates that snippet on its own. Same approach for
+   js/tiers.js's TIERS. Neither file's functions are called from here at all
+   — only the plain data arrays are read. ------------------------------- */
+function extractArrayLiteral(source, varName) {
+  const marker = `const ${varName} = `;
+  const start = source.indexOf(marker);
+  if (start === -1) {
+    throw new Error(`Could not find "${marker}" — has the shape of js/profiles.js or js/tiers.js changed?`);
+  }
+  let i = start + marker.length;
+  while (source[i] !== '[') i++;
+  const arrStart = i;
+  let depth = 0, inStr = null;
+  for (; i < source.length; i++) {
+    const c = source[i];
+    if (inStr) {
+      if (c === '\\') { i++; continue; }
+      if (c === inStr) inStr = null;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { inStr = c; continue; }
+    if (c === '[') depth++;
+    else if (c === ']') { depth--; if (depth === 0) { i++; break; } }
+  }
+  const literalText = source.slice(arrStart, i);
+  return new Function(`"use strict"; return (${literalText});`)();
+}
+
+const [profilesSrc, tiersSrc] = await Promise.all([
+  readFile(path.join(ROOT, 'js', 'profiles.js'), 'utf8'),
+  readFile(path.join(ROOT, 'js', 'tiers.js'), 'utf8'),
+]);
+const ACTIVITY_FEATURES = extractArrayLiteral(profilesSrc, 'ACTIVITY_FEATURES');
+const TIERS = extractArrayLiteral(tiersSrc, 'TIERS');
+
+// peek-a-boo.html is still registered in ACTIVITY_FEATURES but has had no
+// menu link since commit 5e37113 (see CLAUDE.md's "8 total" activity list).
+// Deliberately excluded here — this is a documented retirement, not drift.
+const RETIRED_IDS = new Set(['peek-a-boo']);
+
+// `section` on each ACTIVITY_FEATURES entry ('games' | 'learn' | 'art') is a
+// logical category, not literally the folder name — every activity page
+// navigates with a same-folder relative link (e.g. learning/index.html does
+// `goTo(a.file)`, not `goTo(a.section + '/' + a.file)`), and the folder on
+// disk is plural: learning/, not learn/. Games and art happen to match their
+// section name, which is exactly the kind of coincidence that makes a wrong
+// assumption look right until it silently isn't.
+const SECTION_FOLDER = { games: 'games', learn: 'learning', art: 'art' };
+
+const ACTIVITIES = ACTIVITY_FEATURES
+  .filter(a => !RETIRED_IDS.has(a.id))
+  .map(a => {
+    const folder = SECTION_FOLDER[a.section];
+    if (!folder) throw new Error('Unknown ACTIVITY_FEATURES section "' + a.section + '" on activity "' + a.id + '" — add it to SECTION_FOLDER.');
+    return {
+      id: a.id,
+      section: a.section,
+      minTier: a.minTier || 1,
+      maxTier: a.maxTier || 10,
+      url: '/' + folder + '/' + a.file,
+      diskPath: path.join(ROOT, folder, a.file),
+    };
+  });
+
+/* Fail loud, before opening a single browser tab, if the registry and disk
+   disagree — a registered activity with no matching file is a real bug, not
+   something to skip quietly. */
+function checkRegistryMatchesDisk() {
+  const missing = ACTIVITIES.filter(a => !existsSync(a.diskPath));
+  const extraChecks = [
+    { id:'watch',  diskPath: path.join(ROOT, 'videos', 'index.html') },
+    { id:'listen', diskPath: path.join(ROOT, 'listen', 'index.html') },
+  ].filter(a => !existsSync(a.diskPath));
+  if (missing.length || extraChecks.length) {
+    console.error('ACTIVITY_FEATURES (js/profiles.js) and disk have drifted:');
+    for (const a of [...missing, ...extraChecks]) console.error('  ' + a.id + ' -> ' + a.diskPath + ' (not found)');
+    process.exit(1);
+  }
+}
+checkRegistryMatchesDisk();
+
+/* ---------------------------------------------------------------------------
+   Ten test children, one per tier, birthday computed to land solidly in the
+   middle of that tier's month range — never near a boundary. VERIFYING.md's
+   Known Traps warns boundary ages are flaky (a birthday one day off a tier
+   edge can land in the wrong tier); picking the midpoint of each ~12-month
+   tier gives about six months of slack either side, which easily absorbs the
+   +/-1 month uncertainty from where "today" falls in the current month. ---*/
+function birthdayForTier(tier) {
+  const t = TIERS.find(x => x.tier === tier);
+  // Tier 10 has no upper bound (9999) — treat it as a further 24-month-wide
+  // band past its floor so it gets a midpoint instead of an absurd age.
+  const hi = t.maxMonths >= 9999 ? t.minMonths + 24 : t.maxMonths;
+  const midMonths = t.minMonths + Math.floor((hi - t.minMonths) / 2);
   const d = new Date();
-  d.setFullYear(d.getFullYear() - years);
+  d.setDate(15);                    // fixed mid-month day sidesteps getAgeMonths()'s day-of-month edge case entirely
+  d.setMonth(d.getMonth() - midMonths);
   return d.toISOString().slice(0, 10);
 }
-const PROFILES = [
-  { id:'verify-tot', name:'Tot', birthday:birthdayYearsAgo(3), color:'#7CC6FF',
-    voice:'woman', mascot:null, tierOverrides:{}, features:{}, youtube:[] },
-  { id:'verify-big', name:'Bigkid', birthday:birthdayYearsAgo(8), color:'#FFB347',
-    voice:'man', mascot:null, tierOverrides:{}, features:{}, youtube:[] },
-];
 
-/* The screens a parent would check before believing a release. One activity per
-   section, plus the shell and the parent area. */
-const SCREENS = [
-  { id:'01-profiles',  url:'/index.html',                 what:'Profile picker' },
-  { id:'02-home',      url:'/home.html',                  what:'Child home' },
-  { id:'03-games',     url:'/games/index.html',           what:'Games menu' },
-  { id:'04-tap-pop',   url:'/games/tap-pop.html',         what:'Game: Bubble Pop' },
-  { id:'05-learn',     url:'/learning/index.html',        what:'Learning menu' },
-  { id:'06-count',     url:'/learning/count-along.html',  what:'Learning: Count Along' },
-  { id:'07-art',       url:'/art/index.html',             what:'Art menu' },
-  { id:'08-paint',     url:'/art/finger-paint.html',      what:'Art: Finger Paint' },
-  { id:'09-ribbons',   url:'/achievements.html',          what:'Achievements shelf' },
-  { id:'10-parent',    url:'/parent/settings.html',       what:'Parent settings (PIN gate)' },
-];
+const TIER_COLORS = ['#7CC6FF','#FFB347','#FF8FAB','#B98CFF','#7FE0B0','#FFD166','#6FCF97','#F76E6E','#56CCF2','#C39BD3'];
+const TIER_PROFILES = TIERS.map((t, i) => ({
+  id: 'verify-tier-' + t.tier,
+  name: 'Tier' + t.tier,
+  birthday: birthdayForTier(t.tier),
+  color: TIER_COLORS[i % TIER_COLORS.length],
+  voice: i % 2 === 0 ? 'woman' : 'man',
+  mascot: null, tierOverrides: {}, features: {}, youtube: [],
+}));
+const tierProfileId = (tier) => 'verify-tier-' + tier;
 
 /* Errors that are true of a healthy local run and are NOT the app breaking.
    Every entry needs a reason. Keep this list short and suspicious. */
@@ -87,30 +228,105 @@ const ignorable = (t) => IGNORE.some(i => i.match.test(t));
   console.log('serving: ' + (who.name || who.app) + '  (' + BASE + ')\n');
 }
 
-const results = [];
-let failures = 0;
+/* ---------------------------------------------------------------------------
+   Build the flat screen list. Every entry is one browser tab, one navigation,
+   one screenshot. See the SCOPE comment at the top of the file for why it is
+   organised into these four passes instead of a full cross-product. ------ */
+const SCREENS = [];
 
-const browser = await chromium.launch();
-const ctx = await browser.newContext({
-  viewport: { width: 390, height: 844 },      // a phone, which is how this is used
-  deviceScaleFactor: 2,
-  reducedMotion: 'reduce',                    // steadier screenshots
-});
+// Pass 1 — every activity + Watch + Listen, once each, phone width, using the
+// youngest tier allowed to see it.
+for (const a of ACTIVITIES) {
+  SCREENS.push({
+    id: 'act-' + a.id,
+    url: a.url,
+    what: a.section + ': ' + a.id + ' (tier ' + a.minTier + '+)',
+    profileId: tierProfileId(a.minTier),
+    viewport: 'phone',
+  });
+}
+SCREENS.push({ id:'act-watch',  url:'/videos/index.html', what:'Watch (no tier gate)',  profileId: tierProfileId(5), viewport:'phone' });
+SCREENS.push({ id:'act-listen', url:'/listen/index.html', what:'Listen (no tier gate)', profileId: tierProfileId(5), viewport:'phone' });
 
-/* Seed a child BEFORE any page script runs, otherwise the app redirects to the
-   "add a child" flow and every screen after it is meaningless. */
-await ctx.addInitScript(([profiles, activeId]) => {
-  try {
-    localStorage.setItem('vb_profiles', JSON.stringify(profiles));
-    localStorage.setItem('vb_active_id', activeId);
-  } catch {}
-}, [PROFILES, PROFILES[0].id]);
+// Pass 2 — the child home screen, once per tier, phone width.
+for (const t of TIERS) {
+  SCREENS.push({
+    id: 'tier-' + t.tier + '-home',
+    url: '/home.html',
+    what: 'Child home — tier ' + t.tier + ' (' + t.label + ', ' + t.ageRange + ')',
+    profileId: tierProfileId(t.tier),
+    viewport: 'phone',
+  });
+}
+
+// Pass 3 + 4 — shell screens at phone width once, tablet + PC width again,
+// to prove the responsive layout holds without re-driving every destination
+// at every width. Home is skipped at phone width here — tier 3's home was
+// already driven in Pass 2 above; re-adding it would just be the same
+// screenshot twice.
+const SHELL = [
+  { id:'profiles',   url:'/index.html',           what:'Profile picker' },
+  { id:'home',       url:'/home.html',             what:'Child home' },
+  { id:'games-menu', url:'/games/index.html',      what:'Games menu' },
+  { id:'learn-menu', url:'/learning/index.html',   what:'Learning menu' },
+  { id:'art-menu',   url:'/art/index.html',        what:'Art menu' },
+  { id:'ribbons',    url:'/achievements.html',     what:'Achievements shelf' },
+  { id:'parent',     url:'/parent/settings.html',  what:'Parent settings (PIN gate)' },
+];
+const SHELL_PROFILE = tierProfileId(3);   // a typical toddler — same role the old two-child seed's "Tot" played
+for (const s of SHELL) {
+  if (s.id !== 'home') {
+    SCREENS.push({ id:'shell-' + s.id, url:s.url, what:s.what, profileId:SHELL_PROFILE, viewport:'phone' });
+  }
+  SCREENS.push({ id:'shell-' + s.id + '-tablet',  url:s.url, what:s.what + ' (tablet)',  profileId:SHELL_PROFILE, viewport:'tablet' });
+  SCREENS.push({ id:'shell-' + s.id + '-desktop', url:s.url, what:s.what + ' (desktop)', profileId:SHELL_PROFILE, viewport:'desktop' });
+}
+
+const counts = {
+  phone: SCREENS.filter(s => s.viewport === 'phone').length,
+  tablet: SCREENS.filter(s => s.viewport === 'tablet').length,
+  desktop: SCREENS.filter(s => s.viewport === 'desktop').length,
+};
+console.log(
+  ACTIVITIES.length + ' activity pages + Watch + Listen = ' + (ACTIVITIES.length + 2) + ' destinations, ' +
+  TIERS.length + ' tiers, ' + SHELL.length + ' shell screens.'
+);
+console.log(
+  'Driving ' + SCREENS.length + ' screens total: ' +
+  counts.phone + ' at phone width, ' + counts.tablet + ' at tablet width, ' + counts.desktop + ' at PC width.\n'
+);
+
+/* ---------------------------------------------------------------------------
+   One browser context per viewport (deviceScaleFactor is fixed per context in
+   Playwright, so a shared context can't serve all three sizes). Each context
+   seeds the same ten tier profiles via addInitScript; each individual page
+   then picks which one is "active" via its own addInitScript, which runs
+   after the context-level one on every navigation for that page. --------- */
+const VIEWPORTS = {
+  phone:   { width:390,  height:844,  deviceScaleFactor:2 },
+  tablet:  { width:820,  height:1180, deviceScaleFactor:2 },
+  desktop: { width:1440, height:900,  deviceScaleFactor:1 },
+};
 
 await rm(SHOTS, { recursive: true, force: true });
 await mkdir(SHOTS, { recursive: true });
 
-for (const s of SCREENS) {
+const browser = await chromium.launch();
+const contexts = {};
+for (const [name, viewport] of Object.entries(VIEWPORTS)) {
+  const ctx = await browser.newContext({ viewport, reducedMotion: 'reduce' });
+  await ctx.addInitScript((profiles) => {
+    try { localStorage.setItem('vb_profiles', JSON.stringify(profiles)); } catch {}
+  }, TIER_PROFILES);
+  contexts[name] = ctx;
+}
+
+async function driveScreen(ctx, s) {
   const page = await ctx.newPage();
+  await page.addInitScript((id) => {
+    try { localStorage.setItem('vb_active_id', id); } catch {}
+  }, s.profileId);
+
   const errs = [];
   page.on('console', m => { if (m.type() === 'error' && !ignorable(m.text())) errs.push('console: ' + m.text()); });
   page.on('pageerror', e => errs.push('crash: ' + e.message));
@@ -119,7 +335,7 @@ for (const s of SCREENS) {
     if (!ignorable(t)) errs.push('failed request: ' + t);
   });
 
-  let drew = 0, note = '';
+  let drew = 0;
   try {
     const resp = await page.goto(BASE + s.url, { waitUntil: 'load', timeout: 20000 });
     if (!resp || !resp.ok()) errs.push('page did not load: HTTP ' + (resp ? resp.status() : 'no response'));
@@ -143,12 +359,19 @@ for (const s of SCREENS) {
   }
   await page.close();
 
-  const ok = errs.length === 0;
-  if (!ok) failures++;
-  results.push({ ...s, ok, drew, errs });
-  console.log((ok ? 'PASS  ' : 'FAIL  ') + s.id.padEnd(12) + s.what + (ok ? '' : '\n        ' + errs.join('\n        ')));
+  return { ...s, ok: errs.length === 0, drew, errs };
 }
 
+const results = [];
+let failures = 0;
+for (const s of SCREENS) {
+  const r = await driveScreen(contexts[s.viewport], s);
+  results.push(r);
+  if (!r.ok) failures++;
+  console.log((r.ok ? 'PASS  ' : 'FAIL  ') + r.id.padEnd(26) + r.what + (r.ok ? '' : '\n        ' + r.errs.join('\n        ')));
+}
+
+for (const ctx of Object.values(contexts)) await ctx.close();
 await browser.close();
 
 console.log('\n' + '-'.repeat(62));
