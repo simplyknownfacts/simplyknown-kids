@@ -137,8 +137,8 @@ function _mergeProfileSets(local, cloud, cloudNewer) {
   });
 }
 
-async function _signup(email, password) {
-  const r = await _request('/signup', { method: 'POST', body: JSON.stringify({ email, password }) });
+async function _signup(email, password, code) {
+  const r = await _request('/signup', { method: 'POST', body: JSON.stringify({ email, password, code }) });
   if (!r.ok) return { ok: false, error: r.error };
   localStorage.setItem('vb_sync_email', email.toLowerCase().trim());
   localStorage.setItem('vb_sync_key', r.body.syncKey);

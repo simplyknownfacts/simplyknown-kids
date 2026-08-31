@@ -54,6 +54,13 @@ function randomHex(bytes) {
   crypto.getRandomValues(arr);
   return toHex(arr);
 }
+// Compare without leaking, through response time, how much of the value matched.
+function secretMatches(given, expected) {
+  if (!expected || !given || given.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < given.length; i++) diff |= given.charCodeAt(i) ^ expected.charCodeAt(i);
+  return diff === 0;
+}
 function normEmail(e) { return (e || '').trim().toLowerCase(); }
 function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 async function emailHash(e) { return await sha256Hex('email-v1:' + normEmail(e)); }
@@ -90,6 +97,18 @@ async function handleSignup(req, env) {
   const password = body.password || '';
   if (!validEmail(email)) return err('invalid email', 400);
   if (password.length < 8) return err('password must be 8+ chars', 400);
+
+  // INVITE WORD. Without this, anyone on the internet can create an account,
+  // and an account is the key to paid voice generation. Checked before the
+  // throttles so a wrong guess costs nothing to reject.
+  //
+  // Fails CLOSED: if the secret was never set on the Worker, sign-up is off
+  // rather than open. Set it with:
+  //   npx wrangler secret put SIGNUP_CODE
+  if (!env.SIGNUP_CODE) return err('sign-up is closed', 403);
+  if (!secretMatches(String((body.code || '')).trim(), env.SIGNUP_CODE)) {
+    return err('that invite word is not right', 403);
+  }
 
   // Signup is open to anyone, and an account is the key to paid voice generation.
   // Two ceilings so a script cannot mint accounts in bulk. Both are deliberately

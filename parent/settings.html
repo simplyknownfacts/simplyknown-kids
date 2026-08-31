@@ -1352,6 +1352,11 @@
               <input type="text" id="syncEmail" placeholder="parent@example.com" autocomplete="email">
               <label style="display:block;margin-top:8px;">Password</label>
               <input type="password" id="syncPassword" placeholder="your password" autocomplete="current-password">
+              <div id="syncCodeRow" style="display:none;">
+                <label style="display:block;margin-top:8px;">Invite word</label>
+                <input type="text" id="syncCode" placeholder="ask whoever set this up" autocomplete="off" spellcheck="false">
+                <div style="font-size:11px;opacity:.6;margin-top:4px;">New accounts need this. It stops strangers signing up and running up the voice bill.</div>
+              </div>
               <button class="btn btn-primary" style="margin-top:10px;width:100%;" id="syncSubmit">Sign in</button>
               <div id="syncMsg" style="color:#FF6B6B;font-size:12px;margin-top:8px;min-height:14px;"></div>
             </div>
@@ -1383,6 +1388,11 @@
               <input type="text" id="syncEmail" placeholder="parent@example.com" autocomplete="email">
               <label style="display:block;margin-top:8px;">Password</label>
               <input type="password" id="syncPassword" placeholder="8+ characters" autocomplete="current-password">
+              <div id="syncCodeRow" style="display:none;">
+                <label style="display:block;margin-top:8px;">Invite word</label>
+                <input type="text" id="syncCode" placeholder="ask whoever set this up" autocomplete="off" spellcheck="false">
+                <div style="font-size:11px;opacity:.6;margin-top:4px;">New accounts need this. It stops strangers signing up and running up the voice bill.</div>
+              </div>
               <button class="btn btn-primary" style="margin-top:10px;width:100%;" id="syncSubmit">Continue</button>
               <div id="syncMsg" style="color:#FF6B6B;font-size:12px;margin-top:8px;min-height:14px;"></div>
             </div>
@@ -1405,6 +1415,8 @@
       _syncMode = mode;
       document.getElementById('syncForm').style.display = 'block';
       document.getElementById('syncSubmit').textContent = mode === 'signup' ? 'Create account & sync' : 'Sign in';
+      const codeRow = document.getElementById('syncCodeRow');
+      if (codeRow) codeRow.style.display = mode === 'signup' ? 'block' : 'none';
       document.getElementById('syncSubmit').onclick = syncSubmit;
       document.getElementById('syncMsg').textContent = '';
     }
@@ -1415,13 +1427,20 @@
       const msg = document.getElementById('syncMsg');
       msg.style.color = '#FF6B6B';
       msg.textContent = 'Working…';
-      const fn = _syncMode === 'signup' ? window.cloudSync.signup : window.cloudSync.signin;
-      const r = await fn(email, password);
+      const codeEl = document.getElementById('syncCode');
+      const code = codeEl ? codeEl.value.trim() : '';
+      const r = _syncMode === 'signup'
+        ? await window.cloudSync.signup(email, password, code)
+        : await window.cloudSync.signin(email, password);
       if (!r.ok) {
         // Translate raw server/error strings into plain-English for parents.
         const raw = (r.error || '').toLowerCase();
         let friendly;
-        if (raw.includes('invalid') || raw.includes('password') || raw.includes('credential') || raw.includes('401'))
+        if (raw.includes('invite') || raw.includes('sign-up is closed'))
+          friendly = 'That invite word is not right. Ask whoever set up this app.';
+        else if (raw.includes('too many') || raw.includes('resting'))
+          friendly = 'Too many new accounts today. Please try again tomorrow.';
+        else if (raw.includes('invalid') || raw.includes('password') || raw.includes('credential') || raw.includes('401'))
           friendly = 'That email or password didn\'t match. Please try again.';
         else if (raw.includes('exists') || raw.includes('already'))
           friendly = 'An account with that email already exists — try Sign in instead.';
