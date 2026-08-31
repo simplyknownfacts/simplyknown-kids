@@ -83,7 +83,8 @@
     if (window.vbProgress) { vbProgress.firstPlay('memory-match'); vbProgress.touchStreak(); }
 
     // Pairs per tier: tiny boards stay easy wins for toddlers; Grade-schoolers
-    // get a real memory workout. Columns keep cards finger-sized on phones.
+    // get a real memory workout. COLS is the most columns we would LIKE; fitCols
+    // below caps it to what the screen can afford at a finger-sized card.
     const PAIRS = tier <= 2 ? 2 : tier <= 3 ? 3 : tier <= 4 ? 4 : tier <= 6 ? 6 : tier <= 8 ? 8 : tier <= 9 ? 10 : 12;
     const COLS  = PAIRS <= 2 ? 2 : PAIRS <= 4 ? 4 : PAIRS <= 6 ? 4 : PAIRS <= 8 ? 4 : tier >= 10 ? 6 : 5;
     const FLIP_BACK_MS = tier <= 4 ? 1100 : 800;   // little kids get longer to look
@@ -96,9 +97,28 @@
     let first = null, lock = false, matched = 0, timer = null;
     window.addEventListener('beforeunload', () => clearTimeout(timer));
 
+    // A card has to stay big enough for a child's finger. COLS above is what the
+    // board WANTS; on a narrow phone it cannot always have it — 6 columns inside
+    // min(94vw, 700px) with 10px gaps is about 42px a card on a 320px screen,
+    // under the ~48px that reliably works for a small hand. So the column count
+    // is capped by what the screen can actually afford. The difficulty is
+    // untouched: exactly the same pairs are dealt, they just wrap onto more rows.
+    const MIN_CARD_PX = 48;
+    function fitCols() {
+      const gap = parseFloat(getComputedStyle(board).columnGap) || 10;
+      const width = board.clientWidth || Math.min(window.innerWidth * 0.94, 700);
+      const afford = Math.floor((width + gap) / (MIN_CARD_PX + gap));
+      return Math.max(2, Math.min(COLS, afford));
+    }
+    // Turning the tablet sideways changes what fits. Re-shape the grid without
+    // rebuilding it, so a game in progress is not thrown away.
+    window.addEventListener('resize', () => {
+      board.style.gridTemplateColumns = `repeat(${fitCols()}, 1fr)`;
+    });
+
     function buildBoard() {
       board.innerHTML = ''; first = null; lock = false; matched = 0;
-      board.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+      board.style.gridTemplateColumns = `repeat(${fitCols()}, 1fr)`;
       const faces = [...EMOJI].sort(() => Math.random() - 0.5).slice(0, PAIRS);
       const deck = [...faces, ...faces].sort(() => Math.random() - 0.5);
       deck.forEach(emoji => {
