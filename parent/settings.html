@@ -1947,9 +1947,28 @@
       if (f && f.scrollIntoView) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    // Today, written the way a date input wants it (YYYY-MM-DD), in the PARENT'S
+    // own timezone. toISOString() would hand back the UTC day, which is a day out
+    // for a good part of the world every evening.
+    function _todayISO() {
+      const d = new Date();
+      return d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+    }
+
     function showAddForm() {
       selectedMascot = null; selectedVoice = null; // force a fresh required pick
       buildAddForm();
+      // A birthday cannot be in the future. Set here rather than in the markup so
+      // it is still today's date tomorrow. saveNewProfile checks it AGAIN: this
+      // attribute only stops the picker offering a future day, and typing over it
+      // or an older browser walks straight past it. Getting this wrong is not a
+      // small mistake — js/tiers.js reads a future date as nought months old, so
+      // one mistyped year turns a nine-year-old into a baby and hides nearly
+      // every activity, which looks like a broken app rather than a typo.
+      const bday = document.getElementById('newBirthday');
+      if (bday) bday.max = _todayISO();
       document.getElementById('addForm').style.display = 'block';
     }
 
@@ -1957,6 +1976,14 @@
       const name = document.getElementById('newName').value.trim();
       const birthday = document.getElementById('newBirthday').value;
       if (!name || !birthday) { alert('Please add a name and birthday.'); return; }
+      // The second half of the future-birthday guard (the first is the `max` on
+      // the picker, set in showAddForm). A date input always hands back
+      // YYYY-MM-DD, so comparing the strings compares the dates, with no
+      // timezone arithmetic to get wrong.
+      if (birthday > _todayISO()) {
+        alert('That birthday is in the future — please check the year.\n\nThe app picks each child\'s activities from their age, so a future date would treat them as a newborn.');
+        return;
+      }
       if (!selectedMascot) { alert('Please pick an animal companion.'); return; }
       if (!selectedVoice)  { alert('Please pick a voice.'); return; }
       const created = addProfile({ name, birthday, color: selectedColor, voice: selectedVoice, mascot: { id: selectedMascot } });
