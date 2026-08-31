@@ -1,4 +1,4 @@
-# TECH-STACK.md — Kids App "Valiant Breeze" (kids.simplyknown.co)
+# TECH-STACK.md — Kids App "SimplyKnown Kids" (kids.simplyknown.co)
 *Orientation for external consultants / auditors / any AI tool or account working on this code. Operational state + house rules live in `CLAUDE.md` (same folder) — read that second.*
 
 ## What this is
@@ -38,7 +38,36 @@ A kids' learning PWA (ages 0–10): games, art, learning activities, recorded vo
 2. Age tiers T1–T10 (`js/tiers.js`) gate features by months-of-age — new activities should respect the tier system + per-profile feature toggles (`js/profiles.js` ACTIVITY_FEATURES).
 3. Audience is toddlers: huge touch targets, no reading required for kid-facing screens, voice prompts everywhere.
 4. iPad/phone-first layout; desktop rendering is a known open decision.
-5. Repo codename "Valiant Breeze" = the kids app. Same thing.
+5. Repo codename "Valiant Breeze" was the old machine-generated codename, retired 2026-08-30. Same app.
 
 ## Doc map
 `CLAUDE.md` = operational truth (voice table, activity test matrix, security notes) · `docs/handoff/` = session handoffs · `tests/e2e/MAP.md` = screen map.
+
+## Naming — read before renaming anything (2026-08-30)
+
+The machine-generated codename **"Valiant Breeze" is retired.** The names now are:
+product **SimplyKnown Kids**, repo **`simplyknown-kids`**, domain **kids.simplyknown.co**,
+slug **`kids`**. Live files and comments were updated on 2026-08-30.
+
+Three things were deliberately NOT renamed, and must not be "tidied up" later:
+
+1. ⛔ **The `vb_` browser-storage keys, and the `vb-vNNN` service-worker cache name.**
+   There are 23 of them, and they hold everything the app knows: child profiles,
+   the parent PIN and recovery phrase, achievements, colouring pages, Yoto tokens,
+   per-game high scores, sync state. **Renaming any of them wipes every child's data
+   on every device**, because the app would look for a key that has never existed.
+   Nobody ever sees these names. There is no benefit and a total-data-loss downside.
+   If they ever must change, it needs a migration that copies old keys to new, keeps
+   reading both for months, and ships in its own release — not a search-and-replace.
+
+2. **"Valiant Breeze Kids App" in `about.html`, `privacy.html` and `js/yoto-config.js`.**
+   That is the name the app is registered under with **Yoto**, on Yoto's side. Those
+   sentences are statements of fact about an outside service's records. Changing our
+   text would make our own documentation wrong, and renaming the registration itself
+   risks the app verification that the Yoto integration is already blocked on.
+
+3. **`docs/handoff/` and dated specs.** Those are a record of what happened at the time.
+   History is not corrected.
+
+Still open, needs Scott: the public GitHub repo description still reads
+"Valiant Breeze — toddler tablet PWA".

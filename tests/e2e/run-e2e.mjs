@@ -1,4 +1,4 @@
-// Full real-click E2E harness for the Valiant Breeze kids PWA.
+// Full real-click E2E harness for the SimplyKnown Kids PWA.
 // Drives the LIVE site with real clicks (no localStorage state-injection beyond
 // the unavoidable "a kid exists" precondition + PIN seed). One isolated browser
 // context per age tier, run concurrently. Implements tests/e2e/MAP.md.

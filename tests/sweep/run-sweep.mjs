@@ -1,4 +1,4 @@
-// Automated verification sweep for the Valiant Breeze kids PWA.
+// Automated verification sweep for the SimplyKnown Kids PWA.
 //
 // Captures a screenshot + structured result for every activity x tier 1..8,
 // plus feature-flag variants, plus home/section-index gating per tier, plus
