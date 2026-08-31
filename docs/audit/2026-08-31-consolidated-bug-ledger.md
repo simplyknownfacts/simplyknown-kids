@@ -22,7 +22,7 @@ started) · **PARKED** (real, deliberately deferred, with the reason).
 | 5 | Voice clips served with no auth, predictable key, cached publicly for a year | **PARTLY FIXED, 2026-08-31.** Hashed-IP daily cap (50/day) added, and the response is no longer publicly cacheable. **Deliberately not full session auth** — the endpoint is fetched from a child's own home screen, possibly signed-out/offline, and a stricter fix couldn't be verified without a real device. Master's ruling: check at the tablet-in-hand step of the Cloudflare migration. Commit `356c3b1`. |
 | 6 | No account deletion or password recovery, while `privacy.html` implies both | **PARTLY FIXED, 2026-08-31.** Real authenticated `POST /delete-account` ships — proved live end to end (signup → delete → sign-in on that email fails). `privacy.html` rewritten to describe it. **Password recovery still open** — needs an email-sending vendor this Worker doesn't have; spec written (`docs/superpowers/specs/2026-08-31-password-recovery.md`, proposes Resend, ~$0/mo, Kids-scoped key), nothing built, rides to Scott through master. Commit `356c3b1`. |
 | 7 | Sign-in hangs on "Working…" forever offline | **FIXED.** `_request` in `js/sync.js` never throws now; every failure returns `{ok:false, error}`. 15s abort timeout added. Proved with a real browser against both a dead connection and a stalled one. Commit `c887d87`. |
-| 8 | Core child navigation not reachable by keyboard or screen reader | **IN PROGRESS, 2026-08-31.** An agent is mid-edit on `index.html`, `home.html`, and the three section hubs converting clickable `<div>`s to real `<button>`/`<a>` elements. Not yet landed/verified as of this ledger update. |
+| 8 | Core child navigation not reachable by keyboard or screen reader | **FIXED, 2026-08-31.** Every clickable `<div>` across `index.html`, `home.html`, the three section hubs, Watch, and Listen converted to a real `<button>`. Proved live: Tab/Enter/Space walked through all 7 pages in real Chromium, 43/43 checks passed (every control reachable, named, activates on both keys). Before/after screenshots pixel-identical. Commits `cad187d`, `b22bc84`, `baeef4f`, `0ba9069`, `d91b447`. **Deliberately out of scope:** Listen's play/pause/skip transport buttons were already fully accessible and untouched — flagged, not a gap in this fix. |
 | — | (2026-08-31) Tier gating only ever proven from the allowed side — nothing stopped a direct URL/bookmark opening an above-tier activity | **FIXED.** Investigation found NO activity page enforced its own tier at all — only menus hid the card. One shared guard added in `js/app.js` (every activity page already loads it), reusing the app's own `isActivityVisible()`. Proved 4 directions: below-min blocked by URL and by menu, past-maxTier (ABCs) blocked the same way, parent override still works. Commit `c6b94d8`. |
 | — | (2026-08-30 sweep) Deploy could publish untracked/ignored files — `stage-site.mjs` copied whole working-tree directories | **FIXED.** Now builds the staged copy from `git ls-files`, not the filesystem. Proved by planting a junk file inside an allowed directory and confirming it does not appear in the build. Commit `18e4970`. |
 
@@ -64,16 +64,19 @@ curl -s -o /dev/null -w "%{http_code}\n" https://simplyknown-kids-backup.simplyk
 `X-Backup-Secret`. The nightly scheduled backup runs through a separate code
 path (`scheduled()`) untouched by this change.
 
-## What Phase 1(b) still needs — updated 2026-08-31, end of day
+## What Phase 1(b) still needs — updated 2026-08-31, close of Phase 1
 
 1. ~~Voice-clip enumeration (HIGH #5)~~ — partly closed (rate limit); full session auth parked to the migration's tablet-in-hand step.
 2. ~~Account deletion (HIGH #6)~~ — shipped. Password recovery still open, spec written, needs Scott's yes on Resend + a Kids-scoped key.
-3. **Keyboard/screen-reader core navigation (HIGH #8)** — the one item still genuinely in progress. Largest by surface area.
+3. ~~Keyboard/screen-reader core navigation (HIGH #8)~~ — shipped and proven, 43/43 checks.
 4. ~~Sign-in brute force + account-enumeration (HIGH #4)~~ — shipped and proven.
-5. Single-device sync (HIGH #3) — the sessions-table rework, already scoped as migration Stage 1b. Not started.
+5. **Single-device sync (HIGH #3)** — the only item not started. Scoped as migration Stage 1b; not part of Phase 1's own close, since it needs the Cloudflare migration's dev environment to build against safely.
 
-Everything in this Phase-1(b) list except #3 and #5 is now closed. #3 is the
-last blocker before Phase 1 can be reported done.
+**Phase 1 is closed** except #3, which was always scoped to a different piece
+of work (the hosting migration), and password recovery, which is a spec
+awaiting Scott's decision, not a code task. One clean full run confirms
+everything landed together: **58 screens driven, 58 passed, exit 0**; `npm
+test` 53/53; negative control still exits 1 on a broken app.
 
 ## Extending the verify drive — the discrepancy to flag
 
