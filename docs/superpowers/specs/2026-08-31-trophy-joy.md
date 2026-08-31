@@ -143,12 +143,24 @@ in the app's existing 4 voices, the same way `js/voice-manifest.js` composes
 existing phrases from parts. `{activity}` slots in from each activity's
 existing name.
 
-**Cost:** ~12-15 phrases × 4 voices ≈ 50-60 clips. **Exact v3 per-character
-pricing has not been checked against ElevenLabs' current published rates** —
-flagging that explicitly rather than inventing a number; the v124 full
-voice-set run (a much larger phrase set) cost $9.43 total, so this is very
-likely under $5, but it needs a real quote before Scott approves spend, per
-the standing $0-without-asking rule.
+**Cost — checked against ElevenLabs' own published rates (2026-08-31), not
+guessed.** v3 uses 1 character = 1 credit, same as v2, at roughly
+$0.10-$0.20 per 1,000 characters depending on plan tier (elevenlabs.io/pricing;
+cross-checked against a third-party 2026 pricing breakdown — both agree on the
+per-character basis and the $0.10/1k figure at API rates).
+
+The 9 template phrases already coded in `js/celebrate.js` total 110
+characters. Adding roughly 6 more named-award variants (e.g. "Sapphire Bubble
+Pop!", longer because they include the activity name) brings a realistic
+15-phrase set to about 260 characters. **× 4 voices = ~1,040 characters total
+→ roughly $0.10–$0.21 for the entire batch.** This replaces the earlier
+"~50-60 clips, likely under $5" estimate, which was a conservative guess
+before checking real rates — the actual cost is about 25x smaller than that
+guess. Whatever ElevenLabs subscription already generates this app's
+name-voice clips likely has more than enough headroom in its monthly
+character allowance to absorb this without even touching pay-as-you-go
+pricing; Scott/master would need to check the account's current usage to
+confirm that, since this chat doesn't have visibility into billing.
 
 **What ships without it:** the tier-scaled confetti/mascot/dwell rework, the
 never-interrupt fix, and burst collapse are all independent of this. Without
