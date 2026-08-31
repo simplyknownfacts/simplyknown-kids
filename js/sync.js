@@ -226,6 +226,21 @@ async function _signout() {
   return { ok: true };
 }
 
+// Real, authenticated, irreversible: removes the account and every synced
+// profile it holds on the server. Local, on-device data is untouched -- this
+// only deletes what left the device.
+async function _deleteAccount() {
+  const key = localStorage.getItem('vb_sync_key');
+  if (!key) return { ok: false, error: 'not signed in' };
+  const r = await _request('/delete-account', { method: 'POST', headers: { Authorization: 'Bearer ' + key } });
+  if (!r.ok) return { ok: false, error: r.error };
+  localStorage.removeItem('vb_sync_email');
+  localStorage.removeItem('vb_sync_key');
+  localStorage.removeItem('vb_cloud_pulled_at');
+  localStorage.removeItem('vb_cloud_pushed_at');
+  return { ok: true };
+}
+
 async function _push(opts) {
   const key = localStorage.getItem('vb_sync_key');
   if (!key) return { ok: false, error: 'not signed in' };
@@ -417,6 +432,7 @@ window.cloudSync = {
   signup: _signup,
   signin: _signin,
   signout: _signout,
+  deleteAccount: _deleteAccount,
   push: _push,
   pull: () => _pull(true),
   autoSync: _autoSync,

@@ -146,6 +146,16 @@ async function handleSignup(req, env) {
   return jsonResp({ syncKey }, 201);
 }
 
+// Failed-signin store, keyed by the ACCOUNT (email hash), not the caller's
+// address: an attacker who rotates IPs is still guessing against one email, and
+// that is what needs to be slow. A generous window and threshold for a family
+// app, stingy for a script trying passwords.
+async function siEnsureTable(env) {
+  await env.DB.prepare(
+    'CREATE TABLE IF NOT EXISTS signin_fail_log (id TEXT PRIMARY KEY, email_hash TEXT, created_at INTEGER)'
+  ).run();
+}
+
 async function handleSignin(req, env) {
   const body = await readJson(req);
   if (!body) return err('bad json', 400);
@@ -153,10 +163,30 @@ async function handleSignin(req, env) {
   const password = body.password || '';
   if (!validEmail(email)) return err('invalid email', 400);
   const eh = await emailHash(email);
+
+  await siEnsureTable(env);
+  const since = Date.now() - 15 * 60 * 1000;
+  const fails = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM signin_fail_log WHERE email_hash = ? AND created_at > ?'
+  ).bind(eh, since).first();
+  if (fails && fails.n >= Number(env.SIGNIN_FAIL_LIMIT || 8)) {
+    return err('too many attempts — try again in a few minutes', 429);
+  }
+
+  // Whether the account exists or the password is wrong, the caller gets the
+  // SAME status and message, and a failure is logged either way. Distinguishing
+  // "no account" from "wrong password" is exactly how a stranger enumerates
+  // which emails are registered to a children's app — closing that is the point.
   const account = await getAccountByEmailHash(env, eh);
-  if (!account) return err('no account for that email', 404);
-  const check = await pbkdf2(password, account.pw_salt);
-  if (check !== account.pw_hash) return err('wrong password', 401);
+  // Hash against a real salt either way — a non-existent account returning
+  // instantly while a real one takes pbkdf2's full time is itself a timing
+  // side-channel for the same enumeration this fix exists to close.
+  const check = await pbkdf2(password, account ? account.pw_salt : eh.slice(0, 32));
+  if (!account || check !== account.pw_hash) {
+    await env.DB.prepare('INSERT INTO signin_fail_log (id, email_hash, created_at) VALUES (?, ?, ?)')
+      .bind(randomHex(12), eh, Date.now()).run();
+    return err('that email or password is not right', 401);
+  }
   const newKey = randomHex(24);
   await env.DB.prepare('UPDATE accounts SET sync_key = ? WHERE email_hash = ?')
     .bind(newKey, eh).run();
@@ -201,6 +231,18 @@ async function handleSignout(req, env) {
 
 async function handleReset() {
   return jsonResp({ message: 'Email-based password reset is not yet enabled. Contact the app owner for help.' }, 202);
+}
+
+// Real, authenticated, self-service. Removes the account and its synced
+// profiles outright — there is no "soft delete" for this to undo, and no email
+// step is needed because the caller already holds a valid session.
+async function handleDeleteAccount(req, env) {
+  const token = extractToken(req);
+  const acc = await getAccountBySyncKey(env, token);
+  if (!acc) return err('unauthorized', 401);
+  await env.DB.prepare('DELETE FROM accounts WHERE email_hash = ?').bind(acc.email_hash).run();
+  await env.DB.prepare('DELETE FROM data WHERE email_hash = ?').bind(acc.email_hash).run();
+  return jsonResp({ ok: true });
 }
 
 // YouTube RSS feed proxy — fetches a channel's videos.xml (no API key needed) and returns video IDs.
@@ -369,12 +411,46 @@ async function handleVoiceName(req, env) {
   return jsonResp({ ok: true, name, ready: true, generated });
 }
 
+// Rate limit for /voice-clip, keyed by a HASH of the caller's address, never
+// the address itself.
+//
+// This does NOT require a session token. home.html fetches this for a child's
+// purchased welcome greeting straight from the child's own home screen, on
+// whichever device the family is using, signed in or not — that is the
+// existing, deliberate design, so it can carry on working offline on a plane
+// on any of a family's devices without asking them to sign back in first. The
+// audit's full fix (a per-family signed URL) would need a client-side change
+// and a live device to prove does not regress that feature; not attempted
+// here without one.
+//
+// What this closes: unlimited free guessing. A real family fetches this a
+// handful of times total, ever — it is cached into vb-offline after the first
+// hit. A script trying thousands of first names to see which exist is not.
+async function vcEnsureTable(env) {
+  await env.DB.prepare(
+    'CREATE TABLE IF NOT EXISTS voiceclip_log (id TEXT PRIMARY KEY, ip_hash TEXT, created_at INTEGER)'
+  ).run();
+}
+
 async function handleVoiceClip(req, env) {
   const url = new URL(req.url);
   const name = nvNormName(url.searchParams.get('name'));
   const voice = url.searchParams.get('voice');
   const i = parseInt(url.searchParams.get('i'), 10);
   if (!name || !NV_VOICES[voice] || !(i >= 0 && i <= 2)) return err('bad params', 400);
+
+  await vcEnsureTable(env);
+  const since = Date.now() - 24 * 3600 * 1000;
+  const ipHash = await sha256Hex('ip-v1:' + (req.headers.get('CF-Connecting-IP') || 'unknown'));
+  const recent = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM voiceclip_log WHERE ip_hash = ? AND created_at > ?'
+  ).bind(ipHash, since).first();
+  if (recent && recent.n >= Number(env.VOICECLIP_DAILY_PER_IP || 50)) {
+    return err('too many requests — try again tomorrow', 429);
+  }
+  await env.DB.prepare('INSERT INTO voiceclip_log (id, ip_hash, created_at) VALUES (?, ?, ?)')
+    .bind(randomHex(12), ipHash, Date.now()).run();
+
   await nvEnsureTable(env);
   const clipKey = await sha256Hex('nv1:' + name + '|' + voice + '|' + i);
   const row = await env.DB.prepare('SELECT mp3 FROM name_clips WHERE clip_key = ?')
@@ -386,7 +462,11 @@ async function handleVoiceClip(req, env) {
     status: 200,
     headers: {
       'Content-Type': 'audio/mpeg',
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      // 'private', not 'public': a shared/CDN cache answering for anyone who
+      // guesses the URL is its own enumeration channel. The app's own offline
+      // cache (vb-offline, written by home.html via the Cache API) is separate
+      // JS-level storage and is completely unaffected by this header.
+      'Cache-Control': 'private, max-age=31536000, immutable',
     },
   });
 }
@@ -407,6 +487,7 @@ export default {
         case '/pull':    response = await handlePull(req, env); break;
         case '/signout': response = await handleSignout(req, env); break;
         case '/reset':   response = await handleReset(); break;
+        case '/delete-account': response = await handleDeleteAccount(req, env); break;
         case '/yt-feed': response = await handleYTFeed(req); break;
         case '/voice-name': response = await handleVoiceName(req, env); break;
         case '/voice-clip': response = await handleVoiceClip(req, env); break;

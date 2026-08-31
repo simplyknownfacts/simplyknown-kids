@@ -1373,6 +1373,7 @@
             </div>
             <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" id="syncNowBtn" onclick="syncNow()">🔄 Sync now</button>
             <button class="btn btn-ghost" style="width:100%;font-size:13px;" onclick="syncSignout()">Sign out of cloud sync</button>
+            <button class="btn btn-ghost" style="width:100%;font-size:12px;margin-top:4px;color:#FF6B6B;" onclick="syncDeleteAccount()">Delete cloud account &amp; synced data</button>
             <div id="syncMsg" style="color:#a8e6cf;font-size:12px;margin-top:8px;min-height:14px;"></div>
           </div>
         `;
@@ -1483,6 +1484,21 @@
     async function syncSignout() {
       await window.cloudSync.signout();
       buildSyncSection();
+    }
+
+    // Irreversible on purpose, so it asks twice: once with plain words about
+    // what is about to happen, once by name. Nothing on the device is touched --
+    // only what has left it.
+    async function syncDeleteAccount() {
+      if (!confirm('Delete your cloud account and everything synced to it? This cannot be undone. Profiles saved only on THIS device are not affected.')) return;
+      if (prompt('Type DELETE to confirm.') !== 'DELETE') return;
+      const r = await window.cloudSync.deleteAccount();
+      const msg = document.getElementById('syncMsg');
+      if (msg) {
+        msg.style.color = r.ok ? '#a8e6cf' : '#FF6B6B';
+        msg.textContent = r.ok ? 'Cloud account deleted.' : 'Could not delete right now — try again.';
+      }
+      if (r.ok) buildSyncSection();
     }
 
     // Forced two-way merge: pushes this device's latest up, pulls + merges the
