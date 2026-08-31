@@ -100,7 +100,16 @@
   let _miniEl = null, _audio = null, _saveTimer = null;
 
   function _hideMini() {
-    if (_audio) { try { _audio.pause(); _audio.src = ''; } catch {} _audio = null; }
+    if (_audio) {
+      // Detach the listeners BEFORE tearing down, or the teardown itself
+      // re-enters clear() through the 'error' handler below.
+      try { _audio.oncanplay = _audio.onended = _audio.onerror = null; } catch {}
+      // NOT src = '': an empty source resolves to this page, so the browser
+      // tries to load the HTML as audio and fires a spurious error at the end
+      // of every card. removeAttribute + load() is the clean stop.
+      try { _audio.pause(); _audio.removeAttribute('src'); _audio.load(); } catch {}
+      _audio = null;
+    }
     if (_miniEl) { _miniEl.remove(); _miniEl = null; }
     clearInterval(_saveTimer); _saveTimer = null;
   }

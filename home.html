@@ -210,7 +210,7 @@
             <line x1="45" y1="20" x2="45" y2="12" stroke="#7FE6D2" stroke-width="2"/>
           </svg>
         </div>
-        <div class="label">Listen</div>
+        <div class="label">Song Hut</div>
       </div>
     </div>
 
@@ -260,7 +260,7 @@
         document.head.appendChild(s);
       }
       const off = !navigator.onLine;
-      [['watchTile','Watch'],['listenTile','Listen']].forEach(([id, name]) => {
+      [['watchTile','Watch'],['listenTile','Song Hut']].forEach(([id, name]) => {
         const t = document.getElementById(id); if (!t) return;
         const lbl = t.querySelector('.label');
         if (off) { t.classList.add('needs-wifi'); if (lbl) lbl.textContent = 'Needs wifi'; t.setAttribute('aria-disabled', 'true'); }
