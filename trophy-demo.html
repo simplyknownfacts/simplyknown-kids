@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  Trophy Joy demo — 2026-08-31 spec, master-approved.
+
+  NOT part of the child-facing app. Not linked from any navigation, not in
+  ACTIVITY_FEATURES, and DELIBERATELY EXCLUDED from scripts/stage-site.mjs's
+  publish allow-list — it never reaches the deployed site, only exists for
+  local review (node scripts/serve.mjs, then open this file).
+
+  Purpose: this is the thing a test suite can't give you. verify-drive.mjs
+  proves the celebration doesn't interrupt play; it can't prove the moment
+  is actually fun. This page is for looking at it.
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trophy Joy demo</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/achievements.css">
+  <style>
+    body { padding: 24px; display: flex; flex-direction: column; gap: 10px; max-width: 480px; margin: 0 auto; }
+    h1 { font-family: var(--font-display); font-size: 22px; }
+    p.note { font-size: 13px; color: var(--text-soft); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    button.demo-btn {
+      flex: 1 1 44%; min-height: 52px; border-radius: 14px; border: 2px solid var(--chip-border, #ccc);
+      background: var(--paper, #fff); font-family: var(--font-ui); font-weight: 700; font-size: 14px;
+      cursor: pointer;
+    }
+    button.demo-btn:active { transform: scale(0.97); }
+    hr { width: 100%; border: none; border-top: 1px solid var(--chip-border, #ccc); margin: 6px 0; }
+    #tapFrenzy { min-height: 120px; border-radius: 14px; background: var(--chip-bg, #eee); display: flex; align-items: center; justify-content: center; font-family: var(--font-ui); }
+  </style>
+</head>
+<body>
+  <h1>🏆 Trophy Joy demo</h1>
+  <p class="note">Not part of the app. Trigger each tier and see how it feels — this is what a test suite can't tell you.</p>
+
+  <div class="row">
+    <button class="demo-btn" data-tier="repeat">⭐ Star (repeat)</button>
+    <button class="demo-btn" data-tier="bronze">🥉 Bronze</button>
+    <button class="demo-btn" data-tier="silver">🥈 Silver</button>
+    <button class="demo-btn" data-tier="gold">🥇 Gold</button>
+    <button class="demo-btn" data-tier="sapphire">💎 Sapphire</button>
+    <button class="demo-btn" data-tier="diamond">💠 Diamond</button>
+    <button class="demo-btn" data-tier="mastery">🏅 Mastery</button>
+    <button class="demo-btn" data-tier="burst">✨ Burst of 4</button>
+  </div>
+
+  <hr>
+  <div class="row">
+    <button class="demo-btn" id="ageLittle">👶 View as tier 2 (little)</button>
+    <button class="demo-btn" id="ageBig">🎓 View as tier 9 (big kid)</button>
+    <button class="demo-btn" id="ageMid" style="flex-basis:100%">🧒 View as tier 5 (default)</button>
+  </div>
+  <p class="note" id="ageNow">Currently viewing as: tier 5 (default)</p>
+
+  <hr>
+  <p class="note"><strong>Never-interrupt check:</strong> tap rapidly below for 3+ seconds — no
+  celebration should appear while you're tapping, only after you stop (tier 3+) or when you
+  press "Leave" (any tier).</p>
+  <div id="tapFrenzy">tap me a lot</div>
+  <div class="row">
+    <span class="note" id="frenzyCount" style="flex:1">0 taps banked, none shown yet</span>
+    <button class="demo-btn" id="leaveBtn" style="flex-basis:100%">🚪 Leave (flush now)</button>
+  </div>
+
+  <script src="js/tiers.js"></script>
+  <script src="js/profiles.js"></script>
+  <script src="js/voice-manifest.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/achievement-defs.js"></script>
+  <script src="js/achievement-logic.js"></script>
+  <script src="js/ribbon.js"></script>
+  <script src="js/celebrate.js"></script>
+  <script src="js/progress.js"></script>
+  <script>
+    // A throwaway profile, never saved to the real profile list — this page
+    // reads/writes its own isolated localStorage key set so it can never
+    // touch a real child's data.
+    const DEMO_ID = 'trophy-demo';
+    function setDemoProfile(birthday) {
+      const list = JSON.parse(localStorage.getItem('vb_profiles') || '[]').filter(p => p.id !== DEMO_ID);
+      // Seeded 5 taps under the real 300-tap star threshold (achievement-defs.js
+      // REPEAT_FAST) using the app's REAL 'tap-pop' counter, so a handful of
+      // genuine clicks on this page fires a genuine unlock through the actual
+      // vbProgress -> vbLogic -> vbCelebrate path, not a simulation of it.
+      list.push({ id: DEMO_ID, name: 'Demo', birthday, color: '#FFD93D', voice: 'woman',
+        mascot: 'dog', tierOverrides: {}, features: {}, youtube: [],
+        achievements: { unlocked: {}, counters: { 'tap-pop': 295 }, repeats: {}, xp: 0, rank: 'sprout', streak: { last: null, current: 0, best: 0 } } });
+      localStorage.setItem('vb_profiles', JSON.stringify(list));
+      localStorage.setItem('vb_active_id', DEMO_ID);
+    }
+    function yearsAgo(y) { const d = new Date(); d.setFullYear(d.getFullYear() - y); return d.toISOString().slice(0, 10); }
+    setDemoProfile(yearsAgo(5)); // tier 5 default
+
+    document.getElementById('ageLittle').onclick = () => { setDemoProfile(yearsAgo(1)); document.getElementById('ageNow').textContent = 'Currently viewing as: tier 2 (little — no idle-fire)'; };
+    document.getElementById('ageBig').onclick   = () => { setDemoProfile(yearsAgo(9)); document.getElementById('ageNow').textContent = 'Currently viewing as: tier 9 (big kid — captions only)'; };
+    document.getElementById('ageMid').onclick   = () => { setDemoProfile(yearsAgo(5)); document.getElementById('ageNow').textContent = 'Currently viewing as: tier 5 (default)'; };
+
+    // Sample defs matching what achievement-defs.js actually produces —
+    // enough shape for celebrate.js to render, without needing a real
+    // profile to have actually earned anything.
+    function sampleDef(type, tier, title) {
+      return { id: 'demo.' + type + '.' + (tier || ''), type, tier, title, icon: '🫧', section: 'games', count: 1 };
+    }
+    const SAMPLES = {
+      repeat:   [sampleDef('repeat', null, 'Bubble Pop Star ×1')],
+      bronze:   [sampleDef('milestone', 'bronze', 'Bubble Pop Bronze')],
+      silver:   [sampleDef('milestone', 'silver', 'Bubble Pop Silver')],
+      gold:     [sampleDef('milestone', 'gold', 'Bubble Pop Gold')],
+      sapphire: [sampleDef('milestone', 'sapphire', 'Bubble Pop Sapphire')],
+      diamond:  [sampleDef('milestone', 'diamond', 'Bubble Pop Diamond')],
+      mastery:  [sampleDef('mastery', null, 'Memory Master')],
+      burst:    [sampleDef('repeat', null, 'Star'), sampleDef('milestone', 'silver', 'Silver'),
+                 sampleDef('milestone', 'gold', 'Gold'), sampleDef('milestone', 'diamond', 'Diamond')],
+    };
+    document.querySelectorAll('.demo-btn[data-tier]').forEach(b => {
+      b.onclick = () => window.vbCelebrate.show(SAMPLES[b.dataset.tier]);
+    });
+
+    // Never-interrupt live check — banks real progress-engine glints/pending
+    // through the actual vbProgress path, not a shortcut, so this proves the
+    // real mechanism, not a simulation of it.
+    let taps = 0;
+    document.getElementById('tapFrenzy').addEventListener('click', () => {
+      taps++;
+      document.getElementById('frenzyCount').textContent = taps + ' taps (5 crosses the real star threshold — watch for the corner glint, then a celebration once you stop or leave)';
+      vbProgress.record('tap-pop');
+    });
+    document.getElementById('leaveBtn').addEventListener('click', () => {
+      window.dispatchEvent(new Event('pagehide'));
+      setTimeout(() => window.dispatchEvent(new Event('load')), 50);
+    });
+  </script>
+</body>
+</html>

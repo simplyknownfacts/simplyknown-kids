@@ -460,6 +460,108 @@ for (const g of gateResults) {
   console.log((g.ok ? 'PASS  ' : 'FAIL  ') + g.id.padEnd(26) + g.what + (g.ok ? '' : '\n        ' + g.errs.join('\n        ')));
 }
 
+/* ---------------------------------------------------------------------------
+   Pass 6 — Trophy Joy: prove the celebration never interrupts a tap-frenzy.
+   (2026-08-31 spec, approved by master.) A real DOM assertion, not a visual
+   check — this is exactly the kind of thing that regresses silently if it's
+   only ever eyeballed.
+------------------------------------------------------------------------- */
+const trophyResults = [];
+{
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.phone, reducedMotion: 'reduce' });
+  const profile = { id:'verify-trophy', name:'Trophy', birthday: birthdayForTier(5),
+    color:'#FFD93D', voice:'woman', mascot:'dog', tierOverrides:{}, features:{}, youtube:[],
+    // 295 — five short of achievement-defs.js's REPEAT_FAST (300) star
+    // threshold, so a handful of rapid taps crosses it live.
+    achievements: { unlocked:{}, counters:{ 'tap-pop':295 }, repeats:{}, xp:0, rank:'sprout',
+                    streak:{ last:null, current:0, best:0 } } };
+  await ctx.addInitScript((p) => { try { localStorage.setItem('vb_profiles', JSON.stringify([p])); } catch {} }, profile);
+  const page = await ctx.newPage();
+  await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, 'verify-trophy');
+  await page.goto(BASE + '/games/tap-pop.html', { waitUntil: 'load', timeout: 15000 });
+  await page.waitForTimeout(500);
+
+  // Cross the threshold with a burst of rapid calls through the REAL
+  // production path (vbProgress -> achievement-logic -> celebrate.js) —
+  // this isn't a simulation, it's the same code an actual tap runs.
+  const overlayDuring = await page.evaluate(async () => {
+    for (let i = 0; i < 8; i++) {
+      vbProgress.record('tap-pop');
+      await new Promise(r => setTimeout(r, 60)); // ~60ms apart — a fast but human tap cadence
+      if (document.querySelector('.vb-celebrate')) return true; // caught mid-burst = FAIL
+    }
+    return false;
+  });
+  trophyResults.push({ id:'trophy-no-interrupt', ok: !overlayDuring,
+    what:'Celebration must NOT appear during a rapid tap burst',
+    errs: overlayDuring ? ['.vb-celebrate appeared mid-burst — the never-interrupt rule regressed'] : [] });
+
+  // Now stop tapping and let the idle timer (2500ms) elapse.
+  await page.waitForTimeout(3200);
+  const appearedAfterIdle = await page.evaluate(() => !!document.querySelector('.vb-celebrate'));
+  trophyResults.push({ id:'trophy-fires-on-idle', ok: appearedAfterIdle,
+    what:'Celebration MUST appear once input goes idle (tier 5, not a little)',
+    errs: appearedAfterIdle ? [] : ['.vb-celebrate never appeared after 3.2s idle — the batch was lost or never flushed'] });
+
+  // Tap-dismiss: must be gone almost immediately, not after the normal dwell.
+  if (appearedAfterIdle) {
+    await page.click('.vb-celebrate');
+    await page.waitForTimeout(120);
+    const stillThere = await page.evaluate(() => !!document.querySelector('.vb-celebrate'));
+    trophyResults.push({ id:'trophy-tap-dismiss', ok: !stillThere,
+      what:'Tapping the celebration must dismiss it almost instantly',
+      errs: stillThere ? ['.vb-celebrate was still present 120ms after being tapped'] : [] });
+  } else {
+    trophyResults.push({ id:'trophy-tap-dismiss', ok: false, what:'Tap-dismiss (skipped — nothing appeared to dismiss)',
+      errs: ['prerequisite trophy-fires-on-idle failed'] });
+  }
+
+  await page.close();
+  await ctx.close();
+}
+{
+  // Master's condition 1: tiers 1-2 get idle-fire OFF (littles pause
+  // constantly; a timer would ambush a natural breather). Only leaving the
+  // page fires it for them. This exact case is what caught a real bug during
+  // this build (home.html loaded progress.js but not celebrate.js, so the
+  // pickup on arrival silently no-opped) — worth a permanent check, not just
+  // a one-off probe.
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.phone, reducedMotion: 'reduce' });
+  const little = { id:'verify-trophy-little', name:'Little', birthday: birthdayForTier(2),
+    color:'#fff', voice:'woman', mascot:'dog', tierOverrides:{}, features:{}, youtube:[],
+    achievements: { unlocked:{}, counters:{ 'tap-pop':295 }, repeats:{}, xp:0, rank:'sprout',
+                    streak:{ last:null, current:0, best:0 } } };
+  await ctx.addInitScript((p) => { try { localStorage.setItem('vb_profiles', JSON.stringify([p])); } catch {} }, little);
+  const page = await ctx.newPage();
+  await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, 'verify-trophy-little');
+  await page.goto(BASE + '/games/tap-pop.html', { waitUntil: 'load', timeout: 15000 });
+  await page.waitForTimeout(400);
+  await page.evaluate(async () => {
+    for (let i = 0; i < 8; i++) { vbProgress.record('tap-pop'); await new Promise(r => setTimeout(r, 60)); }
+  });
+  await page.waitForTimeout(3200); // well past the 2500ms idle window
+  const firedOnIdle = await page.evaluate(() => !!document.querySelector('.vb-celebrate'));
+  trophyResults.push({ id:'trophy-little-no-idle-fire', ok: !firedOnIdle,
+    what:'Tier 2 kid — celebration must NOT fire on idle (littles only flush on leave/arrival)',
+    errs: firedOnIdle ? ['.vb-celebrate appeared on idle for a tier-2 profile'] : [] });
+
+  // The real navigation this bug lived in — same tab, mirrors goTo().
+  await page.goto(BASE + '/home.html', { waitUntil: 'load', timeout: 15000 });
+  await page.waitForTimeout(700);
+  const firedOnArrival = await page.evaluate(() => !!document.querySelector('.vb-celebrate'));
+  trophyResults.push({ id:'trophy-little-fires-on-leave', ok: firedOnArrival,
+    what:'Tier 2 kid — celebration MUST fire on the next page after leaving',
+    errs: firedOnArrival ? [] : ['.vb-celebrate never appeared on home.html after leaving — the batch was lost'] });
+
+  await page.close();
+  await ctx.close();
+}
+for (const t of trophyResults) {
+  results.push(t);
+  if (!t.ok) failures++;
+  console.log((t.ok ? 'PASS  ' : 'FAIL  ') + t.id.padEnd(26) + t.what + (t.ok ? '' : '\n        ' + t.errs.join('\n        ')));
+}
+
 for (const ctx of Object.values(contexts)) await ctx.close();
 await browser.close();
 

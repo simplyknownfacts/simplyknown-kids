@@ -24,8 +24,84 @@
     if (typeof updateProfile === 'function') updateProfile(profileId, { achievements: state });
   }
 
+  // ---------------------------------------------------------------------
+  // Trophy Joy pause-point logic (2026-08-31 spec, approved by master).
+  //
+  // Nothing here needs any of the 21 activity pages to change: this file and
+  // celebrate.js already load on every one of them, so hooking the pause
+  // signals here covers the whole app from two files.
+  //
+  // Every unlock still glints immediately (non-blocking, always safe). The
+  // BIG celebration is batched and only fires at an actual pause:
+  //   - tiers 3-10: after IDLE_MS of no further unlock (a round-based
+  //     quiz's between-question pause and a continuous game's breather both
+  //     naturally clear this; a tap-frenzy does not).
+  //   - tiers 1-2: idle-firing is OFF entirely (master's ruling — littles
+  //     pause constantly, and a timer would ambush a natural break). Only
+  //     leaving the page or the next page's load fires it for them.
+  //   - ANY tier, as a backstop: leaving the page (pagehide/hidden) hands
+  //     the pending batch to sessionStorage instead of trying to render a
+  //     UI mid-navigation; whatever page loads next (mirrors js/sync.js's
+  //     existing flush-on-close pattern) picks it up and shows it on
+  //     arrival — which is inherently a safe, non-interrupting moment,
+  //     since the child hasn't started doing anything there yet.
+  var IDLE_MS = 2500;
+  var PENDING_KEY = 'vb_pending_celebration';
+  var _pending = [];
+  var _idleTimer = null;
+
+  function _isLittle() {
+    try {
+      var p = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
+      return !!(p && typeof tierForAge === 'function' && tierForAge(getAgeMonths(p.birthday)) < 3);
+    } catch (e) { return false; }
+  }
+
+  function _flushNow() {
+    if (!_pending.length) return;
+    var batch = _pending; _pending = [];
+    clearTimeout(_idleTimer); _idleTimer = null;
+    if (window.vbCelebrate) window.vbCelebrate.show(batch);
+  }
+
+  function _flushToStorage() {
+    if (!_pending.length) return;
+    try { sessionStorage.setItem(PENDING_KEY, JSON.stringify(_pending)); } catch (e) {}
+    _pending = [];
+    clearTimeout(_idleTimer); _idleTimer = null;
+  }
+
+  function _showPendingFromStorage() {
+    var raw;
+    try { raw = sessionStorage.getItem(PENDING_KEY); } catch (e) { raw = null; }
+    if (!raw) return;
+    try { sessionStorage.removeItem(PENDING_KEY); } catch (e) {}
+    var batch;
+    try { batch = JSON.parse(raw); } catch (e) { return; }
+    if (batch && batch.length && window.vbCelebrate) window.vbCelebrate.show(batch);
+  }
+
   function celebrate(unlocked) {
-    if (unlocked && unlocked.length && window.vbCelebrate) window.vbCelebrate.show(unlocked);
+    if (!unlocked || !unlocked.length) return;
+    if (!window.vbCelebrate) return;
+    unlocked.forEach(function (d) { window.vbCelebrate.glint(d); });
+    _pending = _pending.concat(unlocked);
+    if (_isLittle()) return; // no idle-fire for littles — leave/load only
+    clearTimeout(_idleTimer);
+    _idleTimer = setTimeout(_flushNow, IDLE_MS);
+  }
+
+  // Runs once per page load — covers "next page's load" for the backstop
+  // above, and doubles as "next Home arrival" since home.html loads this
+  // file too. Deferred slightly so it never races the page's own on-load
+  // setup for a beat.
+  if (typeof window !== 'undefined') {
+    if (document.readyState === 'complete') setTimeout(_showPendingFromStorage, 300);
+    else window.addEventListener('load', function () { setTimeout(_showPendingFromStorage, 300); });
+    window.addEventListener('pagehide', _flushToStorage);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') _flushToStorage();
+    });
   }
 
   // signature of the parts of state that aren't covered by `unlocked` — used to
