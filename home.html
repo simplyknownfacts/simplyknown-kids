@@ -79,6 +79,14 @@
     .section-btn { width: 156px; min-height: 176px; }
     .section-row > .section-btn:nth-child(odd)  { transform: translateY(0); }
     .section-row > .section-btn:nth-child(even) { transform: translateY(16px); }
+    /* Accessibility (HIGH #8): avatar pill + section tiles are now real
+       <button> elements for keyboard/screen-reader support. Undo the two
+       things default button chrome would otherwise change here: a border
+       .section-btn never had, and centered instead of left-aligned label
+       text (both .section-btn .label and .avatar-pill's name/age lines
+       relied on the browser's un-styled left-align default before). */
+    .section-btn { border: none; text-align: left; }
+    .avatar-pill { text-align: left; }
 
     @media (max-width: 600px) {
       .section-row { gap: 14px; }
@@ -108,7 +116,7 @@
     </div>
 
     <!-- Avatar pill — fixed bottom-right; whole pill tap = switch child -->
-    <div class="avatar-pill" id="avatarPill" onclick="goProfiles()" title="Switch child">
+    <button type="button" class="avatar-pill" id="avatarPill" onclick="goProfiles()" aria-label="Switch child" title="Switch child">
       <div class="pill-avatar" id="pillAvatar">🦊</div>
       <div>
         <div class="pill-name" id="pillName">—</div>
@@ -116,11 +124,11 @@
       </div>
       <div class="pill-divider"></div>
       <div class="pill-switch">switch ↻</div>
-    </div>
+    </button>
 
     <div class="section-row">
-      <div class="section-btn" onclick="go('games/index.html')" style="--section-hue: var(--c-games);">
-        <div class="icon">
+      <button type="button" class="section-btn" onclick="go('games/index.html')" style="--section-hue: var(--c-games);">
+        <div class="icon" aria-hidden="true">
           <!-- Gamepad -->
           <svg viewBox="0 0 64 64" width="56" height="56">
             <path d="M12 22 C 12 16, 18 14, 22 14 L 42 14 C 46 14, 52 16, 52 22 L 52 42 C 52 48, 46 50, 42 50 L 22 50 C 18 50, 12 48, 12 42 Z" fill="#3A1B4A"/>
@@ -134,10 +142,10 @@
           </svg>
         </div>
         <div class="label">Games</div>
-      </div>
+      </button>
 
-      <div class="section-btn" onclick="go('learning/index.html')" style="--section-hue: var(--c-learn);">
-        <div class="icon">
+      <button type="button" class="section-btn" onclick="go('learning/index.html')" style="--section-hue: var(--c-learn);">
+        <div class="icon" aria-hidden="true">
           <!-- Book -->
           <svg viewBox="0 0 64 64" width="56" height="56">
             <path d="M6 18 L 30 22 L 30 52 L 6 48 Z" fill="#FBF1D8" stroke="#3A1B4A" stroke-width="1"/>
@@ -153,10 +161,10 @@
           </svg>
         </div>
         <div class="label">Learn</div>
-      </div>
+      </button>
 
-      <div class="section-btn" onclick="go('art/index.html')" style="--section-hue: var(--c-art);">
-        <div class="icon">
+      <button type="button" class="section-btn" onclick="go('art/index.html')" style="--section-hue: var(--c-art);">
+        <div class="icon" aria-hidden="true">
           <!-- Palette + brush -->
           <svg viewBox="0 0 64 64" width="56" height="56">
             <path d="M32 8 C 18 8, 8 18, 8 32 S 18 56, 32 56 C 36 56, 38 52, 36 48 C 34 44, 38 40, 42 42 C 50 44, 56 38, 56 30 C 56 18, 46 8, 32 8 Z" fill="#FBF1D8"/>
@@ -173,10 +181,10 @@
           </svg>
         </div>
         <div class="label">Art</div>
-      </div>
+      </button>
 
-      <div class="section-btn" id="watchTile" onclick="openNet('videos/index.html')" style="--section-hue: var(--c-watch);">
-        <div class="icon">
+      <button type="button" class="section-btn" id="watchTile" onclick="openNet('videos/index.html')" style="--section-hue: var(--c-watch);">
+        <div class="icon" aria-hidden="true">
           <!-- Vintage TV -->
           <svg viewBox="0 0 64 64" width="56" height="56">
             <rect x="6" y="12" width="52" height="38" rx="6" fill="#3A1B4A"/>
@@ -193,10 +201,10 @@
           </svg>
         </div>
         <div class="label">Watch</div>
-      </div>
+      </button>
 
-      <div class="section-btn" id="listenTile" onclick="openNet('listen/index.html')" style="display:none; --section-hue: var(--c-listen);">
-        <div class="icon">
+      <button type="button" class="section-btn" id="listenTile" onclick="openNet('listen/index.html')" style="display:none; --section-hue: var(--c-listen);">
+        <div class="icon" aria-hidden="true">
           <!-- Headphones + notes -->
           <svg viewBox="0 0 64 64" width="56" height="56">
             <path d="M10 36 C 10 20, 22 10, 32 10 S 54 20, 54 36" stroke="#3A1B4A" stroke-width="4" fill="none" stroke-linecap="round"/>
@@ -211,7 +219,7 @@
           </svg>
         </div>
         <div class="label">Listening Hut</div>
-      </div>
+      </button>
     </div>
 
     <div id="vbShelfMount" style="width:100%;max-width:980px;margin:22px auto 0;"></div>
