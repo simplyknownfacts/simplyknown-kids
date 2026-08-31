@@ -54,3 +54,9 @@ tests/e2e/v2/visual/
 
 # verification evidence — screenshots of a child using the app. NEVER committed.
 docs/verify/shots/
+
+# Codex review scratch files — local only, never committed. This rule lived in
+# .git/info/exclude, which is per-machine: a fresh clone of this PUBLIC repo would
+# not have ignored them and a stray `git add .` would have published a raw audit.
+CODEX-NOTES.md
+CODEX-TASKS.md
