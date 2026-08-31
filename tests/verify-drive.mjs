@@ -371,6 +371,95 @@ for (const s of SCREENS) {
   console.log((r.ok ? 'PASS  ' : 'FAIL  ') + r.id.padEnd(26) + r.what + (r.ok ? '' : '\n        ' + r.errs.join('\n        ')));
 }
 
+/* ---------------------------------------------------------------------------
+   Pass 5 — the forbidden side of tier gating.
+   Every check above only proves an ELIGIBLE tier can open its own activities
+   without error — a wall with no gate in it would pass every one of them.
+   This pass proves the other direction, both ways it could leak: the menu
+   must never show a card for something the kid is too young/old for, and
+   typing the activity's own address directly must not work either.
+
+   Reuses ACTIVITY_FEATURES' own minTier/maxTier and the ten profiles already
+   seeded above — no new fixtures, so this can't quietly drift from Pass 1-4.
+------------------------------------------------------------------------- */
+async function gateURL(url, profileId) {
+  const page = await contexts.phone.newPage();
+  await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, profileId);
+  await page.goto(BASE + url, { waitUntil: 'load', timeout: 15000 });
+  await page.waitForTimeout(500);
+  const finalUrl = page.url();
+  await page.close();
+  return finalUrl;
+}
+async function gateMenuHidesCard(menuUrl, profileId, activityName) {
+  const page = await contexts.phone.newPage();
+  await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, profileId);
+  await page.goto(BASE + menuUrl, { waitUntil: 'load', timeout: 15000 });
+  await page.waitForTimeout(500);
+  const shown = await page.evaluate((name) =>
+    [...document.querySelectorAll('.activity-card .label')].some(el => el.textContent.trim() === name),
+    activityName);
+  await page.close();
+  return shown;
+}
+
+const belowTier = ACTIVITIES.find(a => a.minTier >= 4);          // e.g. Money, minTier 4
+const abcs = ACTIVITIES.find(a => a.id === 'abcs');               // minTier 2, maxTier 6 — has both edges
+const gateResults = [];
+
+{
+  const kid1 = tierProfileId(1);                                  // well under belowTier's minTier
+  const url = await gateURL(belowTier.url, kid1);
+  const ok = !url.endsWith(belowTier.url);
+  gateResults.push({ id:'gate-below-min-url', ok,
+    what:'Tier 1 kid direct-URLs to ' + belowTier.id + ' (minTier ' + belowTier.minTier + ') — must NOT load',
+    errs: ok ? [] : ['landed on ' + url + ' — the activity loaded for a kid too young for it'] });
+
+  const menuUrl = '/' + belowTier.section.replace('learn', 'learning') + '/index.html';
+  const shown = await gateMenuHidesCard(menuUrl, kid1, ACTIVITY_FEATURES.find(a => a.id === belowTier.id).name);
+  gateResults.push({ id:'gate-below-min-menu', ok: !shown,
+    what:'Tier 1 kid\'s ' + belowTier.section + ' menu — must NOT show ' + belowTier.id,
+    errs: shown ? ['the card is in the DOM for a kid too young for it'] : [] });
+}
+
+if (abcs) {
+  const kid7 = tierProfileId(7);                                  // past abcs.maxTier (6)
+  const url = await gateURL(abcs.url, kid7);
+  const ok = !url.endsWith(abcs.url);
+  gateResults.push({ id:'gate-max-tier-url', ok,
+    what:'Tier 7 kid direct-URLs to abcs (maxTier ' + abcs.maxTier + ') — must NOT load',
+    errs: ok ? [] : ['landed on ' + url + ' — ABCs loaded for a kid past its cap'] });
+
+  const shown = await gateMenuHidesCard('/learning/index.html', kid7, ACTIVITY_FEATURES.find(a => a.id === 'abcs').name);
+  gateResults.push({ id:'gate-max-tier-menu', ok: !shown,
+    what:'Tier 7 kid\'s learning menu — must NOT show ABCs',
+    errs: shown ? ['the card is in the DOM for a kid past ABCs\' age cap'] : [] });
+
+  // The escape hatch: a parent can force an activity back on via
+  // activitiesVisible (js/profiles.js, isActivityVisible). If the guard
+  // ignored that override it would break a feature that already ships —
+  // proving the override still works is as important as proving the gate.
+  const forcedId = 'verify-gate-abcs-forced';
+  await contexts.phone.addInitScript((id, base) => {
+    try {
+      const list = JSON.parse(localStorage.getItem('vb_profiles') || '[]');
+      list.push({ ...base, id, activitiesVisible: { abcs: true } });
+      localStorage.setItem('vb_profiles', JSON.stringify(list));
+    } catch {}
+  }, forcedId, TIER_PROFILES[6]);
+  const forcedUrl = await gateURL(abcs.url, forcedId);
+  const forcedOk = forcedUrl.endsWith(abcs.url);
+  gateResults.push({ id:'gate-max-tier-override', ok: forcedOk,
+    what:'Same kid, parent override on — ABCs must still open',
+    errs: forcedOk ? [] : ['landed on ' + forcedUrl + ' — the parent override was ignored'] });
+}
+
+for (const g of gateResults) {
+  results.push(g);
+  if (!g.ok) failures++;
+  console.log((g.ok ? 'PASS  ' : 'FAIL  ') + g.id.padEnd(26) + g.what + (g.ok ? '' : '\n        ' + g.errs.join('\n        ')));
+}
+
 for (const ctx of Object.values(contexts)) await ctx.close();
 await browser.close();
 

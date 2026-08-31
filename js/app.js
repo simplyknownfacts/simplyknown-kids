@@ -34,6 +34,27 @@
   }, { capture: true, passive: false });
 })();
 
+// Direct-URL tier gate. Menus only ever LINK to what a kid's age is allowed
+// to see — nothing stopped a bookmark, a shared link, or typing an address
+// from opening an activity straight through, regardless of tier. Every
+// activity page loads this file, so one small guard here covers all of them
+// without touching 21 separate files.
+//
+// Reuses isActivityVisible() (js/profiles.js) rather than re-deriving the
+// tier math, so this can never drift from what the menus themselves decide —
+// including the per-profile activitiesVisible override a parent can already
+// set to force-show something past its normal age range.
+(function _guardDirectActivityAccess() {
+  if (typeof ACTIVITY_FEATURES === 'undefined' || typeof getActiveProfile !== 'function'
+      || typeof isActivityVisible !== 'function') return;
+  const file = (location.pathname.split('/').pop() || '');
+  const activity = ACTIVITY_FEATURES.find(a => a.file === file);
+  if (!activity) return;                       // not an activity page — nothing to guard
+  const profile = getActiveProfile();
+  if (!profile) return;                         // no active kid yet; the page's own flow handles that
+  if (!isActivityVisible(profile, activity.id)) goHome();
+})();
+
 // Idle detection — pauses all <video> elements after 3 min of no input, so the
 // device's screen-off timer can kick in. On Android, an actively-playing video
 // keeps the screen awake; pausing releases that lock.
