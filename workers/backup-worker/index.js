@@ -49,6 +49,9 @@ export default {
         return new Response('backup failed', { status: 500 });
       }
     }
-    return new Response('simplyknown-kids backup worker — runs nightly to R2');
+    // Say what is actually true: this Worker has no cron of its own any more.
+    // The nightly dump belongs to the fleet backup-orchestrator; this endpoint
+    // exists only for a manual, authenticated /run.
+    return new Response('simplyknown-kids backup worker — manual /run only; the nightly backup is run by the fleet orchestrator');
   },
 };

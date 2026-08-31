@@ -4,6 +4,7 @@
 // Worker source, tests and scratch pages; an exclude-list would silently start
 // publishing the next stray file someone drops here. Copying only. No bundling,
 // no minifying, no rewriting — the zero-build simplicity is the point.
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -34,11 +35,26 @@ const PUBLISH = [
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 
+// Copy only files GIT TRACKS.
+//
+// Copying whole directories copies the WORKING TREE, so anything sitting
+// untracked or git-ignored inside js/, parent/, audio/ and the rest would be
+// published to a public website -- scratch notes, a stray export, a key
+// someone parked "just for a second". The allow-list above says which parts of
+// the app ship; git says which files are really part of it. Both must agree.
+const tracked = execFileSync('git', ['ls-files', '-z', '--', ...PUBLISH], {
+  cwd: ROOT, maxBuffer: 64 * 1024 * 1024,
+}).toString('utf8').split('\0').filter(Boolean);
+
+if (!tracked.length) throw new Error('stage-site: git listed no files — is this a git checkout?');
+
 let files = 0;
-for (const entry of PUBLISH) {
-  const from = path.join(ROOT, entry);
-  if (!fs.existsSync(from)) throw new Error('stage-site: missing ' + entry);
-  fs.cpSync(from, path.join(OUT, entry), { recursive: true });
+for (const rel of tracked) {
+  const from = path.join(ROOT, rel);
+  if (!fs.existsSync(from)) continue;           // tracked but deleted locally
+  const to = path.join(OUT, rel);
+  fs.mkdirSync(path.dirname(to), { recursive: true });
+  fs.copyFileSync(from, to);
 }
 (function count(d) {
   for (const e of fs.readdirSync(d, { withFileTypes: true })) {

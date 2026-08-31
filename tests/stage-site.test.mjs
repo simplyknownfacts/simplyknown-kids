@@ -67,12 +67,23 @@ test('no published page links to something we excluded', () => {
     // (`src="${coverUrl}"`, `src="' + body.img + '"`), and those are not static
     // links to check -- only real markup references count.
     const html = fs.readFileSync(p, 'utf8').replace(/<script\b[\s\S]*?<\/script>/gi, '');
-    for (const m of html.matchAll(/(?:src|href)="(?!https?:|data:|mailto:|#)([^"?#]+)/g)) {
-      if (m[1].includes('${') || m[1].includes("' +") || m[1].includes('" +')) continue;
-      const target = m[1].startsWith('/')
-        ? path.join(OUT, m[1])
-        : path.resolve(path.dirname(p), m[1]);
-      if (!fs.existsSync(target)) broken.push(path.relative(OUT, p) + ' -> ' + m[1]);
+    // Both quote styles: matching only double quotes let single-quoted markup
+    // reference a missing file and still pass, then 404 in production.
+    for (const m of html.matchAll(/(?:src|href)\s*=\s*(["'])(?!https?:|data:|mailto:|#)([^"'?#]+)\1?/g)) {
+      const href = m[2];
+      if (href.includes('${') || href.includes("' +") || href.includes('" +')) continue;
+      const target = href.startsWith('/')
+        ? path.join(OUT, href)
+        : path.resolve(path.dirname(p), href);
+      // A link that climbs out of the staged folder must FAIL, not quietly find
+      // the file back in the repo. In production there is no repo to fall back
+      // on, so "../something-we-excluded" is a broken link even though it
+      // resolves here.
+      if (!target.startsWith(OUT + path.sep)) {
+        broken.push(path.relative(OUT, p) + ' -> ' + href + ' (escapes the published folder)');
+        continue;
+      }
+      if (!fs.existsSync(target)) broken.push(path.relative(OUT, p) + ' -> ' + href);
     }
   }
   assert.deepStrictEqual(broken, [], 'published pages reference missing files');

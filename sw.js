@@ -220,7 +220,17 @@ self.addEventListener('fetch', e => {
         // the app unopenable offline. See js/sw-cache-policy.js.
         if (self.vbShouldCache(res)) {
           const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+          // waitUntil, not fire-and-forget: the response is returned on the next
+          // line, and without this the browser is free to shut the worker down
+          // before the cache write lands -- so the page looks fine online and
+          // then has nothing to show offline. Failures are logged rather than
+          // swallowed, because a silently empty cache is the hardest kind of
+          // offline bug to find.
+          e.waitUntil(
+            caches.open(CACHE)
+              .then(c => c.put(e.request, copy))
+              .catch(err => console.warn('sw: could not cache', e.request.url, err))
+          );
         }
         return res;
       }).catch(() => caches.match(e.request))
