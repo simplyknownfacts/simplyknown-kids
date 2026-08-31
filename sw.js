@@ -147,6 +147,7 @@ const ASSETS = [
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',
   './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',
   './js/game-settings.js', './js/paint.js', './js/sw-cache-policy.js',
+  './js/sleep-timer.js',
   './js/yoto.js', './js/yoto-config.js', './js/yoto-player.js',
   './games/index.html', './games/tap-pop.html', './games/peek-a-boo.html',
   './games/magic-touch.html', './games/tap-a-tune.html', './games/surprise-pop.html', './games/shape-match.html',
