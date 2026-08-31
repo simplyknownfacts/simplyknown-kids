@@ -37,10 +37,40 @@ const SYNC_BASE = /^(kids1\.|simplyknown-kids1\.)/.test(location.hostname)
 // has not pulled in far longer than this.
 const PULL_COOLDOWN_MS = 30000;
 
+// How long to wait for the sync server before giving up. The failure this exists
+// for is a tablet on weak wifi: the connection opens and then nothing ever comes
+// back, so a request with no deadline waits for ever and the screen it is
+// attached to never moves again. 15s is generous for a slow mobile connection
+// and still short enough that a parent has not yet concluded the app is broken.
+const REQUEST_TIMEOUT_MS = 15000;
+
 async function _request(path, opts) {
   const url = SYNC_BASE + path;
   const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
-  const res = await fetch(url, { ...opts, headers });
+  // A dead network makes fetch REJECT rather than return a response. Every
+  // caller here — and the parent-settings screen above them — reads a result
+  // OBJECT, so an escaping exception left the sign-in screen stuck on "Working…"
+  // with no way out but closing the page. From here on a failure of any kind is
+  // returned in the same shape as every other failure; this never throws.
+  //
+  // The wording of `error` is load-bearing: parent/settings.html turns it into
+  // plain English by looking for the word "network".
+  const ctl = new AbortController();
+  const giveUp = setTimeout(() => ctl.abort(), REQUEST_TIMEOUT_MS);
+  let res;
+  try {
+    res = await fetch(url, { ...opts, headers, signal: ctl.signal });
+  } catch (e) {
+    return {
+      ok: false,
+      status: 0,
+      error: (e && e.name === 'AbortError')
+        ? 'network timeout — the sync server did not answer'
+        : 'network error — could not reach the sync server',
+    };
+  } finally {
+    clearTimeout(giveUp);
+  }
   let body = null;
   try { body = await res.json(); } catch {}
   if (!res.ok) {

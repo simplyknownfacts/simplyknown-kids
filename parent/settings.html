@@ -1425,16 +1425,30 @@
       const email = document.getElementById('syncEmail').value.trim();
       const password = document.getElementById('syncPassword').value;
       const msg = document.getElementById('syncMsg');
+      const btn = document.getElementById('syncSubmit');
+      const btnLabel = btn ? btn.textContent : '';
       msg.style.color = '#FF6B6B';
       msg.textContent = 'Working…';
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Working…'; }
       const codeEl = document.getElementById('syncCode');
       const code = codeEl ? codeEl.value.trim() : '';
-      const r = _syncMode === 'signup'
-        ? await window.cloudSync.signup(email, password, code)
-        : await window.cloudSync.signin(email, password);
-      if (!r.ok) {
+      // js/sync.js now turns a dead network into an ordinary { ok:false } result,
+      // so this try is the last line of defence rather than the first. It stays
+      // because the failure it guards against is nasty out of all proportion to
+      // its size: anything thrown here used to escape, leaving the screen on
+      // "Working…" for ever with no way out but closing the app.
+      let r;
+      try {
+        r = _syncMode === 'signup'
+          ? await window.cloudSync.signup(email, password, code)
+          : await window.cloudSync.signin(email, password);
+      } catch (e) {
+        r = { ok: false, error: 'network error — could not reach the sync server' };
+      }
+      if (btn) { btn.disabled = false; btn.textContent = btnLabel; }
+      if (!r || !r.ok) {
         // Translate raw server/error strings into plain-English for parents.
-        const raw = (r.error || '').toLowerCase();
+        const raw = ((r && r.error) || '').toLowerCase();
         let friendly;
         if (raw.includes('invite') || raw.includes('sign-up is closed'))
           friendly = 'That invite word is not right. Ask whoever set up this app.';
