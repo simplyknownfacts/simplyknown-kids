@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>SimplyKnown Kids — Song Hut</title>
+  <title>SimplyKnown Kids — Listening Hut</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/themes.css">
   <script>/* apply the active kid's theme before first paint (default storybook = no attribute) */try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook")document.documentElement.setAttribute("data-vbtheme",_t)}catch(e){}</script>
@@ -63,7 +63,7 @@
       font-weight: 500; font-size: 22px; margin-bottom: 10px;
     }
 
-    /* ── Song Hut rooms: sleep timer, make-music link, coming soon ────────── */
+    /* ── Listening Hut rooms: sleep timer, make-music link, coming soon ────────── */
     .hut-block {
       width: 100%; max-width: 800px; margin: 0 0 30px;
       display: flex; flex-direction: column; align-items: center;
@@ -250,7 +250,7 @@
 </head>
 <body class="section-listen">
   <div class="listen-screen">
-    <h1 class="hub-title">Song Hut</h1>
+    <h1 class="hub-title">Listening Hut</h1>
     <div class="hub-subtitle" id="subtitle"></div>
 
     <!-- What a child came for goes first; the sleep timer is a grown-up control
@@ -296,9 +296,16 @@
           <span class="soon-name">Sing-along</span>
           <span class="soon-tag">Coming soon</span>
         </li>
+        <li class="soon-card">
+          <span class="soon-icon" aria-hidden="true">📁</span>
+          <span class="soon-name">Your own music</span>
+          <span class="soon-tag">Coming soon</span>
+        </li>
       </ul>
-      <p class="hut-note">These two are not built yet — there are no songs in the app so far.
-        Nothing is broken; they will appear here once there is music to play.</p>
+      <p class="hut-note">The Listening Hut is where everything to listen to will live: Yoto cards,
+        music you add yourself, and lullabies for bedtime. None of these three are built yet —
+        there are no songs in the app so far. Nothing is broken; they appear here once there is
+        music to play.</p>
     </section>
   </div>
 
@@ -525,7 +532,7 @@
     })();
   </script>
   <script>
-    // ── Song Hut furniture ────────────────────────────────────────────────
+    // ── Listening Hut furniture ────────────────────────────────────────────────
     // Everything that is not the Yoto player. Kept in its own block on purpose:
     // the Yoto block above returns early whenever a family has no Yoto (which
     // is every family today — the integration is blocked on Yoto verifying the

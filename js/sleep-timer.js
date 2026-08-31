@@ -1,4 +1,4 @@
-// Song Hut sleep timer — set it, and the music puts itself to bed.
+// Listening Hut sleep timer — set it, and the music puts itself to bed.
 //
 // Two rules shaped this file:
 //
