@@ -81,3 +81,14 @@ on disk today — flagged for master rather than silently reconciled, since it
 changes how big the extended-drive task actually is. `docs/verify/VERIFYING.md`
 already documents that some historical docs said 8 tiers when the code says 10;
 this may be the same stale-count habit resurfacing.
+
+## Noted for a later phase (not action items now)
+
+- **Parent preview of an above-tier activity.** Since `js/app.js`'s new direct-URL
+  tier guard shipped (commit `c6b94d8`), a signed-in parent trying to preview an
+  above-tier activity while a young kid's profile is active also gets bounced —
+  correctly, since the guard can't tell "parent glancing ahead" from "kid found a
+  link." The existing `activitiesVisible` per-profile override already covers this
+  (a parent can force an activity visible), but master's note (2026-08-31): make
+  that path obvious enough in Parent Settings that a parent finds it without being
+  told. For the Phase 3 design pass, not a Phase 1 fix.
