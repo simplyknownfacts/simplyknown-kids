@@ -177,6 +177,36 @@
       const grid = document.getElementById('grid');
       const subtitle = document.getElementById('subtitle');
 
+      // Anything below arrives from the Yoto API — an outside service. It is
+      // TEXT, never markup: assigned with textContent, and image addresses are
+      // set as a property after checking they are absolute https. Built as an
+      // HTML string (the old way), a card titled `<img onerror=...>` would run
+      // as code on this page and could read the family's stored Yoto tokens.
+      function safeImageUrl(u) {
+        if (typeof u !== 'string') return null;
+        try {
+          const parsed = new URL(u);              // no base: relative/junk throws
+          return parsed.protocol === 'https:' ? parsed.href : null;
+        } catch (e) { return null; }
+      }
+      function coverImage(u) {
+        const href = safeImageUrl(u);
+        if (!href) return null;
+        const img = document.createElement('img');
+        img.src = href;
+        img.alt = '';
+        return img;
+      }
+      function safeText(v, fallback) {
+        return (typeof v === 'string' && v.trim()) ? v : fallback;
+      }
+      function el(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      }
+
       function emptyState(big, heading, body) {
         grid.outerHTML = `<div class="empty">
           <div class="big">${big}</div>
@@ -214,11 +244,12 @@
         const tile = document.createElement('div');
         tile.className = 'card-tile';
         const coverUrl = (c.metadata && c.metadata.cover && c.metadata.cover.imageL) || c.coverImage || c.cover || null;
-        const title = (c.metadata && c.metadata.title) || c.title || 'Untitled';
-        tile.innerHTML = `
-          <div class="card-cover">${coverUrl ? `<img src="${coverUrl}" alt="">` : '🎧'}</div>
-          <div class="card-title">${title}</div>
-        `;
+        const title = safeText((c.metadata && c.metadata.title) || c.title, 'Untitled');
+        const cover = el('div', 'card-cover');
+        const img = coverImage(coverUrl);
+        if (img) cover.appendChild(img); else cover.textContent = '🎧';
+        tile.appendChild(cover);
+        tile.appendChild(el('div', 'card-title', title));
         tile.addEventListener('pointerdown', () => openCard(c.cardId || c.id));
         grid.appendChild(tile);
       });
@@ -266,17 +297,20 @@
       function showChapterPicker(card, chapters) {
         const ov = document.createElement('div');
         ov.className = 'chapters-overlay';
-        ov.innerHTML = `<div class="chapters-panel">
-          <h3>${(card.metadata && card.metadata.title) || 'Pick a chapter'}</h3>
-          <div id="chapList"></div>
-          <button class="chap-close">Close</button>
-        </div>`;
-        ov.querySelector('.chap-close').addEventListener('pointerdown', () => ov.remove());
-        const list = ov.querySelector('#chapList');
+        const panel = el('div', 'chapters-panel');
+        panel.appendChild(el('h3', null, safeText(card.metadata && card.metadata.title, 'Pick a chapter')));
+        const list = el('div');
+        list.id = 'chapList';
+        panel.appendChild(list);
+        const close = el('button', 'chap-close', 'Close');
+        close.type = 'button';
+        close.addEventListener('pointerdown', () => ov.remove());
+        panel.appendChild(close);
+        ov.appendChild(panel);
         chapters.forEach((ch, i) => {
-          const row = document.createElement('div');
-          row.className = 'chap-row';
-          row.innerHTML = `<div class="num">${i+1}</div><div class="t">${ch.title || ch.name || ('Chapter ' + (i+1))}</div>`;
+          const row = el('div', 'chap-row');
+          row.appendChild(el('div', 'num', String(i + 1)));
+          row.appendChild(el('div', 't', safeText(ch.title || ch.name, 'Chapter ' + (i + 1))));
           row.addEventListener('pointerdown', () => { ov.remove(); playChapter(i); });
           list.appendChild(row);
         });
@@ -296,9 +330,11 @@
         playerEl.classList.add('active');
         const card = currentCard;
         const coverUrl = (card.metadata && card.metadata.cover && card.metadata.cover.imageL) || card.coverImage || null;
-        const cardTitle = (card.metadata && card.metadata.title) || 'Playing';
-        const chapTitle = ch.title || ch.name || ('Chapter ' + (idx + 1));
-        playerCover.innerHTML = coverUrl ? `<img src="${coverUrl}" alt="">` : '🎧';
+        const cardTitle = safeText(card.metadata && card.metadata.title, 'Playing');
+        const chapTitle = safeText(ch.title || ch.name, 'Chapter ' + (idx + 1));
+        const coverImg = coverImage(coverUrl);
+        playerCover.textContent = '';
+        if (coverImg) playerCover.appendChild(coverImg); else playerCover.textContent = '🎧';
         playerTitle.textContent = cardTitle;
         playerChap.textContent = chapTitle;
         updateSkipDisabled();
