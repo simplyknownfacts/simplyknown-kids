@@ -641,6 +641,19 @@
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
+    // A stored picture address is only ever one of two things: the data: image
+    // this page made from an uploaded photo, or an https: address. Anything else
+    // (javascript:, http:, a stray quote trying to escape an attribute) becomes a
+    // blank transparent pixel rather than something the browser will act on.
+    const BLANK_PIXEL =
+      'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    function safeImageSrc(url) {
+      const u = String(url == null ? '' : url);
+      if (/^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(u)) return u;
+      if (/^https:\/\/[^\s"'<>]+$/.test(u)) return u;
+      return BLANK_PIXEL;
+    }
+
     // Age chips show a single floor, not a range, so "0-12 mo+" / "1-2 yr+"
     // (a range plus "+" reads as a contradiction). Use the tier's lower bound,
     // or the upper bound when the lower bound is 0. e.g. "12 mo+", "1 yr+".
@@ -1139,11 +1152,16 @@
         tile.style.cssText =
           'background:#f4f0e6; border-radius:12px; overflow:hidden; position:relative; aspect-ratio:1;';
         tile.innerHTML = `
-          <img src="${p.lineArt}" style="width:100%; height:100%; object-fit:contain;">
+          <img style="width:100%; height:100%; object-fit:contain;">
           <button class="btn" data-i="${i}" style="position:absolute; top:6px; right:6px;
                   width:32px; height:32px; border-radius:50%; padding:0; background:#FF6B6B;
                   font-size:14px; font-weight:900;">✕</button>
         `;
+        // The picture comes out of browser storage, so set it as a PROPERTY and
+        // only accept the two shapes it can legitimately have: the data: image
+        // this page itself produced, or an https: address. Pasting it into the
+        // markup above would let a doctored entry break out of the attribute.
+        tile.querySelector('img').src = safeImageSrc(p.lineArt);
         tile.querySelector('button').onclick = () => {
           if (!confirm('Remove this coloring page?')) return;
           const cur = getColoringPages();
@@ -1320,7 +1338,7 @@
         section.innerHTML = `
           <div class="card" style="border:1px solid rgba(255,180,80,0.5);">
             <div style="color:#FFC56B;font-weight:800;margin-bottom:6px;">⚠️ Sync session expired</div>
-            <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:4px;">${s.email}</div>
+            <div class="sync-email" style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:4px;"></div>
             <div style="color:rgba(255,255,255,0.55);font-size:12px;margin-bottom:14px;line-height:1.5;">
               You were signed out of cloud sync (often because you signed in on
               another device). Your kids on this device are safe. Sign in again
@@ -1331,7 +1349,7 @@
             </div>
             <div id="syncForm" style="display:none;">
               <label style="display:block;margin-top:10px;">Email</label>
-              <input type="text" id="syncEmail" placeholder="parent@example.com" autocomplete="email" value="${s.email}">
+              <input type="text" id="syncEmail" placeholder="parent@example.com" autocomplete="email">
               <label style="display:block;margin-top:8px;">Password</label>
               <input type="password" id="syncPassword" placeholder="your password" autocomplete="current-password">
               <button class="btn btn-primary" style="margin-top:10px;width:100%;" id="syncSubmit">Sign in</button>
@@ -1343,7 +1361,7 @@
         section.innerHTML = `
           <div class="card">
             <div style="color:white;font-weight:800;margin-bottom:6px;">✓ Synced automatically</div>
-            <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:4px;">${s.email}</div>
+            <div class="sync-email" style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:4px;"></div>
             <div style="color:rgba(255,255,255,0.5);font-size:12px;margin-bottom:14px;">
               Last synced: ${lastSync}<br>
               Saves to cloud automatically (and the moment you close the app). Other devices merge progress on open.
@@ -1371,6 +1389,15 @@
           </div>
         `;
       }
+
+      // The account email comes back from the sync server, so it is untrusted:
+      // the slots above are left EMPTY in the markup and filled in here as text
+      // and as a value property. Never interpolate it into innerHTML — a
+      // poisoned record would then run as code on this origin, where the sync
+      // key itself is stored.
+      section.querySelectorAll('.sync-email').forEach(el => { el.textContent = s.email || ''; });
+      const emailField = section.querySelector('#syncEmail');
+      if (emailField && s.email) emailField.value = s.email;
     }
 
     let _syncMode = null;
