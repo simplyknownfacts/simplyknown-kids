@@ -9,8 +9,16 @@ import path from 'node:path';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const OUT = path.join(ROOT, '.publish');
 
+// Stage ONCE per run, not once per test. All three tests inspect the same
+// .publish/ folder, and rebuilding a 5,000-file tree three times over gave
+// Windows a chance to still be holding handles from the previous wipe --
+// which showed up as an intermittent ENOTEMPTY that looked like a real
+// failure. One build, three readers, no race, and it finishes far quicker.
+let staged = false;
 function stage() {
+  if (staged) return;
   execFileSync(process.execPath, ['scripts/stage-site.mjs'], { cwd: ROOT, stdio: 'pipe' });
+  staged = true;
 }
 const has = (p) => fs.existsSync(path.join(OUT, p));
 

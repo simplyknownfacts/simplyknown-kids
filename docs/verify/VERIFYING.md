@@ -35,9 +35,10 @@ Before driving anything, confirm the pieces are sane.
 npm test
 ```
 
-Expected: **33 passing, 0 failing.** These cover the achievement rules, the backup
-Worker's authentication, the service worker's caching policy, and what is allowed to
-be published to the web.
+Expected: **41 passing, 0 failing.** These cover the achievement rules, the backup
+Worker's authentication, the service worker's caching policy, what is allowed to be
+published to the web, and that hostile text typed into a name or synced from the
+cloud is displayed as words rather than run as code.
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8866/index.html
