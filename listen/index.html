@@ -36,6 +36,10 @@
       display: flex; flex-direction: column; align-items: center; gap: 10px;
       cursor: pointer; box-shadow: var(--paper-shadow);
       transition: transform 0.15s;
+      /* Accessibility (HIGH #8): now a real <button> — undo the default
+         button border that would otherwise appear here. */
+      border: none;
+      font: inherit;
     }
     .card-tile:active { transform: scale(0.96); }
     .card-cover {
@@ -231,6 +235,9 @@
       display: flex; align-items: center; gap: 12px;
       padding: 14px; border-radius: 14px; cursor: pointer;
       background: rgba(255,255,255,0.06); margin-bottom: 8px;
+      /* Accessibility (HIGH #8): now a real <button>, full width — undo the
+         default border and centered text default buttons carry. */
+      border: none; width: 100%; text-align: left; font: inherit;
     }
     .chap-row:active { background: color-mix(in srgb, var(--c-listen) 25%, transparent); }
     .chap-row .num {
@@ -414,16 +421,29 @@
       }
 
       r.cards.forEach(c => {
-        const tile = document.createElement('div');
+        const tile = document.createElement('button');
+        tile.type = 'button';
         tile.className = 'card-tile';
         const coverUrl = (c.metadata && c.metadata.cover && c.metadata.cover.imageL) || c.coverImage || c.cover || null;
         const title = safeText((c.metadata && c.metadata.title) || c.title, 'Untitled');
         const cover = el('div', 'card-cover');
+        cover.setAttribute('aria-hidden', 'true'); // decorative — card-title carries the real name
         const img = coverImage(coverUrl);
         if (img) cover.appendChild(img); else cover.textContent = '🎧';
         tile.appendChild(cover);
         tile.appendChild(el('div', 'card-title', title));
-        tile.addEventListener('pointerdown', () => openCard(c.cardId || c.id));
+        // Accessibility (HIGH #8): activation is wired to pointerdown (kept,
+        // for identical mouse/touch feel), plus a keydown handler for Enter/
+        // Space since a real <button>'s native click never fires on its own
+        // from pointerdown-only wiring.
+        const activateCard = () => openCard(c.cardId || c.id);
+        tile.addEventListener('pointerdown', activateCard);
+        tile.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+            e.preventDefault();
+            activateCard();
+          }
+        });
         grid.appendChild(tile);
       });
 
@@ -477,14 +497,31 @@
         panel.appendChild(list);
         const close = el('button', 'chap-close', 'Close');
         close.type = 'button';
-        close.addEventListener('pointerdown', () => ov.remove());
+        const closeOverlay = () => ov.remove();
+        close.addEventListener('pointerdown', closeOverlay);
+        // Accessibility (HIGH #8): already a real <button>, but wired to
+        // pointerdown, which Enter/Space never fires — add the keyboard path.
+        close.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+            e.preventDefault();
+            closeOverlay();
+          }
+        });
         panel.appendChild(close);
         ov.appendChild(panel);
         chapters.forEach((ch, i) => {
-          const row = el('div', 'chap-row');
+          const row = el('button', 'chap-row');
+          row.type = 'button';
           row.appendChild(el('div', 'num', String(i + 1)));
           row.appendChild(el('div', 't', safeText(ch.title || ch.name, 'Chapter ' + (i + 1))));
-          row.addEventListener('pointerdown', () => { ov.remove(); playChapter(i); });
+          const activateRow = () => { ov.remove(); playChapter(i); };
+          row.addEventListener('pointerdown', activateRow);
+          row.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+              e.preventDefault();
+              activateRow();
+            }
+          });
           list.appendChild(row);
         });
         document.body.appendChild(ov);
