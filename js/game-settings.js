@@ -270,7 +270,7 @@
       html += `<div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:14px;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
           <span style="font-size:22px;">${mascotEmoji(p)}</span>
-          <span style="font-weight:800;">${p.name}</span>
+          <span class="gs-pname" style="font-weight:800;"></span>
           <span style="margin-left:auto;font-size:11px;color:rgba(255,255,255,0.4);">${isCustom ? '✏️ custom' : '📅 from age'}</span>
         </div>
         <label style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.45);display:block;margin-bottom:5px;">Level</label>
@@ -310,6 +310,15 @@
 
     html += `<button id="gsClose" style="width:100%;padding:14px;border-radius:12px;background:#4ECDC4;color:#1a1a2e;border:none;font-weight:800;font-size:16px;cursor:pointer;margin-top:8px;">Done</button>`;
     host.innerHTML = html;
+
+    // Child names are typed by a grown-up and round-trip through cloud sync, so
+    // they are untrusted. The markup above leaves each name slot EMPTY on purpose
+    // and the text goes in here — a name is never HTML. This also means an
+    // apostrophe or an accent needs no escaping and displays exactly as typed.
+    // One .gs-pname is emitted per profile, in profile order, so they line up.
+    host.querySelectorAll('.gs-pname').forEach((el, i) => {
+      el.textContent = profiles[i] ? profiles[i].name : '';
+    });
 
     host.querySelectorAll('select.gs-tier-sel').forEach(sel => {
       sel.addEventListener('change', () => {
