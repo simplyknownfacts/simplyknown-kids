@@ -20,9 +20,12 @@ so it's written up rather than built.
    tier is 3,000 emails/month, 100/day, which is far more than a two-account
    family app will ever send. **Estimated cost: $0/month**, unless email volume
    or the fleet's needs grow well past that.
-2. **A Resend API key**, one per app per rule 11.5 — `Kids_App\secrets\`,
-   never shared with another project. Scott creates the account and the key;
-   no chat touches billing or credentials.
+2. **A Kids-scoped Resend API key.** Rule 11.5 is about per-app keys, not
+   per-app vendor accounts — Resend as the vendor may already be shared
+   fleet-wide, but the key this Worker uses must be its own, never a reuse of
+   Cars' or any other project's key. Stored at `Kids_App\secrets\`, never
+   shared out. **Scott signs up / issues a Kids-scoped key** — no chat touches
+   billing or credentials.
 3. **A reset-token table** in D1: a random token, the account it belongs to,
    an expiry (short — 30-60 minutes is standard), and whether it's been used.
    Same hashed-nothing-extra pattern as the throttle tables already shipped.
