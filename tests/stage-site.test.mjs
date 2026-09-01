@@ -46,7 +46,8 @@ test('nothing internal is published', () => {
   for (const f of ['tests', 'docs', 'workers', 'scripts', 'secrets', '.env', '.git',
                    'CODEX-NOTES.md', 'TECH-STACK.md', 'CNAME',
                    'bp-review-06.png', 'design-after-home2.png', 'v136-candy-home.png',
-                   'voice-test.html', 'voice-test', 'mascot-preview.html', 'trophy-demo.html']) {
+                   'voice-test.html', 'voice-test', 'mascot-preview.html', 'trophy-demo.html',
+                   'redesign-mocks.html']) {
     assert.ok(!has(f), `${f} must NOT be published`);
   }
 });

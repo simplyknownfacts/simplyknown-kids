@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" data-direction="diorama">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Kids App — 3D Look Direction Mocks (internal, not shipped)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500..700;1,6..72,500..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Caveat:wght@500;700&display=swap');
+
+/* ============================================================
+   INTERNAL DEMO PAGE. Never shipped -- not in scripts/stage-site.mjs's
+   PUBLISH allow-list, and tests/stage-site.test.mjs asserts it stays out.
+   Three direction mocks of ONE real screen (the per-child home menu), built
+   per Notes\Kids 3D Look — technique brief.md, so Scott can FEEL the motion
+   before any real build starts. $0. CSS/SVG only. The real ribbon and
+   mascot assets are not touched -- this only restyles the CSS chrome around
+   them (buttons/panels/background), matching the brief's hybrid rule.
+   ============================================================ */
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+
+/* ---------- toolbar (never part of any direction's "in-universe" look) --- */
+.mock-toolbar {
+  position: sticky; top: 0; z-index: 500;
+  background: #14121f; color: #fff;
+  padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.mock-toolbar strong { font-size: 13px; opacity: 0.7; margin-right: 4px; }
+.dir-tab {
+  font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer;
+  padding: 8px 16px; border-radius: 999px; border: 2px solid transparent;
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75);
+}
+.dir-tab.active { background: #fff; color: #14121f; border-color: #fff; }
+.mock-caption {
+  flex: 1 1 100%; font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,0.65);
+  padding-top: 4px; max-width: 900px;
+}
+.mock-caption b { color: #fff; }
+.reduced-motion-note { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+/* ---------- shared layout scaffold (matches home.html's real structure) - */
+.mock-stage {
+  position: relative; min-height: calc(100vh - 90px); overflow: hidden;
+  transition: background 0.4s ease;
+}
+.home-screen {
+  position: relative; z-index: 2;
+  max-width: 640px; margin: 0 auto;
+  padding: 40px 24px 160px;
+  min-height: calc(100vh - 90px);
+}
+.home-greeting { margin-bottom: 30px; }
+.hand { font-family: 'Caveat', cursive; font-size: 26px; display: block; }
+.where {
+  font-family: 'Newsreader', serif; font-style: italic; font-weight: 600;
+  font-size: clamp(32px, 6vw, 46px); letter-spacing: -0.4px; margin-top: 2px;
+}
+.section-row {
+  display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
+  margin-top: 20px;
+}
+.section-btn {
+  position: relative;
+  width: 148px; min-height: 168px;
+  border: none; cursor: pointer; font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: 18px 10px;
+  opacity: 0; transform: scale(0.5);
+}
+.section-row > .section-btn:nth-child(odd)  { margin-top: 0; }
+.section-row > .section-btn:nth-child(even) { margin-top: 16px; }
+.section-btn.enter { animation: tileEnter 560ms both; animation-delay: calc(var(--i, 0) * 70ms); }
+@keyframes tileEnter {
+  0%   { opacity: 0; transform: scale(0.5) translateY(14px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.section-btn .icon svg { display: block; }
+.section-btn .label { font-size: 20px; font-weight: 800; }
+
+.avatar-pill {
+  position: fixed; bottom: 84px; right: 16px; z-index: 50;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px 8px 8px; border-radius: 999px; border: none; cursor: pointer;
+  font-family: inherit;
+}
+.pill-avatar {
+  width: 42px; height: 42px; border-radius: 50%; font-size: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 35% 35%, #fff8, #FFC56Bcc);
+}
+.pill-name { font-size: 14px; font-weight: 800; display: block; }
+.pill-age  { font-size: 10.5px; opacity: 0.7; display: block; }
+
+.exit-btn {
+  position: fixed; bottom: 16px; right: 16px; z-index: 60;
+  width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer;
+  font-size: 19px; display: flex; align-items: center; justify-content: center;
+}
+
+.shelf-mock {
+  margin: 26px auto 0; max-width: 560px;
+  padding: 16px 18px; border-radius: 20px;
+  display: flex; align-items: center; gap: 14px;
+  opacity: 0; transform: translateY(14px);
+}
+.shelf-mock.enter { animation: shelfEnter 520ms both; animation-delay: 380ms; }
+@keyframes shelfEnter { to { opacity: 1; transform: translateY(0); } }
+.shelf-title { font-size: 13px; font-weight: 800; opacity: 0.85; }
+.shelf-ribbons { display: flex; gap: 8px; margin-left: auto; }
+.shelf-ribbon { width: 30px; height: 40px; border-radius: 4px 4px 8px 8px; }
+
+/* Press feedback -- squash/stretch, applied as an inline style by JS on
+   pointerdown/up (see script at the bottom -- a CSS class here would lose
+   to the tile's own running/held animation). The transition is unconditional
+   so any transform change -- inline or not -- eases in and out. */
+.section-btn, .avatar-pill, .exit-btn { transition: transform 90ms ease-out; }
+
+@media (max-width: 600px) {
+  .section-btn { width: calc(50% - 10px); min-height: 148px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .section-btn.enter, .shelf-mock.enter { animation: none !important; opacity: 1 !important; transform: none !important; }
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* ================================================================
+   DIRECTION 1 — STORYBOOK DIORAMA
+   Depth like a pop-up book stage. Single warm reading-lamp glow, upper-left.
+   Parallax planes behind a shelf-like midground. Unhurried motion: gentle
+   sway, entrances that unfold rather than bounce. Long soft shadows.
+   ================================================================ */
+[data-direction="diorama"] .mock-stage {
+  background:
+    radial-gradient(ellipse 900px 700px at 20% 10%, rgba(255,197,107,0.28), transparent 60%),
+    linear-gradient(160deg, #0c0a24 0%, #1a1440 55%, #241a52 100%);
+}
+[data-direction="diorama"] .mock-stage::before,
+[data-direction="diorama"] .mock-stage::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+}
+[data-direction="diorama"] .mock-stage::before {
+  /* far layer: soft stars */
+  background-image:
+    radial-gradient(2px 2px at 12% 18%, #fff9 40%, transparent),
+    radial-gradient(2px 2px at 78% 12%, #fff7 40%, transparent),
+    radial-gradient(1.5px 1.5px at 45% 8%, #fff6 40%, transparent),
+    radial-gradient(2px 2px at 90% 30%, #fff5 40%, transparent),
+    radial-gradient(1.5px 1.5px at 25% 30%, #fff5 40%, transparent);
+  animation: dioramaDrift 22s ease-in-out infinite alternate;
+}
+[data-direction="diorama"] .mock-stage::after {
+  /* vignette, sells "looking into a deep stage box" */
+  background: radial-gradient(ellipse 70% 70% at 50% 40%, transparent 55%, rgba(0,0,0,0.45) 100%);
+}
+@keyframes dioramaDrift { to { transform: translateX(-10px) translateY(4px); } }
+[data-direction="diorama"] .home-greeting .hand  { color: rgba(255,241,200,0.7); }
+[data-direction="diorama"] .home-greeting .where { color: #FFF1C8; text-shadow: 0 2px 18px rgba(255,197,107,0.35); }
+
+[data-direction="diorama"] .section-btn {
+  border-radius: 22px 22px 30px 30px;
+  background: linear-gradient(175deg, var(--tile-c1, #2c2360), var(--tile-c2, #1a1440));
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.14),
+    inset 0 -10px 16px rgba(0,0,0,0.35),
+    3px 10px 8px hsl(255 40% 8% / 0.35),
+    8px 26px 22px hsl(255 40% 8% / 0.30),
+    18px 46px 40px hsl(255 40% 8% / 0.22);
+  animation: dioramaBreathe 4.4s ease-in-out infinite;
+  animation-delay: calc(var(--i,0) * -0.6s);
+}
+[data-direction="diorama"] .section-btn::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(140% 90% at 22% 0%, rgba(255,209,140,0.22), transparent 55%);
+  pointer-events: none;
+}
+[data-direction="diorama"] .section-btn:nth-of-type(1) { --tile-c1: #3a2354; --tile-c2: #241547; }
+[data-direction="diorama"] .section-btn:nth-of-type(2) { --tile-c1: #17453f; --tile-c2: #0f2e2a; }
+[data-direction="diorama"] .section-btn:nth-of-type(3) { --tile-c1: #3a2360; --tile-c2: #22143f; }
+[data-direction="diorama"] .section-btn:nth-of-type(4) { --tile-c1: #4a3418; --tile-c2: #2c1e0e; }
+[data-direction="diorama"] .section-btn:nth-of-type(5) { --tile-c1: #4a2418; --tile-c2: #2c130e; }
+@keyframes dioramaBreathe { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-4px) rotate(-0.6deg); } }
+[data-direction="diorama"] .section-btn.enter {
+  animation: dioramaEnter 620ms cubic-bezier(.22,1,.36,1) both, dioramaBreathe 4.4s ease-in-out infinite 620ms;
+  animation-delay: calc(var(--i, 0) * 90ms), calc(620ms + var(--i,0) * -0.6s);
+}
+@keyframes dioramaEnter {
+  0%   { opacity: 0; transform: perspective(700px) rotateX(18deg) translateY(26px) scale(0.9); }
+  100% { opacity: 1; transform: perspective(700px) rotateX(0deg) translateY(0) scale(1); }
+}
+[data-direction="diorama"] .section-btn .label { color: #FFF1C8; font-family: 'Newsreader', serif; font-style: italic; font-weight: 600; }
+/* Press-feedback transforms are applied via inline style + JS (see script
+   below), not this class -- a running/held CSS animation (idle breathe/
+   bounce, or the entrance's fill-mode:both hold) sits in the "animation"
+   cascade origin, which outranks even an !important class-selector rule
+   here (confirmed empirically: a class-based !important transform was
+   silently ignored while an animation was active on the same element).
+   Inline style set with !important is the one thing that reliably wins. */
+
+[data-direction="diorama"] .avatar-pill { background: rgba(255,241,200,0.09); border: 1px solid rgba(255,241,200,0.16); box-shadow: 0 8px 20px rgba(0,0,0,0.35); }
+[data-direction="diorama"] .pill-name { color: #FFF1C8; }
+[data-direction="diorama"] .pill-age  { color: rgba(255,241,200,0.6); }
+[data-direction="diorama"] .exit-btn  { background: rgba(255,241,200,0.09); border: 1px solid rgba(255,241,200,0.16); color: #FFF1C8; }
+[data-direction="diorama"] .shelf-mock { background: rgba(255,241,200,0.06); border: 1px solid rgba(255,241,200,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
+[data-direction="diorama"] .shelf-title { color: #FFF1C8; }
+[data-direction="diorama"] .shelf-ribbon:nth-child(1) { background: linear-gradient(180deg,#FFD27A,#C9852A); }
+[data-direction="diorama"] .shelf-ribbon:nth-child(2) { background: linear-gradient(180deg,#B9C4FF,#5A6BC9); }
+[data-direction="diorama"] .shelf-ribbon:nth-child(3) { background: linear-gradient(180deg,#FF9FB8,#C9436B); }
+
+/* ================================================================
+   DIRECTION 2 — TOYBOX PLASTIC
+   Glossy injection-molded toy look. Saturated candy-primary colors, bouncy
+   everywhere, squash-and-stretch taps, big back-out entrances.
+   ================================================================ */
+[data-direction="toybox"] .mock-stage {
+  background: linear-gradient(180deg, #FFE8C9 0%, #FFD3E0 55%, #FFC1D6 100%);
+}
+[data-direction="toybox"] .mock-stage::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 34%;
+  background: linear-gradient(0deg, rgba(255,255,255,0.5), transparent);
+  pointer-events: none;
+}
+[data-direction="toybox"] .home-greeting .hand  { color: #B5457A; }
+[data-direction="toybox"] .home-greeting .where { color: #5A2A4A; }
+
+[data-direction="toybox"] .section-btn {
+  border-radius: 30px;
+  background:
+    radial-gradient(120% 160% at 26% 16%, rgba(255,255,255,.8), rgba(255,255,255,0) 45%),
+    linear-gradient(180deg, var(--tile-top,#FFB173), var(--tile-bottom,#E6631A));
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.6),
+    inset 0 -9px 13px rgba(0,0,0,.20),
+    1px 3px 3px hsl(var(--sh,20 60% 30%) / .28),
+    3px 8px 8px hsl(var(--sh,20 60% 30%) / .22),
+    7px 16px 16px hsl(var(--sh,20 60% 30%) / .16),
+    13px 28px 26px hsl(var(--sh,20 60% 30%) / .12);
+}
+[data-direction="toybox"] .section-btn:nth-of-type(1) { --tile-top:#FF9FB8; --tile-bottom:#D43C6B; --sh: 340 70% 35%; }
+[data-direction="toybox"] .section-btn:nth-of-type(2) { --tile-top:#8FF0DD; --tile-bottom:#1FA98B; --sh: 168 70% 25%; }
+[data-direction="toybox"] .section-btn:nth-of-type(3) { --tile-top:#D6B3FF; --tile-bottom:#8A4FE6; --sh: 265 70% 35%; }
+[data-direction="toybox"] .section-btn:nth-of-type(4) { --tile-top:#FFD98A; --tile-bottom:#E68A1C; --sh: 36 70% 30%; }
+[data-direction="toybox"] .section-btn:nth-of-type(5) { --tile-top:#FFB27A; --tile-bottom:#E6591C; --sh: 20 70% 32%; }
+[data-direction="toybox"] .section-btn.enter {
+  animation:
+    toyboxEnter 680ms cubic-bezier(.34,1.56,.64,1) both,
+    toyboxIdle 2.6s ease-in-out infinite 680ms;
+  animation-delay: calc(var(--i, 0) * 80ms), calc(680ms + var(--i,0) * -0.4s);
+}
+@keyframes toyboxEnter {
+  0%   { opacity: 0; transform: scale(0.3) rotate(-8deg); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes toyboxIdle { 0%,100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.035) rotate(1.2deg); } }
+[data-direction="toybox"] .section-btn .label { color: #4a1d00; font-weight: 900; }
+
+[data-direction="toybox"] .avatar-pill {
+  background: linear-gradient(180deg,#fff,#FFE1EC);
+  box-shadow: inset 0 2px 0 #fff, 0 8px 16px rgba(180,40,90,0.25);
+}
+[data-direction="toybox"] .pill-name { color: #7A2C52; }
+[data-direction="toybox"] .pill-age  { color: #B5457A; }
+[data-direction="toybox"] .exit-btn  { background: linear-gradient(180deg,#fff,#FFE1EC); color: #B5457A; box-shadow: inset 0 2px 0 #fff, 0 6px 14px rgba(180,40,90,0.25); }
+[data-direction="toybox"] .shelf-mock { background: linear-gradient(180deg,#fff,#FFE9E0); box-shadow: inset 0 2px 0 #fff, 0 8px 18px rgba(180,90,40,0.18); }
+[data-direction="toybox"] .shelf-title { color: #A85A2C; }
+[data-direction="toybox"] .shelf-ribbon:nth-child(1) { background: linear-gradient(180deg,#FFE28A,#D48A1C); border-radius: 8px 8px 14px 14px; }
+[data-direction="toybox"] .shelf-ribbon:nth-child(2) { background: linear-gradient(180deg,#9FE0FF,#1C8ED4); border-radius: 8px 8px 14px 14px; }
+[data-direction="toybox"] .shelf-ribbon:nth-child(3) { background: linear-gradient(180deg,#FFA0C0,#D41C6B); border-radius: 8px 8px 14px 14px; }
+
+/* ================================================================
+   DIRECTION 3 — PAPERCRAFT POP-UP
+   Flattened-but-layered cut-paper. Thin crisp shadows (paper sits close),
+   hinge-fold motion (rotateX), one hard-edged highlight per fold. Muted.
+   ================================================================ */
+[data-direction="papercraft"] .mock-stage {
+  background: linear-gradient(165deg, #EFE6D8 0%, #E3D6C4 100%);
+  perspective: 1000px;
+}
+[data-direction="papercraft"] .home-greeting .hand  { color: #8A6F4E; }
+[data-direction="papercraft"] .home-greeting .where { color: #4A3B28; }
+
+[data-direction="papercraft"] .section-btn {
+  border-radius: 14px;
+  background: var(--tile-bg, #E8C9A0);
+  box-shadow:
+    0.5px 1px 0 rgba(255,255,255,0.5) inset,
+    2px 3px 0 rgba(0,0,0,0.06),
+    0 3px 6px rgba(74,59,40,0.18);
+  transform-origin: top center;
+}
+[data-direction="papercraft"] .section-btn::before {
+  /* hard-edged single highlight catching a fold, upper-left diagonal */
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 46%;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(115deg, rgba(255,255,255,0.35) 0%, transparent 55%);
+  pointer-events: none;
+}
+[data-direction="papercraft"] .section-btn::after {
+  /* fold crease line */
+  content: ""; position: absolute; left: 10%; right: 10%; top: 44%; height: 1px;
+  background: rgba(74,59,40,0.14);
+}
+[data-direction="papercraft"] .section-btn:nth-of-type(1) { --tile-bg: #F0B9C4; }
+[data-direction="papercraft"] .section-btn:nth-of-type(2) { --tile-bg: #B9E0D4; }
+[data-direction="papercraft"] .section-btn:nth-of-type(3) { --tile-bg: #D3C0EC; }
+[data-direction="papercraft"] .section-btn:nth-of-type(4) { --tile-bg: #F0D8A6; }
+[data-direction="papercraft"] .section-btn:nth-of-type(5) { --tile-bg: #F0C4A6; }
+[data-direction="papercraft"] .section-btn.enter {
+  animation: papercraftEnter 480ms cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+@keyframes papercraftEnter {
+  0%   { opacity: 0; transform: rotateX(-85deg) translateY(-10px); }
+  100% { opacity: 1; transform: rotateX(0deg) translateY(0); }
+}
+[data-direction="papercraft"] .section-btn .label { color: #4A3B28; font-weight: 800; }
+[data-direction="papercraft"] .section-btn svg { filter: saturate(0.82); }
+
+[data-direction="papercraft"] .avatar-pill { background: #F4ECE0; box-shadow: 1px 2px 0 rgba(0,0,0,0.06), 0 3px 8px rgba(74,59,40,0.16); }
+[data-direction="papercraft"] .pill-name { color: #4A3B28; }
+[data-direction="papercraft"] .pill-age  { color: #8A6F4E; }
+[data-direction="papercraft"] .exit-btn  { background: #F4ECE0; color: #4A3B28; box-shadow: 1px 2px 0 rgba(0,0,0,0.06), 0 3px 8px rgba(74,59,40,0.16); }
+[data-direction="papercraft"] .shelf-mock { background: #F4ECE0; box-shadow: 1px 2px 0 rgba(0,0,0,0.05), 0 3px 8px rgba(74,59,40,0.14); border-radius: 12px; }
+[data-direction="papercraft"] .shelf-title { color: #4A3B28; }
+[data-direction="papercraft"] .shelf-ribbon:nth-child(1) { background: #E0B04A; border-radius: 3px 3px 6px 6px; }
+[data-direction="papercraft"] .shelf-ribbon:nth-child(2) { background: #6BA8C9; border-radius: 3px 3px 6px 6px; }
+[data-direction="papercraft"] .shelf-ribbon:nth-child(3) { background: #D46B8F; border-radius: 3px 3px 6px 6px; }
+</style>
+</head>
+<body>
+
+<div class="mock-toolbar">
+  <strong>3D LOOK MOCKS —</strong>
+  <button type="button" class="dir-tab active" data-dir="diorama">1. Storybook Diorama</button>
+  <button type="button" class="dir-tab" data-dir="toybox">2. Toybox Plastic</button>
+  <button type="button" class="dir-tab" data-dir="papercraft">3. Papercraft Pop-up</button>
+  <span class="reduced-motion-note">(tap a tile — it presses. reload a tab to replay the entrance)</span>
+  <div class="mock-caption" id="caption"></div>
+</div>
+
+<div class="mock-stage" id="stage">
+  <div class="home-screen">
+    <div class="home-greeting">
+      <span class="hand">Hi ✦</span>
+      <span class="where">Where shall we go?</span>
+    </div>
+
+    <button type="button" class="avatar-pill">
+      <span class="pill-avatar">🦊</span>
+      <span>
+        <span class="pill-name">Ava</span>
+        <span class="pill-age">6 yrs 2mo</span>
+      </span>
+    </button>
+
+    <div class="section-row" id="sectionRow">
+      <button type="button" class="section-btn" style="--i:0">
+        <span class="icon"><svg viewBox="0 0 64 64" width="52" height="52"><path d="M12 22 C 12 16, 18 14, 22 14 L 42 14 C 46 14, 52 16, 52 22 L 52 42 C 52 48, 46 50, 42 50 L 22 50 C 18 50, 12 48, 12 42 Z" fill="#3A1B4A"/><path d="M16 26 C 16 22, 20 20, 24 20 L 40 20 C 44 20, 48 22, 48 26 L 48 38 C 48 42, 44 44, 40 44 L 24 44 C 20 44, 16 42, 16 38 Z" fill="#FF8FA8"/><rect x="22" y="30" width="10" height="4" rx="1" fill="#3A1B4A"/><rect x="25" y="27" width="4" height="10" rx="1" fill="#3A1B4A"/><circle cx="40" cy="29" r="2.5" fill="#FFC56B"/><circle cx="44" cy="34" r="2.5" fill="#7FE6D2"/><circle cx="36" cy="34" r="2.5" fill="#FFF1C8"/><circle cx="40" cy="39" r="2.5" fill="#C49BFF"/></svg></span>
+        <span class="label">Games</span>
+      </button>
+      <button type="button" class="section-btn" style="--i:1">
+        <span class="icon"><svg viewBox="0 0 64 64" width="52" height="52"><path d="M6 18 L 30 22 L 30 52 L 6 48 Z" fill="#FBF1D8" stroke="#3A1B4A" stroke-width="1"/><path d="M58 18 L 34 22 L 34 52 L 58 48 Z" fill="#FBF1D8" stroke="#3A1B4A" stroke-width="1"/><path d="M30 22 L 32 22 L 34 22 L 34 52 L 32 52 L 30 52 Z" fill="#3A1B4A"/><line x1="12" y1="30" x2="26" y2="32" stroke="#7FE6D2" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="36" x2="26" y2="38" stroke="#88BFFF" stroke-width="2" stroke-linecap="round"/><line x1="38" y1="32" x2="52" y2="30" stroke="#FFC56B" stroke-width="2" stroke-linecap="round"/><path d="M32 12 L 34 16 L 38 17 L 35 20 L 36 24 L 32 22 L 28 24 L 29 20 L 26 17 L 30 16 Z" fill="#FFC56B"/></svg></span>
+        <span class="label">Learn</span>
+      </button>
+      <button type="button" class="section-btn" style="--i:2">
+        <span class="icon"><svg viewBox="0 0 64 64" width="52" height="52"><path d="M32 8 C 18 8, 8 18, 8 32 S 18 56, 32 56 C 36 56, 38 52, 36 48 C 34 44, 38 40, 42 42 C 50 44, 56 38, 56 30 C 56 18, 46 8, 32 8 Z" fill="#FBF1D8"/><circle cx="20" cy="24" r="4" fill="#FF8FA8"/><circle cx="32" cy="18" r="4" fill="#FFC56B"/><circle cx="44" cy="22" r="4" fill="#7FE6D2"/><circle cx="46" cy="34" r="4" fill="#88BFFF"/><circle cx="18" cy="36" r="4" fill="#C49BFF"/></svg></span>
+        <span class="label">Art</span>
+      </button>
+      <button type="button" class="section-btn" style="--i:3">
+        <span class="icon"><svg viewBox="0 0 64 64" width="52" height="52"><rect x="6" y="12" width="52" height="38" rx="6" fill="#3A1B4A"/><rect x="10" y="16" width="44" height="30" rx="3" fill="#FFC56B"/><circle cx="40" cy="28" r="4" fill="#FF8FA8"/><path d="M14 38 Q 24 34, 34 38 T 50 38" stroke="#7FE6D2" stroke-width="2.5" fill="none"/></svg></span>
+        <span class="label">Watch</span>
+      </button>
+      <button type="button" class="section-btn" style="--i:4">
+        <span class="icon"><svg viewBox="0 0 64 64" width="52" height="52"><path d="M10 36 C 10 20, 22 10, 32 10 S 54 20, 54 36" stroke="#3A1B4A" stroke-width="4" fill="none" stroke-linecap="round"/><rect x="6" y="34" width="14" height="22" rx="5" fill="#FF9F6B"/><rect x="44" y="34" width="14" height="22" rx="5" fill="#FF9F6B"/></svg></span>
+        <span class="label">Listen</span>
+      </button>
+    </div>
+
+    <div class="shelf-mock" id="shelf">
+      <span class="shelf-title">⭐ My Ribbons</span>
+      <div class="shelf-ribbons">
+        <div class="shelf-ribbon"></div>
+        <div class="shelf-ribbon"></div>
+        <div class="shelf-ribbon"></div>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="exit-btn">🚪</button>
+</div>
+
+<script>
+  const CAPTIONS = {
+    diorama: '<b>Storybook Diorama:</b> single warm lamp-glow upper-left, tiles sit like a pop-up-book shelf with long soft shadows, gentle unhurried sway, entrances unfold rather than bounce.',
+    toybox: '<b>Toybox Plastic:</b> glossy injection-molded surfaces, saturated candy-primary colors, bouncy everywhere — squash-and-stretch on every tap, big back-out overshoot on entrance and idle.',
+    papercraft: '<b>Papercraft Pop-up:</b> flattened layered cut-paper, thin crisp close-set shadows, pieces hinge-fold into place (rotateX) rather than springing, one hard-edged highlight per fold, muted palette.',
+  };
+  const html = document.documentElement;
+  const tabs = document.querySelectorAll('.dir-tab');
+  const caption = document.getElementById('caption');
+  const stage = document.getElementById('stage');
+  const shelf = document.getElementById('shelf');
+
+  function playEntrance() {
+    document.querySelectorAll('.section-btn').forEach(el => {
+      el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter');
+    });
+    shelf.classList.remove('enter'); void shelf.offsetWidth; shelf.classList.add('enter');
+  }
+
+  function setDirection(dir) {
+    html.setAttribute('data-direction', dir);
+    caption.innerHTML = CAPTIONS[dir];
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.dir === dir));
+    playEntrance();
+  }
+
+  tabs.forEach(t => t.addEventListener('click', () => setDirection(t.dataset.dir)));
+
+  // Press feedback (squash/stretch, §2.6 of the technique brief) -- applied
+  // as an inline style, not a CSS class. A class-based !important rule was
+  // tried first and silently lost to the tile's own running/held animation
+  // (idle breathe/bounce, or the entrance hold) -- CSS's "animation" cascade
+  // origin outranks a normal author !important rule. Inline style + the
+  // 'important' priority flag is the one thing that reliably wins over it.
+  const PRESS_TRANSFORM = {
+    diorama:    'translateY(2px) scale(0.97)',
+    toybox:     'scaleY(0.9) scaleX(1.08) translateY(4px)',
+    papercraft: 'rotateX(-10deg) translateY(2px)',
+  };
+  document.querySelectorAll('.section-btn').forEach(el => {
+    el.addEventListener('pointerdown', () => {
+      el.style.setProperty('transform', PRESS_TRANSFORM[html.getAttribute('data-direction')], 'important');
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev =>
+      el.addEventListener(ev, () => el.style.removeProperty('transform')));
+  });
+  document.querySelectorAll('.avatar-pill, .exit-btn').forEach(el => {
+    el.addEventListener('pointerdown', () => el.style.setProperty('transform', 'scale(0.94)', 'important'));
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev =>
+      el.addEventListener(ev, () => el.style.removeProperty('transform')));
+  });
+
+  setDirection('diorama');
+</script>
+</body>
+</html>
