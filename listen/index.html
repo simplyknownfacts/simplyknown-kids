@@ -552,7 +552,11 @@
           window.yotoPlayer.publish({
             src: url, position: 0, playing: true,
             title: cardTitle + ' — ' + chapTitle,
-            cover: coverUrl || null,
+            // Publish the ALREADY-validated address (safeImageUrl already ran
+            // inside coverImage() above), not the raw API value -- belt and
+            // braces alongside yoto-player.js's own check, so the two never
+            // quietly disagree about what counts as safe.
+            cover: safeImageUrl(coverUrl),
           });
         }
       }

@@ -140,7 +140,26 @@
     _miniEl = el;
 
     const cover = el.querySelector('#ymCover');
-    if (state.cover) cover.innerHTML = `<img src="${state.cover}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
+    // HIGH, found 2026-09-01: this used to build innerHTML with state.cover
+    // interpolated straight into an <img src="...">. listen/index.html
+    // validates the URL before showing the FULL-size cover there, but never
+    // validated what it published to this shared state, and this mini-player
+    // -- loaded on every page, not just Listen -- trusted it blindly. A
+    // poisoned or corrupted cover value here could have run as code on any
+    // page, where the family's Yoto tokens live in storage. Same https-only
+    // check as listen/index.html's safeImageUrl(), built via DOM APIs so
+    // nothing is ever assigned as markup.
+    if (state.cover) {
+      let safeUrl = null;
+      try { const u = new URL(state.cover); if (u.protocol === 'https:') safeUrl = u.href; } catch (e) {}
+      if (safeUrl) {
+        const img = document.createElement('img');
+        img.src = safeUrl; img.alt = '';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+        cover.textContent = '';
+        cover.appendChild(img);
+      }
+    }
     const titleEl = el.querySelector('#ymTitle');
     titleEl.textContent = state.title || 'Yoto';
     // Tap the cover or title to open the full Listen player (switch cards / skip).

@@ -110,6 +110,34 @@ test('source guard: parent settings does not paste a picture address into markup
   );
 });
 
+test('source guard: the Yoto mini-player does not paste a cover address into markup', () => {
+  const src = read('js/yoto-player.js');
+  assert.ok(
+    !/innerHTML\s*=\s*`<img[^`]*\$\{state\.cover\}/.test(src),
+    'js/yoto-player.js builds the mini-player cover with state.cover interpolated into an HTML ' +
+    'string again. This mini-player loads on every page, not just Listen, and the family\'s Yoto ' +
+    'tokens live in storage — build the <img> with createElement/.src, https: only, like listen/index.html\'s safeImageUrl().',
+  );
+  assert.ok(
+    /protocol\s*===\s*['"]https:['"]/.test(src),
+    'the https-only check on the mini-player cover address has gone missing from js/yoto-player.js.',
+  );
+});
+
+test('source guard: Listen publishes the validated cover address, not the raw one', () => {
+  const src = read('listen/index.html');
+  assert.ok(
+    !/cover:\s*coverUrl\s*\|\|\s*null/.test(src),
+    'listen/index.html publishes the raw, unvalidated coverUrl to window.yotoPlayer again. The ' +
+    'shared mini-player on every other page trusts whatever this publishes — send the already-' +
+    'validated address (safeImageUrl(coverUrl)) instead.',
+  );
+  assert.ok(
+    /cover:\s*safeImageUrl\(coverUrl\)/.test(src),
+    'the validated cover: safeImageUrl(coverUrl) publish call has gone missing from listen/index.html.',
+  );
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Browser drive — the real screens, in a real browser.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -333,6 +361,69 @@ test('In-game settings: a hostile child name is shown as text, and a real name i
     assert.deepEqual(names, [PAYLOAD, REAL_NAME],
       'both names should read back exactly as stored — the hostile one as harmless text, ' +
       'and the accented one with its apostrophe and accents intact');
+
+    await ctx.close();
+  });
+
+test('Yoto mini-player: a hostile cover address stays inert, a real https one still shows',
+  { skip: NEEDS_BROWSER }, async () => {
+    // Two children on purpose: xss-a's mini-player state carries the payload;
+    // the app just needs ANY active profile to get past the picker, so which
+    // one is active doesn't matter here — only the sessionStorage payload does.
+    const ctx = await openApp();
+    const page = await ctx.newPage();
+    // vb_yoto_now_playing is sessionStorage (js/yoto-player.js's KEY), not
+    // localStorage — seed it before the mini-player's own script runs.
+    await ctx.addInitScript((mark) => {
+      try {
+        // A real, same-origin audio file — a fake/blocked src fires the
+        // element's 'error' handler almost instantly, which calls
+        // yotoPlayer.clear() and wipes this very state before the test can
+        // look at it.
+        sessionStorage.setItem('vb_yoto_now_playing', JSON.stringify({
+          src: location.origin + '/audio/girl/00679940.mp3',
+          position: 0,
+          playing: false,
+          title: 'Test tape',
+          cover: `x"><img class="${mark}" src="x" onerror="window.__xssFired=1">`,
+        }));
+      } catch {}
+    }, MARK);
+    await page.goto(BASE + '/home.html', { waitUntil: 'load' });
+    await page.waitForSelector('#yotoMini');
+
+    await assertInert(page, 'Yoto mini-player (hostile cover)');
+
+    // The cover slot must fall back to empty (no image built from a bad
+    // address) rather than silently keep trying to render it.
+    const coverImgCount = await page.$$eval('#ymCover img', (els) => els.length);
+    assert.equal(coverImgCount, 0,
+      'a malformed cover address should never produce an <img>, hostile or not');
+
+    await ctx.close();
+  });
+
+test('Yoto mini-player: a real https cover address renders as an image',
+  { skip: NEEDS_BROWSER }, async () => {
+    const ctx = await openApp();
+    const page = await ctx.newPage();
+    const GOOD_COVER = 'https://api.yotoplay.com/cover-test.png';
+    await ctx.addInitScript((cover) => {
+      try {
+        sessionStorage.setItem('vb_yoto_now_playing', JSON.stringify({
+          src: location.origin + '/audio/girl/00679940.mp3',
+          position: 0,
+          playing: false,
+          title: 'Test tape',
+          cover,
+        }));
+      } catch {}
+    }, GOOD_COVER);
+    await page.goto(BASE + '/home.html', { waitUntil: 'load' });
+    await page.waitForSelector('#yotoMini');
+
+    const src = await page.$eval('#ymCover img', (el) => el.getAttribute('src'));
+    assert.equal(src, GOOD_COVER, 'a legitimate https cover address must still display');
 
     await ctx.close();
   });
