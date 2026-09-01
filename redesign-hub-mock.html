@@ -41,6 +41,15 @@
       of the whole picture moving as one rigid block. Hotspots live
       INSIDE their slice's window so they bob together with what they
       point at, never drifting off it.
+
+   v3: sent Scott a same-size v1-vs-v2 side-by-side. His verdict, verbatim:
+   "i like v1." v2's resolution bump was welcome but its layout was NOT the
+   one he approved -- reverted the background to the original v1 image and
+   retuned NATURAL_W/H + every BANDS fx/fy to v1's actual landmark positions
+   (v2's coordinates were tuned to v2's different layout and would have
+   pointed hotspots at empty sky against v1's art). The resize-fix and
+   independent-band-bob engineering from v2 are untouched -- both are pure
+   mechanism, independent of which image is loaded.
    ============================================================ */
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -151,7 +160,7 @@ html, body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui,
 <body>
 
 <div class="mock-toolbar">
-  <b>HUB WORLD PROTOTYPE v2</b> — higher-res art, hotspots now track the picture at any window size, and the island drifts in 3 independent slow-floating pieces.
+  <b>HUB WORLD PROTOTYPE v3</b> — back to the v1 art Scott picked ("i like v1"), hotspots track the picture at any window size, and the island drifts in 3 independent slow-floating pieces.
   <span class="sub">Tap any building or the fox — it glows, labels itself, and confirms where it would go.</span>
 </div>
 
@@ -177,7 +186,14 @@ html, body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui,
 
 <script>
   const IMG_SRC = 'redesign-hub-bg.jpg';
-  const NATURAL_W = 2752, NATURAL_H = 1536;
+  // v3: Scott's verdict on the v1-vs-v2 comparison was "i like v1" -- v1's
+  // COMPOSITION is what's approved, not v2's shifted layout. Reverted to the
+  // original 1376x768 image; these dimensions and every fx/fy below are
+  // tuned to THAT image, not v2's. (v2's higher resolution solved a real
+  // complaint but isn't worth a layout Scott didn't pick -- if a sharper
+  // v1-matching regen lands later, only these two constants + the fx/fy
+  // table need to change back, nothing else in this file.)
+  const NATURAL_W = 1376, NATURAL_H = 768;
 
   // Bands: non-overlapping horizontal slices of the SAME image, cut through
   // empty sky/path gaps so no building straddles a seam. Each carries the
@@ -186,22 +202,22 @@ html, body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', system-ui,
   // amplitude/duration so the three drift independently, not in lockstep.
   const BANDS = [
     {
-      x0: 0, x1: 0.32, bobAmp: '-7px', bobDur: '5.2s',
-      spots: [ { label: 'Games', route: 'games/index.html', fx: 0.195, fy: 0.44 } ],
+      x0: 0, x1: 0.28, bobAmp: '-7px', bobDur: '5.2s',
+      spots: [ { label: 'Games', route: 'games/index.html', fx: 0.18, fy: 0.39 } ],
     },
     {
-      x0: 0.32, x1: 0.58, bobAmp: '-10px', bobDur: '6.8s',
+      x0: 0.28, x1: 0.63, bobAmp: '-10px', bobDur: '6.8s',
       spots: [
-        { label: 'Learn', route: 'learning/index.html', fx: 0.436, fy: 0.251 },
-        { label: 'Watch', route: 'videos/index.html', fx: 0.494, fy: 0.790 },
-        { label: 'You',   route: null,                 fx: 0.501, fy: 0.521 },
+        { label: 'Learn',  route: 'learning/index.html', fx: 0.35, fy: 0.23 },
+        { label: 'Listen', route: 'listen/index.html',   fx: 0.56, fy: 0.34 },
+        { label: 'You',    route: null,                  fx: 0.49, fy: 0.60 },
       ],
     },
     {
-      x0: 0.58, x1: 1.0, bobAmp: '-8px', bobDur: '6.0s',
+      x0: 0.63, x1: 1.0, bobAmp: '-8px', bobDur: '6.0s',
       spots: [
-        { label: 'Art',    route: 'art/index.html',    fx: 0.647, fy: 0.296 },
-        { label: 'Listen', route: 'listen/index.html', fx: 0.873, fy: 0.467 },
+        { label: 'Watch', route: 'videos/index.html', fx: 0.70, fy: 0.23 },
+        { label: 'Art',   route: 'art/index.html',    fx: 0.84, fy: 0.42 },
       ],
     },
   ];
