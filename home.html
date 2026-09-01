@@ -17,220 +17,159 @@
   <script>/* apply the active kid's theme before first paint (default storybook = no attribute) */try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook")document.documentElement.setAttribute("data-vbtheme",_t)}catch(e){}</script>
   <link rel="stylesheet" href="css/achievements.css">
   <style>
+    /* ============================================================
+       Hub World home screen. Ported from redesign-hub-mock.html v3
+       (Scott's approved prototype, "i like v1") — the cover-fit math,
+       independent-band-bob motion, and hotspot mechanism are reused
+       VERBATIM. What changed for production: hotspots really navigate,
+       Watch/Listen respect online + Yoto-connected state the way the
+       old tile grid did, and the fox landmark ("You") is now the real
+       ribbons/achievements entry point instead of a decorative toast —
+       see the build() comment below for why.
+       ============================================================ */
+    /* horizontal SCROLL, not clip: this v1 art is a wide/landscape island
+       (1376x768) and phones are tall/narrow — cover-fitting it to a phone's
+       HEIGHT (so there's no letterboxing) renders the image much wider than
+       the screen, the same way it would on any "cover" background. Cropping
+       that overflow (the old approach) silently pushed Games clean off the
+       left edge and Watch/Art off the right on a real phone — reachable in
+       automated clicks only because a test runner force-scrolls to a target,
+       which a child's finger cannot do to a clipped, non-scrolling box. This
+       screen scrolls horizontally instead (chrome stays fixed, doesn't
+       scroll with it — see .greeting/.avatar-pill/.exit-btn below), starting
+       centered so the default view is unchanged; a swipe reaches the rest.
+       Every fx/fy hotspot fraction and the cover-fit scale math are still
+       exactly the prototype's — only how the overflow is handled changed. */
     .home-screen {
+      position: fixed; inset: 0;
       width: 100vw; height: 100vh; height: 100dvh;
-      display: flex; flex-direction: column;
-      padding: 40px 28px 150px;            /* extra bottom room so the ribbons shelf clears the fixed exit + avatar pill */
-      align-items: center;
-      overflow-y: auto;                    /* allow scroll if 5 portals show on short viewports */
+      overflow-x: auto; overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; -ms-overflow-style: none;
+      background: #cfd9e8;
     }
-    .home-greeting {
-      width: 100%; max-width: 980px;
-      display: flex; justify-content: flex-start; align-items: flex-start;
-      margin-bottom: 28px;
-      gap: 16px; flex-wrap: wrap;
+    .home-screen::-webkit-scrollbar { display: none; height: 0; width: 0; }
+
+    /* Each .band is a clipped "window" onto its own slice of the SAME
+       source image, sized/positioned in JS to match the real cover-fit
+       rect (see layout() below) so it always lines up with the picture
+       regardless of window size. The slow bob is applied HERE (the
+       whole slice), so its image content and its hotspot children move
+       together, always in sync. */
+    .band {
+      position: absolute; overflow: hidden;
+      animation: bob 6s ease-in-out infinite;
+      opacity: 0;
     }
-    .home-greeting .greet-text {
-      flex: 1; min-width: 240px;
+    .band.ready {
+      animation-name: bandIn, bob;
+      animation-duration: 900ms, 6s;
+      animation-timing-function: cubic-bezier(.22,1,.36,1), ease-in-out;
+      animation-iteration-count: 1, infinite;
+      animation-fill-mode: both, none;
     }
-    .home-greeting .hand {
-      font-family: var(--font-hand); font-size: 26px;
-      color: var(--text-soft); letter-spacing: 0.5px;
+    @keyframes bandIn { to { opacity: 1; } }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(var(--bob-amp, -8px)); } }
+    .band img { position: absolute; top: 0; display: block; max-width: none; }
+
+    /* ---------- greeting + chrome, sitting IN the world ---------- */
+    /* fixed, not absolute: .home-screen now scrolls horizontally (see above),
+       and chrome must stay put on screen while the world pans underneath it. */
+    .greeting {
+      position: fixed; top: calc(60px + env(safe-area-inset-top)); left: 24px; z-index: 20;
+      color: #4a2e12; text-shadow: 0 2px 10px rgba(255,255,255,0.55), 0 1px 2px rgba(255,255,255,0.8);
+      opacity: 0; animation: fadeDown 700ms ease 300ms both;
+      max-width: 70vw;
     }
-    .home-greeting .where {
-      font-family: var(--font-display); font-style: italic; font-weight: 600;
-      font-size: clamp(34px, 5.5vw, 50px);
-      color: var(--text); letter-spacing: -0.4px;
-      margin-top: 2px;
-    }
-    /* Avatar pill — bottom-right (single way to switch kid; replaces the
-       old "← switch child" link, which was redundant). */
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .greeting .hand { font-family: var(--font-hand); font-size: 24px; display: block; }
+    .greeting .where { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: clamp(26px, 4.5vw, 38px); display: block; }
+
     .avatar-pill {
-      position: fixed;
-      bottom: calc(72px + env(safe-area-inset-bottom));  /* above door + gear */
-      right: calc(14px + env(safe-area-inset-right));
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 16px 10px 10px; border-radius: 999px;
-      background: var(--chip-bg);
-      border: 1px solid var(--chip-border);
-      backdrop-filter: blur(6px);
-      cursor: pointer;
-      z-index: 95;  /* above gear (99) is fine — pill is bigger; door is 90 */
-      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+      position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right)); z-index: 50;
+      display: flex; align-items: center; gap: 10px; border: none; cursor: pointer; font-family: inherit; text-align: left;
+      padding: 8px 16px 8px 8px; border-radius: 999px;
+      background: rgba(255,255,255,0.5); backdrop-filter: blur(8px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+      opacity: 0; animation: fadeDown 700ms ease 900ms both;
     }
-    .avatar-pill .pill-avatar {
-      width: 44px; height: 44px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px;
-    }
-    .avatar-pill .pill-name  { font-size: 15px; font-weight: 700; color: var(--text); }
-    .avatar-pill .pill-age   { font-size: 11px; color: var(--text-soft); }
-    .avatar-pill .pill-divider { width: 1px; height: 24px; background: var(--chip-border); margin: 0 4px; }
-    .avatar-pill .pill-switch { font-size: 11px; color: var(--text-soft); padding: 0 6px; }
+    .avatar-pill .pill-avatar { width: 40px; height: 40px; border-radius: 50%; font-size: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: radial-gradient(circle at 35% 35%, #fff, #FFC56B); }
+    .avatar-pill .pill-name  { font-size: 13px; font-weight: 800; color: #4a2e12; display: block; }
+    .avatar-pill .pill-age   { font-size: 10.5px; color: #7a5a30; display: block; }
 
-    /* Section portals */
-    .section-row {
-      display: flex; gap: 22px; justify-content: center;
-      flex-wrap: wrap; align-items: flex-end;
-      width: 100%; max-width: 980px;
-      margin-top: 24px;
+    /* Bottom-RIGHT, stacked above the avatar pill — NOT bottom-left like the
+       standalone prototype had it. The prototype never had to share the
+       screen with js/mascot.js's own fixed #mascotWrap widget (bottom:16px;
+       left:16px — see css/style.css / js/mascot.js), which every real page
+       loads. Bottom-left here would sit exactly on top of the mascot. */
+    .exit-btn {
+      position: fixed; bottom: calc(82px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right)); z-index: 50;
+      width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; font-size: 18px;
+      background: rgba(255,255,255,0.5); backdrop-filter: blur(8px); box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+      opacity: 0; animation: fadeDown 700ms ease 900ms both;
     }
-    .section-btn { width: 156px; min-height: 176px; }
-    .section-row > .section-btn:nth-child(odd)  { transform: translateY(0); }
-    .section-row > .section-btn:nth-child(even) { transform: translateY(16px); }
-    /* Accessibility (HIGH #8): avatar pill + section tiles are now real
-       <button> elements for keyboard/screen-reader support. Undo the two
-       things default button chrome would otherwise change here: a border
-       .section-btn never had, and centered instead of left-aligned label
-       text (both .section-btn .label and .avatar-pill's name/age lines
-       relied on the browser's un-styled left-align default before). */
-    .section-btn { border: none; text-align: left; }
-    .avatar-pill { text-align: left; }
 
-    @media (max-width: 600px) {
-      .section-row { gap: 14px; }
-      .section-btn { width: calc(50% - 8px); min-height: 150px; }
-      /* Narrow screens: pill fits without divider+switch text — whole pill is still clickable */
-      .avatar-pill .pill-divider,
-      .avatar-pill .pill-switch { display: none; }
-      .avatar-pill { padding: 8px 12px 8px 8px; gap: 8px; }
-      .avatar-pill .pill-avatar { width: 36px; height: 36px; font-size: 20px; }
+    /* ---------- tap zones (children of a .band, positioned as % of the
+       band's OWN box — always correct because the band itself is sized
+       from the real rendered-image rect, recomputed on resize) ------- */
+    .spot {
+      position: absolute; z-index: 15;
+      border: none; background: transparent; cursor: pointer; padding: 0;
+      transform: translate(-50%, -50%);
     }
-    @media (max-height: 500px) and (orientation: landscape) {
-      /* Phone landscape — compress vertical chrome */
-      .home-screen { padding: 18px 28px 18px; }
-      .home-greeting { margin-bottom: 10px; }
-      .section-row { margin-top: 8px; }
-      .section-btn { min-height: 130px; }
+    .spot .ring { position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 0 rgba(255,224,140,0.0); transition: box-shadow 200ms ease; }
+    .spot:hover .ring, .spot.tapped .ring { box-shadow: 0 0 0 10px rgba(255,224,140,0.35), 0 0 40px 14px rgba(255,200,90,0.45); }
+    .spot .glow {
+      position: absolute; inset: -18%; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,235,180,0.0) 55%, rgba(255,235,180,0.0) 100%);
+      transition: background 220ms ease; pointer-events: none;
+    }
+    .spot:hover .glow, .spot.tapped .glow {
+      background: radial-gradient(circle, rgba(255,235,180,0.55) 0%, rgba(255,235,180,0.0) 72%);
+      animation: glowPulse 1.1s ease-in-out infinite;
+    }
+    @keyframes glowPulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.75; } }
+    .spot .label {
+      position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%) translateY(-6px);
+      white-space: nowrap; padding: 6px 14px; border-radius: 999px;
+      background: rgba(20,15,10,0.82); color: #FFF1C8; font-weight: 800; font-size: 14px;
+      opacity: 0; pointer-events: none; transition: opacity 160ms ease, transform 160ms ease;
+    }
+    .spot:hover .label, .spot.tapped .label { opacity: 1; transform: translateX(-50%) translateY(-12px); }
+
+    /* Watch/Listening Hut need the internet — dim + nudge instead of
+       navigating into a dead screen a toddler would tap and melt down
+       over (same behavior the old tile grid had for these two tiles). */
+    .spot.needs-wifi { filter: grayscale(0.85); opacity: 0.55; }
+    .spot.nudge { animation: netNudge 0.3s ease; }
+    @keyframes netNudge { 50% { opacity: 0.3; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .band { animation-name: bandIn !important; opacity: 1 !important; }
+      .greeting, .avatar-pill, .exit-btn { animation: none !important; opacity: 1 !important; }
+      * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
     }
   </style>
 </head>
 <body>
   <div class="screen home-screen" id="screen">
-    <div class="home-greeting">
-      <div class="greet-text">
-        <div class="hand" id="hiText">Hi ✦</div>
-        <div class="where">Where shall we go?</div>
-      </div>
+    <!-- 3 bands (island slices) are built + positioned entirely in JS,
+         from the real rendered-image rect — see buildHub() below. -->
+
+    <div class="greeting">
+      <span class="hand" id="hiText">Hi ✦</span>
+      <span class="where">Where shall we go?</span>
     </div>
 
-    <!-- Avatar pill — fixed bottom-right; whole pill tap = switch child -->
     <button type="button" class="avatar-pill" id="avatarPill" onclick="goProfiles()" aria-label="Switch child" title="Switch child">
-      <div class="pill-avatar" id="pillAvatar">🦊</div>
-      <div>
-        <div class="pill-name" id="pillName">—</div>
-        <div class="pill-age"  id="pillAge">—</div>
-      </div>
-      <div class="pill-divider"></div>
-      <div class="pill-switch">switch ↻</div>
+      <span class="pill-avatar" id="pillAvatar">🦊</span>
+      <span>
+        <span class="pill-name" id="pillName">—</span>
+        <span class="pill-age" id="pillAge">—</span>
+      </span>
     </button>
-
-    <div class="section-row">
-      <button type="button" class="section-btn" onclick="go('games/index.html')" style="--section-hue: var(--c-games);">
-        <div class="icon" aria-hidden="true">
-          <!-- Gamepad -->
-          <svg viewBox="0 0 64 64" width="56" height="56">
-            <path d="M12 22 C 12 16, 18 14, 22 14 L 42 14 C 46 14, 52 16, 52 22 L 52 42 C 52 48, 46 50, 42 50 L 22 50 C 18 50, 12 48, 12 42 Z" fill="#3A1B4A"/>
-            <path d="M16 26 C 16 22, 20 20, 24 20 L 40 20 C 44 20, 48 22, 48 26 L 48 38 C 48 42, 44 44, 40 44 L 24 44 C 20 44, 16 42, 16 38 Z" fill="#FF8FA8"/>
-            <rect x="22" y="30" width="10" height="4" rx="1" fill="#3A1B4A"/>
-            <rect x="25" y="27" width="4" height="10" rx="1" fill="#3A1B4A"/>
-            <circle cx="40" cy="29" r="2.5" fill="#FFC56B"/>
-            <circle cx="44" cy="34" r="2.5" fill="#7FE6D2"/>
-            <circle cx="36" cy="34" r="2.5" fill="#FFF1C8"/>
-            <circle cx="40" cy="39" r="2.5" fill="#C49BFF"/>
-          </svg>
-        </div>
-        <div class="label">Games</div>
-      </button>
-
-      <button type="button" class="section-btn" onclick="go('learning/index.html')" style="--section-hue: var(--c-learn);">
-        <div class="icon" aria-hidden="true">
-          <!-- Book -->
-          <svg viewBox="0 0 64 64" width="56" height="56">
-            <path d="M6 18 L 30 22 L 30 52 L 6 48 Z" fill="#FBF1D8" stroke="#3A1B4A" stroke-width="1"/>
-            <path d="M58 18 L 34 22 L 34 52 L 58 48 Z" fill="#FBF1D8" stroke="#3A1B4A" stroke-width="1"/>
-            <path d="M30 22 L 32 22 L 34 22 L 34 52 L 32 52 L 30 52 Z" fill="#3A1B4A"/>
-            <line x1="12" y1="30" x2="26" y2="32" stroke="#7FE6D2" stroke-width="2" stroke-linecap="round"/>
-            <line x1="12" y1="36" x2="26" y2="38" stroke="#88BFFF" stroke-width="2" stroke-linecap="round"/>
-            <line x1="12" y1="42" x2="22" y2="44" stroke="#FF8FA8" stroke-width="2" stroke-linecap="round"/>
-            <line x1="38" y1="32" x2="52" y2="30" stroke="#FFC56B" stroke-width="2" stroke-linecap="round"/>
-            <line x1="38" y1="38" x2="52" y2="36" stroke="#7FE6D2" stroke-width="2" stroke-linecap="round"/>
-            <line x1="42" y1="44" x2="52" y2="42" stroke="#C49BFF" stroke-width="2" stroke-linecap="round"/>
-            <path d="M32 12 L 34 16 L 38 17 L 35 20 L 36 24 L 32 22 L 28 24 L 29 20 L 26 17 L 30 16 Z" fill="#FFC56B"/>
-          </svg>
-        </div>
-        <div class="label">Learn</div>
-      </button>
-
-      <button type="button" class="section-btn" onclick="go('art/index.html')" style="--section-hue: var(--c-art);">
-        <div class="icon" aria-hidden="true">
-          <!-- Palette + brush -->
-          <svg viewBox="0 0 64 64" width="56" height="56">
-            <path d="M32 8 C 18 8, 8 18, 8 32 S 18 56, 32 56 C 36 56, 38 52, 36 48 C 34 44, 38 40, 42 42 C 50 44, 56 38, 56 30 C 56 18, 46 8, 32 8 Z" fill="#FBF1D8"/>
-            <circle cx="20" cy="24" r="4" fill="#FF8FA8"/>
-            <circle cx="32" cy="18" r="4" fill="#FFC56B"/>
-            <circle cx="44" cy="22" r="4" fill="#7FE6D2"/>
-            <circle cx="46" cy="34" r="4" fill="#88BFFF"/>
-            <circle cx="18" cy="36" r="4" fill="#C49BFF"/>
-            <g transform="translate(40 36) rotate(35)">
-              <rect x="0" y="-2" width="20" height="4" rx="1" fill="#5A4691"/>
-              <path d="M20 -3 L 28 -2 L 28 2 L 20 3 Z" fill="#FFC56B"/>
-              <path d="M28 -2 L 32 -1 L 32 1 L 28 2 Z" fill="#FF8FA8"/>
-            </g>
-          </svg>
-        </div>
-        <div class="label">Art</div>
-      </button>
-
-      <button type="button" class="section-btn" id="watchTile" onclick="openNet('videos/index.html')" style="--section-hue: var(--c-watch);">
-        <div class="icon" aria-hidden="true">
-          <!-- Vintage TV -->
-          <svg viewBox="0 0 64 64" width="56" height="56">
-            <rect x="6" y="12" width="52" height="38" rx="6" fill="#3A1B4A"/>
-            <rect x="10" y="16" width="44" height="30" rx="3" fill="#FFC56B"/>
-            <path d="M22 28 L 25 24 L 28 28 L 25 32 Z" fill="#FFF1C8" opacity="0.85"/>
-            <circle cx="40" cy="28" r="4" fill="#FF8FA8"/>
-            <path d="M14 38 Q 24 34, 34 38 T 50 38" stroke="#7FE6D2" stroke-width="2.5" fill="none"/>
-            <line x1="20" y1="12" x2="14" y2="4" stroke="#3A1B4A" stroke-width="2.5" stroke-linecap="round"/>
-            <line x1="44" y1="12" x2="50" y2="4" stroke="#3A1B4A" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="14" cy="4" r="2" fill="#FF8FA8"/>
-            <circle cx="50" cy="4" r="2" fill="#7FE6D2"/>
-            <rect x="16" y="50" width="6" height="6" rx="1" fill="#3A1B4A"/>
-            <rect x="42" y="50" width="6" height="6" rx="1" fill="#3A1B4A"/>
-          </svg>
-        </div>
-        <div class="label">Watch</div>
-      </button>
-
-      <button type="button" class="section-btn" id="listenTile" onclick="openNet('listen/index.html')" style="display:none; --section-hue: var(--c-listen);">
-        <div class="icon" aria-hidden="true">
-          <!-- Headphones + notes -->
-          <svg viewBox="0 0 64 64" width="56" height="56">
-            <path d="M10 36 C 10 20, 22 10, 32 10 S 54 20, 54 36" stroke="#3A1B4A" stroke-width="4" fill="none" stroke-linecap="round"/>
-            <rect x="6" y="34" width="14" height="22" rx="5" fill="#FF9F6B"/>
-            <rect x="44" y="34" width="14" height="22" rx="5" fill="#FF9F6B"/>
-            <rect x="9" y="38" width="8" height="14" rx="3" fill="#FBF1D8"/>
-            <rect x="47" y="38" width="8" height="14" rx="3" fill="#FBF1D8"/>
-            <circle cx="22" cy="22" r="3" fill="#FFC56B"/>
-            <line x1="25" y1="22" x2="25" y2="14" stroke="#FFC56B" stroke-width="2"/>
-            <circle cx="42" cy="20" r="3" fill="#7FE6D2"/>
-            <line x1="45" y1="20" x2="45" y2="12" stroke="#7FE6D2" stroke-width="2"/>
-          </svg>
-        </div>
-        <div class="label">Listening Hut</div>
-      </button>
-    </div>
-
-    <div id="vbShelfMount" style="width:100%;max-width:980px;margin:22px auto 0;"></div>
+    <button type="button" id="exitBtn" class="exit-btn" onclick="exitApp()" aria-label="Exit app" title="Exit app">🚪</button>
   </div>
-
-  <button id="exitBtn" onclick="exitApp()" aria-label="Exit app"
-    style="position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));right:calc(14px + env(safe-area-inset-right));
-           width:48px;height:48px;border-radius:50%;background:var(--chip-bg);color:var(--text);
-           border:1px solid var(--chip-border);font-size:20px;cursor:pointer;z-index:90;
-           display:flex;align-items:center;justify-content:center;opacity:0.7;
-           backdrop-filter:blur(6px);">🚪</button>
 
   <script src="js/atmosphere.js"></script>
   <script src="js/tiers.js"></script>
@@ -249,35 +188,176 @@
   <script src="js/progress.js"></script>
   <script src="js/shelf.js"></script>
   <script>
-    function go(section) { playChime(); goTo(section); }
+    const IMG_SRC = 'redesign-hub-bg.jpg';
+    // Tuned to the APPROVED v1 image (1376x768) — Scott's verdict on the v1-vs-v2
+    // comparison was "i like v1". If a sharper v1-matching regen ever lands, only
+    // these two constants + the fx/fy table in buildHub() need to change.
+    const NATURAL_W = 1376, NATURAL_H = 768;
 
     // Watch (YouTube) + Listen (Yoto) need the internet. On a plane / offline,
-    // show them as a dimmed "Needs wifi" tile and don't navigate into a dead
-    // screen a toddler would tap and melt down over. Updates live on reconnect.
-    function openNet(section) {
-      if (navigator.onLine) { go(section); return; }
-      playChime();
-      const id = section.indexOf('videos') >= 0 ? 'watchTile' : 'listenTile';
-      const t = document.getElementById(id);
-      if (t) { t.classList.remove('nudge'); void t.offsetWidth; t.classList.add('nudge'); }
-    }
-    function updateOnlineTiles() {
-      if (!document.getElementById('netTileStyle')) {
-        const s = document.createElement('style'); s.id = 'netTileStyle';
-        s.textContent = '.section-btn.needs-wifi{filter:grayscale(.85);opacity:.5;}' +
-          '.section-btn.nudge{animation:netNudge .3s ease;}@keyframes netNudge{50%{opacity:.3}}';
-        document.head.appendChild(s);
-      }
+    // dim the landmark to "Needs wifi" and don't navigate into a dead screen a
+    // toddler would tap and melt down over. Updates live on reconnect. (Same
+    // behavior the old tile grid had — ported here 1:1.)
+    function updateOnlineSpots() {
       const off = !navigator.onLine;
-      [['watchTile','Watch'],['listenTile','Listening Hut']].forEach(([id, name]) => {
-        const t = document.getElementById(id); if (!t) return;
-        const lbl = t.querySelector('.label');
-        if (off) { t.classList.add('needs-wifi'); if (lbl) lbl.textContent = 'Needs wifi'; t.setAttribute('aria-disabled', 'true'); }
-        else { t.classList.remove('needs-wifi'); if (lbl) lbl.textContent = name; t.removeAttribute('aria-disabled'); }
+      document.querySelectorAll('.spot[data-net="1"]').forEach((el) => {
+        el.classList.toggle('needs-wifi', off);
+        el.setAttribute('aria-disabled', off ? 'true' : 'false');
+        const label = el.querySelector('.label');
+        if (!label) return;
+        if (off) {
+          if (!label.dataset.orig) label.dataset.orig = label.textContent;
+          label.textContent = 'Needs wifi';
+        } else if (label.dataset.orig) {
+          label.textContent = label.dataset.orig;
+          delete label.dataset.orig;
+        }
       });
     }
-    window.addEventListener('online', updateOnlineTiles);
-    window.addEventListener('offline', updateOnlineTiles);
+    window.addEventListener('online', updateOnlineSpots);
+    window.addEventListener('offline', updateOnlineSpots);
+
+    // Builds the fox hub world: 3 independently-bobbing island slices of the
+    // same approved image, each carrying the landmarks that visually sit
+    // inside it. Cover-fit math (layout()) + band-bob mechanism are reused
+    // verbatim from redesign-hub-mock.html v3 — only the spot table below and
+    // the click behavior are new (real navigation instead of a demo toast).
+    function buildHub() {
+      // Listening Hut only appears once a parent has connected Yoto — exactly
+      // the same gate the old "Listening Hut" tile used (display:none until
+      // yoto.isConnected()).
+      const listenUnlocked = !!(window.yoto && yoto.isConfigured() && yoto.isConnected());
+
+      const BANDS = [
+        {
+          x0: 0, x1: 0.28, bobAmp: '-7px', bobDur: '5.2s',
+          spots: [
+            { id: 'games', label: 'Games', route: 'games/index.html', net: false, fx: 0.18, fy: 0.39 },
+          ],
+        },
+        {
+          x0: 0.28, x1: 0.63, bobAmp: '-10px', bobDur: '6.8s',
+          spots: [
+            { id: 'learn', label: 'Learn', route: 'learning/index.html', net: false, fx: 0.35, fy: 0.23 },
+            ...(listenUnlocked ? [{ id: 'listen', label: 'Listening Hut', route: 'listen/index.html', net: true, fx: 0.56, fy: 0.34 }] : []),
+            // The fox itself. In the approved prototype this spot was a
+            // decorative "that's your fox!" toast with no destination — the
+            // one landmark not mapped to a section. Repurposed here as the
+            // real ribbons/achievements entry point (Hard Requirement 3:
+            // shelf access must stay reachable FROM the world, repositioned
+            // "per the prototype's approach" — this IS the prototype's own
+            // extra landmark, now doing a real job instead of a no-op).
+            { id: 'ribbons', label: 'My Ribbons', route: 'achievements.html', net: false, fx: 0.49, fy: 0.60 },
+          ],
+        },
+        {
+          x0: 0.63, x1: 1.0, bobAmp: '-8px', bobDur: '6.0s',
+          spots: [
+            { id: 'watch', label: 'Watch', route: 'videos/index.html', net: true, fx: 0.70, fy: 0.23 },
+            { id: 'art', label: 'Art', route: 'art/index.html', net: false, fx: 0.84, fy: 0.42 },
+          ],
+        },
+      ];
+
+      const worldEl = document.getElementById('screen');
+      const bandEls = [];
+
+      function activate(spotEl, s) {
+        if (s.net && !navigator.onLine) {
+          playChime();
+          spotEl.classList.remove('nudge');
+          void spotEl.offsetWidth;
+          spotEl.classList.add('nudge');
+          return;
+        }
+        playChime();
+        spotEl.classList.add('tapped');
+        setTimeout(() => goTo(s.route), 160);
+      }
+
+      function build() {
+        BANDS.forEach((band, i) => {
+          const el = document.createElement('div');
+          el.className = 'band';
+          el.style.setProperty('--bob-amp', band.bobAmp);
+          el.style.animationDuration = '900ms, ' + band.bobDur;
+          el.style.animationDelay = (i * 120) + 'ms, ' + (i * -1800) + 'ms';
+
+          const img = document.createElement('img');
+          img.src = IMG_SRC;
+          img.alt = '';
+          el.appendChild(img);
+
+          band.spots.forEach((s) => {
+            const localX = (s.fx - band.x0) / (band.x1 - band.x0);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'spot';
+            btn.dataset.id = s.id;
+            if (s.net) btn.dataset.net = '1';
+            btn.style.left = (localX * 100) + '%';
+            btn.style.top = (s.fy * 100) + '%';
+            // Hit-box scales with the rendered image so it stays landmark-sized
+            // at any window width, instead of a fixed px box that's too small
+            // on a big screen or too big on a small one.
+            btn.style.width = '13vmax';
+            btn.style.height = '18vmax';
+            btn.setAttribute('aria-label', s.label);
+            btn.innerHTML =
+              '<span class="glow"></span>' +
+              '<span class="ring"></span>' +
+              '<span class="label">' + s.label + '</span>';
+            btn.addEventListener('click', () => activate(btn, s));
+            el.appendChild(btn);
+          });
+
+          worldEl.insertBefore(el, worldEl.firstChild); // bands go behind the greeting/pill/exit chrome
+          bandEls.push(el);
+        });
+        requestAnimationFrame(layout);
+        // Stagger the entrance-in class so bands weren't already mid-bob before they fade in.
+        requestAnimationFrame(() => bandEls.forEach((el) => el.classList.add('ready')));
+        updateOnlineSpots();
+      }
+
+      // Replicates object-fit:cover's math by hand so every band + every
+      // hotspot is positioned from the image's REAL rendered rect, not a
+      // viewport percentage that silently drifts once the crop changes at a
+      // different aspect ratio (the resize bug the v2 prototype round fixed).
+      //
+      // Bands are laid out left-to-right starting at the image's own x=0 —
+      // NOT centered with a negative offset — because .home-screen is now
+      // the horizontal scroll container (see its CSS above): scrollLeft can
+      // only range from 0 to (content width - viewport width), so the
+      // content itself has to start at 0 for that range to reach every
+      // landmark. The view is then centered by SETTING scrollLeft below,
+      // which looks identical to the old crop-centering by default — a kid
+      // can swipe from there to reach whatever the phone-width crop hides.
+      function layout() {
+        const cw = window.innerWidth, ch = window.innerHeight;
+        const scale = Math.max(cw / NATURAL_W, ch / NATURAL_H);
+        const renderedW = NATURAL_W * scale, renderedH = NATURAL_H * scale;
+        const offsetY = (ch - renderedH) / 2;
+
+        BANDS.forEach((band, i) => {
+          const el = bandEls[i];
+          const bandW = (band.x1 - band.x0) * renderedW;
+          el.style.left = (band.x0 * renderedW) + 'px';
+          el.style.top = offsetY + 'px';
+          el.style.width = bandW + 'px';
+          el.style.height = renderedH + 'px';
+          const img = el.querySelector('img');
+          img.style.width = renderedW + 'px';
+          img.style.height = renderedH + 'px';
+          img.style.left = (-band.x0 * renderedW) + 'px';
+        });
+
+        worldEl.scrollLeft = Math.max(0, (renderedW - cw) / 2);
+      }
+
+      window.addEventListener('resize', layout);
+      build();
+    }
 
     async function _sha256Hex(s) {
       const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
@@ -350,6 +430,8 @@
 
     const profile = getActiveProfile();
     if (profile) {
+      buildHub();
+
       // Avatar pill
       document.getElementById('pillAvatar').textContent = mascotEmoji(profile);
       document.getElementById('pillAvatar').style.background =
@@ -382,15 +464,6 @@
         && VOICE_MANIFEST.phraseHash
         && VOICE_MANIFEST.phraseHash[greetText] !== undefined;
 
-      // Listen tile only when Yoto is connected
-      if (window.yoto && yoto.isConfigured() && yoto.isConnected()) {
-        document.getElementById('listenTile').style.display = '';
-      }
-
-      // Dim Watch/Listen to "Needs wifi" when offline (plane mode).
-      updateOnlineTiles();
-
-      // Mascot — muted welcome animation + layered greeting (if clip exists)
       // Purchased name-voice ("~10¢ real voice" at add-kid): greeting clips for
       // names outside the static KID_NAMES set live on the sync Worker. Play
       // the welcome phrase (i=2) from there, caching it into vb-offline so it
@@ -441,11 +514,6 @@
           mascot.play('welcome', { muted: false });
         }
       }, { once: true, capture: true });
-
-      // Floating ribbon shelf — all earned ribbons (rotating selection), tap = gallery
-      if (window.vbShelf) {
-        vbShelf.mount(document.getElementById('vbShelfMount'), { section: 'all', title: '⭐ My Ribbons' });
-      }
     } else {
       goProfiles();
     }
