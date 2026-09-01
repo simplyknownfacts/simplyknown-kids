@@ -31,8 +31,20 @@ const server = createServer(async (req, res) => {
 
     // Never serve anything outside the repo, and never serve secrets even from
     // inside it — this server is a test tool, not a web host.
+    //
+    // 2026-09-01 HIGH, found live: this used to only block secrets/, .git/ and
+    // node_modules/ as DIRECTORY segments -- a root-level dotfile like .env
+    // (which holds the ElevenLabs key, the Cloudflare token and the Gemini
+    // key) matched none of those patterns and was served in full. Proved with
+    // curl before this fix landed. Now: any path with a segment that starts
+    // with "." is refused outright -- the same default real static-file
+    // servers use (deny dotfiles unless explicitly allowed), so a future
+    // secret file needs no new pattern added here to stay covered.
     const file = path.resolve(ROOT, '.' + rel);
-    if (!file.startsWith(ROOT) || /[\\/](secrets|\.git|node_modules)[\\/]/.test(file + path.sep)) {
+    const segments = file.slice(ROOT.length).split(/[\\/]/);
+    const hasDotfile = segments.some(s => s.startsWith('.') && s !== '');
+    if (!file.startsWith(ROOT) || hasDotfile
+        || /[\\/](secrets|node_modules)[\\/]/.test(file + path.sep)) {
       res.writeHead(403).end('forbidden');
       return;
     }
@@ -62,4 +74,10 @@ server.on('error', (e) => {
   process.exit(1);
 });
 
-server.listen(PORT, () => console.log('serving ' + ROOT + ' on http://localhost:' + PORT));
+// 2026-09-01 HIGH, found live: with no host argument, Node binds to ALL
+// interfaces (0.0.0.0), so this file server -- meant only for this machine to
+// talk to itself -- was reachable by anyone on the same wifi/LAN. Proved with
+// `netstat`: 0.0.0.0:8866 LISTENING. Bound to loopback only now; nothing that
+// uses this server (the local browser, the nightly-test-kids robot, this
+// repo's own tests) needs anything more than 127.0.0.1.
+server.listen(PORT, '127.0.0.1', () => console.log('serving ' + ROOT + ' on http://localhost:' + PORT));
