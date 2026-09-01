@@ -1,5 +1,10 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v142';
+const CACHE = 'vb-v143';
+// v143 HUB HOME: home.html is now the fox hub-world (branch hub-home) instead
+// of the tile grid — same 5 sections (Games/Learn/Art/Watch/Listen), reached
+// by tapping a landmark instead of a card. New static asset shipped:
+// redesign-hub-bg.jpg (the approved v1 island art). Added to the precache
+// list below so the world renders offline like everything else. Prior v142:
 // v141 RECONCILE: fold in two fixes that were STRANDED in the root working tree
 // (never committed) while the live site ran ahead. (1) Profile-name XSS: index.html
 // now escapes p.name via _esc (js/sync.js) and validates p.color via safeHexColor
@@ -142,6 +147,7 @@ const CACHE = 'vb-v142';
 // Full version history: git log.
 const ASSETS = [
   './', './index.html', './home.html', './achievements.html',
+  './redesign-hub-bg.jpg',
   './css/style.css', './css/achievements.css', './css/themes.css',
   './js/atmosphere.js',
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',

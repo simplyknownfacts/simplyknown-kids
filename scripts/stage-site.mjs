@@ -25,6 +25,10 @@ const PUBLISH = [
   // pages
   'index.html', 'home.html', 'about.html', 'privacy.html', 'achievements.html',
   'yoto-callback.html',
+  // home.html hub-world art (the approved v1 island image — see CLAUDE.md hub-home).
+  // Its prototype file (redesign-hub-mock.html) and the sibling direction mocks
+  // stay OUT on purpose — internal-only, never shipped.
+  'redesign-hub-bg.jpg',
   // PWA plumbing
   'manifest.json', 'offline-manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png',
   // Identity marker, so the verify pass can prove it is grading THIS app.

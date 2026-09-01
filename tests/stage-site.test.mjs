@@ -36,7 +36,10 @@ test('the app itself is published', () => {
   stage();
   for (const f of ['index.html', 'home.html', 'sw.js', 'manifest.json', 'icon-192.png',
                    'js/sync.js', 'css/style.css', 'games/tap-pop.html',
-                   'learning/count-along.html', 'art/stamp-art.html', 'parent/settings.html']) {
+                   'learning/count-along.html', 'art/stamp-art.html', 'parent/settings.html',
+                   // hub-home: home.html's fox-world background — a real asset now,
+                   // not internal-only (see CLAUDE.md / commit history, branch hub-home).
+                   'redesign-hub-bg.jpg']) {
     assert.ok(has(f), `expected ${f} to be published`);
   }
 });
@@ -47,7 +50,9 @@ test('nothing internal is published', () => {
                    'CODEX-NOTES.md', 'TECH-STACK.md', 'CNAME',
                    'bp-review-06.png', 'design-after-home2.png', 'v136-candy-home.png',
                    'voice-test.html', 'voice-test', 'mascot-preview.html', 'trophy-demo.html',
-                   'redesign-mocks.html', 'redesign-hub-mock.html', 'redesign-hub-bg.jpg']) {
+                   // redesign-hub-bg.jpg graduated to a real published asset above —
+                   // the prototype shell + the unrelated direction mocks stay excluded.
+                   'redesign-mocks.html', 'redesign-hub-mock.html']) {
     assert.ok(!has(f), `${f} must NOT be published`);
   }
 });
