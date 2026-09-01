@@ -90,6 +90,16 @@ async function suEnsureTable(env) {
   ).run();
 }
 
+// Invite-word guess throttle. Separate from signup_log on purpose: signup_log
+// only ever records a SUCCESSFUL account (so a typo'd email never burns a
+// family's daily allowance) — this table exists only to bound how many WRONG
+// guesses one caller gets, and must never affect that other cap.
+async function ivEnsureTable(env) {
+  await env.DB.prepare(
+    'CREATE TABLE IF NOT EXISTS invite_fail_log (id TEXT PRIMARY KEY, ip_hash TEXT, created_at INTEGER)'
+  ).run();
+}
+
 async function handleSignup(req, env) {
   const body = await readJson(req);
   if (!body) return err('bad json', 400);
@@ -98,15 +108,34 @@ async function handleSignup(req, env) {
   if (!validEmail(email)) return err('invalid email', 400);
   if (password.length < 8) return err('password must be 8+ chars', 400);
 
-  // INVITE WORD. Without this, anyone on the internet can create an account,
-  // and an account is the key to paid voice generation. Checked before the
-  // throttles so a wrong guess costs nothing to reject.
-  //
   // Fails CLOSED: if the secret was never set on the Worker, sign-up is off
   // rather than open. Set it with:
   //   npx wrangler secret put SIGNUP_CODE
   if (!env.SIGNUP_CODE) return err('sign-up is closed', 403);
+
+  const ipHash = await sha256Hex('ip-v1:' + (req.headers.get('CF-Connecting-IP') || 'unknown'));
+
+  // INVITE WORD, and the guess-throttle on it (HIGH, fixed 2026-09-01). The
+  // word itself is compared in constant time so timing can't leak a partial
+  // match, but that alone bounds nothing — without a ceiling on GUESSES, a
+  // script can try an entire wordlist for free, forever: never logged, never
+  // slowed. Keyed by caller (IP hash, there's no account yet to key on),
+  // generous for a family who fat-fingers it a few times, stingy for a
+  // script. Only WRONG guesses are logged here — a correct one never touches
+  // this table, so it can never lock out the person who already knows the
+  // word, and it must never share signup_log's success-only counter (that
+  // cap protects against a different thing: bulk *account* creation).
+  await ivEnsureTable(env);
+  const ivSince = Date.now() - 60 * 60 * 1000;
+  const ivFails = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM invite_fail_log WHERE ip_hash = ? AND created_at > ?'
+  ).bind(ipHash, ivSince).first();
+  if (ivFails && ivFails.n >= Number(env.INVITE_FAIL_LIMIT || 15)) {
+    return err('too many attempts — try again later', 429);
+  }
   if (!secretMatches(String((body.code || '')).trim(), env.SIGNUP_CODE)) {
+    await env.DB.prepare('INSERT INTO invite_fail_log (id, ip_hash, created_at) VALUES (?, ?, ?)')
+      .bind(randomHex(12), ipHash, Date.now()).run();
     return err('that invite word is not right', 403);
   }
 
@@ -115,7 +144,6 @@ async function handleSignup(req, env) {
   // generous for a family app and stingy for a robot.
   await suEnsureTable(env);
   const suSince = Date.now() - 24 * 3600 * 1000;
-  const ipHash = await sha256Hex('ip-v1:' + (req.headers.get('CF-Connecting-IP') || 'unknown'));
   const perIp = await env.DB.prepare(
     'SELECT COUNT(*) AS n FROM signup_log WHERE ip_hash = ? AND created_at > ?'
   ).bind(ipHash, suSince).first();
