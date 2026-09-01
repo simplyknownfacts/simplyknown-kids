@@ -174,13 +174,33 @@ async function handleSignup(req, env) {
   return jsonResp({ syncKey }, 201);
 }
 
-// Failed-signin store, keyed by the ACCOUNT (email hash), not the caller's
-// address: an attacker who rotates IPs is still guessing against one email, and
-// that is what needs to be slow. A generous window and threshold for a family
-// app, stingy for a script trying passwords.
+// Failed-signin store.
+//
+// HIGH, fixed 2026-09-01: this used to key SOLELY on the email (account), on
+// the reasoning that an attacker who rotates IPs is still guessing against
+// one email and that is what needs to be slow. True for password-guessing —
+// but it also meant ANY caller, anywhere, needing no correct password at
+// all, could send 8 wrong-password requests and lock the REAL family out of
+// their own account for 15 minutes, repeatably, forever, for free. The very
+// lockout meant to protect the account became a denial-of-service weapon
+// against it, and all it took was knowing (or guessing) a family's email.
+//
+// Now keyed on (email, caller), so a caller can only ever lock out THEIR OWN
+// identity, never the family's — the family's own devices/networks never
+// share a counter with an attacker's. Traded off deliberately: an attacker
+// willing to rotate real IP addresses now gets a fresh guess budget per IP,
+// where before they got none. For this app — family kids' data, not a bank,
+// PBKDF2(100000) per guess, invite-gated signup — a free, zero-skill DoS
+// against a known family is the more realistic and more damaging threat of
+// the two.
+//
+// New table name, not an ALTER on the live `signin_fail_log`: this Worker
+// has no migration step, and blindly widening a live table's schema on next
+// deploy is exactly the kind of thing that goes wrong in production with no
+// one watching. `signin_fail_log` is simply retired, unread from here on.
 async function siEnsureTable(env) {
   await env.DB.prepare(
-    'CREATE TABLE IF NOT EXISTS signin_fail_log (id TEXT PRIMARY KEY, email_hash TEXT, created_at INTEGER)'
+    'CREATE TABLE IF NOT EXISTS signin_fail_log_v2 (id TEXT PRIMARY KEY, email_hash TEXT, ip_hash TEXT, created_at INTEGER)'
   ).run();
 }
 
@@ -191,12 +211,13 @@ async function handleSignin(req, env) {
   const password = body.password || '';
   if (!validEmail(email)) return err('invalid email', 400);
   const eh = await emailHash(email);
+  const ipHash = await sha256Hex('ip-v1:' + (req.headers.get('CF-Connecting-IP') || 'unknown'));
 
   await siEnsureTable(env);
   const since = Date.now() - 15 * 60 * 1000;
   const fails = await env.DB.prepare(
-    'SELECT COUNT(*) AS n FROM signin_fail_log WHERE email_hash = ? AND created_at > ?'
-  ).bind(eh, since).first();
+    'SELECT COUNT(*) AS n FROM signin_fail_log_v2 WHERE email_hash = ? AND ip_hash = ? AND created_at > ?'
+  ).bind(eh, ipHash, since).first();
   if (fails && fails.n >= Number(env.SIGNIN_FAIL_LIMIT || 8)) {
     return err('too many attempts — try again in a few minutes', 429);
   }
@@ -211,8 +232,8 @@ async function handleSignin(req, env) {
   // side-channel for the same enumeration this fix exists to close.
   const check = await pbkdf2(password, account ? account.pw_salt : eh.slice(0, 32));
   if (!account || check !== account.pw_hash) {
-    await env.DB.prepare('INSERT INTO signin_fail_log (id, email_hash, created_at) VALUES (?, ?, ?)')
-      .bind(randomHex(12), eh, Date.now()).run();
+    await env.DB.prepare('INSERT INTO signin_fail_log_v2 (id, email_hash, ip_hash, created_at) VALUES (?, ?, ?, ?)')
+      .bind(randomHex(12), eh, ipHash, Date.now()).run();
     return err('that email or password is not right', 401);
   }
   const newKey = randomHex(24);
@@ -268,8 +289,16 @@ async function handleDeleteAccount(req, env) {
   const token = extractToken(req);
   const acc = await getAccountBySyncKey(env, token);
   if (!acc) return err('unauthorized', 401);
-  await env.DB.prepare('DELETE FROM accounts WHERE email_hash = ?').bind(acc.email_hash).run();
-  await env.DB.prepare('DELETE FROM data WHERE email_hash = ?').bind(acc.email_hash).run();
+  // HIGH, fixed 2026-09-01: these used to be two separate .run() calls. If
+  // the first succeeded and the second failed (a dropped connection, a D1
+  // hiccup), the account was gone but the child's synced data was orphaned
+  // forever -- and the parent could no longer sign in to even retry, because
+  // their own login no longer existed. batch() sends both statements as one
+  // atomic unit: either both rows go, or neither does.
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM accounts WHERE email_hash = ?').bind(acc.email_hash),
+    env.DB.prepare('DELETE FROM data WHERE email_hash = ?').bind(acc.email_hash),
+  ]);
   return jsonResp({ ok: true });
 }
 

@@ -37,12 +37,24 @@ export function makeFakeD1() {
     if (!tables.has(name)) tables.set(name, []);
     return tables.get(name);
   };
+  // Test-only failure injection, for proving atomic-batch behavior: the next
+  // run() whose normalised SQL matches `pattern` throws instead of applying.
+  // One-shot, so a test controls exactly which statement in a batch fails.
+  let failOnce = null;
+  const maybeFail = (norm) => {
+    if (failOnce && failOnce.pattern.test(norm)) {
+      const e = failOnce.error || new Error('fake-d1: injected failure for test');
+      failOnce = null;
+      throw e;
+    }
+  };
 
   return {
     prepare(sql) {
       const norm = sql.trim().replace(/\s+/g, ' ');
 
       async function run(args) {
+        maybeFail(norm);
         let m;
         if ((m = norm.match(/^CREATE TABLE IF NOT EXISTS (\w+)/i))) {
           ensureTable(m[1]);
@@ -124,7 +136,26 @@ export function makeFakeD1() {
         bind: (...args) => ({ run: () => run(args), first: () => first(args), all: () => all(args) }),
       };
     },
+    // Mirrors D1's real batch(): runs every prepared statement as one atomic
+    // unit. If any statement throws, every mutation made earlier IN THIS
+    // BATCH is rolled back and the error propagates -- unlike calling .run()
+    // on each statement separately, where an earlier statement's effect is
+    // already permanent by the time a later one fails.
+    async batch(stmts) {
+      const snapshot = new Map([...tables].map(([k, v]) => [k, v.map((r) => ({ ...r }))]));
+      try {
+        const results = [];
+        for (const stmt of stmts) results.push(await stmt.run());
+        return results;
+      } catch (e) {
+        tables.clear();
+        for (const [k, v] of snapshot) tables.set(k, v);
+        throw e;
+      }
+    },
     // Test-only escape hatch to inspect raw table state.
     _dump: () => Object.fromEntries([...tables].map(([k, v]) => [k, v.map((r) => ({ ...r }))])),
+    // Test-only failure injection -- see maybeFail() above.
+    _failNextRunMatching(pattern, error) { failOnce = { pattern, error }; },
   };
 }
