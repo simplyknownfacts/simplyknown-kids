@@ -237,3 +237,52 @@ Run end to end on Windows, Node v24.15.0, against `http://localhost:8866`.
    progress. Those files were not modified, committed, or reverted by this work — this
    task's scope is `tests/verify-drive.mjs` and the two `docs/verify/` files only, and the
    drive passed cleanly against their in-progress state either way.
+
+---
+
+## Third run — 2026-09-01: hub-home (branch `hub-home`, not merged to main)
+
+`home.html` stopped being a tile grid and became the fox hub-world (the approved
+`redesign-hub-mock.html` prototype, promoted to production): the same 5 sections, reached
+by tapping a landmark instead of a card. Added Pass 7 to `tests/verify-drive.mjs` to prove
+what a screenshot alone cannot — that a tap actually navigates, that Listening Hut stays
+hidden without Yoto, that reduced motion doesn't leave the world invisible, and that the
+offline gate still refuses to open a dead screen. `docs/verify/features/NOT-COVERED.md`
+does not need edits — nothing this run touches was previously proven there.
+
+Run end to end on Windows, Node v24.15.0, against `http://localhost:8790`.
+
+1. **TDD, not just added-after:** ran the new Pass 7 against the OLD (tile-grid) home.html
+   first. Result: `hub-landmarks-present`, `hub-reduced-motion`, all five `hub-nav-*`, and
+   `hub-offline-dim` failed — correctly, since `.spot` elements don't exist on the old
+   home. Only then was the new home.html written and the same pass turned green.
+2. **A real bug Pass 7 caught that a screenshot-only pass would have missed:** the
+   approved v1 art is a wide/landscape island (1376x768); cover-fitting it to a phone's
+   HEIGHT (the same math `redesign-hub-mock.html` used) renders it far wider than the
+   screen. The prototype was never driven at phone width by this suite (it isn't a
+   published route), so nobody had proven it there before. On first landing, `hub-nav-games`
+   failed with Playwright's own "element is outside of the viewport" — the Games landmark
+   was cropped completely off-screen on a real phone aspect ratio, reachable only in the
+   first draft because a test runner's `scrollIntoViewIfNeeded` force-scrolled to it in one
+   direction, which a child's finger cannot do to a clipped, non-scrolling box. Fix: the
+   home screen scrolls horizontally now (chrome stays fixed; only the world pans), starting
+   centered so the default view is unchanged. Re-ran Pass 7 clean afterward.
+3. **A second issue caught by hand, not by the drive:** a manual phone-width screenshot
+   review (not exercised by the drive, which doesn't compare screenshots pixel-by-pixel)
+   showed the standalone prototype's bottom-LEFT exit button sitting exactly on top of
+   `js/mascot.js`'s own fixed `#mascotWrap` widget (`bottom:16px; left:16px` — every real
+   page loads it; the prototype never did). Moved the exit button to bottom-right, stacked
+   above the avatar pill, instead.
+4. **Drive:** 74 screens/checks driven, **74 passed, 0 failed**, exit 0.
+5. **`npm test`:** 81 passed, 0 failed, 0 skipped. Includes the updated
+   `tests/stage-site.test.mjs` — `redesign-hub-bg.jpg` (the island art) is now on the
+   PUBLISH allow-list in `scripts/stage-site.mjs` and asserted published; the prototype
+   shell `redesign-hub-mock.html` and the unrelated `redesign-mocks.html` stay excluded.
+6. **`sw.js`:** `node --check sw.js` clean; `CACHE` bumped to `vb-v143`; `redesign-hub-bg.jpg`
+   added to the offline precache list.
+7. **Negative controls, both re-confirmed:** a broken address exits 1 before any screen
+   opens; the identity-check block was not touched.
+8. **Not yet proven:** a real on-device touch swipe was not tested (only DOM-level
+   `scrollLeft` + Playwright's programmatic scroll-then-click, which drive real
+   `overflow-x:auto` + `-webkit-overflow-scrolling:touch` the same way a finger would, but
+   is not the same as an actual finger). Recommend a real-device pass before wide rollout.

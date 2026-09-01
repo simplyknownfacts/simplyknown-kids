@@ -562,6 +562,134 @@ for (const t of trophyResults) {
   console.log((t.ok ? 'PASS  ' : 'FAIL  ') + t.id.padEnd(26) + t.what + (t.ok ? '' : '\n        ' + t.errs.join('\n        ')));
 }
 
+/* ---------------------------------------------------------------------------
+   Pass 7 — Hub home world (branch hub-home). home.html stopped being a tile
+   grid and became the fox hub-world: the same 5 real routes, now reached by
+   tapping a landmark instead of a card, plus chrome (greeting/avatar pill/
+   exit) living IN the world instead of a page header. The screenshot-only
+   passes above can prove the page renders; they cannot prove a tap actually
+   goes anywhere, that Listening Hut stays hidden without Yoto, that reduced
+   motion doesn't leave the world invisible, or that the offline gate still
+   refuses to open a dead screen. This pass proves all four.
+------------------------------------------------------------------------- */
+const hubResults = [];
+{
+  const HUB_PROFILE = tierProfileId(5);
+
+  // 7a — chrome + landmark presence + the reduced-motion path. Every context
+  // in this file is created with reducedMotion:'reduce' (see VIEWPORTS
+  // contexts above), so this is exactly what a device with "reduce motion"
+  // set actually renders — not a separate, easy-to-forget code path.
+  {
+    const page = await contexts.phone.newPage();
+    await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, HUB_PROFILE);
+    await page.goto(BASE + '/home.html', { waitUntil: 'load', timeout: 15000 });
+    await page.waitForTimeout(600);
+
+    const chrome = await page.evaluate(() => {
+      const vis = (sel) => { const el = document.querySelector(sel); if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+      return { hi: vis('#hiText'), pill: vis('#avatarPill'), exit: vis('#exitBtn') };
+    });
+    const chromeOk = chrome.hi && chrome.pill && chrome.exit;
+    hubResults.push({ id: 'hub-chrome', ok: chromeOk,
+      what: 'Hub chrome present (greeting, avatar pill, exit)',
+      errs: chromeOk ? [] : ['missing: ' + JSON.stringify(chrome)] });
+
+    const landmarks = await page.evaluate(() =>
+      ['games', 'learn', 'watch', 'art', 'ribbons'].map(id => !!document.querySelector('.spot[data-id="' + id + '"]')));
+    const landmarksOk = landmarks.every(Boolean);
+    hubResults.push({ id: 'hub-landmarks-present', ok: landmarksOk,
+      what: '5 real-section landmarks present (games/learn/watch/art/ribbons)',
+      errs: landmarksOk ? [] : ['games/learn/watch/art/ribbons present: ' + JSON.stringify(landmarks)] });
+
+    const listenAbsent = await page.evaluate(() => !document.querySelector('.spot[data-id="listen"]'));
+    hubResults.push({ id: 'hub-listen-hidden', ok: listenAbsent,
+      what: 'Listening Hut landmark hidden when Yoto is not connected',
+      errs: listenAbsent ? [] : ['.spot[data-id="listen"] rendered without a Yoto connection'] });
+
+    // The real risk of a prefers-reduced-motion bug is content stuck at
+    // opacity:0 forever because the entrance animation never gets to run.
+    const bandsVisible = await page.evaluate(() => {
+      const bands = [...document.querySelectorAll('.band')];
+      return bands.length > 0 && bands.every(b => parseFloat(getComputedStyle(b).opacity) === 1);
+    });
+    hubResults.push({ id: 'hub-reduced-motion', ok: bandsVisible,
+      what: 'Reduced motion: island bands render at full opacity immediately (not stuck invisible)',
+      errs: bandsVisible ? [] : ['one or more .band elements were not at opacity:1 under prefers-reduced-motion'] });
+
+    await page.close();
+  }
+
+  // 7b — each landmark actually navigates to its real section. minTier/
+  // maxTier don't apply at this level (the old tile grid didn't gate section
+  // access either — the section pages gate individual activities), so any
+  // tier profile proves this; HUB_PROFILE (tier 5) is reused from above.
+  const NAV_LANDMARKS = [
+    { id: 'games',   endsWith: '/games/index.html' },
+    { id: 'learn',   endsWith: '/learning/index.html' },
+    { id: 'art',     endsWith: '/art/index.html' },
+    { id: 'ribbons', endsWith: '/achievements.html' },
+    { id: 'watch',   endsWith: '/videos/index.html' },   // online by default in this pass — must navigate
+  ];
+  for (const lm of NAV_LANDMARKS) {
+    const page = await contexts.phone.newPage();
+    await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, HUB_PROFILE);
+    await page.goto(BASE + '/home.html', { waitUntil: 'load', timeout: 15000 });
+    await page.waitForTimeout(300);
+    let landed = null;
+    try {
+      await page.click('.spot[data-id="' + lm.id + '"]', { timeout: 5000 });
+      await page.waitForURL((u) => u.pathname.endsWith(lm.endsWith), { timeout: 5000 });
+      landed = page.url();
+    } catch (e) { landed = 'ERROR: ' + e.message; }
+    const ok = !!(landed && landed.includes(lm.endsWith));
+    hubResults.push({ id: 'hub-nav-' + lm.id, ok,
+      what: 'Tapping "' + lm.id + '" navigates to ' + lm.endsWith,
+      errs: ok ? [] : ['landed on: ' + landed] });
+    await page.close();
+  }
+
+  // 7c — offline gate: Watch/Listen must dim to "Needs wifi" and refuse to
+  // navigate rather than open a dead screen a toddler would tap and melt down
+  // over — the same behavior the old tile grid had. Flips navigator.onLine
+  // and fires the real 'offline' event instead of context.setOffline(), which
+  // would also block this same-origin dev server's own requests.
+  {
+    const page = await contexts.phone.newPage();
+    await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, HUB_PROFILE);
+    await page.goto(BASE + '/home.html', { waitUntil: 'load', timeout: 15000 });
+    await page.waitForTimeout(600);
+
+    await page.evaluate(() => {
+      Object.defineProperty(Object.getPrototypeOf(navigator), 'onLine', { get: () => false, configurable: true });
+      window.dispatchEvent(new Event('offline'));
+    });
+    await page.waitForTimeout(200);
+
+    const dimmed = await page.evaluate(() => {
+      const el = document.querySelector('.spot[data-id="watch"]');
+      return !!el && el.classList.contains('needs-wifi');
+    });
+    hubResults.push({ id: 'hub-offline-dim', ok: dimmed,
+      what: 'Watch landmark shows "Needs wifi" while offline',
+      errs: dimmed ? [] : ['.spot[data-id="watch"] did not get .needs-wifi while offline'] });
+
+    await page.click('.spot[data-id="watch"]').catch(() => {});
+    await page.waitForTimeout(600);
+    const stillHome = page.url().endsWith('/home.html');
+    hubResults.push({ id: 'hub-offline-no-nav', ok: stillHome,
+      what: 'Tapping Watch while offline must NOT navigate into a dead screen',
+      errs: stillHome ? [] : ['navigated to ' + page.url() + ' while offline'] });
+
+    await page.close();
+  }
+}
+for (const h of hubResults) {
+  results.push(h);
+  if (!h.ok) failures++;
+  console.log((h.ok ? 'PASS  ' : 'FAIL  ') + h.id.padEnd(26) + h.what + (h.ok ? '' : '\n        ' + h.errs.join('\n        ')));
+}
+
 for (const ctx of Object.values(contexts)) await ctx.close();
 await browser.close();
 
