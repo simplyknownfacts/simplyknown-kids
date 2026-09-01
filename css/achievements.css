@@ -162,13 +162,26 @@ html.vb-scroll body {
   transition: background 220ms ease, backdrop-filter 220ms ease;
 }
 .vb-celebrate.in { background: rgba(10,10,26,0.55); backdrop-filter: blur(3px); }
-.vb-celebrate .cele-mascot { font-size: clamp(40px, 10vw, 64px); line-height: 1; }
-.vb-celebrate .cele-stack { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.vb-celebrate .cele-stack {
+  display: flex; gap: 10px; justify-content: center; align-items: flex-end;
+  flex-wrap: wrap; max-height: 62vh;
+}
 .vb-celebrate .cele-ribbon {
   animation: celePop 700ms cubic-bezier(0.22,1,0.36,1) both;
   transform: scale(0.9); transition: transform 220ms ease;
+  max-height: 62vh;
 }
 .vb-celebrate.in .cele-ribbon { transform: scale(1); }
+/* The one hero-sized ribbon in the batch gets the bigger, bouncier entrance
+   -- 2026-09-01 fix: presentation size/impact was the actual complaint, not
+   the ribbon art itself, so THIS is where that lands. */
+.vb-celebrate .cele-ribbon--lead { animation: celePopHero 780ms cubic-bezier(0.22,1.4,0.32,1) both; }
+@keyframes celePopHero {
+  0%   { transform: translateY(60px) scale(0.15) rotate(-8deg); opacity: 0; }
+  55%  { transform: translateY(0) scale(1.16) rotate(3deg); opacity: 1; }
+  75%  { transform: translateY(0) scale(0.96) rotate(-1deg); }
+  100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+}
 .vb-celebrate .cele-more {
   color: #fff; font-family: var(--font-ui); font-weight: 700; font-size: 14px;
   opacity: 0.85; background: rgba(255,255,255,0.15); border-radius: 999px;
@@ -183,6 +196,24 @@ html.vb-scroll body {
   0% { transform: translateY(40px) scale(0.4); opacity: 0; }
   60% { transform: translateY(0) scale(1.1); opacity: 1; }
   100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Confetti — real particles (2026-09-01), not just a glow. One <span> per
+   piece, positioned at the overlay's centre and animated outward on pure
+   CSS transforms so no library/canvas is needed. Count and spread are set
+   by celebrate.js per rarity; the animation itself is the same for all of
+   them, driven by the --ang/--dist/--dur/--delay custom properties each
+   piece carries. */
+.confetti-bit {
+  position: absolute; top: 50%; left: 50%; width: 9px; height: 14px;
+  border-radius: 2px; pointer-events: none;
+  --dx: 0px; --dy: 0px; --spin: 360deg;
+  animation: confettiBurst var(--dur, 900ms) cubic-bezier(0.15,0.7,0.3,1) var(--delay, 0ms) both;
+}
+@keyframes confettiBurst {
+  0%   { transform: translate(-50%,-50%) translate(0,0) rotate(0deg); opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) rotate(var(--spin)); opacity: 0; }
 }
 
 /* Weight bands — a repeat star should read as quieter than a diamond before

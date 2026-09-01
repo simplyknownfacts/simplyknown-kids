@@ -65,6 +65,49 @@
     } catch (e) { return false; }
   }
 
+  // ---- hero sizing -----------------------------------------------------
+  // The ribbon art is real, generated for this app on purpose — nothing
+  // about its own design changes here. What changes is how BIG it renders:
+  // Scott's actual complaint was presentation size and impact ("just a
+  // little star"), not the artwork. Sized off the SMALLER viewport
+  // dimension so it can never overflow in either orientation; on a tablet
+  // (~820px) the top tier fills most of the screen, exactly as asked.
+  var HERO_VW  = [0.30, 0.40, 0.46, 0.56, 0.62];   // fraction of min(width,height), by weight 0-4
+  var HERO_MAX = [180,  240,  280,  380,  460];    // px cap so a desktop monitor doesn't go absurd
+  function heroSize(weight) {
+    var vw = Math.min(window.innerWidth, window.innerHeight);
+    return Math.round(Math.min(vw * HERO_VW[weight], HERO_MAX[weight]));
+  }
+
+  // ---- confetti ----------------------------------------------------------
+  // Real particles, not just a glow — named explicitly in the spec and never
+  // actually built until now. Count and spread scale with rarity so a burst
+  // is visibly bigger for a diamond than for a star, cheap (CSS keyframes,
+  // no image assets, no library).
+  var CONFETTI_COLORS = ['#FFD93D', '#FF6B6B', '#4ECDC4', '#C79BF0', '#7FB2FF', '#93DC9E'];
+  var CONFETTI_COUNT = [0, 10, 16, 24, 34]; // by weight 0-4 -- none for the quiet "star" tier
+  function spawnConfetti(overlay, weight) {
+    var n = CONFETTI_COUNT[weight];
+    var spread = 90 + weight * 50; // px, how far pieces fly -- bigger for higher rarity
+    for (var i = 0; i < n; i++) {
+      var p = document.createElement('span');
+      p.className = 'confetti-bit';
+      // Computed here, not in CSS: a rotate() after a translateX() in one
+      // transform doesn't point the translate in that direction (each
+      // function transforms the space for the next one), so the angle has
+      // to become real dx/dy pixel offsets before it reaches the stylesheet.
+      var angle = Math.random() * Math.PI * 2;
+      var dist = spread * (0.6 + Math.random() * 0.6);
+      p.style.setProperty('--dx', Math.round(Math.cos(angle) * dist) + 'px');
+      p.style.setProperty('--dy', Math.round(Math.sin(angle) * dist - dist * 0.35) + 'px'); // biased upward, gravity brings it down via the keyframe
+      p.style.setProperty('--dur', (700 + Math.random() * 500 + weight * 80) + 'ms');
+      p.style.setProperty('--delay', Math.round(Math.random() * 120) + 'ms');
+      p.style.setProperty('--spin', (Math.random() < 0.5 ? '' : '-') + '540deg');
+      p.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+      overlay.appendChild(p);
+    }
+  }
+
   // ---- the big celebration -------------------------------------------
   function show(defs) {
     if (!defs || !defs.length) return;
@@ -89,14 +132,22 @@
     var stack = document.createElement('div');
     stack.className = 'cele-stack';
     var shown = defs.slice(0, 3);
-    shown.forEach(function (d) {
+    // A burst of several still gets ONE hero-sized lead ribbon (the highest-
+    // weight member) so the moment reads as one big thing, not a lineup of
+    // equally-sized cards — the rest sit smaller alongside it.
+    var leadIdx = 0, leadWeight = -1;
+    shown.forEach(function (d, i) { var w = weightOf(d); if (w > leadWeight) { leadWeight = w; leadIdx = i; } });
+    shown.forEach(function (d, i) {
+      var isLead = i === leadIdx;
       var r = (typeof renderRibbon === 'function')
-        ? renderRibbon(d, { size: weight >= 3 ? 96 : 72, count: d.count })
+        ? renderRibbon(d, { size: isLead ? heroSize(weight) : Math.round(heroSize(weight) * 0.4), count: d.count })
         : document.createElement('div');
       r.classList.add('cele-ribbon');
+      if (isLead) r.classList.add('cele-ribbon--lead');
       stack.appendChild(r);
     });
     overlay.appendChild(stack);
+    spawnConfetti(overlay, weight);
 
     if (defs.length > 3) {
       var more = document.createElement('div');
@@ -112,20 +163,11 @@
       : defs.length + ' ribbons earned!';
     overlay.appendChild(title);
 
-    // Existing mascot art only — no new celebrate clip (parked per master's
-    // no-spend-on-animation ruling). A profile's own mascot icon, already a
-    // real asset, stood in as the "someone is celebrating with you" visual.
-    try {
-      var prof = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
-      var label = prof && prof.mascot && window.mascot && mascot.labels[prof.mascot];
-      if (label) {
-        var icon = document.createElement('div');
-        icon.className = 'cele-mascot';
-        icon.textContent = label.split(' ')[0]; // the emoji half of "🐶 Dog"
-        icon.setAttribute('aria-hidden', 'true');
-        overlay.insertBefore(icon, overlay.firstChild);
-      }
-    } catch (e) {}
+    // No mascot icon here (dropped, 2026-09-01): Scott's own words were
+    // "we already have ribbons... generated specifically for this" — the
+    // ribbon IS the joy centerpiece. A second icon competing for attention
+    // next to a now hero-sized ribbon was never asked for and only dilutes
+    // the one thing this fix is about making unmistakable.
 
     document.body.appendChild(overlay);
     requestAnimationFrame(function () { overlay.classList.add('in'); });
