@@ -1,4 +1,4 @@
-// Verify Batch-1 UX fixes against the LOCAL server (localhost:8866 serving the
+// Verify Batch-1 UX fixes against the LOCAL server (localhost:8790 serving the
 // worktree). Checks: wooden shelf renders, achievements scrolls, peek-a-boo is
 // in the games catalog, phone overlap hint is gone. Screenshots to out/fixes/.
 import { chromium } from 'playwright';
@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), 'out', 'fixes');
 mkdirSync(OUT, { recursive: true });
-const BASE = process.env.BASE || 'http://localhost:8866';
+const BASE = process.env.BASE || 'http://localhost:8790';
 
 // tier-1 profile WITH a few earned ribbons so the shelf shows ribbons on the plank
 const d = new Date(); d.setMonth(d.getMonth() - 5); const bday = d.toISOString().slice(0, 10);

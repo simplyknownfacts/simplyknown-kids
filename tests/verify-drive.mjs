@@ -66,7 +66,7 @@ import { mkdir, rm, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-const BASE = process.env.BASE || 'http://localhost:8866';
+const BASE = process.env.BASE || 'http://localhost:8790';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SHOTS = path.join(ROOT, 'docs', 'verify', 'shots');
 

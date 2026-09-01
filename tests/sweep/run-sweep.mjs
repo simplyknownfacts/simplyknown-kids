@@ -8,7 +8,7 @@
 // page.addInitScript) before navigation to force deterministic state.
 //
 // Usage:
-//   node tests/sweep/run-sweep.mjs                 (full sweep, default base http://localhost:8866)
+//   node tests/sweep/run-sweep.mjs                 (full sweep, default base http://localhost:8790)
 //   BASE=http://localhost:8877 node tests/sweep/run-sweep.mjs
 //   node tests/sweep/run-sweep.mjs --only=math,abcs (subset of activity ids)
 //   node tests/sweep/run-sweep.mjs --tiers=1,8      (subset of tiers)
@@ -26,7 +26,7 @@ const OUT_DIR = __dirname; // tests/sweep
 const REPO_ROOT = resolve(__dirname, '..', '..');
 
 // ── config ──────────────────────────────────────────────────────────────────
-const BASE = process.env.BASE || 'http://localhost:8866';
+const BASE = process.env.BASE || 'http://localhost:8790';
 const args = process.argv.slice(2);
 const argVal = (name) => {
   const a = args.find((x) => x.startsWith(`--${name}=`));

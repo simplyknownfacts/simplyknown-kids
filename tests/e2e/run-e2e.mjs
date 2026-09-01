@@ -7,7 +7,7 @@
 //   node run-e2e.mjs                 full run, 8 tiers, BASE=https://kids.simplyknown.co
 //   node run-e2e.mjs --tiers=1       single tier (validation)
 //   node run-e2e.mjs --tiers=1,8 --conc=2
-//   BASE=http://localhost:8866 node run-e2e.mjs
+//   BASE=http://localhost:8790 node run-e2e.mjs
 //
 // Anti-hang: per-op timeouts, bounded interaction loops, per-tier result file
 // written as each tier finishes. Cannot silently stall.

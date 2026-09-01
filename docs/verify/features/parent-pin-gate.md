@@ -9,7 +9,7 @@ app cannot give.
 
 ## Drive it
 
-1. Serve the app and open `http://localhost:8866/index.html` on a phone-sized window.
+1. Serve the app and open `http://localhost:8790/index.html` on a phone-sized window.
 2. **Press and hold the faint gear in the bottom-right corner.**
    ⚠️ The hold is about **0.7 seconds**, not the 3 seconds `CLAUDE.md` claims. `index.html`
    calls `holdToActivate` without a duration, so it takes the 700 ms default from

@@ -7,7 +7,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 const OUT = join(dirname(fileURLToPath(import.meta.url)), 'out', 'fixes');
 mkdirSync(OUT, { recursive: true });
-const BASE = process.env.BASE || 'http://localhost:8866';
+const BASE = process.env.BASE || 'http://localhost:8790';
 const [, , file, id, tierArg] = process.argv;
 const tier = Number(tierArg || 1);
 

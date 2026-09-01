@@ -4,8 +4,11 @@
 // sync layer all need a real http:// origin. This is the Launch step of
 // docs/verify/VERIFYING.md.
 //
-//   node scripts/serve.mjs            -> http://localhost:8866
+//   node scripts/serve.mjs            -> http://localhost:8790
 //   PORT=9000 node scripts/serve.mjs  -> http://localhost:9000
+//
+// Port 8790 per the fleet's Nomenclature Standard §1b (2026-09-01) -- was
+// 8866 before that ruling.
 //
 // No dependencies, on purpose: this repo has no build step and no runtime deps.
 import { createServer } from 'node:http';
@@ -13,7 +16,7 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const PORT = Number(process.env.PORT || 8866);
+const PORT = Number(process.env.PORT || 8790);
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',

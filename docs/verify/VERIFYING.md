@@ -18,7 +18,7 @@ service worker, `fetch()` and the sync layer all need an `http://` origin.
 node scripts/serve.mjs
 ```
 
-Serves the repo at `http://localhost:8866`. No dependencies; the repo has no build
+Serves the repo at `http://localhost:8790`. No dependencies; the repo has no build
 step and no runtime dependencies, and this does not change that.
 
 One-time browser install for step 3 (never committed — `node_modules/` is ignored):
@@ -41,7 +41,7 @@ published to the web, and that hostile text typed into a name or synced from the
 cloud is displayed as words rather than run as code.
 
 ```bash
-curl -s http://localhost:8866/__health.json
+curl -s http://localhost:8790/__health.json
 ```
 
 Expected: a small JSON block whose `app` is **`kids`**.
@@ -112,7 +112,7 @@ BASE=https://kids1.simplyknown.co node tests/verify-drive.mjs
 **Prove the checker still works** whenever you change it, by pointing it somewhere broken:
 
 ```bash
-BASE=http://localhost:8866/does-not-exist node tests/verify-drive.mjs; echo "exit $?"
+BASE=http://localhost:8790/does-not-exist node tests/verify-drive.mjs; echo "exit $?"
 ```
 
 Expected: **exit 1**, with a message saying nothing identifiable is serving at that

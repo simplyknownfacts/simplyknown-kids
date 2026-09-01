@@ -11,7 +11,7 @@ import { join, extname, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const PORT = 8866;
+const PORT = 8790;
 const MIME = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript',
   '.json':'application/json', '.png':'image/png', '.svg':'image/svg+xml',
   '.mp3':'audio/mpeg', '.webm':'video/webm', '.woff2':'font/woff2', '.ico':'image/x-icon' };

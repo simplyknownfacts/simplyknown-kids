@@ -6,7 +6,7 @@ tests, or a seven-year-old is shown a baby screen.
 
 ## Drive it
 
-1. Open `http://localhost:8866/index.html`. The picker lists every child.
+1. Open `http://localhost:8790/index.html`. The picker lists every child.
 2. Add two children through parent settings: one aged **3**, one aged **8**.
 3. Choose the three-year-old. Note which activities appear in Games, Learning and Art.
 4. Go back and choose the eight-year-old. Expected: **more** activities, including ones the

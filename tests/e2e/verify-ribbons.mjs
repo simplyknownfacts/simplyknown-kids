@@ -5,7 +5,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 const OUT = join(dirname(fileURLToPath(import.meta.url)), 'out', 'fixes');
 mkdirSync(OUT, { recursive: true });
-const BASE = process.env.BASE || 'http://localhost:8866';
+const BASE = process.env.BASE || 'http://localhost:8790';
 
 const d = new Date(); d.setMonth(d.getMonth() - 30); const bday = d.toISOString().slice(0, 10); // tier 3
 const prof = {
