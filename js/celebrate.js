@@ -68,6 +68,14 @@
   // ---- the big celebration -------------------------------------------
   function show(defs) {
     if (!defs || !defs.length) return;
+    // Never stack. The batching in progress.js means real gameplay should
+    // only ever produce one call to show() per pause point, but a demo page
+    // (or any future caller) firing two in quick succession must not leave a
+    // stale overlay sitting behind the new one -- confusing at best, and it
+    // was mistaken for "nothing changed" when a stale small-tier overlay was
+    // still on screen under a new tier's button.
+    document.querySelectorAll('.vb-celebrate').forEach(function (el) { el.remove(); });
+
     var weight = Math.max.apply(null, defs.map(weightOf));
     var band = weight >= 3 ? 'big' : (weight >= 2 ? 'mid' : 'small');
 

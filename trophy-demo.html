@@ -32,6 +32,18 @@
     button.demo-btn:active { transform: scale(0.97); }
     hr { width: 100%; border: none; border-top: 1px solid var(--chip-border, #ccc); margin: 6px 0; }
     #tapFrenzy { min-height: 120px; border-radius: 14px; background: var(--chip-bg, #eee); display: flex; align-items: center; justify-content: center; font-family: var(--font-ui); }
+    /* Loud, impossible-to-miss "what just happened" log -- this is what a
+       test suite can prove but a person glancing at a demo easily misses. */
+    #ageBadge {
+      display: inline-block; font-weight: 800; font-size: 15px; padding: 6px 14px;
+      border-radius: 999px; background: #333; color: #fff; margin-bottom: 6px;
+    }
+    #log {
+      background: #111; color: #7CFFB2; font-family: monospace; font-size: 12px;
+      border-radius: 10px; padding: 10px 12px; max-height: 140px; overflow-y: auto;
+      white-space: pre-wrap; line-height: 1.5;
+    }
+    #log .old { opacity: 0.45; }
   </style>
 </head>
 <body>
@@ -50,22 +62,30 @@
   </div>
 
   <hr>
+  <div id="ageBadge">Viewing as: tier 5 (default)</div>
   <div class="row">
     <button class="demo-btn" id="ageLittle">👶 View as tier 2 (little)</button>
     <button class="demo-btn" id="ageBig">🎓 View as tier 9 (big kid)</button>
     <button class="demo-btn" id="ageMid" style="flex-basis:100%">🧒 View as tier 5 (default)</button>
   </div>
-  <p class="note" id="ageNow">Currently viewing as: tier 5 (default)</p>
+  <p class="note">Same buttons above now behave differently per age — check the log below for
+  exactly what changed each time. Tier 2 never auto-fires on idle (only Leave); tier 9 skips
+  spoken narration; the overlay itself gets a "bigkid" style tag either way.</p>
 
   <hr>
   <p class="note"><strong>Never-interrupt check:</strong> tap rapidly below for 3+ seconds — no
   celebration should appear while you're tapping, only after you stop (tier 3+) or when you
-  press "Leave" (any tier).</p>
+  press "Leave" (any tier — tier 2 ONLY fires on Leave, never on stopping).</p>
   <div id="tapFrenzy">tap me a lot</div>
   <div class="row">
     <span class="note" id="frenzyCount" style="flex:1">0 taps banked, none shown yet</span>
     <button class="demo-btn" id="leaveBtn" style="flex-basis:100%">🚪 Leave (flush now)</button>
   </div>
+
+  <hr>
+  <p class="note"><strong>What just happened</strong> — every button press and every celebration
+  logs here, so nothing depends on catching a fast animation or a tiny corner dot.</p>
+  <div id="log">(log starts here)</div>
 
   <script src="js/tiers.js"></script>
   <script src="js/profiles.js"></script>
@@ -94,11 +114,28 @@
       localStorage.setItem('vb_active_id', DEMO_ID);
     }
     function yearsAgo(y) { const d = new Date(); d.setFullYear(d.getFullYear() - y); return d.toISOString().slice(0, 10); }
-    setDemoProfile(yearsAgo(5)); // tier 5 default
 
-    document.getElementById('ageLittle').onclick = () => { setDemoProfile(yearsAgo(1)); document.getElementById('ageNow').textContent = 'Currently viewing as: tier 2 (little — no idle-fire)'; };
-    document.getElementById('ageBig').onclick   = () => { setDemoProfile(yearsAgo(9)); document.getElementById('ageNow').textContent = 'Currently viewing as: tier 9 (big kid — captions only)'; };
-    document.getElementById('ageMid').onclick   = () => { setDemoProfile(yearsAgo(5)); document.getElementById('ageNow').textContent = 'Currently viewing as: tier 5 (default)'; };
+    // Loud, on-screen log -- nothing here depends on catching a fast
+    // animation or a tiny corner dot. Newest entry on top; old ones dim.
+    const logEl = document.getElementById('log');
+    function log(msg) {
+      const line = document.createElement('div');
+      line.textContent = new Date().toLocaleTimeString() + '  ' + msg;
+      [...logEl.children].forEach(c => c.classList.add('old'));
+      logEl.insertBefore(line, logEl.firstChild);
+      while (logEl.children.length > 12) logEl.removeChild(logEl.lastChild);
+    }
+
+    function setAge(label, birthday, why) {
+      setDemoProfile(birthday);
+      document.getElementById('ageBadge').textContent = 'Viewing as: ' + label;
+      log('AGE -> ' + label + '. ' + why);
+    }
+    setDemoProfile(yearsAgo(5)); // tier 5 default, no log line for the initial silent setup
+
+    document.getElementById('ageLittle').onclick = () => setAge('tier 2 (little)', yearsAgo(1), 'idle-fire is now OFF — the rarity buttons below still fire instantly (they call show() directly), but a real tap-frenzy would only celebrate on Leave.');
+    document.getElementById('ageBig').onclick   = () => setAge('tier 9 (big kid)', yearsAgo(9), 'the next celebration will carry a "bigkid" style tag (quieter title, no spoken line) — watch the CSS class logged when you press a rarity button.');
+    document.getElementById('ageMid').onclick   = () => setAge('tier 5 (default)', yearsAgo(5), 'idle-fire back on, full-size everything.');
 
     // Sample defs matching what achievement-defs.js actually produces —
     // enough shape for celebrate.js to render, without needing a real
@@ -118,7 +155,15 @@
                  sampleDef('milestone', 'gold', 'Gold'), sampleDef('milestone', 'diamond', 'Diamond')],
     };
     document.querySelectorAll('.demo-btn[data-tier]').forEach(b => {
-      b.onclick = () => window.vbCelebrate.show(SAMPLES[b.dataset.tier]);
+      b.onclick = () => {
+        window.vbCelebrate.show(SAMPLES[b.dataset.tier]);
+        // Read the class straight off the element show() just created, so
+        // the log states what ACTUALLY rendered, not what was requested.
+        setTimeout(() => {
+          const el = document.querySelector('.vb-celebrate');
+          log('SHOW "' + b.textContent.trim() + '" -> ' + (el ? el.className : '(no overlay found)'));
+        }, 30);
+      };
     });
 
     // Never-interrupt live check — banks real progress-engine glints/pending
@@ -127,12 +172,24 @@
     let taps = 0;
     document.getElementById('tapFrenzy').addEventListener('click', () => {
       taps++;
-      document.getElementById('frenzyCount').textContent = taps + ' taps (5 crosses the real star threshold — watch for the corner glint, then a celebration once you stop or leave)';
+      document.getElementById('frenzyCount').textContent = taps + ' taps (5 crosses the real star threshold)';
       vbProgress.record('tap-pop');
+      if (taps === 5) log('TAP 5 -> star threshold crossed, banked silently (corner glint + no overlay yet — this is correct, not broken).');
+      else log('TAP ' + taps + ' -> vbProgress.record(\'tap-pop\') called, no overlay (correct: never interrupts).');
+    });
+    document.getElementById('leaveBtn').addEventListener('click', () => {
+      log('LEAVE pressed -> flushing to sessionStorage, then simulating the next page load...');
     });
     document.getElementById('leaveBtn').addEventListener('click', () => {
       window.dispatchEvent(new Event('pagehide'));
-      setTimeout(() => window.dispatchEvent(new Event('load')), 50);
+      setTimeout(() => {
+        window.dispatchEvent(new Event('load'));
+        setTimeout(() => {
+          const el = document.querySelector('.vb-celebrate');
+          log(el ? 'ARRIVAL PICKUP FIRED -> ' + el.className
+                 : 'nothing to show (either no unlock was banked, or the pickup did not fire — that IS the bug to watch for).');
+        }, 400);
+      }, 50);
     });
   </script>
 </body>
