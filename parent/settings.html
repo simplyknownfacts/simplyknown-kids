@@ -601,8 +601,12 @@
 
       </div><!-- /.panel-area -->
     </div><!-- /.shell -->
+    <!-- App version, per the fleet Deploy & Release Standard PART D6: shown small
+         so Scott can open the app and see which release he is looking at. -->
+    <div class="app-version-footer" style="text-align:center;font-size:11px;color:rgba(255,255,255,0.35);padding:14px 0 4px;">v<span id="appVersionText"></span></div>
   </div>
 
+  <script src="../js/version.js"></script>
   <script src="../js/atmosphere.js"></script>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
@@ -2125,6 +2129,13 @@
     }
 
     // ── Init ──────────────────────────────────────────────────────────────────
+    // Version footer (js/version.js) -- shown small so Scott can see which
+    // release he's looking at (Deploy & Release Standard PART D6).
+    (function renderAppVersion() {
+      const el = document.getElementById('appVersionText');
+      if (el) el.textContent = typeof APP_VERSION === 'string' ? APP_VERSION : '?';
+    })();
+
     // Always require PIN before entering settings. If no PIN is set on this
     // device yet, force the parent to create one (one-time setup) — prevents
     // a kid from getting into settings by tapping "+ Add child" on a fresh device.

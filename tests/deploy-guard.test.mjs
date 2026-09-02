@@ -67,13 +67,22 @@ test('the clean-tree guard refuses when there is a new, untracked file', () => {
   assert.notEqual(res.status, 0, 'an untracked file must also refuse the deploy -- it would ship too');
 });
 
-test('source guard: deploy:prod-preview runs the clean-tree guard before staging/deploying to production', () => {
+// RETIRED 2026-09-02 (Deploy & Release Standard PART D8, Codex finding #2 of
+// the 2026-09-02 review): deploy:prod-preview was a second, weaker door to
+// production -- clean tree only, no branch check, no version, no dev-verify
+// stamp, no Codex triage. `scripts/promote.mjs` (via `npm run promote`) is
+// now the ONE door. The old assertion above (that this script called
+// require-clean-tree.mjs before staging) is exactly the shape being closed,
+// not a bar to keep clearing -- replaced with a test that the script now
+// refuses outright instead of ever reaching a real deploy.
+test('deploy:prod-preview is retired: it refuses outright and points at npm run promote', () => {
   const pkg = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   const script = pkg.scripts && pkg.scripts['deploy:prod-preview'];
-  assert.ok(script, 'deploy:prod-preview should still exist in package.json');
-  assert.match(script, /require-clean-tree\.mjs/,
-    'deploy:prod-preview must call scripts/require-clean-tree.mjs before anything else, or a dirty tree can ship to the PRODUCTION Pages project again');
-  assert.ok(
-    script.indexOf('require-clean-tree.mjs') < script.indexOf('npm run stage'),
-    'the clean-tree guard must run BEFORE `npm run stage`, not after -- staging succeeding first defeats the point');
+  assert.ok(script, 'deploy:prod-preview should still exist in package.json (as a refusal, not removed -- so muscle memory hits an explanation, not "command not found")');
+  assert.doesNotMatch(script, /wrangler[^&]*pages\s+deploy/,
+    'deploy:prod-preview must not invoke wrangler pages deploy at all -- it is retired, not just re-guarded');
+  assert.match(script, /npm run promote/,
+    'the refusal must point at the real one door (npm run promote)');
+  const res = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', 'deploy:prod-preview'], { cwd: ROOT, encoding: 'utf8' });
+  assert.notEqual(res.status, 0, 'running deploy:prod-preview must exit non-zero, not silently succeed');
 });
