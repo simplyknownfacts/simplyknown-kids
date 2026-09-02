@@ -3,6 +3,12 @@
 Thumbs.db
 *.log
 .env
+# git worktrees (superpowers:using-git-worktrees convention) -- a linked
+# worktree is its own working directory, never something to commit, and an
+# untracked one here would make every dirty-tree gate (require-clean-tree,
+# verify:dev, promote) refuse forever. Found live 2026-09-02: `.worktrees/
+# review-fixes` was untracked and blocking a clean tree.
+.worktrees/
 .env.*
 node_modules/
 .claude/
