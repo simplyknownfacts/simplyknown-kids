@@ -19,13 +19,28 @@
   <style>
     /* ============================================================
        Hub World home screen. Ported from redesign-hub-mock.html v3
-       (Scott's approved prototype, "i like v1") — the cover-fit math,
-       independent-band-bob motion, and hotspot mechanism are reused
-       VERBATIM. What changed for production: hotspots really navigate,
-       Watch/Listen respect online + Yoto-connected state the way the
-       old tile grid did, and the fox landmark ("You") is now the real
-       ribbons/achievements entry point instead of a decorative toast —
-       see the build() comment below for why.
+       (Scott's approved prototype, "i like v1") — the cover-fit math and
+       hotspot mechanism are reused VERBATIM. What changed for production:
+       hotspots really navigate, Watch/Listen respect online + Yoto-
+       connected state the way the old tile grid did, and the fox landmark
+       ("You") is now the real ribbons/achievements entry point instead of
+       a decorative toast — see the build() comment below for why.
+
+       2026-09-01, first real hands-on pass by Scott (not automated
+       clicks): the earlier "verified" claim on this screen missed real
+       usability problems that only showed up when an actual person tried
+       it. Two fixed here — see the comments at each site for the full
+       story: (1) the independently-bobbing bands tore visible seams
+       through bridges/paths ("even worse" than static) — REMOVED, the
+       image is one seamless static picture again; (2) the hidden-
+       scrollbar horizontal scroll was undiscoverable, especially with a
+       mouse — added visible edge-hint chevrons + pointer-drag-to-scroll.
+       Still open, NOT attempted here: the child's own mascot (js/mascot.js,
+       bottom-left) never replaces or joins the fox painted into the
+       picture — two disconnected characters instead of one. Real
+       element-level "alive" (fox waving, vines swinging, curtains
+       rippling) needs individually generated/composited layers, i.e. the
+       Phase 3b rebuild, not a CSS trick on v1's flat art.
        ============================================================ */
     /* horizontal SCROLL, not clip: this v1 art is a wide/landscape island
        (1376x768) and phones are tall/narrow — cover-fitting it to a phone's
@@ -49,28 +64,60 @@
       background: #cfd9e8;
     }
     .home-screen::-webkit-scrollbar { display: none; height: 0; width: 0; }
+    .home-screen.dragging { cursor: grabbing; }
+
+    /* Real bug, found by Scott hands-on 2026-09-01: hiding the scrollbar (by
+       design, for a clean full-bleed world) left NOTHING on screen hinting
+       that Games/Watch/Art exist off to the sides -- "super zoomed in, i
+       can only see the middle path." A hidden scrollbar with no other cue
+       is undiscoverable, especially for a mouse user (no swipe gesture to
+       stumble onto). Two fixes: a soft edge fade + bouncing chevron on
+       whichever side still has unseen content (toggled in JS as the real
+       scroll position changes), and pointer-drag-to-scroll so a mouse
+       click-and-drag works the same as a finger swipe. */
+    .scroll-hint {
+      position: fixed; top: 0; bottom: 0; width: 64px; z-index: 40;
+      pointer-events: none; opacity: 0; transition: opacity 220ms ease;
+      display: flex; align-items: center; font-size: 28px;
+    }
+    .scroll-hint.show { opacity: 1; }
+    .scroll-hint.left  { left: 0; justify-content: flex-start; padding-left: 8px; background: linear-gradient(to right, rgba(20,15,10,0.22), transparent); }
+    .scroll-hint.right { right: 0; justify-content: flex-end;  padding-right: 8px; background: linear-gradient(to left,  rgba(20,15,10,0.22), transparent); }
+    .scroll-hint span {
+      display: inline-block; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      animation: hintBounce 1.4s ease-in-out infinite;
+    }
+    .scroll-hint.left span  { animation-name: hintBounceLeft; }
+    @keyframes hintBounce     { 0%,100% { transform: translateX(0); } 50% { transform: translateX(8px); } }
+    @keyframes hintBounceLeft { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-8px); } }
+    @media (prefers-reduced-motion: reduce) { .scroll-hint span { animation: none; } }
 
     /* Each .band is a clipped "window" onto its own slice of the SAME
        source image, sized/positioned in JS to match the real cover-fit
        rect (see layout() below) so it always lines up with the picture
-       regardless of window size. The slow bob is applied HERE (the
-       whole slice), so its image content and its hotspot children move
-       together, always in sync. */
-    .band {
-      position: absolute; overflow: hidden;
-      animation: bob 6s ease-in-out infinite;
-      opacity: 0;
-    }
+       regardless of window size. Bands exist for hotspot placement and
+       horizontal-scroll layout ONLY now -- see the removed-motion note
+       below for why they never bob independently. */
+    .band { position: absolute; overflow: hidden; opacity: 0; }
     .band.ready {
-      animation-name: bandIn, bob;
-      animation-duration: 900ms, 6s;
-      animation-timing-function: cubic-bezier(.22,1,.36,1), ease-in-out;
-      animation-iteration-count: 1, infinite;
-      animation-fill-mode: both, none;
+      animation: bandIn 900ms cubic-bezier(.22,1,.36,1) both;
     }
     @keyframes bandIn { to { opacity: 1; } }
-    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(var(--bob-amp, -8px)); } }
     .band img { position: absolute; top: 0; display: block; max-width: none; }
+
+    /* REMOVED 2026-09-01, found live by Scott: each band bobbing on its own
+       cut the ONE continuous photo into visibly independent tiles -- a
+       bridge (or path, or roofline) crossing a seam tore into two halves
+       moving out of phase with each other. "Even worse" than static, his
+       words, and he's right: a torn seam reads as broken, not alive. There
+       is no cheap fix for this with a single flat image -- the whole point
+       of a seam-free scene is that nothing in it can move independently of
+       its neighbors. Real "alive" (the fox waving, vines swinging, window
+       lights flickering, curtains rippling, notes drifting) needs each of
+       those things generated and composited as its OWN separate layer, not
+       a crop of one photo -- that's the Phase 3b layered-art rebuild, not a
+       CSS trick on top of v1's flat art. Shipping a stable, seamless static
+       scene now beats shipping a torn one while that lands. */
 
     /* ---------- greeting + chrome, sitting IN the world ---------- */
     /* fixed, not absolute: .home-screen now scrolls horizontally (see above),
@@ -170,6 +217,8 @@
     </button>
     <button type="button" id="exitBtn" class="exit-btn" onclick="exitApp()" aria-label="Exit app" title="Exit app">🚪</button>
   </div>
+  <div class="scroll-hint left" id="hintLeft" aria-hidden="true"><span>‹</span></div>
+  <div class="scroll-hint right" id="hintRight" aria-hidden="true"><span>›</span></div>
 
   <script src="js/atmosphere.js"></script>
   <script src="js/tiers.js"></script>
@@ -217,9 +266,10 @@
     window.addEventListener('online', updateOnlineSpots);
     window.addEventListener('offline', updateOnlineSpots);
 
-    // Builds the fox hub world: 3 independently-bobbing island slices of the
-    // same approved image, each carrying the landmarks that visually sit
-    // inside it. Cover-fit math (layout()) + band-bob mechanism are reused
+    // Builds the fox hub world: the approved image sliced into 3 bands for
+    // hotspot placement and horizontal scroll layout (see layout() below).
+    // Bands no longer bob independently -- see the CSS "REMOVED" note above
+    // for why (it tore the seams between them). Cover-fit math is reused
     // verbatim from redesign-hub-mock.html v3 — only the spot table below and
     // the click behavior are new (real navigation instead of a demo toast).
     function buildHub() {
@@ -230,13 +280,13 @@
 
       const BANDS = [
         {
-          x0: 0, x1: 0.28, bobAmp: '-7px', bobDur: '5.2s',
+          x0: 0, x1: 0.28,
           spots: [
             { id: 'games', label: 'Games', route: 'games/index.html', net: false, fx: 0.18, fy: 0.39 },
           ],
         },
         {
-          x0: 0.28, x1: 0.63, bobAmp: '-10px', bobDur: '6.8s',
+          x0: 0.28, x1: 0.63,
           spots: [
             { id: 'learn', label: 'Learn', route: 'learning/index.html', net: false, fx: 0.35, fy: 0.23 },
             ...(listenUnlocked ? [{ id: 'listen', label: 'Listening Hut', route: 'listen/index.html', net: true, fx: 0.56, fy: 0.34 }] : []),
@@ -251,7 +301,7 @@
           ],
         },
         {
-          x0: 0.63, x1: 1.0, bobAmp: '-8px', bobDur: '6.0s',
+          x0: 0.63, x1: 1.0,
           spots: [
             { id: 'watch', label: 'Watch', route: 'videos/index.html', net: true, fx: 0.70, fy: 0.23 },
             { id: 'art', label: 'Art', route: 'art/index.html', net: false, fx: 0.84, fy: 0.42 },
@@ -279,9 +329,7 @@
         BANDS.forEach((band, i) => {
           const el = document.createElement('div');
           el.className = 'band';
-          el.style.setProperty('--bob-amp', band.bobAmp);
-          el.style.animationDuration = '900ms, ' + band.bobDur;
-          el.style.animationDelay = (i * 120) + 'ms, ' + (i * -1800) + 'ms';
+          el.style.animationDelay = (i * 120) + 'ms';
 
           const img = document.createElement('img');
           img.src = IMG_SRC;
@@ -353,7 +401,46 @@
         });
 
         worldEl.scrollLeft = Math.max(0, (renderedW - cw) / 2);
+        updateHints();
       }
+
+      // Show a chevron on whichever side still has unseen content; hide it
+      // once scrolled all the way there. 4px tolerance for sub-pixel scroll
+      // positions some browsers report.
+      const hintLeft = document.getElementById('hintLeft');
+      const hintRight = document.getElementById('hintRight');
+      function updateHints() {
+        hintLeft.classList.toggle('show', worldEl.scrollLeft > 4);
+        hintRight.classList.toggle('show', worldEl.scrollLeft < worldEl.scrollWidth - worldEl.clientWidth - 4);
+      }
+      worldEl.addEventListener('scroll', updateHints);
+
+      // Pointer-drag-to-scroll: a finger swipe already scrolls this
+      // (overflow-x:auto + -webkit-overflow-scrolling:touch), but a MOUSE
+      // click-and-drag does not by default -- found live 2026-09-01, the
+      // hidden scrollbar left desktop users with no way to discover or
+      // reach the off-screen landmarks at all.
+      let dragging = false, dragStartX = 0, dragStartScroll = 0, dragMoved = false;
+      worldEl.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') return; // native touch-scroll handles this
+        dragging = true; dragMoved = false;
+        dragStartX = e.clientX; dragStartScroll = worldEl.scrollLeft;
+        worldEl.classList.add('dragging');
+        worldEl.setPointerCapture(e.pointerId);
+      });
+      worldEl.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - dragStartX;
+        if (Math.abs(dx) > 4) dragMoved = true;
+        worldEl.scrollLeft = dragStartScroll - dx;
+      });
+      function endDrag() { dragging = false; worldEl.classList.remove('dragging'); }
+      worldEl.addEventListener('pointerup', endDrag);
+      worldEl.addEventListener('pointercancel', endDrag);
+      // A drag that actually moved the world must not also fire the
+      // landmark it started or ended on -- capture-phase so it runs before
+      // any .spot's own click handler.
+      worldEl.addEventListener('click', (e) => { if (dragMoved) { e.stopPropagation(); dragMoved = false; } }, true);
 
       window.addEventListener('resize', layout);
       build();
