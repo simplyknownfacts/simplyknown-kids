@@ -420,13 +420,27 @@
       // click-and-drag does not by default -- found live 2026-09-01, the
       // hidden scrollbar left desktop users with no way to discover or
       // reach the off-screen landmarks at all.
+      //
+      // FIXED 2026-09-02 (Codex finding #6, MED, confirmed by a real
+      // regression: tests/verify-drive.mjs's hub-nav-* checks -- a plain
+      // click on a landmark -- started failing the moment this patch
+      // landed). Starting drag-tracking on ANY pointerdown, including one
+      // that began on a landmark/button, let a normal click's own tiny
+      // pointer jitter cross the 4px threshold and have the capture-phase
+      // click handler below swallow the click before the landmark's own
+      // handler ever saw it. Fix: never start tracking a drag if the
+      // pointer went down on an interactive element -- a real click there
+      // behaves exactly like a click, full stop. Also guards
+      // setPointerCapture (can throw) and resets state if capture is lost
+      // out from under it (e.g. the OS shows a context menu mid-drag).
       let dragging = false, dragStartX = 0, dragStartScroll = 0, dragMoved = false;
       worldEl.addEventListener('pointerdown', (e) => {
         if (e.pointerType === 'touch') return; // native touch-scroll handles this
+        if (e.target.closest('.spot, button, a, [role="button"]')) return; // let it click, don't touch drag state
         dragging = true; dragMoved = false;
         dragStartX = e.clientX; dragStartScroll = worldEl.scrollLeft;
         worldEl.classList.add('dragging');
-        worldEl.setPointerCapture(e.pointerId);
+        try { worldEl.setPointerCapture(e.pointerId); } catch { /* not capturable right now -- scroll still works via native drag */ }
       });
       worldEl.addEventListener('pointermove', (e) => {
         if (!dragging) return;
@@ -437,9 +451,11 @@
       function endDrag() { dragging = false; worldEl.classList.remove('dragging'); }
       worldEl.addEventListener('pointerup', endDrag);
       worldEl.addEventListener('pointercancel', endDrag);
+      worldEl.addEventListener('lostpointercapture', endDrag);
       // A drag that actually moved the world must not also fire the
       // landmark it started or ended on -- capture-phase so it runs before
-      // any .spot's own click handler.
+      // any .spot's own click handler. Never reaches here for a click that
+      // started on a .spot/button/a, per the pointerdown guard above.
       worldEl.addEventListener('click', (e) => { if (dragMoved) { e.stopPropagation(); dragMoved = false; } }, true);
 
       window.addEventListener('resize', layout);
