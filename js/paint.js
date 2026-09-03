@@ -12,6 +12,16 @@
 // Usage:  vbPaint.mount({ tier, pages, onStroke })
 //   pages: [{ name, svg?, src? }]  — svg = inline SVG markup, src = image URL,
 //          neither = a blank page. Omit `pages` entirely for a plain canvas.
+//
+// Security (audit 2026-06-10, finding 2): `svg` and `src` are treated as
+// UNTRUSTED even though today's only callers (color-in.html's built-in scenes,
+// and the family's own uploaded photos) are not attacker-controlled — this is a
+// shared, reusable engine, and `vb_coloring_pages` is browser storage a future
+// caller, a compromised sync payload, or plain tampering could put anything
+// into. `<svg onload="...">` fires even when inserted via innerHTML (unlike
+// <script>), so handing a page's svg string straight to the background layer's
+// innerHTML, unsanitized, was a real hole. See sanitizeSvgMarkup() and
+// setPage() below.
 (function () {
   'use strict';
 
@@ -30,6 +40,62 @@
     ];
   }
   const SIZES = SIZES_now();
+
+  // ---- background sanitizing (allow-list, not a block-list) ----
+  // Only shape/structure elements survive; anything that can run script or fetch
+  // an outside resource (<script>, <foreignObject>, <image>, <use> [href pulls in
+  // a whole other document]) is dropped, along with every attribute not on the
+  // allow-list below — which by construction excludes every on* handler and
+  // every href/xlink:href. Nodes are copied one-by-one into a FRESH element tree
+  // rather than the string being re-parsed as HTML, so there is no second chance
+  // for a browser quirk to reinterpret something we didn't intend to allow.
+  const SVG_TAG_ALLOW = new Set([
+    'svg', 'g', 'path', 'circle', 'ellipse', 'rect', 'polygon', 'polyline', 'line', 'defs', 'title',
+  ]);
+  const SVG_ATTR_ALLOW = new Set([
+    'class', 'id', 'viewbox', 'xmlns', 'width', 'height', 'preserveaspectratio',
+    'cx', 'cy', 'r', 'rx', 'ry', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'points', 'd',
+    'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'opacity', 'transform',
+  ]);
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  function _sanitizeSvgNode(srcNode) {
+    const tag = srcNode.tagName ? srcNode.tagName.toLowerCase() : '';
+    if (!SVG_TAG_ALLOW.has(tag)) return null;
+    const clean = document.createElementNS(SVG_NS, tag);
+    Array.prototype.forEach.call(srcNode.attributes || [], (attr) => {
+      const name = attr.name.toLowerCase();
+      if (!SVG_ATTR_ALLOW.has(name)) return;   // covers every on*, href, xlink:href — not on the list
+      clean.setAttribute(attr.name, attr.value);
+    });
+    Array.prototype.forEach.call(srcNode.childNodes || [], (child) => {
+      if (child.nodeType !== 1) return;        // text/comment nodes carry nothing this app needs
+      const cleanChild = _sanitizeSvgNode(child);
+      if (cleanChild) clean.appendChild(cleanChild);
+    });
+    return clean;
+  }
+  // Returns a sanitized <svg> element ready to appendChild, or null if the
+  // string isn't parseable SVG at all.
+  function sanitizeSvgMarkup(rawSvg) {
+    try {
+      const doc = new DOMParser().parseFromString(String(rawSvg || ''), 'image/svg+xml');
+      if (doc.querySelector('parsererror')) return null;
+      const root = doc.documentElement;
+      if (!root || root.tagName.toLowerCase() !== 'svg') return null;
+      return _sanitizeSvgNode(root);
+    } catch (e) { return null; }
+  }
+  // A stored picture address is only ever one of two legitimate things: a data:
+  // image this app itself produced (uploaded photo → XDoG line art), or an
+  // https: address. Mirrors parent/settings.html's safeImageSrc() allow-list —
+  // same rule, kept separately because this file has no shared module to import
+  // it from (plain <script> tags, no bundler).
+  function _safeBgImgSrc(url) {
+    const u = String(url == null ? '' : url);
+    if (/^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(u)) return u;
+    if (/^https:\/\/[^\s"'<>]+$/.test(u)) return u;
+    return null;
+  }
 
   function injectStyle() {
     if (document.getElementById('vbPaintStyle')) return;
@@ -85,12 +151,25 @@
     const undo = [];
 
     // ---- background page (DOM) ----
+    // Never re-inserts a stored string as HTML: svg is parsed + rebuilt through
+    // the allow-list sanitizer above, and an image address is set as an element
+    // PROPERTY (not interpolated into markup) after the same https:/data: check
+    // parent/settings.html applies to the same stored value.
     function setPage() {
-      if (!pages) { bgLayer.innerHTML = ''; return; }
+      bgLayer.innerHTML = '';
+      if (!pages) return;
       const p = pages[pageIdx % pages.length];
-      if (p.svg) bgLayer.innerHTML = p.svg;
-      else if (p.src) bgLayer.innerHTML = `<img alt="${p.name || ''}" src="${p.src}">`;
-      else bgLayer.innerHTML = '';   // blank page
+      if (p.svg) {
+        const safe = sanitizeSvgMarkup(p.svg);
+        if (safe) bgLayer.appendChild(safe);
+      } else if (p.src) {
+        const img = document.createElement('img');
+        img.alt = p.name || '';
+        const safeSrc = _safeBgImgSrc(p.src);
+        if (safeSrc) img.src = safeSrc;
+        bgLayer.appendChild(img);
+      }
+      // else: blank page — bgLayer already cleared above
     }
     setPage();
 
