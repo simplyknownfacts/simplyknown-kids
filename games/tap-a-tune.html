@@ -121,6 +121,10 @@
       const p = document.createElement('button');
       p.className = 'pad'; p.dataset.i = i;
       p.style.background = `linear-gradient(180deg, ${n.color}, color-mix(in srgb, ${n.color} 62%, #000))`;
+      // Accessible name independent of showLabels (review #4): younger tiers hide
+      // the visible note letter (color-only pads), but a screen reader still
+      // needs six distinct names, not six identical "button"s.
+      p.setAttribute('aria-label', 'Note ' + n.name);
       if (showLabels) p.textContent = n.name;
       padsEl.appendChild(p);
       return p;
