@@ -127,6 +127,21 @@ test('promote refuses when the branch tracks something other than origin/main', 
   assert.match(res.stdout, /tracks "origin\/feature", not origin\/main/i);
 });
 
+test('promote refuses when local main has diverged from a freshly-fetched origin/main', () => {
+  const { dir } = makeScratchRepo();
+  scratchDirs.push(dir);
+  // Simulate "someone else pushed": commit locally WITHOUT pushing, so origin/main (the real
+  // bare repo this scratch tracks) still points at the earlier commit. HEAD now differs from
+  // what a fresh `git fetch origin main` reports, while staying on branch main tracking
+  // origin/main correctly -- a different failure than "wrong branch" or "no upstream".
+  writeFileSync(path.join(dir, 'js', 'version.js'), `const APP_VERSION = '1.0.1';\n`);
+  git(dir, ['commit', '-aqm', 'local-only change, never pushed']);
+  const res = runPromote(dir);
+  assert.notEqual(res.status, 0);
+  assert.match(res.stdout, /does not match origin\/main/i);
+  assert.match(res.stdout, /ahead/i);
+});
+
 test('promote refuses when no dev-verify stamp exists for this commit', () => {
   const { dir } = makeScratchRepo({ writeStamp: false });
   scratchDirs.push(dir);
