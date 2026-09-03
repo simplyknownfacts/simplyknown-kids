@@ -583,12 +583,36 @@
           </div>
         </section>
 
+        <!-- 💾 Backup -->
+        <section class="settings-panel" id="panel-backup" data-key="backup" data-icon="💾" data-title="Backup" data-group="app">
+          <div class="acc-title"><span class="ic">💾</span><span class="acc-label">Backup</span><span class="chev">▾</span></div>
+          <div class="panel-body">
+            <h2>💾 Backup</h2>
+            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+              Everything about your kids — profiles, ribbons, settings — lives only on this device.
+              Clearing browser data (or losing the device) loses it for good. Download a backup file
+              now and then, and keep it somewhere safe (email it to yourself, save it to cloud storage).
+            </div>
+            <div class="card">
+              <button class="btn btn-primary" style="width:100%;" id="downloadBackupBtn" onclick="downloadBackup()">⬇️ Download backup</button>
+              <label class="btn btn-ghost" style="width:100%;display:block;text-align:center;box-sizing:border-box;margin-top:10px;cursor:pointer;">
+                ⬆️ Restore from backup
+                <input id="restoreBackupInput" type="file" accept=".json,application/json" style="display:none;" onchange="handleRestoreFile(event)">
+              </label>
+              <div id="backupMsg" style="color:#a8e6cf;font-size:12px;margin-top:10px;min-height:14px;"></div>
+            </div>
+          </div>
+        </section>
+
         <!-- 🔐 Change PIN -->
         <section class="settings-panel" id="panel-pin" data-key="pin" data-icon="🔐" data-title="Change PIN" data-group="app">
           <div class="acc-title"><span class="ic">🔐</span><span class="acc-label">Change PIN</span><span class="chev">▾</span></div>
           <div class="panel-body">
             <h2>🔐 Change PIN</h2>
             <div class="card">
+              <div style="color:#FFC56B;font-size:13px;font-weight:700;margin-bottom:14px;line-height:1.5;">
+                ⚠️ Write your PIN down — clearing browser data erases it (and your backup file restores everything else).
+              </div>
               <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
               <div style="color:rgba(255,255,255,0.7);font-size:12px;margin-top:10px;line-height:1.5;">
                 Forgot your PIN? Email
@@ -701,6 +725,166 @@
       localStorage.setItem(key, JSON.stringify({ hash, salt }));
     }
 
+    // ── Backup / Restore (review #1, 2026-06-12 — "Backup is #1") ──────────────
+    // Deliberately an ALLOW-list, not "every vb_ key": several vb_ keys are
+    // cloud-sync or Yoto auth material (tokens, OAuth state) that must never
+    // leave the browser in a downloadable file, and a couple more (mascot-play
+    // throttle log, the sleep-timer's wall-clock end time) are device-local UI
+    // state, not something a parent restoring on a new device would want back.
+    // vb_profiles is handled separately below via this app's own
+    // getProfiles()/saveProfiles() (js/profiles.js) rather than a second
+    // hand-rolled localStorage read/write (rule 4.3 — no 2nd way to do a thing).
+    const BACKUP_VERSION = 1;
+    const BACKUP_PASSTHROUGH_KEYS = [
+      'vb_active_id',       // which child was last selected
+      'vb_recovery',        // hashed recovery phrase, if that feature ever returns
+      'vb_coloring_pages',  // uploaded/drawn coloring pages (data: images only)
+    ];
+    // Per-profile game high-score caches use a dynamic id/key suffix, so they're
+    // matched by prefix instead of listed by exact name.
+    const BACKUP_PREFIX_KEYS = [/^vb_sppop_/, /^vb_tiltdrive_best_/];
+
+    // A legacy plaintext PIN (pre-hash-migration) must never be written to a
+    // file — hash it now, the same scheme a normal unlock-time migration uses,
+    // and upgrade it in place on this device while we're here.
+    async function _backupPinValue() {
+      const raw = localStorage.getItem(PIN_KEY);
+      if (!raw) return undefined;
+      if (raw.startsWith('{')) {
+        try { return JSON.parse(raw); } catch { return undefined; }
+      }
+      const salt = _genSalt();
+      const hash = await _hashWithSalt(raw, salt);
+      const upgraded = { hash, salt };
+      localStorage.setItem(PIN_KEY, JSON.stringify(upgraded));
+      return upgraded;
+    }
+
+    async function collectBackupData() {
+      const keys = {};
+      keys.vb_profiles = getProfiles();
+      for (const k of BACKUP_PASSTHROUGH_KEYS) {
+        const raw = localStorage.getItem(k);
+        if (raw == null) continue;
+        try { keys[k] = JSON.parse(raw); } catch { keys[k] = raw; }
+      }
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!BACKUP_PREFIX_KEYS.some((rx) => rx.test(k))) continue;
+        const raw = localStorage.getItem(k);
+        try { keys[k] = JSON.parse(raw); } catch { keys[k] = raw; }
+      }
+      const pin = await _backupPinValue();
+      if (pin) keys[PIN_KEY] = pin;
+      return {
+        version: BACKUP_VERSION,
+        app: 'kids',
+        exportedAt: new Date().toISOString(),
+        keys,
+      };
+    }
+
+    async function downloadBackup() {
+      const msg = document.getElementById('backupMsg');
+      if (msg) { msg.style.color = 'rgba(255,255,255,0.6)'; msg.textContent = 'Preparing backup…'; }
+      try {
+        const payload = await collectBackupData();
+        const json = JSON.stringify(payload, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const d = new Date();
+        const stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') +
+          '-' + String(d.getDate()).padStart(2, '0');
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `kids-backup-${stamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        if (msg) {
+          msg.style.color = '#a8e6cf';
+          msg.textContent = '✓ Backup downloaded — keep it somewhere safe (email it to yourself, save it to cloud storage).';
+        }
+      } catch (e) {
+        if (msg) { msg.style.color = '#FF6B6B'; msg.textContent = 'Could not create the backup. Try again.'; }
+      }
+    }
+
+    // Required shape: {version:1, app:'kids', keys:{vb_profiles:[...]}}. Anything
+    // else is rejected with a plain-English reason rather than guessed at.
+    function validateBackupShape(obj) {
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+        return 'That file is not a Kids backup (not a JSON object).';
+      }
+      // Identity before version: a file with no recognizable app/keys shape at
+      // all should say "not a Kids backup", not "wrong version" — the latter
+      // wrongly implies it WAS one, just an old/new one.
+      if (obj.app !== 'kids') {
+        return 'That file is not a Kids backup.';
+      }
+      if (obj.version !== BACKUP_VERSION) {
+        return "That backup is from a different version of the app and can't be restored here.";
+      }
+      if (!obj.keys || typeof obj.keys !== 'object' || Array.isArray(obj.keys)) {
+        return 'That backup file is missing its data.';
+      }
+      if (!Array.isArray(obj.keys.vb_profiles)) {
+        return 'That backup file has no child profiles in it.';
+      }
+      return null;
+    }
+
+    function applyBackup(keys) {
+      // vb_profiles goes through the app's own writer (js/profiles.js), not a
+      // second hand-rolled localStorage.setItem, so vb_local_updated_at stays
+      // correct and cloud sync (if signed in) picks up the restored roster.
+      saveProfiles(keys.vb_profiles);
+      const known = [...BACKUP_PASSTHROUGH_KEYS, PIN_KEY];
+      known.forEach((k) => {
+        if (keys[k] === undefined) return;
+        localStorage.setItem(k, typeof keys[k] === 'string' ? keys[k] : JSON.stringify(keys[k]));
+      });
+      for (const k in keys) {
+        if (k === 'vb_profiles' || known.includes(k)) continue;
+        if (!BACKUP_PREFIX_KEYS.some((rx) => rx.test(k))) continue;
+        localStorage.setItem(k, typeof keys[k] === 'string' ? keys[k] : JSON.stringify(keys[k]));
+      }
+    }
+
+    async function handleRestoreFile(e) {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = ''; // allow re-selecting the same file later
+      if (!file) return;
+      const msg = document.getElementById('backupMsg');
+      let parsed;
+      try {
+        const text = await file.text();
+        parsed = JSON.parse(text);
+      } catch {
+        if (msg) {
+          msg.style.color = '#FF6B6B';
+          msg.textContent = 'That file is not valid JSON — pick the backup file exactly as downloaded.';
+        }
+        return;
+      }
+      const err = validateBackupShape(parsed);
+      if (err) {
+        if (msg) { msg.style.color = '#FF6B6B'; msg.textContent = err; }
+        return;
+      }
+      const n = parsed.keys.vb_profiles.length;
+      const when = parsed.exportedAt ? new Date(parsed.exportedAt).toLocaleString() : 'an unknown date';
+      const ok = confirm(
+        `Restore this backup?\n\n${n} child profile${n === 1 ? '' : 's'}, made ${when}.\n\n` +
+        'This REPLACES everything currently on this device (profiles, PIN, settings). This cannot be undone.'
+      );
+      if (!ok) return;
+      applyBackup(parsed.keys);
+      if (msg) { msg.style.color = '#a8e6cf'; msg.textContent = '✓ Restored — reloading…'; }
+      setTimeout(() => location.reload(), 400);
+    }
+
     // ── Lockout state (5 wrong → 5 min, 10 wrong → 30 min) ─────────────────────
     function _getLockout() {
       try { return JSON.parse(localStorage.getItem(LOCKOUT_KEY)) || { attempts:0, lockedUntil:0 }; }
@@ -808,7 +992,7 @@
 
     // Nav groups → panel keys. Order matches the mockup.
     const PER_CHILD_PANELS = ['activities', 'features', 'voice', 'mascot', 'coloring', 'youtube'];
-    const APP_PANELS = ['children', 'yoto', 'sync', 'offline', 'pin'];
+    const APP_PANELS = ['children', 'yoto', 'sync', 'offline', 'backup', 'pin'];
 
     function _settingsChild() {
       return getProfiles().find(p => p.id === _settingsChildId) || null;

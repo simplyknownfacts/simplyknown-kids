@@ -6,6 +6,7 @@ Thumbs.db
 .env.*
 node_modules/
 .claude/
+.worktrees/
 CLAUDE.md
 .wrangler/
 workers/*/node_modules/

@@ -690,6 +690,107 @@ for (const h of hubResults) {
   console.log((h.ok ? 'PASS  ' : 'FAIL  ') + h.id.padEnd(26) + h.what + (h.ok ? '' : '\n        ' + h.errs.join('\n        ')));
 }
 
+/* ---------------------------------------------------------------------------
+   Pass 8 — Backup / Restore (professional review 2026-06-12, finding #1).
+   The screenshot-only passes above never touch parent/settings.html's data
+   flows. This proves the two things a screenshot cannot: that "Download
+   backup" actually produces a file with the family's real data in it (and a
+   legacy plaintext PIN comes out hashed, never in the clear), and that
+   "Restore from backup" actually replaces the on-device roster after the
+   parent confirms.
+------------------------------------------------------------------------- */
+const backupResults = [];
+{
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.phone, reducedMotion: 'reduce', acceptDownloads: true });
+  const BACKUP_KID = { id: 'verify-backup-kid', name: 'BackupKid', birthday: birthdayForTier(4),
+    color: '#7CC6FF', voice: 'woman', mascot: null, tierOverrides: {}, features: {}, youtube: [] };
+
+  async function openUnlockedSettings() {
+    const page = await ctx.newPage();
+    await page.addInitScript((profile) => {
+      try {
+        localStorage.setItem('vb_profiles', JSON.stringify([profile]));
+        localStorage.setItem('vb_active_id', profile.id);
+        localStorage.setItem('vb_pin', '1234');   // legacy plaintext — the export must upgrade it
+      } catch {}
+    }, BACKUP_KID);
+    await page.goto(BASE + '/parent/settings.html', { waitUntil: 'load', timeout: 15000 });
+    await page.waitForSelector('#pinPad .pin-key', { timeout: 10000 });
+    for (const i of [0, 1, 2, 3]) await page.locator('#pinPad .pin-key').nth(i).click();
+    await page.waitForSelector('#mainSettings', { state: 'visible', timeout: 10000 });
+    await page.locator('.navitem[data-key="backup"]').click().catch(() => {});
+    const acc = page.locator('#panel-backup .acc-title');
+    if (await acc.isVisible().catch(() => false)) await acc.click();
+    await page.waitForSelector('#downloadBackupBtn', { state: 'visible', timeout: 10000 });
+    return page;
+  }
+
+  // 8a — Download backup: real data in, no plaintext PIN, no credentials out.
+  try {
+    const page = await openUnlockedSettings();
+    const [download] = await Promise.all([
+      page.waitForEvent('download', { timeout: 10000 }),
+      page.locator('#downloadBackupBtn').click(),
+    ]);
+    const stream = await download.createReadStream();
+    const chunks = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    const payload = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    const dump = JSON.stringify(payload);
+
+    const ok = payload.version === 1 && payload.app === 'kids' &&
+      Array.isArray(payload.keys?.vb_profiles) && payload.keys.vb_profiles.length === 1 &&
+      payload.keys.vb_profiles[0].name === 'BackupKid' &&
+      payload.keys.vb_pin && typeof payload.keys.vb_pin.hash === 'string' &&
+      !dump.includes('"vb_pin":"1234"') && !/vb_sync_key|vb_yoto_tokens/.test(dump);
+    backupResults.push({ id: 'backup-download', ok,
+      what: 'Download backup contains the real profile + a hashed (never plaintext) PIN, no credentials',
+      errs: ok ? [] : ['unexpected payload shape: ' + dump.slice(0, 400)] });
+    await page.close();
+  } catch (e) {
+    backupResults.push({ id: 'backup-download', ok: false,
+      what: 'Download backup contains the real profile + a hashed (never plaintext) PIN, no credentials',
+      errs: ['threw: ' + e.message] });
+  }
+
+  // 8b — Restore from backup: confirms, replaces the roster, and needs no
+  // network at all (this whole context never calls anything but BASE).
+  try {
+    const page = await openUnlockedSettings();
+    page.on('dialog', (d) => d.accept());
+    const restorePayload = {
+      version: 1, app: 'kids', exportedAt: new Date().toISOString(),
+      keys: { vb_profiles: [{ ...BACKUP_KID, id: 'verify-restored-kid', name: 'RestoredKid' }],
+              vb_active_id: 'verify-restored-kid' },
+    };
+    const tmp = path.join(SHOTS, '..', '_verify-restore-payload.json');
+    await (await import('node:fs/promises')).writeFile(tmp, JSON.stringify(restorePayload));
+    await page.setInputFiles('#restoreBackupInput', tmp);
+    await page.waitForFunction(
+      () => JSON.parse(localStorage.getItem('vb_profiles') || '[]').some((p) => p.id === 'verify-restored-kid'),
+      { timeout: 10000 },
+    );
+    const profiles = await page.evaluate(() => JSON.parse(localStorage.getItem('vb_profiles')));
+    const ok = profiles.length === 1 && profiles[0].name === 'RestoredKid';
+    backupResults.push({ id: 'backup-restore', ok,
+      what: 'Restore from backup replaces the on-device roster after confirming',
+      errs: ok ? [] : ['profiles after restore: ' + JSON.stringify(profiles)] });
+    await (await import('node:fs/promises')).rm(tmp, { force: true });
+    await page.close();
+  } catch (e) {
+    backupResults.push({ id: 'backup-restore', ok: false,
+      what: 'Restore from backup replaces the on-device roster after confirming',
+      errs: ['threw: ' + e.message] });
+  }
+
+  await ctx.close();
+}
+for (const b of backupResults) {
+  results.push(b);
+  if (!b.ok) failures++;
+  console.log((b.ok ? 'PASS  ' : 'FAIL  ') + b.id.padEnd(26) + b.what + (b.ok ? '' : '\n        ' + b.errs.join('\n        ')));
+}
+
 for (const ctx of Object.values(contexts)) await ctx.close();
 await browser.close();
 
