@@ -222,3 +222,8 @@ test('source guard: promote in package.json runs scripts/promote.mjs', () => {
   const pkg = JSON.parse(execFileSync('git', ['show', 'HEAD:package.json'], { cwd: ROOT, encoding: 'utf8' }));
   assert.match(pkg.scripts.promote || '', /promote\.mjs/);
 });
+
+test('source guard: promote-kids.bat exists at the repo root and runs npm run promote', () => {
+  const bat = execFileSync('git', ['show', 'HEAD:promote-kids.bat'], { cwd: ROOT, encoding: 'utf8' });
+  assert.match(bat, /npm run promote/);
+});
