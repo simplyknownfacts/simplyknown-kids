@@ -286,3 +286,58 @@ Run end to end on Windows, Node v24.15.0, against `http://localhost:8790`.
    `scrollLeft` + Playwright's programmatic scroll-then-click, which drive real
    `overflow-x:auto` + `-webkit-overflow-scrolling:touch` the same way a finger would, but
    is not the same as an actual finger). Recommend a real-device pass before wide rollout.
+
+---
+
+## Fourth run — 2026-09-02: professional review + security audit fixes (branch `review-fixes`)
+
+Implemented on a separate worktree off `hub-home` (branch not merged to main): backup/
+restore (review #1), a PIN-loss warning line (review #2), aria-labels on a handful of
+icon-only buttons that had none (review #4), an allow-list SVG sanitizer for
+`js/paint.js`'s coloring-page background (security audit finding 2), and confirmed two
+other queued items — `font-display: swap` and profile-color hex validation — were
+already fixed by prior work on this branch. `home.html`, tier gating, the sync Worker,
+and `games/`/`learning/` beyond aria-labels were not touched.
+
+Run end to end on Windows, Node v24.15.0, against `http://localhost:8877` (8790 was in
+use by another agent's session working on this same repo in a different worktree —
+`scripts/serve.mjs` correctly refused to attach to it, per trap 4 below).
+
+1. **TDD:** every new test was run against the pre-fix code first and seen to fail for
+   the right reason, then again after the fix until green — for the backup/restore
+   flow, the SVG sanitizer, the PIN warning line, and each aria-label addition.
+2. **`npm test`:** 97 passed, 0 failed, 0 skipped (up from the 81 documented in the
+   third run — 16 new tests: 6 for backup/restore, 4 for the SVG sanitizer, 6 for the
+   remaining review items). Playwright was installed fresh for this session
+   (`npm i playwright --no-save && npx playwright install chromium-headless-shell`).
+3. **A real, reproducible test-runner quirk, found and fixed:** the new
+   `tests/svg-sanitize.test.mjs`, when its plain synchronous source-guard test ran
+   *before* its async browser tests in the same file, made `browser.close()` hang long
+   enough that `node --test` never moved on to whichever file was queued after it —
+   silent, and easy to mistake for the whole suite being slow rather than one file
+   never finishing. Isolated with a binary search across a dozen minimal repro files
+   (ruled out: page complexity, `js/mascot.js`'s animation loop, synthetic event
+   dispatch, `addScriptTag` vs `page.evaluate` injection, hard-killing the browser
+   process, `--test-isolation=process`, and simply waiting — confirmed it does not
+   self-resolve even after 3 minutes). Moving the source-guard test to run *after* the
+   browser tests fixed it outright; root cause not fully pinned beyond that. Recorded
+   in the file's own header comment so it does not get "fixed" back into a hang later.
+4. **Drive:** `BASE=http://localhost:8877 node tests/verify-drive.mjs` — **76 screens
+   driven, 76 passed, 0 failed**, exit 0. The 2 new checks are Pass 8 (backup-download,
+   backup-restore); the other 74 are Passes 1-7 from the third run, unaffected.
+5. **Visual check:** Playwright screenshots of the new Backup panel (phone + tablet)
+   and the PIN panel's warning line — reviewed by eye, not just driven. Matches the
+   existing storybook-nightlight visual style; both buttons and the warning text are
+   legible at phone width; the tablet two-column layout holds. Screenshots taken with a
+   scratch, gitignored script (`scripts/_shot-backup-panel.mjs`, deleted after use, per
+   the `scripts/_*.mjs` convention) — never committed, matching the rule that no child
+   screen ever gets version-controlled.
+6. **Negative controls:** not re-run this session (this run's scope was the six
+   review-fixes items, not `tests/verify-drive.mjs`'s own identity-check machinery,
+   which the third run already re-confirmed and this run did not touch).
+7. **Skipped, with reason:** `node --check sw.js` — `sw.js` was not touched by this
+   work (in scope for hub-home, not for this branch), so re-checking it here would not
+   prove anything this run changed.
+8. **Not yet proven:** a real screen-reader pass on the new aria-labels (VoiceOver/
+   NVDA) — verified by reading the accessible-name computation by hand (visible text
+   vs. `aria-hidden` icon), not by listening to an actual screen reader.
