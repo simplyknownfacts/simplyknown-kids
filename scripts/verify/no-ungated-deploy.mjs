@@ -20,8 +20,16 @@ const ROOT = process.cwd();
 // project name. Add to this list only with a reason, and review the file
 // before you do.
 const REVIEWED = new Set([
-  'package.json',                          // deploy:prod-preview (require-clean-tree.mjs-guarded) + deploy:dev1 (calls the wrapper below)
+  // package.json is NOT in this list -- as of 2026-09-02, deploy:prod-preview is a plain
+  // refusal (no wrangler mention) and deploy:dev1/promote both just invoke a guarded script,
+  // so package.json's own text no longer contains a raw wrangler/--commit-dirty pattern. If a
+  // future edit makes it match again, that is exactly what this guard exists to catch -- do
+  // not add it back preemptively.
   'scripts/deploy-dev1.mjs',                // DEV wrapper -- hard-coded target, --commit-dirty=true is a documented dev-only allowance
+  'scripts/promote.mjs',                    // THE one door to prod (D6/D8) -- target is PROD_PROJECT imported from deploy-dev1.mjs, never
+                                             // an inferred/typed-in-place string, and every refusal above this line has already run and
+                                             // re-run by the time this line is reached. --commit-dirty=true is safe here only because
+                                             // this script's OWN clean-tree check (stricter than wrangler's) already ran twice.
   'scripts/verify/no-ungated-deploy.mjs',   // this file, whose own doc comment names the pattern being searched for
   'scripts/require-clean-tree.mjs',         // never invokes wrangler at all; its comment just NAMES --commit-dirty=true while explaining the problem it guards against
 ]);
