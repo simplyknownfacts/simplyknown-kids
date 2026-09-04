@@ -34,6 +34,11 @@ const PUBLISH = [
   // Identity marker, so the verify pass can prove it is grading THIS app.
   // Shipped on purpose: it must be reachable on a deployed environment too.
   '__health.json',
+  // Codex 0825-10: Cloudflare Pages' header-injection file. No effect on
+  // GitHub Pages (still what kids.simplyknown.co serves as of this
+  // writing) -- shipped anyway so it's ready and reviewed before the
+  // cutover, not another thing to remember on that day.
+  '_headers',
   // app directories
   'css', 'js', 'assets', 'audio', 'mascots',
   'art', 'games', 'learning', 'listen', 'parent', 'videos',

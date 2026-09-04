@@ -39,7 +39,11 @@ test('the app itself is published', () => {
                    'learning/count-along.html', 'art/stamp-art.html', 'parent/settings.html',
                    // hub-home: home.html's fox-world background — a real asset now,
                    // not internal-only (see CLAUDE.md / commit history, branch hub-home).
-                   'redesign-hub-bg.jpg']) {
+                   'redesign-hub-bg.jpg',
+                   // Codex 0825-10: the CSP header file must actually ship, or it's
+                   // reviewed source with no effect once Cloudflare Pages does start
+                   // reading it.
+                   '_headers']) {
     assert.ok(has(f), `expected ${f} to be published`);
   }
 });

@@ -1,0 +1,22 @@
+# Codex 0825-10, MED: no Content-Security-Policy existed anywhere (no
+# _headers file, no <meta> tag). Cloudflare Pages reads this file format
+# directly; GitHub Pages does not interpret it at all -- until Scott's DNS
+# cutover (kids.simplyknown.co still serves from GitHub Pages as of this
+# writing, see CLAUDE.md), this file ships but has NO live effect. Checked
+# in now so the policy is ready and reviewed before that day, not another
+# thing to remember on it.
+#
+# Real, not aspirational: this app has no build step and no nonce
+# infrastructure, so every page's inline <script>/<style> stays allowed
+# ('unsafe-inline') -- the actual XSS defense here is the textContent-not-
+# innerHTML discipline proven in tests/hostile-input.test.mjs, not this
+# header. What this DOES meaningfully add: no object/embed injection, no
+# framing by another site (clickjacking), and every fetch/connect/frame
+# target is an explicit, audited allow-list instead of "anything goes".
+#
+# The localStorage half of the original finding (sync key, Yoto tokens
+# living in localStorage) is explicitly OUT of scope here -- that rides
+# with Codex 0825-3 (single-device sync, ACCEPTED RISK, tracked separately
+# as Stage 1b of the sync migration).
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' data:; connect-src 'self' https://simplyknown-kids-sync.simplyknownfacts.workers.dev https://simplyknown-kids-sync-dev.simplyknownfacts.workers.dev https://api.yotoplay.com https://login.yotoplay.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
