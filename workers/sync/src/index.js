@@ -8,9 +8,12 @@
 //   POST   /signout    Auth: Bearer <syncKey>                → 200
 //   POST   /reset      { email }                              → 202 (v2 — email reset, stub)
 //
-// D1 schema:
-//   accounts(email_hash, pw_hash, pw_salt, sync_key, created_at)
-//   data(email_hash, profiles, updated_at)
+// D1 schema: see workers/sync/schema.sql -- the full, current picture (7
+// tables; 5 of them created lazily by their own handler on first use, search
+// this file for "CREATE TABLE IF NOT EXISTS" to see exactly where). Codex
+// 0825-17: this comment used to list only 2 of the 7 real tables and had
+// drifted stale; kept out of this file entirely now so it can't drift again
+// without the schema.sql review that change would also need.
 
 const PBKDF2_ITER = 100000;
 
