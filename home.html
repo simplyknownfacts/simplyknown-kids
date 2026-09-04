@@ -104,6 +104,11 @@
     }
     @keyframes bandIn { to { opacity: 1; } }
     .band img { position: absolute; top: 0; display: block; max-width: none; }
+    /* Codex 0902-4: a soft sky instead of a flat rectangle if the picture
+       never loads -- landmarks (still positioned, still tappable) at least
+       sit on something that looks like part of the same world. */
+    .band.band-fallback { background: linear-gradient(180deg, #FFE7C2 0%, #CFE1F5 55%, #cfd9e8 100%); }
+    .band.band-fallback img { display: none; }
 
     /* REMOVED 2026-09-01, found live by Scott: each band bobbing on its own
        cut the ONE continuous photo into visibly independent tiles -- a
@@ -332,6 +337,11 @@
           el.style.animationDelay = (i * 120) + 'ms';
 
           const img = document.createElement('img');
+          // Codex 0902-4: with no onerror, a hub background that failed to
+          // precache (or a transient network blip online) left a blank
+          // rectangle -- no picture, no explanation, landmarks invisible
+          // even though they were still technically there and tappable.
+          img.onerror = () => el.classList.add('band-fallback');
           img.src = IMG_SRC;
           img.alt = '';
           el.appendChild(img);

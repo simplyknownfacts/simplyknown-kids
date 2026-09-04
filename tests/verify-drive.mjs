@@ -683,6 +683,69 @@ const hubResults = [];
 
     await page.close();
   }
+
+  // 7d — Codex 0902-4: if redesign-hub-bg.jpg fails to precache (a transient
+  // blip, a renamed file), the hub used to have no fallback at all — just a
+  // flat background-color rectangle with unlabeled, invisible landmarks. This
+  // blocks the image at the NETWORK level (not just a bad cache) — the
+  // worse, more realistic case — and proves the fallback shows AND a
+  // landmark is still tappable and still goes to the right place.
+  //
+  // A DEDICATED context, serviceWorkers:'block': contexts.phone is shared
+  // across this whole file and by this point already has sw.js active from
+  // earlier tests, with redesign-hub-bg.jpg already precached successfully
+  // -- a new page's request would be served straight from that cache,
+  // never touching the network, making page.route().abort() below a no-op
+  // (found live: the first version of this test passed against the BROKEN
+  // code because of exactly this). Same reasoning tests/e2e/v2/lib/
+  // harness.mjs already uses for its own newContext().
+  {
+    const freshCtx = await browser.newContext({ viewport: VIEWPORTS.phone, reducedMotion: 'reduce', serviceWorkers: 'block' });
+    // A fresh context has none of contexts.phone's context-level profile
+    // seed (see its own addInitScript above) -- reseed the same TIER_PROFILES
+    // here or getActiveProfile() finds nothing and home.html just redirects
+    // to the picker, never building a hub at all.
+    await freshCtx.addInitScript((profiles) => {
+      try { localStorage.setItem('vb_profiles', JSON.stringify(profiles)); } catch {}
+    }, TIER_PROFILES);
+    const page = await freshCtx.newPage();
+    await page.route('**/redesign-hub-bg.jpg', (route) => route.abort());
+    await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, HUB_PROFILE);
+    await page.goto(BASE + '/home.html', { waitUntil: 'load', timeout: 15000 });
+    // WAIT for the fallback, don't guess a fixed delay: three separate <img>
+    // elements each firing their own onerror is not instant, and a flat
+    // sleep here is exactly the kind of flaky timing this repo's own
+    // Testing Standard warns against.
+    const fallback = await page.evaluate(() => new Promise((resolve) => {
+      const isDone = () => {
+        const bands = [...document.querySelectorAll('.band')];
+        return bands.length > 0 && bands.every((b) => b.classList.contains('band-fallback'));
+      };
+      if (isDone()) return resolve(true);
+      const t0 = Date.now();
+      const iv = setInterval(() => {
+        if (isDone()) { clearInterval(iv); resolve(true); }
+        else if (Date.now() - t0 > 5000) { clearInterval(iv); resolve(false); }
+      }, 50);
+    }));
+    hubResults.push({ id: 'hub-image-fallback', ok: fallback,
+      what: 'A failed hub background image gets a visible fallback, not a blank rectangle',
+      errs: fallback ? [] : ['.band-fallback did not appear on every band after the image request was blocked'] });
+
+    let landed = null;
+    try {
+      await page.click('.spot[data-id="games"]', { timeout: 5000 });
+      await page.waitForURL((u) => u.pathname.endsWith('/games/index.html'), { timeout: 5000 });
+      landed = page.url();
+    } catch (e) { landed = 'ERROR: ' + e.message; }
+    const stillTappable = !!(landed && landed.includes('/games/index.html'));
+    hubResults.push({ id: 'hub-image-fallback-tappable', ok: stillTappable,
+      what: 'A landmark is still tappable and navigates correctly with the fallback showing',
+      errs: stillTappable ? [] : ['landed on: ' + landed] });
+
+    await page.close();
+    await freshCtx.close();
+  }
 }
 for (const h of hubResults) {
   results.push(h);

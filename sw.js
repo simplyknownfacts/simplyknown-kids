@@ -178,6 +178,19 @@ const ASSETS = [
   'https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500..700;1,6..72,500..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Caveat:wght@500;700&display=swap'
 ];
 
+// Codex 0902-4: the absolute minimum to render the picker + the hub home
+// screen offline -- everything else in ASSETS (individual activity pages,
+// the web font, etc.) stays resilient via allSettled below, exactly as
+// v123 intended. These, if missing, install() below now FAILS instead of
+// silently succeeding: an old, working cache stays active and the browser
+// retries install later, rather than a new "ready" service worker quietly
+// missing a piece the app cannot run without.
+const REQUIRED_SHELL = [
+  './', './index.html', './home.html', './redesign-hub-bg.jpg',
+  './css/style.css', './css/themes.css',
+  './js/atmosphere.js', './js/version.js', './js/tiers.js', './js/profiles.js', './js/app.js', './js/mascot.js', './js/sync.js',
+];
+
 // "Download family for offline use" (Parent Settings) writes here. The name has
 // NO version suffix, so a deploy (which bumps CACHE) does NOT wipe the family's
 // downloaded media — activate() below explicitly keeps this cache.
@@ -192,8 +205,18 @@ self.addEventListener('install', e => {
     // offline cache at all. allSettled keeps every asset that did succeed.
     // cache:'no-store' bypasses the HTTP cache so we precache fresh bytes, not a
     // stale GitHub-Pages copy.
+    // Required shell: Promise.all, NOT allSettled -- one failure here rejects
+    // this whole install(), so the browser keeps the OLD service worker
+    // active (if any) and retries later, instead of activating a NEW one
+    // that is missing something the app cannot run without.
+    await Promise.all(
+      REQUIRED_SHELL.map(u => c.add(new Request(u, { cache: 'no-store' })))
+    );
+    // Everything else: resilient, exactly as before. One failing fetch (the
+    // cross-origin Google-fonts URL, a transient blip, a renamed activity
+    // page) must not cost the shell above its offline cache.
     await Promise.allSettled(
-      ASSETS.map(u => c.add(new Request(u, { cache: 'no-store' })))
+      ASSETS.filter(u => !REQUIRED_SHELL.includes(u)).map(u => c.add(new Request(u, { cache: 'no-store' })))
     );
     await self.skipWaiting();
   })());
