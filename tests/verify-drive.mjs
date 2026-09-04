@@ -520,6 +520,33 @@ const trophyResults = [];
   await ctx.close();
 }
 {
+  // Codex 0902-5: confetti (js/celebrate.js spawnConfetti) built its pieces
+  // unconditionally -- the reduced-motion media query in achievements.css
+  // never touched .confetti-bit at all, so a burst still spawned N spans
+  // (up to 34 at diamond/mastery weight) that would just sit there under
+  // prefers-reduced-motion, doing nothing useful but costing real DOM work.
+  // A "small" star (the earlier trophyResults profile) spawns ZERO pieces
+  // by design regardless of motion setting, so this needs its OWN
+  // higher-weight celebration to actually exercise the code path.
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.phone, reducedMotion: 'reduce' });
+  const profile = { id:'verify-confetti', name:'Confetti', birthday: birthdayForTier(5),
+    color:'#7FB2FF', voice:'woman', mascot:'dog', tierOverrides:{}, features:{}, youtube:[] };
+  await ctx.addInitScript((p) => { try { localStorage.setItem('vb_profiles', JSON.stringify([p])); } catch {} }, profile);
+  const page = await ctx.newPage();
+  await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, 'verify-confetti');
+  await page.goto(BASE + '/games/tap-pop.html', { waitUntil: 'load', timeout: 15000 });
+  await page.waitForTimeout(300);
+  const confettiCount = await page.evaluate(() => {
+    vbCelebrate.show([{ type: 'milestone', tier: 'gold', title: 'Test Gold' }]); // weight 2 -> 16 pieces if unfixed
+    return document.querySelectorAll('.confetti-bit').length;
+  });
+  trophyResults.push({ id: 'trophy-confetti-reduced-motion', ok: confettiCount === 0,
+    what: 'Confetti spawns nothing at all under prefers-reduced-motion',
+    errs: confettiCount === 0 ? [] : [confettiCount + ' .confetti-bit elements were created under reduced motion'] });
+  await page.close();
+  await ctx.close();
+}
+{
   // Master's condition 1: tiers 1-2 get idle-fire OFF (littles pause
   // constantly; a timer would ambush a natural breather). Only leaving the
   // page fires it for them. This exact case is what caught a real bug during

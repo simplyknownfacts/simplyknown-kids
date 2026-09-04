@@ -87,6 +87,12 @@
   var CONFETTI_COLORS = ['#FFD93D', '#FF6B6B', '#4ECDC4', '#C79BF0', '#7FB2FF', '#93DC9E'];
   var CONFETTI_COUNT = [0, 10, 16, 24, 34]; // by weight 0-4 -- none for the quiet "star" tier
   function spawnConfetti(overlay, weight) {
+    // Codex 0902-5: the reduced-motion media query hid .confetti-bit's
+    // animation, but nothing stopped this from building up to 34 spans
+    // that then just sat there doing nothing useful. Skip creating them at
+    // all -- matches how every other motion in this file already behaves
+    // under prefers-reduced-motion (see achievements.css's own media query).
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var n = CONFETTI_COUNT[weight];
     var spread = 90 + weight * 50; // px, how far pieces fly -- bigger for higher rarity
     for (var i = 0; i < n; i++) {

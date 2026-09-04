@@ -235,4 +235,8 @@ html.vb-scroll body {
   @keyframes celeFade { from { opacity: 0; } to { opacity: 1; } }
   .rank-xp-fill { transition: none; }
   .vb-glint.pulse { animation: celeFade 250ms ease both; }
+  /* Codex 0902-5: belt and braces alongside celebrate.js's own check (which
+     skips creating these entirely) -- hidden here too in case anything
+     ever builds one another way. */
+  .confetti-bit { display: none !important; animation: none !important; }
 }
