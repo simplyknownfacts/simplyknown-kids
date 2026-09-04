@@ -45,7 +45,10 @@
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createInterface } from 'node:readline';
+import path from 'node:path';
 import { PROD_PROJECT } from './deploy-dev1.mjs';
+import { PUBLISH } from './stage-site.mjs';
+import { stageFromGitHead } from './lib/stage-from-git.mjs';
 
 const CFG = {
   app: 'Kids',
@@ -89,6 +92,17 @@ function versionAtHead() {
   }
   return m[1];
 }
+
+// Codex 0903-3: stageFromGitHead (scripts/lib/stage-from-git.mjs) builds
+// .publish/ straight from git's own object database at a commit -- never
+// fs.copyFileSync from the working tree (that's what scripts/stage-site.mjs's
+// own runnable form does, and stays correct for dev, which wants fast
+// uncommitted iteration). A file changing on disk after the last clean-tree
+// check -- mid-stage, mid-upload -- can no longer ship anything that was not
+// actually reviewed. Extracted to its own module so it's unit-testable
+// against a scratch repo, not provable only by running this whole
+// interactive, network-touching script end to end.
+const OUT_DIR = path.resolve(path.resolve(import.meta.dirname, '..'), '.publish');
 
 say(`\n${B}Promote ${CFG.app} to PRODUCTION${X}\n`);
 
@@ -318,19 +332,26 @@ if (versionAtHead() !== version) {
 checkCodexTriage(true); // Codex 0903-4 -- same check the pre-prompt pass ran, in case a HIGH landed (or a verdict was reverted) while the prompt sat open
 
 // ── deploy ───────────────────────────────────────────────────────────────────────────────────
-// npm run stage builds .publish/ from git-tracked files only (scripts/stage-site.mjs) -- never
-// the raw working tree -- so this ships what is actually committed, not whatever happens to be
-// sitting on disk. CI=true (scoped to just this call, not the whole script) makes wrangler skip
-// its "install Cloudflare skills for your AI agents?" onboarding prompt instead of stopping and
-// waiting on stdin -- it hit Scott live on 2026-09-01, the prompt inherited the terminal's TTY
-// and blocked until he answered, and prod stays human-gated for the REAL decision, not an
-// unrelated CLI onboarding one. --commit-dirty=true is safe here only because step 1 (and the
-// re-check above) already proved the tree is clean through a stricter check than wrangler's own.
-step('Staging (npm run stage)');
-execSync('npm run stage', { stdio: 'inherit' });
+// Codex 0903-3, HIGH: `npm run stage` (scripts/stage-site.mjs) copies each git-tracked file's
+// WORKING TREE bytes via fs.copyFileSync -- correct for dev (deploy:dev1 wants fast, uncommitted
+// iteration) but wrong here. Everything above proves the tree was clean a moment ago; staging and
+// the network upload below take real wall-clock time, and nothing re-checked disk at the instant
+// those bytes were read. A background process, an editor autosave, mid-upload, could ship
+// something nobody verified, silently. Prod stages from `git show HEAD:<path>` instead --
+// straight out of the commit object, never touching whatever the working tree says right now, so
+// there is no window left for this to matter. --commit-dirty=true is DROPPED here on purpose: a
+// git-archive-style build owes wrangler no dirty-tree exception, because it was never built from
+// the (possibly dirty) working tree to begin with.
+step('Staging (from git HEAD, not the working tree)');
+{
+  const { files } = stageFromGitHead(process.cwd(), OUT_DIR, headSha, PUBLISH);
+  if (!files) die('git listed no files for the publish set at this commit.', 'is this a git checkout?');
+  if (files > 20000) die(`over the Cloudflare Pages 20,000-file limit: ${files}`, 'trim the PUBLISH list in scripts/stage-site.mjs.');
+  say(`  ${G}✓${X} staged ${files} files from commit ${headSha}, not the working tree`);
+}
 
 step(`Deploying ${version} to ${CFG.pagesProject}`);
-execSync(`npx --yes wrangler@4.127.1 pages deploy .publish --project-name=${CFG.pagesProject} --branch=main --commit-dirty=true`,
+execSync(`npx --yes wrangler@4.127.1 pages deploy .publish --project-name=${CFG.pagesProject} --branch=main`,
   { stdio: 'inherit', env: { ...process.env, CI: 'true' } });
 
 // ── 8. verify the END STATE — an ALARM, never a refusal (the release is already out) ─────────

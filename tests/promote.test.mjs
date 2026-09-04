@@ -297,3 +297,16 @@ test('source guard: promote-kids.bat exists at the repo root and runs npm run pr
   const bat = execFileSync('git', ['show', 'HEAD:promote-kids.bat'], { cwd: ROOT, encoding: 'utf8' });
   assert.match(bat, /npm run promote/);
 });
+
+// Codex 0903-3: the prod deploy stages from git HEAD now (see
+// tests/stage-from-git.test.mjs), not the working tree, so it owes wrangler
+// no dirty-tree exception -- if --commit-dirty=true is ever back, it means
+// someone reverted to fs.copyFileSync-from-disk staging without reverting
+// this flag too, silently reopening the same race.
+test('source guard: the prod wrangler deploy does not pass --commit-dirty=true', () => {
+  const src = execFileSync('git', ['show', 'HEAD:scripts/promote.mjs'], { cwd: ROOT, encoding: 'utf8' });
+  const deployLine = src.split('\n').find((l) => l.includes('wrangler@4.127.1 pages deploy'));
+  assert.ok(deployLine, 'could not find the wrangler pages deploy line in scripts/promote.mjs');
+  assert.doesNotMatch(deployLine, /--commit-dirty=true/,
+    'the prod deploy must not pass --commit-dirty=true -- it stages from git HEAD, not the working tree, so it needs no dirty-tree exception');
+});
