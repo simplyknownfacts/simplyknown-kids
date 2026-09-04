@@ -12,8 +12,9 @@
 //
 // No dependencies, on purpose: this repo has no build step and no runtime deps.
 import { createServer } from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, stat, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveSafePath, isWithinRoot } from './lib/safe-static-path.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const PORT = Number(process.env.PORT || 8790);
@@ -29,29 +30,25 @@ const TYPES = {
 
 const server = createServer(async (req, res) => {
   try {
-    let rel = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-    if (rel.endsWith('/')) rel += 'index.html';
+    const urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname);
 
     // Never serve anything outside the repo, and never serve secrets even from
-    // inside it — this server is a test tool, not a web host.
-    //
-    // 2026-09-01 HIGH, found live: this used to only block secrets/, .git/ and
-    // node_modules/ as DIRECTORY segments -- a root-level dotfile like .env
-    // (which holds the ElevenLabs key, the Cloudflare token and the Gemini
-    // key) matched none of those patterns and was served in full. Proved with
-    // curl before this fix landed. Now: any path with a segment that starts
-    // with "." is refused outright -- the same default real static-file
-    // servers use (deny dotfiles unless explicitly allowed), so a future
-    // secret file needs no new pattern added here to stay covered.
-    const file = path.resolve(ROOT, '.' + rel);
-    const segments = file.slice(ROOT.length).split(/[\\/]/);
-    const hasDotfile = segments.some(s => s.startsWith('.') && s !== '');
-    if (!file.startsWith(ROOT) || hasDotfile
-        || /[\\/](secrets|node_modules)[\\/]/.test(file + path.sep)) {
-      res.writeHead(403).end('forbidden');
-      return;
-    }
+    // inside it — this server is a test tool, not a web host. Full logic (and
+    // its history: the 2026-09-01 dotfile fix, the 0902-3 sibling-directory-
+    // prefix fix) lives in scripts/lib/safe-static-path.mjs, split out so it
+    // can be unit tested against synthetic paths -- ROOT here is fixed to this
+    // repo's own directory, so a test could never point a real server at a
+    // scratch "sibling directory" to prove that bug.
+    const file = resolveSafePath(ROOT, urlPath);
+    if (!file) { res.writeHead(403).end('forbidden'); return; }
     await stat(file);
+    // realpath AFTER stat confirms the file exists (realpath throws on a
+    // missing path, which must 404 like any other miss, not fall through to
+    // the same 403 as a real containment violation). Catches a symlink that
+    // sits inside the repo but resolves somewhere outside it -- resolveSafePath
+    // above only sees the symlink's own path, never its target.
+    const real = await realpath(file);
+    if (!isWithinRoot(ROOT, real)) { res.writeHead(403).end('forbidden'); return; }
     const body = await readFile(file);
     res.writeHead(200, {
       'Content-Type': TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream',
