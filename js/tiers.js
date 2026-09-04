@@ -1,4 +1,4 @@
-// 8 developmental tiers, age-keyed in months. Labels match Scott's reorg
+// 10 developmental tiers, age-keyed in months. Labels match Scott's reorg
 // (0-12mo Sensory, 12-24mo Explore, etc.) so parents see meaningful names in
 // settings. ageRange is a human-friendly string for UI labels.
 const TIERS = [
