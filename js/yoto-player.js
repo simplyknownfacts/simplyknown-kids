@@ -183,6 +183,13 @@
     _audio.preload = 'auto';
     _audio.src = state.src;
     _audio.currentTime = state.position || 0;
+    // Codex 0901-9: a detached `new Audio()` is invisible to
+    // document.querySelectorAll, so js/sleep-timer.js (the Listening Hut
+    // sleep timer) can only fade THIS element out if it is handed the
+    // element directly. Without this, a timer set on Listen and then
+    // navigated away from -- exactly what a mini-player is for -- would
+    // silently keep playing forever on every other page.
+    try { window.vbSleepTimer && window.vbSleepTimer.register(_audio); } catch (e) {}
     _audio.addEventListener('play',  () => _miniEl && (_miniEl.querySelector('#ymPP').textContent = '⏸'));
     _audio.addEventListener('pause', () => _miniEl && (_miniEl.querySelector('#ymPP').textContent = '▶'));
     _audio.addEventListener('ended', () => window.yotoPlayer.clear());
