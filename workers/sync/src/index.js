@@ -244,12 +244,22 @@ async function handleSignin(req, env) {
   return jsonResp({ syncKey: newKey, lastSync: dataRow ? dataRow.updated_at : null });
 }
 
+// Generous for a family (nobody has 20 kids), stingy for a script trying to
+// store something this sync worker was never meant to hold.
+const PUSH_MAX_PROFILES = 20;
+
 async function handlePush(req, env) {
   const token = extractToken(req);
   const acc = await getAccountBySyncKey(env, token);
   if (!acc) return err('unauthorized', 401);
   const body = await readJson(req);
-  if (!body || !body.profiles) return err('missing profiles', 400);
+  // Codex 0825-11: this used to accept ANY truthy body.profiles -- a string,
+  // a number, a deeply nested object under the byte cap below would all
+  // pass, then get stored as-is and handed back verbatim to every device
+  // that pulls it. The client only ever sends an array of profile objects;
+  // require that shape here too.
+  if (!body || !Array.isArray(body.profiles)) return err('profiles must be an array', 400);
+  if (body.profiles.length > PUSH_MAX_PROFILES) return err('too many profiles', 400);
   const payload = JSON.stringify(body.profiles);
   if (payload.length > 1024 * 1024) return err('too large', 413);
   const updatedAt = Date.now();
@@ -552,7 +562,14 @@ export default {
         default:         response = err('not found', 404);
       }
     } catch (e) {
-      response = err('server error: ' + e.message, 500);
+      // Codex 0825-11: this used to hand the raw exception message straight
+      // back to the caller -- a real risk on a Worker whose errors can carry
+      // D1/internal-implementation detail (a column name, a query fragment)
+      // that has no business leaving this server. Logged here for whoever
+      // has Worker log access; the client gets a message with nothing in it
+      // to learn from.
+      console.error('unhandled error on ' + url.pathname + ':', e);
+      response = err('server error', 500);
     }
     const finalHeaders = new Headers(response.headers);
     for (const [k, v] of Object.entries(headers)) finalHeaders.set(k, v);
