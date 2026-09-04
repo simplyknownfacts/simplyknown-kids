@@ -1603,8 +1603,15 @@
       const list = _offlineFileList(manifest, mascotIds);
       const totalBytes = list.reduce((s, f) => s + f.bytes, 0);
       const cache = await caches.open(OFFLINE_CACHE);
-      const have = (await cache.keys()).length;
-      const done = have > 0 && have >= list.length;
+      // Codex 0825-16: counting cache ENTRIES and comparing to the expected
+      // count could report "done" even when a specific required file was
+      // missing -- any stray/stale entry padding the total to list.length
+      // was enough. Check each required URL is actually present instead.
+      const missingFiles = [];
+      for (const f of list) { if (!(await cache.match(f.url))) missingFiles.push(f.url); }
+      const have = list.length - missingFiles.length;
+      const done = list.length > 0 && missingFiles.length === 0;
+      if (missingFiles.length) console.warn('offline download: missing from cache:', missingFiles);
       const mascotNames = mascotIds
         .map(id => (window.mascot && window.mascot.labels && window.mascot.labels[id]) || id)
         .join(', ') || 'none yet — add a child with a mascot first';
