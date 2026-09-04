@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 export const __dir = dirname(fileURLToPath(import.meta.url));
 export const SHOTS = join(__dir, '..', 'screenshots');
 export const BASE = (process.env.BASE_URL || 'https://kids.simplyknown.co').replace(/\/$/, '');
-export const TIERS = [1, 2, 3, 4, 5, 6, 7, 8];
+export const TIERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 export const VIEWPORTS = {
   phone: { width: 390, height: 844 }, phoneLand: { width: 844, height: 390 },
   tablet: { width: 820, height: 1180 }, tabletLand: { width: 1180, height: 820 },
@@ -28,7 +28,10 @@ export async function launch() {
 }
 
 // Fresh mobile-ish context. serviceWorkers:'block' so we always test the freshly
-// deployed assets, never a stale SW cache (separate suite covers offline/PWA).
+// deployed assets, never a stale SW cache. Codex 0825-18: this comment used to
+// claim "separate suite covers offline/PWA" -- no such suite exists anywhere in
+// this repo (checked). Offline mode is a real, tracked, currently-open gap: see
+// docs/verify/features/NOT-COVERED.md #1.
 export async function newContext(browser, viewport = 'phone') {
   return browser.newContext({
     viewport: VIEWPORTS[viewport], deviceScaleFactor: 2,
