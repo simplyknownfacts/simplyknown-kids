@@ -81,14 +81,31 @@
     if (batch && batch.length && window.vbCelebrate) window.vbCelebrate.show(batch);
   }
 
+  function _armIdleTimer() {
+    clearTimeout(_idleTimer);
+    _idleTimer = setTimeout(_flushNow, IDLE_MS);
+  }
+
   function celebrate(unlocked) {
     if (!unlocked || !unlocked.length) return;
     if (!window.vbCelebrate) return;
     unlocked.forEach(function (d) { window.vbCelebrate.glint(d); });
     _pending = _pending.concat(unlocked);
     if (_isLittle()) return; // no idle-fire for littles — leave/load only
-    clearTimeout(_idleTimer);
-    _idleTimer = setTimeout(_flushNow, IDLE_MS);
+    _armIdleTimer();
+  }
+
+  // Codex 0901-8: the idle timer used to reset ONLY on another unlock, so a
+  // child who kept tapping/answering/dragging without earning anything else
+  // for IDLE_MS got the celebration ambushed on them mid-play — the exact
+  // interruption the pause-point design exists to avoid. Any real input
+  // pushes the deadline back out too, as long as something is actually
+  // pending; nothing to protect (or nowhere for it to fire, for littles)
+  // means nothing to reset.
+  function _onActivity() {
+    if (!_pending.length) return;
+    if (_isLittle()) return;
+    _armIdleTimer();
   }
 
   // Runs once per page load — covers "next page's load" for the backstop
@@ -96,6 +113,8 @@
   // file too. Deferred slightly so it never races the page's own on-load
   // setup for a beat.
   if (typeof window !== 'undefined') {
+    document.addEventListener('pointerdown', _onActivity, true);
+    document.addEventListener('keydown', _onActivity, true);
     if (document.readyState === 'complete') setTimeout(_showPendingFromStorage, 300);
     else window.addEventListener('load', function () { setTimeout(_showPendingFromStorage, 300); });
     window.addEventListener('pagehide', _flushToStorage);

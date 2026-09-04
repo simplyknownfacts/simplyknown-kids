@@ -547,6 +547,49 @@ const trophyResults = [];
   await ctx.close();
 }
 {
+  // Codex 0901-8: the idle timer (IDLE_MS=2500) only ever got reset by
+  // ANOTHER unlock (js/progress.js's celebrate()) -- a tap, an answer, a
+  // drag did nothing to it. A child who earned one thing and then kept
+  // playing without earning anything else for 2.5s got the celebration
+  // ambushed on them mid-play, exactly the interruption Trophy Joy's whole
+  // design was built to avoid. This proves the fix: one unlock arms the
+  // timer, a raw pointerdown at t=2000ms (no new unlock) must push it back
+  // out, so nothing has appeared by t=4000ms -- then, once input truly
+  // stops, it still fires.
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.phone });
+  const profile = { id:'verify-idle-reset', name:'Idle', birthday: birthdayForTier(5),
+    color:'#93DC9E', voice:'woman', mascot:'dog', tierOverrides:{}, features:{}, youtube:[],
+    achievements: { unlocked:{}, counters:{ 'tap-pop':295 }, repeats:{}, xp:0, rank:'sprout',
+                    streak:{ last:null, current:0, best:0 } } };
+  await ctx.addInitScript((p) => { try { localStorage.setItem('vb_profiles', JSON.stringify([p])); } catch {} }, profile);
+  const page = await ctx.newPage();
+  await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, 'verify-idle-reset');
+  await page.goto(BASE + '/games/tap-pop.html', { waitUntil: 'load', timeout: 15000 });
+  await page.waitForTimeout(300);
+
+  const timeline = await page.evaluate(async () => {
+    for (let i = 0; i < 5; i++) { vbProgress.record('tap-pop'); await new Promise((r) => setTimeout(r, 40)); } // cross the threshold, one unlock, arms the idle timer
+    await new Promise((r) => setTimeout(r, 2000)); // t~2000: well under IDLE_MS, nothing should have fired yet either way
+    const stillPlaying = !document.querySelector('.vb-celebrate');
+    document.dispatchEvent(new Event('pointerdown', { bubbles: true })); // real input, no new unlock -- must reset the timer if fixed
+    await new Promise((r) => setTimeout(r, 2000)); // t~4000: past the ORIGINAL 2500ms deadline, short of the RESET one (~4500)
+    const notYetAfterInput = !document.querySelector('.vb-celebrate');
+    await new Promise((r) => setTimeout(r, 1200)); // t~5200: now well past the reset deadline -- must have fired by now
+    const eventuallyFires = !!document.querySelector('.vb-celebrate');
+    return { stillPlaying, notYetAfterInput, eventuallyFires };
+  });
+
+  trophyResults.push({ id: 'trophy-idle-reset-on-input', ok: timeline.notYetAfterInput,
+    what: 'A raw tap/keypress with no new unlock resets the idle timer instead of getting ambushed mid-play',
+    errs: timeline.notYetAfterInput ? [] : ['.vb-celebrate appeared by t~4000ms even though a pointerdown at t~2000ms should have pushed the deadline out to ~4500ms'] });
+  trophyResults.push({ id: 'trophy-idle-reset-still-fires', ok: timeline.eventuallyFires,
+    what: 'Once input actually stops, the celebration still fires (the reset does not disable it forever)',
+    errs: timeline.eventuallyFires ? [] : ['.vb-celebrate never appeared even by t~5200ms, well past the reset deadline'] });
+
+  await page.close();
+  await ctx.close();
+}
+{
   // Master's condition 1: tiers 1-2 get idle-fire OFF (littles pause
   // constantly; a timer would ambush a natural breather). Only leaving the
   // page fires it for them. This exact case is what caught a real bug during
