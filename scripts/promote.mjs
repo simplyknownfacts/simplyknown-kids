@@ -104,6 +104,20 @@ function versionAtHead() {
 // interactive, network-touching script end to end.
 const OUT_DIR = path.resolve(path.resolve(import.meta.dirname, '..'), '.publish');
 
+// Codex 0903-5: the post-approval half (this re-check block, the wrangler deploy args, the
+// release-log write) had zero test coverage -- every test that reaches the prompt in
+// tests/promote.test.mjs types the WRONG version on purpose, so none of them ever ran a real
+// wrangler command or touched Cloudflare's API, which is correct for production but left this
+// whole back half unproven. These four read from env vars ONLY so tests/promote.test.mjs can
+// point them at a fake local wrangler and a local mock server; every real run (Scott's machine)
+// leaves them all unset and gets exactly the real command and the real hosts, unchanged.
+const WRANGLER_CMD = process.env.PROMOTE_WRANGLER_CMD || 'npx --yes wrangler@4.127.1';
+const CF_API_BASE = process.env.PROMOTE_CF_API_BASE || 'https://api.cloudflare.com/client/v4';
+const VERSION_CHECK_HOSTS = process.env.PROMOTE_VERSION_CHECK_HOSTS
+  ? process.env.PROMOTE_VERSION_CHECK_HOSTS.split(',')
+  : CFG.versionCheckHosts;
+const VERIFY_POLL_MS = Number(process.env.PROMOTE_VERIFY_POLL_MS) || 5000;
+
 say(`\n${B}Promote ${CFG.app} to PRODUCTION${X}\n`);
 
 // ── the refusals, in the standard's order ────────────────────────────────────────────────────
@@ -351,7 +365,7 @@ step('Staging (from git HEAD, not the working tree)');
 }
 
 step(`Deploying ${version} to ${CFG.pagesProject}`);
-execSync(`npx --yes wrangler@4.127.1 pages deploy .publish --project-name=${CFG.pagesProject} --branch=main`,
+execSync(`${WRANGLER_CMD} pages deploy .publish --project-name=${CFG.pagesProject} --branch=main`,
   { stdio: 'inherit', env: { ...process.env, CI: 'true' } });
 
 // ── 8. verify the END STATE — an ALARM, never a refusal (the release is already out) ─────────
@@ -361,7 +375,7 @@ let verified = false;
 const wantSha = sh('git rev-parse HEAD');
 for (let i = 1; i <= 3; i++) {
   try {
-    const url = `https://api.cloudflare.com/client/v4/accounts/${CFG.accountId}` +
+    const url = `${CF_API_BASE}/accounts/${CFG.accountId}` +
                 `/pages/projects/${CFG.pagesProject}/deployments?per_page=5`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` } });
     const list = (await res.json())?.result || [];
@@ -376,7 +390,7 @@ for (let i = 1; i <= 3; i++) {
       say(`  read ${i}/3 → no production deployment recorded for commit ${headSha} yet`);
     }
   } catch (e) { say(`  read ${i}/3 → ${Y}could not read the record: ${e.message}${X}`); }
-  if (i < 3) await new Promise((r) => setTimeout(r, 5000));
+  if (i < 3) await new Promise((r) => setTimeout(r, VERIFY_POLL_MS));
 }
 
 // Kids is PUBLIC (rule 8.13's deliberate exception -- no Access on this app, by design), so
@@ -389,7 +403,7 @@ say(`${Y}⚠ Until the DNS cutover, kids.simplyknown.co is still GitHub Pages --
 say(`  the OLD version until Scott moves the CNAME to Cloudflare Pages. That is not a failure of`);
 say(`  THIS deploy; it is the known, tracked gap this gate cannot close by itself.${X}`);
 let liveOk = true;
-for (const host of CFG.versionCheckHosts) {
+for (const host of VERSION_CHECK_HOSTS) {
   const url = host + '/js/version.js';
   try {
     const r = await fetch(url, { cache: 'no-store' });

@@ -5,16 +5,28 @@
 // tests/deploy-guard.test.mjs and tests/deploy-one-door.test.mjs for this repo's other gates.
 //
 // The real network deploy (wrangler pages deploy) is NEVER reached by any test here: every
-// refusal below dies before the interactive prompt, and the one test that DOES reach the prompt
-// (promote-reaches-the-prompt-when-everything-is-clean) always types the WRONG version, so the
-// script exits cleanly at the "Stopped. Nothing was deployed." line (exit 0) without ever
-// touching wrangler. Nothing in this file may weaken that guarantee.
+// refusal below dies before the interactive prompt, and every OTHER test that DOES reach the
+// prompt types the WRONG version, so the script exits cleanly at the "Stopped. Nothing was
+// deployed." line (exit 0) without ever touching wrangler. Nothing in this file may weaken that
+// guarantee.
+//
+// ONE test (below, "promote runs the real post-approval path...") is the deliberate exception:
+// Codex 0903-5 found the post-approval half (the re-check block with a version that actually
+// matches, the wrangler deploy args, the release-log write) had ZERO coverage, because every
+// other test's wrong-version answer stops before reaching any of it. That test types the REAL
+// version and lets the real promote.mjs run all the way to "Done" -- but scripts/promote.mjs
+// reads three of its network/process targets from env vars that default to the real ones
+// (PROMOTE_WRANGLER_CMD, PROMOTE_CF_API_BASE, PROMOTE_VERSION_CHECK_HOSTS), and that one test is
+// the only place in this repo that ever sets them: to a fake local script and a local mock HTTP
+// server, so it proves the real logic without a real deploy or a real network call, same
+// no-real-deploy guarantee as every other test here, just proven from the other side of the gate.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync, spawn } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import http from 'node:http';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SCRIPT = path.join(ROOT, 'scripts', 'promote.mjs');
@@ -96,9 +108,10 @@ function makeScratchRepo(opts = {}) {
   return { dir, headSha, version };
 }
 
-function runPromote(dir, input) {
+function runPromote(dir, input, extraEnv = {}) {
   return spawnSync(process.execPath, [SCRIPT], {
     cwd: dir, encoding: 'utf8', timeout: 20000, input: input !== undefined ? input + '\n' : '\n',
+    env: { ...process.env, ...extraEnv },
   });
 }
 
@@ -131,6 +144,33 @@ function runPromoteAcrossThePrompt(dir, { beforeAnswer, answer }) {
       checkDone();
     });
     child.on('exit', () => { clearTimeout(timer); resolve({ out, reachedDeploy: false }); });
+    child.on('error', (e) => { clearTimeout(timer); reject(e); });
+  });
+}
+
+// spawnSync (used everywhere else in this file) blocks this test process's OWN event loop until
+// the child exits -- fine for every other test, since none of them need this process to do
+// anything while the child runs. The post-approval test below is different: its child calls back
+// into an http.Server this SAME process hosts (the mock Cloudflare/version.js stand-in), and a
+// blocked event loop cannot service that server's requests, so a spawnSync-based version of that
+// test would deadlock (proven while building it: the child hung until spawnSync's own timeout
+// killed it). Real async spawn, mirroring runPromoteAcrossThePrompt just above, keeps this
+// process's event loop free to answer the child while still typing the prompt answer and
+// collecting output the same way.
+function runPromoteAsync(dir, { input, env = {} } = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [SCRIPT], { cwd: dir, env: { ...process.env, ...env } });
+    let out = '', err = '', answered = false;
+    const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error('timed out: ' + out + err)); }, 20000);
+    child.stdout.on('data', (d) => {
+      out += d.toString();
+      if (!answered && input !== undefined && /Type the version number to go ahead/.test(out)) {
+        answered = true;
+        child.stdin.write(input + '\n');
+      }
+    });
+    child.stderr.on('data', (d) => { err += d.toString(); });
+    child.on('exit', (code) => { clearTimeout(timer); resolve({ code, stdout: out, stderr: err }); });
     child.on('error', (e) => { clearTimeout(timer); reject(e); });
   });
 }
@@ -288,6 +328,87 @@ test('promote reaches the prompt when everything about the repo is clean (no COD
   assert.doesNotMatch(res.stdout + res.stderr, /Staging \(npm run stage\)|Deploying \S+ to/);
 });
 
+// Codex 0903-5: the ONE test that types the REAL version and lets promote.mjs run all the way
+// through the re-check block, the wrangler deploy call, the Cloudflare read-back, and the
+// release-log write -- none of which any other test in this file exercises, because every other
+// prompt test answers wrong on purpose. Faked entirely via the three env-var overrides
+// scripts/promote.mjs reads for exactly this (PROMOTE_WRANGLER_CMD / PROMOTE_CF_API_BASE /
+// PROMOTE_VERSION_CHECK_HOSTS / PROMOTE_VERIFY_POLL_MS), all of which default to the real thing
+// and are never set outside this test -- so it proves the real code path without a real deploy or
+// a real network call, same guarantee the file header promises.
+test('promote runs the real post-approval path (fake wrangler, mock Cloudflare) and writes the release log', async () => {
+  const { dir, version, headSha } = makeScratchRepo();
+  scratchDirs.push(dir);
+  const fullSha = git(dir, ['rev-parse', 'HEAD']);
+
+  // A fake wrangler: never touches the network, records exactly what it was called with so the
+  // deploy args (Codex named these explicitly: :320-325) get a real runtime assertion, not just
+  // the existing static source-guard below. Lives OUTSIDE the scratch repo `dir` on purpose --
+  // promote.mjs's very first check refuses on ANY uncommitted file in the repo it runs in, and
+  // this support tooling is not part of what is being promoted.
+  const supportDir = mkdtempSync(path.join(tmpdir(), 'kids-promote-support-'));
+  scratchDirs.push(supportDir);
+  const argsFile = path.join(supportDir, 'wrangler-args.json');
+  const fakeWranglerPath = path.join(supportDir, 'fake-wrangler.mjs');
+  writeFileSync(fakeWranglerPath,
+    `import { writeFileSync } from 'node:fs';\n` +
+    `writeFileSync(${JSON.stringify(argsFile)}, JSON.stringify(process.argv.slice(2)));\n` +
+    `console.log('fake wrangler: Deployment complete!');\n`);
+  const wranglerCmd = `${JSON.stringify(process.execPath)} ${JSON.stringify(fakeWranglerPath)}`;
+
+  // A local mock standing in for BOTH the Cloudflare deployments API and the two live
+  // version.js hosts -- same server, branches on the request path.
+  const server = http.createServer((req, res) => {
+    if (req.url.startsWith('/js/version.js')) {
+      res.writeHead(200, { 'content-type': 'text/javascript' });
+      res.end(`const APP_VERSION = '${version}';\n`);
+      return;
+    }
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ result: [{
+      id: 'fake-deployment-id',
+      environment: 'production',
+      deployment_trigger: { metadata: { commit_hash: fullSha } },
+      latest_stage: { name: 'deploy', status: 'success' },
+    }] }));
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+
+  try {
+    const res = await runPromoteAsync(dir, {
+      input: version,
+      env: {
+        PROMOTE_WRANGLER_CMD: wranglerCmd,
+        PROMOTE_CF_API_BASE: origin,
+        PROMOTE_VERSION_CHECK_HOSTS: `${origin},${origin}`,
+        PROMOTE_VERIFY_POLL_MS: '10',
+      },
+    });
+
+    assert.equal(res.code, 0, 'a fully clean repo with the real version typed must deploy cleanly: ' + res.stdout + res.stderr);
+    assert.match(res.stdout, /Re-checking everything before the point of no return/);
+    assert.match(res.stdout, /staged \d+ files from commit/);
+    assert.match(res.stdout, new RegExp(`Deploying ${version} to simplyknown-kids`));
+    assert.match(res.stdout, /fake wrangler: Deployment complete!/, 'the fake wrangler must actually have run: ' + res.stdout);
+    assert.match(res.stdout, /Done\. Kids .* is deployed and Cloudflare confirms it\./);
+
+    const calledWith = JSON.parse(readFileSync(argsFile, 'utf8'));
+    assert.ok(calledWith.includes('pages'), calledWith.join(' '));
+    assert.ok(calledWith.includes('deploy'), calledWith.join(' '));
+    assert.ok(calledWith.some((a) => a === '--project-name=simplyknown-kids'), calledWith.join(' '));
+    assert.ok(calledWith.some((a) => a === '--branch=main'), calledWith.join(' '));
+    assert.ok(!calledWith.some((a) => a.includes('--commit-dirty')),
+      'the real wrangler call must never receive --commit-dirty=true: ' + calledWith.join(' '));
+
+    const releaseLog = readFileSync(path.join(dir, 'docs', 'releases.md'), 'utf8');
+    assert.match(releaseLog, new RegExp(`\\|\\s*${version}\\s*\\|\\s*${headSha}\\s*\\|`),
+      'the release log must gain a row for this exact version and commit: ' + releaseLog);
+  } finally {
+    server.close();
+  }
+});
+
 test('source guard: promote in package.json runs scripts/promote.mjs', () => {
   const pkg = JSON.parse(execFileSync('git', ['show', 'HEAD:package.json'], { cwd: ROOT, encoding: 'utf8' }));
   assert.match(pkg.scripts.promote || '', /promote\.mjs/);
@@ -305,7 +426,13 @@ test('source guard: promote-kids.bat exists at the repo root and runs npm run pr
 // this flag too, silently reopening the same race.
 test('source guard: the prod wrangler deploy does not pass --commit-dirty=true', () => {
   const src = execFileSync('git', ['show', 'HEAD:scripts/promote.mjs'], { cwd: ROOT, encoding: 'utf8' });
-  const deployLine = src.split('\n').find((l) => l.includes('wrangler@4.127.1 pages deploy'));
+  // Codex 0903-5 made the wrangler command an (overridable-in-tests-only) constant, so the
+  // pinned version and the actual deploy invocation now live on different lines -- check both,
+  // and the runtime test above ("promote runs the real post-approval path...") proves the args a
+  // real invocation receives too, not just this static source scan.
+  assert.match(src, /WRANGLER_CMD\s*=\s*process\.env\.PROMOTE_WRANGLER_CMD\s*\|\|\s*'npx --yes wrangler@4\.127\.1'/,
+    'the default (real, production) wrangler command must stay pinned to wrangler@4.127.1');
+  const deployLine = src.split('\n').find((l) => l.includes('pages deploy'));
   assert.ok(deployLine, 'could not find the wrangler pages deploy line in scripts/promote.mjs');
   assert.doesNotMatch(deployLine, /--commit-dirty=true/,
     'the prod deploy must not pass --commit-dirty=true -- it stages from git HEAD, not the working tree, so it needs no dirty-tree exception');
