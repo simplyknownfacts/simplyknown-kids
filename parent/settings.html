@@ -624,9 +624,9 @@
   <script src="../js/sync.js"></script>
   <script src="../js/yoto-config.js"></script>
   <script src="../js/yoto.js"></script>
+  <script src="../js/pin-lockout.js"></script>
   <script>
     const PIN_KEY = 'vb_pin';            // stores JSON {hash,salt} now; legacy = raw 4 digits
-    const LOCKOUT_KEY = 'vb_pin_lockout'; // stores JSON {attempts,lockedUntil}
     // Recovery phrase was removed — drop any stale hash so it doesn't sit in storage
     localStorage.removeItem('vb_recovery');
     const COLORS  = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#a8e6cf'];
@@ -714,23 +714,17 @@
     }
 
     // ── Lockout state (5 wrong → 5 min, 10 wrong → 30 min) ─────────────────────
-    function _getLockout() {
-      try { return JSON.parse(localStorage.getItem(LOCKOUT_KEY)) || { attempts:0, lockedUntil:0 }; }
-      catch { return { attempts:0, lockedUntil:0 }; }
-    }
-    function _setLockout(s) { localStorage.setItem(LOCKOUT_KEY, JSON.stringify(s)); }
-    function _clearLockout() { localStorage.removeItem(LOCKOUT_KEY); }
-    function _isLocked() { return _getLockout().lockedUntil > Date.now(); }
-    function _lockoutRemainingSec() {
-      return Math.max(0, Math.ceil((_getLockout().lockedUntil - Date.now()) / 1000));
-    }
+    // Codex 0825-9: this used to be the ONLY place this logic existed; the
+    // storage + the rules now live in js/pin-lockout.js so home.html's
+    // exit-PIN flow can share the exact same counter. These stay as thin
+    // wrappers so every call site below is unchanged.
+    function _getLockout() { return window.vbPinLockout ? vbPinLockout.getLockout() : { attempts: 0, lockedUntil: 0 }; }
+    function _setLockout(s) { if (window.vbPinLockout) vbPinLockout.setLockout(s); }
+    function _clearLockout() { if (window.vbPinLockout) vbPinLockout.clearLockout(); }
+    function _isLocked() { return window.vbPinLockout ? vbPinLockout.isLocked() : false; }
+    function _lockoutRemainingSec() { return window.vbPinLockout ? vbPinLockout.remainingSec() : 0; }
     function _recordFailedAttempt() {
-      const l = _getLockout();
-      l.attempts = (l.attempts || 0) + 1;
-      if (l.attempts >= 10)       l.lockedUntil = Date.now() + 30 * 60 * 1000;
-      else if (l.attempts >= 5)   l.lockedUntil = Date.now() +  5 * 60 * 1000;
-      _setLockout(l);
-      return l;
+      return window.vbPinLockout ? vbPinLockout.recordFailedAttempt() : { attempts: 0, lockedUntil: 0 };
     }
 
     function goBack() {

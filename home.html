@@ -230,10 +230,12 @@
   <script src="js/profiles.js"></script>
   <script src="js/voice-manifest.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/pin-lockout.js"></script>
   <script src="js/sync.js"></script>
   <script src="js/mascot.js"></script>
   <script src="js/yoto-config.js"></script>
   <script src="js/yoto.js"></script>
+  <script src="js/sleep-timer.js"></script>
   <script src="js/yoto-player.js"></script>
   <script src="js/achievement-defs.js"></script>
   <script src="js/achievement-logic.js"></script>
@@ -489,6 +491,7 @@
       const overlay = document.createElement('div');
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
       let entry = '';
+      let lockoutTimer = null;
       function dots() {
         return Array.from({length:4}, (_,i)=>`<div style="width:14px;height:14px;border-radius:50%;background:${i<entry.length?'var(--accent)':'rgba(255,255,255,0.2)'};"></div>`).join('');
       }
@@ -497,6 +500,35 @@
           `<button data-k="${k}" style="aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:900;color:white;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);cursor:pointer;font-family:var(--font-ui);">${k}</button>`
         ).join('');
       }
+      // Codex 0825-9: this dialog used to have NO lockout at all -- a kid
+      // locked out of parent/settings.html's PIN gate could just walk over to
+      // the exit button and keep guessing there instead. js/pin-lockout.js
+      // (shared with settings) makes both doors count against ONE counter.
+      function refreshLockout() {
+        const msg = overlay.querySelector('#exitMsg');
+        const pad = overlay.querySelector('#exitKeys');
+        if (!msg || !pad) return false;
+        if (lockoutTimer) { clearInterval(lockoutTimer); lockoutTimer = null; }
+        if (!(window.vbPinLockout && vbPinLockout.isLocked())) {
+          pad.style.pointerEvents = ''; pad.style.opacity = '';
+          return false;
+        }
+        const tick = () => {
+          const remain = vbPinLockout.remainingSec();
+          if (remain <= 0) {
+            clearInterval(lockoutTimer); lockoutTimer = null;
+            msg.textContent = '';
+            pad.style.pointerEvents = ''; pad.style.opacity = '';
+            return;
+          }
+          const m = Math.floor(remain / 60), s = remain % 60;
+          msg.textContent = `Locked — try again in ${m}:${String(s).padStart(2,'0')}`;
+        };
+        tick();
+        lockoutTimer = setInterval(tick, 1000);
+        pad.style.pointerEvents = 'none'; pad.style.opacity = '0.35';
+        return true;
+      }
       function render() {
         overlay.innerHTML = `
           <div style="background:#1a1a2e;border-radius:18px;padding:24px;max-width:340px;width:100%;color:white;text-align:center;font-family:var(--font-ui);">
@@ -504,17 +536,19 @@
             <div style="color:rgba(255,255,255,0.6);font-size:14px;margin-bottom:12px;">Enter PIN to exit</div>
             <div id="exitDots" style="display:flex;gap:10px;justify-content:center;margin:10px 0 14px;">${dots()}</div>
             <div id="exitMsg" style="color:#FF6B6B;font-size:13px;min-height:18px;margin-bottom:8px;"></div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto;">${keys()}</div>
+            <div id="exitKeys" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto;">${keys()}</div>
             <button id="exitCancel" style="margin-top:14px;width:100%;padding:12px;border-radius:12px;background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);font-weight:800;cursor:pointer;font-family:var(--font-ui);">Cancel</button>
           </div>`;
         overlay.querySelectorAll('button[data-k]').forEach(b => {
           b.onclick = async () => {
+            if (window.vbPinLockout && vbPinLockout.isLocked()) return; // pad is dimmed/inert, but guard the handler too
             const k = b.dataset.k;
             if (k === '⌫') entry = entry.slice(0, -1);
             else if (entry.length < 4) entry += k;
             overlay.querySelector('#exitDots').innerHTML = dots();
             if (entry.length === 4) {
               if (await _checkPin(entry)) {
+                if (window.vbPinLockout) vbPinLockout.clearLockout();
                 // An installed app can't truly self-close (window.close only works
                 // on script-opened windows). Jumping to about:blank left a dead
                 // black screen. Try close, then show a friendly goodbye instead.
@@ -528,16 +562,22 @@
                   </div>`;
                 overlay.querySelector('#exitBack').onclick = () => overlay.remove();
               } else {
-                overlay.querySelector('#exitMsg').textContent = 'Wrong PIN';
                 entry = '';
                 setTimeout(() => overlay.querySelector('#exitDots').innerHTML = dots(), 250);
+                const nowLocked = window.vbPinLockout ? vbPinLockout.recordFailedAttempt().lockedUntil > Date.now() : false;
+                if (nowLocked) { refreshLockout(); }
+                else { overlay.querySelector('#exitMsg').textContent = 'Wrong PIN'; }
               }
             }
           };
         });
-        overlay.querySelector('#exitCancel').onclick = () => overlay.remove();
+        overlay.querySelector('#exitCancel').onclick = () => {
+          if (lockoutTimer) { clearInterval(lockoutTimer); lockoutTimer = null; }
+          overlay.remove();
+        };
       }
       render();
+      refreshLockout();
       document.body.appendChild(overlay);
     }
 
