@@ -47,6 +47,7 @@
 //   BASE=http://localhost:8790 npm run verify:dev            (another)
 import { execSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { extractVersion, checkLiveVersionMatches } from './lib/version-check.mjs';
 
 const R = '\x1b[31m', G = '\x1b[32m', Y = '\x1b[33m', B = '\x1b[1m', X = '\x1b[0m';
 const say = (s = '') => process.stdout.write(s + '\n');
@@ -101,6 +102,26 @@ try {
        `gating it with no service token configured?`);
 }
 say(`  ${G}✓${X} drive clean\n`);
+
+// ── 3. BASE really is running this commit's code, not just answering ───────
+// Codex 0903-2, HIGH: the drive above proves SOMETHING answered correctly at
+// BASE, and BASE can be set to anywhere -- it never proved that anywhere was
+// the deployment this commit actually shipped to. A stale dev1, or BASE
+// pointed at localhost while dev1 sits three versions behind, would still
+// pass the drive and stamp the CURRENT commit as verified. Fetch the live
+// js/version.js from BASE itself and require it to match this commit's own
+// version -- the same file scripts/promote.mjs already trusts as the one
+// source of truth (its own header comment says so).
+say(`${B}[3/3] Confirming ${BASE} is actually running this commit's version${X}`);
+const localVersion = extractVersion(sh('git show HEAD:js/version.js'));
+if (!localVersion) fail('could not read APP_VERSION out of js/version.js at HEAD.');
+const versionCheck = await checkLiveVersionMatches(BASE, localVersion);
+if (!versionCheck.ok) {
+  fail(`${versionCheck.reason}.\n` +
+       `The drive passing does not mean THIS commit is what's live at ${BASE} -- deploy this\n` +
+       `commit to dev1 first (npm run deploy:dev1), then verify again.`);
+}
+say(`  ${G}✓${X} ${BASE} confirmed running version ${localVersion}\n`);
 
 // ── Evidence ─────────────────────────────────────────────────────────────────
 if (!existsSync('docs/verify')) mkdirSync('docs/verify', { recursive: true });
