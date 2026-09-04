@@ -88,8 +88,12 @@
 })();
 
 // Block pinch-zoom and double-tap-zoom (iOS Safari ignores meta viewport user-scalable=no).
-// Parent settings opts out by setting body.dataset.allowZoom = '1'.
+// Parent settings opts out via a checkbox (parent/settings.html's Theme
+// panel, Codex 0825-15) that sets localStorage vb_allow_zoom; read here on
+// every page load so the opt-out applies wherever the child actually is,
+// not just while parent/settings.html happens to be open.
 (function _lockGestures() {
+  try { if (localStorage.getItem('vb_allow_zoom') === '1') document.body.dataset.allowZoom = '1'; } catch (e) {}
   const allowZoom = () => document.body && document.body.dataset && document.body.dataset.allowZoom === '1';
   ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => {
     document.addEventListener(ev, e => { if (!allowZoom()) e.preventDefault(); }, { passive: false });

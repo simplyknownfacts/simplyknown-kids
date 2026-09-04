@@ -48,11 +48,20 @@
     shelf.className = 'vb-shelf';
     shelf.setAttribute('role', 'button');
     shelf.setAttribute('aria-label', 'Open my ribbons');
+    // Codex 0825-15: role="button" on its own is not keyboard-operable -- a
+    // div needs an explicit tabindex to be Tab-reachable at all, and even
+    // then a real <button>'s native Enter/Space activation never fires on
+    // its own for a div (same pattern already fixed in listen/index.html's
+    // card tiles).
+    shelf.tabIndex = 0;
     shelf.onclick = function () {
       if (typeof playChime === 'function') { try { playChime(); } catch (e) {} }
       if (typeof goTo === 'function') goTo(base + 'achievements.html');
       else location.href = base + 'achievements.html';
     };
+    shelf.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); shelf.onclick(); }
+    });
 
     if (opts.title !== false) {
       var t = document.createElement('div'); t.className = 'vb-shelf-title';

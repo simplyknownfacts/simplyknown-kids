@@ -476,6 +476,14 @@
           <div class="panel-body">
             <h2>🎨 Theme <span class="who panel-who"></span></h2>
             <div id="themeSection"></div>
+            <!-- Codex 0825-15: js/app.js has read body.dataset.allowZoom to
+                 decide whether to block pinch/double-tap zoom since it was
+                 written, but nothing anywhere ever SET it -- the opt-out
+                 this comment promised did not exist. -->
+            <label style="display:flex;align-items:center;gap:10px;margin-top:16px;color:white;font-size:14px;cursor:pointer;">
+              <input type="checkbox" id="allowZoomToggle" style="width:20px;height:20px;">
+              Allow pinch / double-tap zoom (off by default — for accessibility needs)
+            </label>
           </div>
         </section>
 
@@ -786,6 +794,7 @@
       buildFeaturesTable();
       buildVoiceSection();
       buildThemeSection();
+      initAllowZoomToggle();
       buildMascotSection();
       buildActivitiesSection();
       buildYoutubeSection();
@@ -1779,6 +1788,25 @@
             }
           } catch (e) {}
         });
+      });
+    }
+
+    // Codex 0825-15: js/app.js's _lockGestures() has read
+    // body.dataset.allowZoom to decide whether to block pinch/double-tap
+    // zoom since it was written, but nothing anywhere ever SET it -- the
+    // opt-out its own comment promised did not exist. Global, not per-child
+    // (a device-level accessibility setting, not a kid preference).
+    const ALLOW_ZOOM_KEY = 'vb_allow_zoom';
+    function initAllowZoomToggle() {
+      const box = document.getElementById('allowZoomToggle');
+      if (!box) return;
+      let saved = '0';
+      try { saved = localStorage.getItem(ALLOW_ZOOM_KEY) === '1' ? '1' : '0'; } catch (e) {}
+      box.checked = saved === '1';
+      box.addEventListener('change', () => {
+        const v = box.checked ? '1' : '0';
+        try { localStorage.setItem(ALLOW_ZOOM_KEY, v); } catch (e) {}
+        document.body.dataset.allowZoom = v; // live-apply on this page too, not just future loads
       });
     }
 
