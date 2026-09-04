@@ -1,5 +1,5 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v143';
+const CACHE = 'vb-v144';
 // v143 HUB HOME: home.html is now the fox hub-world (branch hub-home) instead
 // of the tile grid — same 5 sections (Games/Learn/Art/Watch/Listen), reached
 // by tapping a landmark instead of a card. New static asset shipped:
@@ -149,7 +149,7 @@ const ASSETS = [
   './', './index.html', './home.html', './achievements.html',
   './redesign-hub-bg.jpg',
   './css/style.css', './css/achievements.css', './css/themes.css',
-  './js/atmosphere.js',
+  './js/atmosphere.js', './js/version.js',
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',
   './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',
   './js/game-settings.js', './js/paint.js', './js/sw-cache-policy.js',
