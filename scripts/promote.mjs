@@ -209,22 +209,30 @@ function isTriaged(title, triage) {
   return DECISION.test(triage.slice(at, at + 800));
 }
 
-if (existsSync(CFG.codexNotes)) {
-  const notes = readFileSync(CFG.codexNotes, 'utf8');
-  const triage = existsSync(CFG.codexTriage) ? readFileSync(CFG.codexTriage, 'utf8') : '';
-  const highs = highTitlesIn(notes);
-  const untriaged = highs.filter((h) => !isTriaged(h, triage));
-  if (untriaged.length) {
-    die(`${untriaged.length} of ${highs.length} HIGH Codex finding(s) have no written decision:\n  ` +
-        untriaged.map((h) => '• ' + h).join('\n  '),
-        `in ${CFG.codexTriage}, under each title, write one of:\n` +
-        '    FIXED <commit>   ·   REJECTED — <reason>   ·   ACCEPTED RISK — <reason>\n' +
-        '  Pasting the finding in without a verdict is NOT a decision, and no longer passes.');
+// Codex 0903-4: this used to be a one-shot check, run only here, before the prompt. Nothing
+// stopped CODEX-NOTES.md or docs/CODEX-TRIAGE.md from changing in the seconds the prompt sat
+// open -- a fresh Codex finding landing, or a triage verdict getting reverted, same race the
+// dirty-tree/HEAD/origin/stamp checks below already guard against. Now a function, called here
+// AND again in the post-approval re-check, so both moments see the same file state.
+function checkCodexTriage(quiet) {
+  if (existsSync(CFG.codexNotes)) {
+    const notes = readFileSync(CFG.codexNotes, 'utf8');
+    const triage = existsSync(CFG.codexTriage) ? readFileSync(CFG.codexTriage, 'utf8') : '';
+    const highs = highTitlesIn(notes);
+    const untriaged = highs.filter((h) => !isTriaged(h, triage));
+    if (untriaged.length) {
+      die(`${untriaged.length} of ${highs.length} HIGH Codex finding(s) have no written decision:\n  ` +
+          untriaged.map((h) => '• ' + h).join('\n  '),
+          `in ${CFG.codexTriage}, under each title, write one of:\n` +
+          '    FIXED <commit>   ·   REJECTED — <reason>   ·   ACCEPTED RISK — <reason>\n' +
+          '  Pasting the finding in without a verdict is NOT a decision, and no longer passes.');
+    }
+    if (highs.length && !quiet) say(`${G}✓${X} ${highs.length} HIGH Codex finding(s), each with a written decision\n`);
+  } else if (!quiet) {
+    say(`${Y}(no ${CFG.codexNotes} in this checkout — nothing to triage, which is a pass)${X}\n`);
   }
-  if (highs.length) say(`${G}✓${X} ${highs.length} HIGH Codex finding(s), each with a written decision\n`);
-} else {
-  say(`${Y}(no ${CFG.codexNotes} in this checkout — nothing to triage, which is a pass)${X}\n`);
 }
+checkCodexTriage(false);
 
 if (!existsSync(CFG.tokenFile)) {
   die(`No Cloudflare token at ${CFG.tokenFile}.`, 'this script only runs on Scott\'s machine.');
@@ -307,6 +315,7 @@ if (versionAtHead() !== version) {
   die(`The version CHANGED while the prompt was open — ${CFG.versionFile} now says ${versionAtHead()}, not ${version}.`,
       'nothing was deployed. Start again so you type what is actually shipping.');
 }
+checkCodexTriage(true); // Codex 0903-4 -- same check the pre-prompt pass ran, in case a HIGH landed (or a verdict was reverted) while the prompt sat open
 
 // ── deploy ───────────────────────────────────────────────────────────────────────────────────
 // npm run stage builds .publish/ from git-tracked files only (scripts/stage-site.mjs) -- never

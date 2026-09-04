@@ -11,7 +11,7 @@
 // touching wrangler. Nothing in this file may weaken that guarantee.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync, spawn } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -99,6 +99,39 @@ function makeScratchRepo(opts = {}) {
 function runPromote(dir, input) {
   return spawnSync(process.execPath, [SCRIPT], {
     cwd: dir, encoding: 'utf8', timeout: 20000, input: input !== undefined ? input + '\n' : '\n',
+  });
+}
+
+// For the ONE thing spawnSync can't do: change a file WHILE the interactive prompt is open,
+// the exact window Codex 0903-4 found. Runs the real script async, waits for the prompt, lets
+// the caller mutate the scratch repo, types the answer, then races for either the refusal or
+// the first real deploy-side-effect line -- and kills the child THE INSTANT one of those two
+// appears, so this (like every other test in this file) never lets a real deploy step run.
+function runPromoteAcrossThePrompt(dir, { beforeAnswer, answer }) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [SCRIPT], { cwd: dir });
+    let out = '';
+    let answered = false;
+    const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error('timed out: ' + out)); }, 20000);
+    function checkDone() {
+      // The one thing that must NEVER be allowed to actually happen, fixed or not.
+      if (/Staging \(npm run stage\)|Deploying \S+ to/.test(out)) {
+        clearTimeout(timer);
+        child.kill('SIGKILL');
+        resolve({ out, reachedDeploy: true });
+      }
+    }
+    child.stdout.on('data', (d) => {
+      out += d.toString();
+      if (!answered && /Type the version number to go ahead/.test(out)) {
+        answered = true;
+        try { beforeAnswer(); } catch (e) { clearTimeout(timer); child.kill('SIGKILL'); reject(e); return; }
+        child.stdin.write(answer + '\n');
+      }
+      checkDone();
+    });
+    child.on('exit', () => { clearTimeout(timer); resolve({ out, reachedDeploy: false }); });
+    child.on('error', (e) => { clearTimeout(timer); reject(e); });
   });
 }
 
@@ -199,6 +232,28 @@ test('promote proceeds past an already-TRIAGED HIGH Codex finding (does not die 
   assert.equal(res.status, 0, 'should reach the prompt and cleanly cancel, not die earlier: ' + res.stdout + res.stderr);
   assert.match(res.stdout, /Type the version number to go ahead/);
   assert.doesNotMatch(res.stdout, /have no written decision/i);
+});
+
+test('promote re-checks for an untriaged HIGH Codex finding that appeared WHILE the prompt was open (Codex 0903-4)', async () => {
+  const { dir, version } = makeScratchRepo({ codexNotes: null }); // starts clean: nothing to triage
+  scratchDirs.push(dir);
+  const { out, reachedDeploy } = await runPromoteAcrossThePrompt(dir, {
+    // Simulate a colleague's push, or Codex's own file landing, in the seconds the prompt sat
+    // open -- exactly the race the OTHER re-checks (dirty tree, HEAD, origin/main, the stamp)
+    // already cover. This one didn't, until now.
+    beforeAnswer: () => {
+      writeFileSync(path.join(dir, 'CODEX-NOTES.md'),
+        '## 2026-09-04 — review\n\n1. **HIGH — Landed mid-prompt.** Details here.\n');
+    },
+    // Must be the REAL version: a wrong answer exits cleanly at the typed-approval check,
+    // before the re-check block this test targets ever runs.
+    answer: version,
+  });
+  assert.equal(reachedDeploy, false,
+    'a HIGH finding that appeared during the prompt must never be allowed anywhere near a real deploy step: ' + out);
+  assert.match(out, /have no written decision/i,
+    'the post-approval re-check must catch a HIGH finding that only appeared after the prompt opened: ' + out);
+  assert.match(out, /Landed mid-prompt/, out);
 });
 
 test('promote refuses when no Cloudflare token file exists', () => {
