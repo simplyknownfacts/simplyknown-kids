@@ -171,12 +171,38 @@ conversions in the section hubs). Confirmed in current code: `index.html`'s avat
 and `videos/index.html` also confirmed on real `<button>`s via their own dedicated a11y commits
 (`d91b447`, `0ba9069`).
 
+### 18. HIGH — The DEV-VERIFIED stamp does not prove BASE is running the commit it names (Codex 0903-2).
+**Verdict: FIXED** (commit `ebf599f`). `scripts/dev-verify.mjs` now fetches `js/version.js` live
+from `BASE` after the drive passes and requires its `APP_VERSION` to match `git show
+HEAD:js/version.js` for the commit being stamped -- extracted into
+`scripts/lib/version-check.mjs` (`extractVersion`, `checkLiveVersionMatches`) so a mismatch, a
+non-OK response, or an unreachable `BASE` all fail loud and write no stamp instead of silently
+stamping the current commit as verified. Confirmed live today via `tests/version-check.test.mjs`
+(7 cases: match, mismatch, non-OK response, unreachable BASE, unreadable version). `npm test`:
+140/140 at the time of the fix.
+
+### 19. HIGH — Production could still stage from the working tree instead of the reviewed commit (Codex 0903-3).
+**Verdict: FIXED** (commit `457f984`). `scripts/promote.mjs` no longer runs `npm run stage`
+(`fs.copyFileSync` off disk) for the prod path -- it now calls `stageFromGitHead`
+(`scripts/lib/stage-from-git.mjs`), which reads every file's bytes straight out of git's object
+database (`git show <sha>:<path>`) for the exact commit being promoted, closing the window where a
+background process or editor autosave between the last clean-tree check and the network upload
+could ship unreviewed content. `--commit-dirty=true` is dropped from the prod wrangler call, since
+a git-object build owes wrangler no dirty-tree exception. `scripts/stage-site.mjs`'s own `npm run
+stage` (used by `deploy:dev1`) is unchanged and still working-tree-based on purpose -- dev wants
+fast uncommitted iteration. Confirmed live today via `tests/stage-from-git.test.mjs` (commits a
+file, dirties the same path on disk without committing, and asserts the staged output has the
+committed bytes, not the dirty ones) and a `tests/promote.test.mjs` source guard confirming
+`--commit-dirty=true` is gone from the prod deploy line. `npm test`: 144/144.
+
 ---
 
 ## Summary
 
-16 of 17 HIGH findings on file have a real, code-verified decision. 1 (finding #1, the throttle
+18 of 19 HIGH findings on file have a real, code-verified decision. 1 (finding #1, the throttle
 refinement gaps from the 2026-09-02 review) is left genuinely open on purpose -- `scripts/
 promote.mjs` will refuse to promote until a human writes a real FIXED/REJECTED/ACCEPTED RISK
 verdict for it here. That is correct, intended behavior for a live, undecided security gap on a
-children's app, not a defect in this triage pass.
+children's app, not a defect in this triage pass. (2026-09-04: master has already ruled finding #1
+FIXED-by-build, size M -- see `Notes\Kids — open Codex ledger (2026-09-04).md` §2.1 -- but the
+verdict here stays PENDING until the actual D1 fix lands and is verified, not merely ordered.)
