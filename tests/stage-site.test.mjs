@@ -98,3 +98,17 @@ test('no published page links to something we excluded', () => {
   }
   assert.deepStrictEqual(broken, [], 'published pages reference missing files');
 });
+
+// Codex 0905-3, HIGH. The dev-verify live check used to compare only APP_VERSION
+// (js/version.js), which does not change on every commit -- so a stale dev deploy sharing
+// today's version string could authorize the wrong commit forever (Deploy & Release Standard
+// PART D10). This dev build (deploy:dev1's `npm run stage`) now writes version.json naming the
+// exact commit HEAD was at when the build was staged, mirroring what stageFromGitHead already
+// does for the prod build (tests/stage-from-git.test.mjs).
+test('the dev build writes version.json naming the commit HEAD was at when staged', () => {
+  stage();
+  const artifact = JSON.parse(fs.readFileSync(path.join(OUT, 'version.json'), 'utf8'));
+  const headSha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  assert.equal(artifact.commit, headSha,
+    'version.json must name this repo\'s real HEAD: ' + JSON.stringify(artifact));
+});

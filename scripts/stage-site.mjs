@@ -81,6 +81,16 @@ if (isMain) {
     fs.mkdirSync(path.dirname(to), { recursive: true });
     fs.copyFileSync(from, to);
   }
+  // Codex 0905-3, HIGH: record the commit HEAD was at when this dev build was staged, so a live
+  // host can be asked "which commit are you actually running" -- not just "which APP_VERSION
+  // string", which does not change on every commit and can therefore authorize a stale dev
+  // deploy forever (Deploy & Release Standard PART D10). Mirrors what stageFromGitHead already
+  // writes for the prod build (scripts/lib/stage-from-git.mjs). Generated here, never committed
+  // to git itself -- this file describes the BUILD, not the source.
+  const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  fs.writeFileSync(path.join(OUT, 'version.json'),
+    JSON.stringify({ commit, staged: new Date().toISOString() }, null, 2) + '\n');
+
   (function count(d) {
     for (const e of fs.readdirSync(d, { withFileTypes: true })) {
       if (e.isDirectory()) count(path.join(d, e.name));

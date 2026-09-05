@@ -47,7 +47,7 @@
 //   BASE=http://localhost:8790 npm run verify:dev            (another)
 import { execSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { extractVersion, checkLiveVersionMatches } from './lib/version-check.mjs';
+import { extractVersion, checkLiveVersionMatches, checkLiveCommitMatches } from './lib/version-check.mjs';
 
 const R = '\x1b[31m', G = '\x1b[32m', Y = '\x1b[33m', B = '\x1b[1m', X = '\x1b[0m';
 const say = (s = '') => process.stdout.write(s + '\n');
@@ -83,7 +83,7 @@ const commit = sh('git rev-parse --short HEAD');
 say(`  commit under test : ${B}${commit}${X}  ${sh('git log -1 --format=%s')}\n`);
 
 // ── 1. Unit tests ────────────────────────────────────────────────────────────
-say(`${B}[1/2] Unit tests${X}`);
+say(`${B}[1/4] Unit tests${X}`);
 try {
   execSync('npm test', { stdio: 'inherit' });
 } catch {
@@ -92,7 +92,7 @@ try {
 say(`  ${G}✓${X} npm test clean\n`);
 
 // ── 2. Drive — the real end-to-end harness, against the dev deployment ─────
-say(`${B}[2/2] Drive — tests/verify-drive.mjs against ${BASE}${X}`);
+say(`${B}[2/4] Drive — tests/verify-drive.mjs against ${BASE}${X}`);
 try {
   execSync('node tests/verify-drive.mjs', { stdio: 'inherit', env: { ...process.env, BASE } });
 } catch {
@@ -112,7 +112,7 @@ say(`  ${G}✓${X} drive clean\n`);
 // js/version.js from BASE itself and require it to match this commit's own
 // version -- the same file scripts/promote.mjs already trusts as the one
 // source of truth (its own header comment says so).
-say(`${B}[3/3] Confirming ${BASE} is actually running this commit's version${X}`);
+say(`${B}[3/4] Confirming ${BASE} is actually running this commit's version${X}`);
 const localVersion = extractVersion(sh('git show HEAD:js/version.js'));
 if (!localVersion) fail('could not read APP_VERSION out of js/version.js at HEAD.');
 const versionCheck = await checkLiveVersionMatches(BASE, localVersion);
@@ -122,6 +122,27 @@ if (!versionCheck.ok) {
        `commit to dev1 first (npm run deploy:dev1), then verify again.`);
 }
 say(`  ${G}✓${X} ${BASE} confirmed running version ${localVersion}\n`);
+
+// ── 4. BASE is running THIS EXACT COMMIT, not merely a same-numbered version ─
+// Codex 0905-3, HIGH: APP_VERSION does not change on every commit -- it has been '1.0.0' across
+// this app's entire history so far, bumped by hand only for a real release. The check just above
+// can therefore be satisfied by ANY commit that happens to share that version string, including
+// an older dev1 deploy nobody re-pushed since. Deploy & Release Standard PART D10 requires the
+// stamp to name the commit that was actually verified, so this checks the one thing that
+// uniquely identifies it: the full git SHA, read back from version.json -- a build artifact
+// scripts/stage-site.mjs (dev) and scripts/lib/stage-from-git.mjs (prod) both write fresh at
+// STAGE time, and scripts/serve.mjs computes live for local testing -- never a hand-maintained
+// string that can go stale.
+say(`${B}[4/4] Confirming ${BASE} is actually running this exact commit${X}`);
+const fullCommit = sh('git rev-parse HEAD');
+const commitCheck = await checkLiveCommitMatches(BASE, fullCommit);
+if (!commitCheck.ok) {
+  fail(`${commitCheck.reason}.\n` +
+       `A matching APP_VERSION is not enough -- that string does not change on every commit, so\n` +
+       `an older dev deploy sharing today's version can otherwise authorize code nobody actually\n` +
+       `tested. Deploy this exact commit to dev1 first (npm run deploy:dev1), then verify again.`);
+}
+say(`  ${G}✓${X} ${BASE} confirmed running commit ${fullCommit}\n`);
 
 // ── Evidence ─────────────────────────────────────────────────────────────────
 if (!existsSync('docs/verify')) mkdirSync('docs/verify', { recursive: true });

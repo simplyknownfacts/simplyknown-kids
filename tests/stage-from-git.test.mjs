@@ -164,3 +164,29 @@ test('a blob the target commit lists but cannot actually be read is a HARD failu
     'staging must abort and name the unreadable path, not silently continue past it'
   );
 });
+
+// Codex 0905-3, HIGH. The dev-verify live check used to compare only APP_VERSION
+// (js/version.js), which does not change on every commit -- so a stale dev deploy sharing
+// today's version string could authorize the wrong commit forever (Deploy & Release Standard
+// PART D10). The fix needs a served artifact naming the exact commit a build was staged from;
+// stageFromGitHead is where the PROD build is staged, so it is the natural place to write it.
+test('stageFromGitHead writes version.json naming the FULL commit sha it staged from', () => {
+  const { dir, headSha } = makeScratchRepo(); // headSha here is the FULL sha (git rev-parse HEAD)
+  scratchDirs.push(dir);
+  const out = path.join(dir, '.publish-test');
+  stageFromGitHead(dir, out, headSha, ['index.html']);
+  const artifact = JSON.parse(readFileSync(path.join(out, 'version.json'), 'utf8'));
+  assert.equal(artifact.commit, headSha,
+    'version.json must name the exact full commit sha that was staged: ' + JSON.stringify(artifact));
+});
+
+test('stageFromGitHead resolves a SHORT commit sha to the FULL one in version.json', () => {
+  const { dir, headSha } = makeScratchRepo();
+  scratchDirs.push(dir);
+  const shortSha = git(dir, ['rev-parse', '--short', headSha]);
+  const out = path.join(dir, '.publish-test');
+  stageFromGitHead(dir, out, shortSha, ['index.html']); // promote.mjs calls this with the SHORT sha
+  const artifact = JSON.parse(readFileSync(path.join(out, 'version.json'), 'utf8'));
+  assert.equal(artifact.commit, headSha,
+    'version.json must name the FULL sha even when a short sha was passed in: ' + JSON.stringify(artifact));
+});

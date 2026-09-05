@@ -13,6 +13,7 @@
 // No dependencies, on purpose: this repo has no build step and no runtime deps.
 import { createServer } from 'node:http';
 import { readFile, stat, realpath } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { resolveSafePath, isWithinRoot } from './lib/safe-static-path.mjs';
 
@@ -31,6 +32,23 @@ const TYPES = {
 const server = createServer(async (req, res) => {
   try {
     const urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+
+    // Codex 0905-3, HIGH: version.json is a BUILD artifact -- scripts/stage-site.mjs and
+    // scripts/lib/stage-from-git.mjs both write it fresh at stage time, naming the exact commit
+    // a deployed environment was built from, so dev-verify.mjs can refuse a stale dev deploy that
+    // merely shares today's APP_VERSION (Deploy & Release Standard PART D10). This server has no
+    // build step and serves the raw repo directly, so there is no such file sitting on disk here
+    // -- computed live instead, straight from this checkout's real HEAD, which is exactly what a
+    // build artifact would have said if one existed. Checked before the static-file path below so
+    // it can never be shadowed by a same-named file someone adds to the repo by mistake.
+    if (urlPath === '/version.json') {
+      let commit;
+      try { commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(); }
+      catch { res.writeHead(500, { 'Content-Type': 'text/plain' }).end('git rev-parse HEAD failed'); return; }
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' })
+        .end(JSON.stringify({ commit, staged: new Date().toISOString() }));
+      return;
+    }
 
     // Never serve anything outside the repo, and never serve secrets even from
     // inside it — this server is a test tool, not a web host. Full logic (and

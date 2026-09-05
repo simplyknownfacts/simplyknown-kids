@@ -42,5 +42,15 @@ export function stageFromGitHead(cwd, outDir, commitSha, publishList) {
     writeFileSync(dest, blob);
     files++;
   }
+  // Codex 0905-3, HIGH: record the exact commit these bytes came from, so a live host can be
+  // asked "which commit are you actually running" -- not just "which APP_VERSION string", which
+  // does not change on every commit and can therefore authorize the wrong one (Deploy & Release
+  // Standard PART D10). Resolved to the FULL sha even when a short one was passed in (promote.mjs
+  // calls this with `git rev-parse --short HEAD`), so version.json always names an unambiguous
+  // commit. Generated here, never committed to git itself -- this file describes the BUILD, not
+  // the source.
+  const fullSha = execFileSync('git', ['rev-parse', commitSha], { cwd, encoding: 'utf8' }).trim();
+  writeFileSync(path.join(outDir, 'version.json'),
+    JSON.stringify({ commit: fullSha, staged: new Date().toISOString() }, null, 2) + '\n');
   return { files, tracked };
 }
