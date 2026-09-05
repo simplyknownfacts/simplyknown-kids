@@ -100,3 +100,67 @@ test('an untracked file never makes it into the staged output, even inside an al
   assert.throws(() => readFileSync(path.join(out, 'js', 'never-committed.js')),
     'an untracked file must never appear in the staged output');
 });
+
+// Codex 0905-4, HIGH. stageFromGitHead used to enumerate WHICH files to stage via
+// `git ls-files` -- the mutable INDEX -- and only afterward read each surviving path's bytes out
+// of the target commit. `git ls-files` can drift from the commit's own tree at any time (a `git
+// add` or `git rm --cached` after the promote gate's clean-tree check, a branch switch), so a
+// file present in the commit but no longer in the index would be silently missing from a
+// production build that claims to ship "exactly commit X". This proves the drift directly: a
+// file removed from the INDEX (never committed as a removal) must still be staged, because it is
+// still part of the target commit's own tree, and a file added ONLY to the index (never
+// committed) must never leak into the output.
+test('staged output is complete even when the INDEX has been changed after the target commit (git add / git rm --cached without a commit)', () => {
+  const { dir, headSha } = makeScratchRepo();
+  scratchDirs.push(dir);
+
+  // Simulate an index change AFTER headSha -- exactly the race this finding names: nothing
+  // about headSha's own tree changes, but `git ls-files` right now would disagree with it.
+  writeFileSync(path.join(dir, 'new-in-index-only.js'), 'staged into the index, never committed');
+  git(dir, ['add', 'new-in-index-only.js']);
+  git(dir, ['rm', '--cached', '-q', 'js/app.js']); // still present in headSha's tree, gone from the index
+
+  const out = path.join(dir, '.publish-test');
+  const { files, tracked } = stageFromGitHead(dir, out, headSha, ['index.html', 'js', 'icon-192.png']);
+
+  assert.ok(tracked.includes('js/app.js'),
+    'a file present in the TARGET COMMIT but removed from the index afterward must still be enumerated: ' + tracked.join(','));
+  assert.equal(readFileSync(path.join(out, 'js', 'app.js'), 'utf8'), 'console.log("committed");',
+    'the committed content must still be staged, not silently dropped');
+  assert.ok(!tracked.includes('new-in-index-only.js'),
+    'a file only ever staged in the index (never part of the target commit) must not be enumerated: ' + tracked.join(','));
+  assert.equal(files, 3, 'exactly the 3 files really in the target commit under this publish list, no more, no fewer');
+});
+
+// Codex 0905-4: a path the enumeration step names for THIS commit that turns out unreadable must
+// abort the whole build with the file name, never `continue` past it -- an index drift is one way
+// to reach that state, but the abort itself must fire on the more general condition ("the commit's
+// tree names a path whose blob cannot be read"), regardless of cause. Built with real git plumbing
+// (git mktree --missing), not a mock: a tree entry that references a blob sha never written to the
+// object database -- `git ls-tree` still lists it (listing a tree never needs the blob's content),
+// but `git show <commit>:<path>` genuinely fails to read it, which is exactly the shape of a
+// corrupt/incomplete object store or a shallow clone missing a blob.
+test('a blob the target commit lists but cannot actually be read is a HARD failure, never a silent skip', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'kids-stage-from-git-missing-blob-'));
+  scratchDirs.push(dir);
+  git(dir, ['init', '-q']);
+  git(dir, ['config', 'user.email', 'test@example.com']);
+  git(dir, ['config', 'user.name', 'Test']);
+  writeFileSync(path.join(dir, 'real.txt'), 'hello');
+  git(dir, ['add', '.']);
+  git(dir, ['commit', '-q', '-m', 'base']);
+
+  const realBlobSha = git(dir, ['hash-object', 'real.txt']);
+  const bogusBlobSha = '1111111111111111111111111111111111111111'; // well-formed, never written
+  const treeInput = `100644 blob ${realBlobSha}\treal.txt\n100644 blob ${bogusBlobSha}\tmissing.txt\n`;
+  const treeSha = execFileSync('git', ['mktree', '--missing'], { cwd: dir, input: treeInput, encoding: 'utf8' }).trim();
+  const commitSha = execFileSync('git', ['commit-tree', treeSha, '-m', 'a commit whose tree references a blob the object DB does not have'],
+    { cwd: dir, encoding: 'utf8' }).trim();
+
+  const out = path.join(dir, '.publish-test');
+  assert.throws(
+    () => stageFromGitHead(dir, out, commitSha, ['.']),
+    /missing\.txt/,
+    'staging must abort and name the unreadable path, not silently continue past it'
+  );
+});
