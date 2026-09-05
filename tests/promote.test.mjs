@@ -175,6 +175,58 @@ function runPromoteAsync(dir, { input, env = {} } = {}) {
   });
 }
 
+// Codex 0905-2, HIGH: PROMOTE_WRANGLER_CMD / PROMOTE_CF_API_BASE / PROMOTE_VERSION_CHECK_HOSTS /
+// PROMOTE_VERIFY_POLL_MS exist ONLY so the "promote runs the real post-approval path..." test far
+// below can point the script at a fake wrangler and a local mock server -- but before this fix
+// they were honored straight off the inherited environment, with nothing else gating them. A
+// contaminated shell (a leftover test env, a stale terminal) could set any of them on a real run
+// and fake the deploy AND both verifications while still logging a release. Now they require an
+// explicit, hand-typed opt-in (PROMOTE_ALLOW_OVERRIDES=1) -- promote-kids.bat clears all of them
+// before ever calling this script, so a real run never has any of them set to begin with.
+test('promote refuses when a PROMOTE_* override is set without the opt-in (Codex 0905-2)', () => {
+  const { dir } = makeScratchRepo();
+  scratchDirs.push(dir);
+  const res = runPromote(dir, undefined, { PROMOTE_WRANGLER_CMD: 'echo not-the-real-wrangler' });
+  assert.notEqual(res.status, 0, res.stdout + res.stderr);
+  assert.match(res.stdout, /Test-only override\(s\) set with no opt-in/i);
+  assert.match(res.stdout, /PROMOTE_WRANGLER_CMD/);
+  assert.match(res.stdout, /PROMOTE_ALLOW_OVERRIDES=1/);
+  assert.doesNotMatch(res.stdout + res.stderr, /Staging \(npm run stage\)|Deploying \S+ to/,
+    'a contaminated environment must never reach the staging/deploy step');
+});
+
+test('promote refuses on EACH of the four override env vars alone, not just PROMOTE_WRANGLER_CMD', () => {
+  const { dir } = makeScratchRepo();
+  scratchDirs.push(dir);
+  for (const v of ['PROMOTE_WRANGLER_CMD', 'PROMOTE_CF_API_BASE', 'PROMOTE_VERSION_CHECK_HOSTS', 'PROMOTE_VERIFY_POLL_MS']) {
+    const res = runPromote(dir, undefined, { [v]: 'x' });
+    assert.notEqual(res.status, 0, `${v} alone must refuse: ` + res.stdout + res.stderr);
+    assert.match(res.stdout, new RegExp(v), `refusal must name ${v}: ` + res.stdout);
+  }
+});
+
+test('promote honors overrides once PROMOTE_ALLOW_OVERRIDES=1 is also set (reaches the prompt instead of refusing)', () => {
+  const { dir } = makeScratchRepo();
+  scratchDirs.push(dir);
+  const res = runPromote(dir, 'wrong-on-purpose', {
+    PROMOTE_CF_API_BASE: 'http://127.0.0.1:1',
+    PROMOTE_ALLOW_OVERRIDES: '1',
+  });
+  assert.equal(res.status, 0, 'the opt-in must let it past the new refusal and reach the prompt: ' + res.stdout + res.stderr);
+  assert.match(res.stdout, /Type the version number to go ahead/);
+  assert.doesNotMatch(res.stdout, /Test-only override\(s\) set with no opt-in/i);
+});
+
+test('source guard: promote-kids.bat clears every PROMOTE_* override before calling npm run promote (Codex 0905-2)', () => {
+  const bat = readFileSync(path.join(ROOT, 'promote-kids.bat'), 'utf8');
+  const lines = bat.split(/\r?\n/);
+  const clearLine = lines.findIndex((l) => /^\s*for\s+\/f/i.test(l) && /PROMOTE_/i.test(l) && /do\s+set/i.test(l));
+  const promoteLine = lines.findIndex((l) => /npm run promote/i.test(l));
+  assert.notEqual(clearLine, -1, 'promote-kids.bat must clear PROMOTE_* env vars before running promote: ' + bat);
+  assert.notEqual(promoteLine, -1, 'promote-kids.bat must call npm run promote: ' + bat);
+  assert.ok(clearLine < promoteLine, 'the PROMOTE_* clear must run BEFORE npm run promote, not after: ' + bat);
+});
+
 test('promote refuses a dirty tree (before touching git remotes, stamps, or Codex)', () => {
   const { dir } = makeScratchRepo();
   scratchDirs.push(dir);
@@ -383,6 +435,10 @@ test('promote runs the real post-approval path (fake wrangler, mock Cloudflare) 
         PROMOTE_CF_API_BASE: origin,
         PROMOTE_VERSION_CHECK_HOSTS: `${origin},${origin}`,
         PROMOTE_VERIFY_POLL_MS: '10',
+        // Codex 0905-2: these four overrides now refuse outright without this explicit,
+        // hand-typed opt-in -- this is the one test in the whole suite that deliberately means
+        // to fake the deploy/verification targets, so it is the one place this is ever set.
+        PROMOTE_ALLOW_OVERRIDES: '1',
       },
     });
 

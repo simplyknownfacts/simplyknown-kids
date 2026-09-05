@@ -122,6 +122,25 @@ say(`\n${B}Promote ${CFG.app} to PRODUCTION${X}\n`);
 
 // ── the refusals, in the standard's order ────────────────────────────────────────────────────
 
+// 0. Codex 0905-2, HIGH: the four env vars just declared above exist ONLY so
+//    tests/promote.test.mjs can point the post-approval half at a fake wrangler and a local mock
+//    server (Codex 0903-5) -- but until now they were honored straight off the INHERITED
+//    environment, with nothing else gating them. A contaminated shell (a leftover test env, a
+//    stale terminal window) could set any of them on a real run and this script would fake the
+//    deploy AND both verifications while still logging a real release. Honored ONLY behind an
+//    explicit, hand-typed opt-in now -- promote-kids.bat (the one door, D8) clears every
+//    PROMOTE_* variable before ever calling this script, so a real run never has any of them set
+//    to begin with, and reaching this code path at all takes a deliberate act. No re-check of
+//    this one is needed in the post-approval block below: env vars are fixed for this process's
+//    whole lifetime, so nothing that happens while the prompt sits open can change them.
+const OVERRIDE_ENV_VARS = ['PROMOTE_WRANGLER_CMD', 'PROMOTE_CF_API_BASE', 'PROMOTE_VERSION_CHECK_HOSTS', 'PROMOTE_VERIFY_POLL_MS'];
+const setOverrides = OVERRIDE_ENV_VARS.filter((v) => process.env[v] !== undefined);
+if (setOverrides.length && process.env.PROMOTE_ALLOW_OVERRIDES !== '1') {
+  die(`Test-only override(s) set with no opt-in: ${setOverrides.join(', ')}`,
+      'unset them before running promote for real, or set PROMOTE_ALLOW_OVERRIDES=1 only if you ' +
+      'deliberately mean to fake the deploy/verification targets (tests only -- never a real release).');
+}
+
 // 1. A deploy uploads what is ON DISK, not what is in git. An uncommitted edit ships silently and
 //    then exists nowhere but this machine.
 const dirty = sh('git status --porcelain').split('\n').filter((l) => l.trim());
