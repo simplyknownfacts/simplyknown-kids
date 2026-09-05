@@ -213,8 +213,8 @@ CLOSED instead of open -- `parent/settings.html`'s `_isLocked()` returns `true` 
 for `js/pin-lockout.js` the way an incomplete offline cache would, then proves the keypad refuses
 input at both doors -- even the correct PIN does not get through the exit dialog). Negative
 control: removing `./js/pin-lockout.js` from `ASSETS` makes the new source-guard test fail;
-restoring it passes again. Full suite: 153/153 passing, 0 failing (before this fix, with the same
-new tests present: 150/153, the 3 new tests failing as designed).
+restoring it passes again. Full suite: 134/134 passing, 0 failing — corrected 2026-09-05 by master: the 153 first written here was a double-counted batch run (before this fix, with the same
+new tests present: 131/134, the 3 new tests failing as designed).
 
 ### 21. HIGH — Test-only environment variables can replace the real production deploy and both verification targets. (Codex 0905-2)
 **Verdict: FIXED** (commit `0d6914e`). `scripts/promote.mjs:114-118`'s four env-var overrides
