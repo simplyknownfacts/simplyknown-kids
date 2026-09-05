@@ -195,11 +195,32 @@ file, dirties the same path on disk without committing, and asserts the staged o
 committed bytes, not the dirty ones) and a `tests/promote.test.mjs` source guard confirming
 `--commit-dirty=true` is gone from the prod deploy line. `npm test`: 144/144.
 
+### 20. HIGH — The new shared PIN lockout is missing from the offline app, so both protected doors fail open (Codex 0905-1).
+**Verdict: FIXED** (commit `6506690`). `js/pin-lockout.js` is loaded by both `home.html`'s
+exit dialog and `parent/settings.html`'s PIN gate, but was missing from `sw.js`'s `ASSETS`
+precache list -- confirmed by reading the array directly. After a service-worker update plus an
+offline launch the file could be uncached, and both fallbacks failed OPEN: `parent/settings.html`'s
+`_isLocked()` (line 724) returned `false` with no lockout module, and `home.html`'s
+`refreshLockout()` (line ~512) re-enabled the keypad -- unlimited PIN guesses at either door.
+Fixed three ways: (1) `./js/pin-lockout.js` added to `sw.js`'s `ASSETS`, `CACHE` bumped to
+`vb-v145`; (2) a new source-guard test, `tests/sw-required-shell.test.mjs`'s "every js/*.js
+<script> tag in home.html and parent/settings.html is in the SW ASSETS precache list", checks the
+whole class of page-script-vs-ASSETS gaps, not just this one file; (3) both fallbacks now fail
+CLOSED instead of open -- `parent/settings.html`'s `_isLocked()` returns `true` (not `false`) and
+`_refreshLockoutUI()` blocks the pad with a plain message when the module is absent;
+`home.html`'s `refreshLockout()` and its digit-click handler do the same. Confirmed live today via
+`tests/pin-lockout-fails-closed.test.mjs` (2 new browser tests: blocks the real network request
+for `js/pin-lockout.js` the way an incomplete offline cache would, then proves the keypad refuses
+input at both doors -- even the correct PIN does not get through the exit dialog). Negative
+control: removing `./js/pin-lockout.js` from `ASSETS` makes the new source-guard test fail;
+restoring it passes again. Full suite: 153/153 passing, 0 failing (before this fix, with the same
+new tests present: 150/153, the 3 new tests failing as designed).
+
 ---
 
 ## Summary
 
-18 of 19 HIGH findings on file have a real, code-verified decision. 1 (finding #1, the throttle
+19 of 20 HIGH findings on file have a real, code-verified decision. 1 (finding #1, the throttle
 refinement gaps from the 2026-09-02 review) is left genuinely open on purpose -- `scripts/
 promote.mjs` will refuse to promote until a human writes a real FIXED/REJECTED/ACCEPTED RISK
 verdict for it here. That is correct, intended behavior for a live, undecided security gap on a
