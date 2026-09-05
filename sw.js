@@ -1,5 +1,11 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v144';
+const CACHE = 'vb-v145';
+// v145 FIX (Codex 0905-1, HIGH): js/pin-lockout.js -- loaded by both
+// home.html's exit dialog and parent/settings.html's PIN gate -- was missing
+// from ASSETS. After an SW update plus an offline launch the file could be
+// uncached, and both doors' fallbacks used to fail OPEN (unlimited PIN
+// guesses). Added below; the fallbacks themselves now also fail closed
+// (see home.html's refreshLockout() and parent/settings.html's _isLocked()).
 // v143 HUB HOME: home.html is now the fox hub-world (branch hub-home) instead
 // of the tile grid — same 5 sections (Games/Learn/Art/Watch/Listen), reached
 // by tapping a landmark instead of a card. New static asset shipped:
@@ -150,7 +156,7 @@ const ASSETS = [
   './redesign-hub-bg.jpg',
   './css/style.css', './css/achievements.css', './css/themes.css',
   './js/atmosphere.js', './js/version.js',
-  './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js',
+  './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js', './js/pin-lockout.js',
   './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',
   './js/game-settings.js', './js/paint.js', './js/sw-cache-policy.js',
   './js/sleep-timer.js',

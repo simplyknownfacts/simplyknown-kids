@@ -721,7 +721,11 @@
     function _getLockout() { return window.vbPinLockout ? vbPinLockout.getLockout() : { attempts: 0, lockedUntil: 0 }; }
     function _setLockout(s) { if (window.vbPinLockout) vbPinLockout.setLockout(s); }
     function _clearLockout() { if (window.vbPinLockout) vbPinLockout.clearLockout(); }
-    function _isLocked() { return window.vbPinLockout ? vbPinLockout.isLocked() : false; }
+    // Codex 0905-1, HIGH: this used to return false (not locked) when the
+    // module failed to load, so the PIN gate failed OPEN -- unlimited
+    // guesses. Fail CLOSED instead: no lockout module means we cannot prove
+    // attempts are being counted, so treat the gate as locked until it is.
+    function _isLocked() { return window.vbPinLockout ? vbPinLockout.isLocked() : true; }
     function _lockoutRemainingSec() { return window.vbPinLockout ? vbPinLockout.remainingSec() : 0; }
     function _recordFailedAttempt() {
       return window.vbPinLockout ? vbPinLockout.recordFailedAttempt() : { attempts: 0, lockedUntil: 0 };
@@ -751,6 +755,18 @@
       const banner = document.getElementById('lockoutBanner');
       const pad = document.getElementById('pinPad');
       if (lockoutTimer) { clearInterval(lockoutTimer); lockoutTimer = null; }
+      // Codex 0905-1, HIGH: the lockout module failed to load (e.g. cached
+      // offline before js/pin-lockout.js was added to sw.js's ASSETS list).
+      // Without it there is no way to count attempts or enforce a lockout,
+      // so fail CLOSED -- block the pad outright with a plain explanation,
+      // rather than silently behaving as if nothing were ever locked.
+      if (!window.vbPinLockout) {
+        banner.textContent = '🔒 Needs a connection — reload once online to unlock.';
+        banner.style.display = '';
+        pad.style.pointerEvents = 'none';
+        pad.style.opacity = '0.35';
+        return;
+      }
       if (_isLocked()) {
         const tick = () => {
           const remain = _lockoutRemainingSec();
