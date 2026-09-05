@@ -216,14 +216,64 @@ control: removing `./js/pin-lockout.js` from `ASSETS` makes the new source-guard
 restoring it passes again. Full suite: 153/153 passing, 0 failing (before this fix, with the same
 new tests present: 150/153, the 3 new tests failing as designed).
 
+### 21. HIGH — Test-only environment variables can replace the real production deploy and both verification targets. (Codex 0905-2)
+**Verdict: FIXED** (commit `0d6914e`). `scripts/promote.mjs:114-118`'s four env-var overrides
+(`PROMOTE_WRANGLER_CMD`, `PROMOTE_CF_API_BASE`, `PROMOTE_VERSION_CHECK_HOSTS`,
+`PROMOTE_VERIFY_POLL_MS`) now refuse loudly, in the same `die()`/refusal format as the rest of the
+D6 list, unless `PROMOTE_ALLOW_OVERRIDES=1` is also set by hand (`scripts/promote.mjs:123-136`, a
+new check 0, run before anything else). `promote-kids.bat` clears every `PROMOTE_*` variable
+before ever calling `npm run promote`, so a real run never has any of them set to begin with.
+Confirmed live today via `tests/promote.test.mjs`: "promote refuses when a PROMOTE_* override is
+set without the opt-in", "promote refuses on EACH of the four override env vars alone", a source
+guard proving `promote-kids.bat`'s clear runs before `npm run promote`, and "promote honors
+overrides once PROMOTE_ALLOW_OVERRIDES=1 is also set" (the one legitimate test user of these
+overrides, updated to set the opt-in explicitly). Full file: 22/22 passing.
+
+### 22. HIGH — The attempted dev-verification fix still proves only a shared version number, not the commit it stamps. (Codex 0905-3)
+**Verdict: FIXED** (commit `a5ddff3`). `js/version.js`'s `APP_VERSION` is unchanged (still `1.0.0`,
+still the only place it is hard-coded) -- the fix adds a second, separate signal instead of
+overloading that one. A new served artifact, `version.json`, names the full commit sha a build was
+staged from: written by `scripts/lib/stage-from-git.mjs` (prod, resolving a short sha to full) and
+`scripts/stage-site.mjs` (dev, at `npm run stage` time), and computed live by `scripts/serve.mjs`
+for local testing (the workflow `scripts/dev-verify.mjs`'s own header documents, which would
+otherwise 404 on this new check). `scripts/lib/version-check.mjs` gains
+`checkLiveCommitMatches(base, localCommit, fetchImpl)`; `scripts/dev-verify.mjs` adds a `[4/4]`
+step that fetches it and refuses unless the live commit equals `git rev-parse HEAD` for the
+commit being stamped. Confirmed live today via `tests/version-check.test.mjs` (6 new unit tests
+with a fake fetch, including "refuses when the SAME version is running but a DIFFERENT commit" --
+the exact scenario this finding names), `tests/stage-from-git.test.mjs` and `tests/stage-site.test.mjs`
+(each proving their build writes `version.json` naming the real commit), and
+`tests/serve-version-json.test.mjs` (new; proves the local server's live route). Manually confirmed
+end-to-end against a real `node scripts/serve.mjs`: same commit -> `ok:true`; a wrong commit ->
+`ok:false` naming both shas. Combined 9 touched test files: 61/61 passing.
+
+### 23. HIGH — Production staging still takes its file list from the mutable index, not from the commit being shipped. (Codex 0905-4)
+**Verdict: FIXED** (commit `e90bb78`). `scripts/lib/stage-from-git.mjs:19` now enumerates with
+`git ls-tree -r -z --name-only <commit>` instead of `git ls-files` (the mutable index), so there is
+no second, driftable source of truth for what the target commit contains. A path the commit's own
+tree names whose blob then cannot be read is now a hard abort (throws, names the file, wipes the
+partial output) instead of the old silent `continue`. Confirmed live today via
+`tests/stage-from-git.test.mjs`: "staged output is complete even when the INDEX has been changed
+after the target commit" (a real `git add` / `git rm --cached` after the target commit, proving
+`ls-tree` is immune to the exact drift this finding names) and "a blob the target commit lists but
+cannot actually be read is a HARD failure, never a silent skip" (a negative control built with real
+git plumbing -- `git mktree --missing` + `git commit-tree` -- a tree entry referencing a blob sha
+never written to the object database). Full file: 7/7 passing;
+`tests/promote.test.mjs` (calls `stageFromGitHead` for its own runtime test): 22/22 still passing.
+
 ---
 
 ## Summary
 
-19 of 20 HIGH findings on file have a real, code-verified decision. 1 (finding #1, the throttle
+22 of 23 HIGH findings on file have a real, code-verified decision. 1 (finding #1, the throttle
 refinement gaps from the 2026-09-02 review) is left genuinely open on purpose -- `scripts/
 promote.mjs` will refuse to promote until a human writes a real FIXED/REJECTED/ACCEPTED RISK
 verdict for it here. That is correct, intended behavior for a live, undecided security gap on a
 children's app, not a defect in this triage pass. (2026-09-04: master has already ruled finding #1
 FIXED-by-build, size M -- see `Notes\Kids — open Codex ledger (2026-09-04).md` §2.1 -- but the
 verdict here stays PENDING until the actual D1 fix lands and is verified, not merely ordered.)
+
+Findings #5-#7 of the 2026-09-05 daily delta review (CSP `media-src` blocking Yoto audio, an
+expired sleep timer racing the mini-player's `register()`, and sync accepting malformed profile
+entries) are MEDIUM and are not gated by the promote script -- left untriaged here on purpose,
+tracked in the app inbox instead, per this file's own header.
