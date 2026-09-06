@@ -50,6 +50,20 @@ function functionBody(src, header) {
   return src.slice(start, end === -1 ? undefined : end);
 }
 
+// The browser import sits here, ABOVE the first test(), on purpose: node:test
+// fires this file's one-shot after() hook as soon as every test registered so
+// far has finished. With the source guards above this await and the browser
+// tests below it, that could happen while the file was still paused here, so
+// the server and browser would never be torn down and the runner would hang
+// (it did, in tests/sleep-timer-mini-player.test.mjs, 2026-09-06). Guarded by
+// tests/top-level-await-order.test.mjs.
+let chromium = null;
+try { ({ chromium } = await import('playwright')); } catch { /* handled below */ }
+
+const NEEDS_BROWSER = chromium ? false :
+  'playwright is not installed. Install it and these checks run: ' +
+  'npm i playwright --no-save && npx playwright install chromium-headless-shell';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Source guards — no browser needed, so these always run.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -150,13 +164,6 @@ test('finding 2: a profile id and a channel id are escaped on their way out', ()
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Browser drive — the real screens, in a real browser.
 // ─────────────────────────────────────────────────────────────────────────────
-
-let chromium = null;
-try { ({ chromium } = await import('playwright')); } catch { /* handled below */ }
-
-const NEEDS_BROWSER = chromium ? false :
-  'playwright is not installed. Install it and these checks run: ' +
-  'npm i playwright --no-save && npx playwright install chromium-headless-shell';
 
 let server = null, browser = null, BASE = '';
 

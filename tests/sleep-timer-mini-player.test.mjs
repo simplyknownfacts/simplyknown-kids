@@ -20,6 +20,19 @@ import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 
+// The browser import happens here, ABOVE the first test(), on purpose: node:test
+// fires this file's after() hook as soon as every test registered so far has
+// finished, and that hook is one-shot. With the static test above and this
+// await below it, after() fired while the file was still paused here -- before
+// the server and browser even existed -- and never again, so both outlived the
+// run and the runner hung for ever (2026-09-06, every run). Guarded by
+// tests/top-level-await-order.test.mjs.
+let chromium = null;
+try { ({ chromium } = await import('playwright')); } catch { /* handled below */ }
+const NEEDS_BROWSER = chromium ? false :
+  'playwright is not installed. Install it and these checks run: ' +
+  'npm i playwright --no-save && npx playwright install chromium-headless-shell';
+
 // ── static wiring check: no browser needed, always runs ─────────────────────
 test('every page that loads js/yoto-player.js (the mini-player) also loads js/sleep-timer.js', () => {
   const tracked = execFileSync('git', ['ls-files', '--', '*.html'], { cwd: ROOT, encoding: 'utf8' })
@@ -39,12 +52,6 @@ test('every page that loads js/yoto-player.js (the mini-player) also loads js/sl
 });
 
 // ── real browser proof: the fade actually reaches the mini-player's audio ───
-let chromium = null;
-try { ({ chromium } = await import('playwright')); } catch { /* handled below */ }
-const NEEDS_BROWSER = chromium ? false :
-  'playwright is not installed. Install it and these checks run: ' +
-  'npm i playwright --no-save && npx playwright install chromium-headless-shell';
-
 let server = null, browser = null, BASE = '';
 
 function freePort() {
