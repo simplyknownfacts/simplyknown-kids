@@ -1,6 +1,7 @@
 import * as THREE from './vendor/three-r180/three.module.min.js';
 
 const PHASES = new Set(['watch', 'hiding', 'seek', 'found']);
+const CLUES = new Set(['none', 'peek', 'rustle']);
 const FLOWER_COLORS = ['#f28daf', '#f4ca55', '#68aee8'];
 
 function unsupportedWebGL(cause) {
@@ -12,16 +13,6 @@ function unsupportedWebGL(cause) {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
-}
-
-function easeOutBack(t) {
-  const c1 = 1.70158;
-  const c3 = c1 + 1;
-  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
-}
-
-function easeInOut(t) {
-  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
 
 /**
@@ -277,7 +268,59 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   });
   scene.add(animalStage);
 
-  let state = { count: 2, target: 0, phase: 'watch', animal: 0 };
+  // Clue models contain only the top of each friend. The bush hides their
+  // lower edge, so "peek" reads as ears poking out rather than a floating pet.
+  function buildPeek(kind) {
+    const group = new THREE.Group();
+    group.name = ['bunny-ears-clue', 'cat-ears-clue', 'bear-ears-clue'][kind];
+    const furColors = ['#f5eee1', '#e9a96d', '#ae7b55'];
+    const earColors = ['#efafbe', '#d98562', '#8d5d43'];
+    const fur = makeMaterial(furColors[kind], { roughness: 0.86 });
+    const ear = makeMaterial(earColors[kind], { roughness: 0.82 });
+    const sphere = rememberGeometry(new THREE.SphereGeometry(0.5, 16, 10));
+    if (kind === 0) {
+      mesh(group, sphere, fur, [-0.25, 0.34, 0], [0.24, 0.76, 0.2], [0, 0, 0.1]);
+      mesh(group, sphere, fur, [0.25, 0.34, 0], [0.24, 0.76, 0.2], [0, 0, -0.1]);
+      mesh(group, sphere, ear, [-0.25, 0.37, 0.12], [0.1, 0.55, 0.075], [0, 0, 0.1]);
+      mesh(group, sphere, ear, [0.25, 0.37, 0.12], [0.1, 0.55, 0.075], [0, 0, -0.1]);
+    } else if (kind === 1) {
+      mesh(group, sphere, fur, [0, -0.04, 0], [0.58, 0.3, 0.42]);
+      const earGeometry = rememberGeometry(new THREE.ConeGeometry(0.3, 0.56, 3, 2));
+      mesh(group, earGeometry, fur, [-0.34, 0.28, 0], [1, 1, 0.7], [0.04, 0, -0.1]);
+      mesh(group, earGeometry, fur, [0.34, 0.28, 0], [1, 1, 0.7], [0.04, 0, 0.1]);
+      mesh(group, earGeometry, ear, [-0.34, 0.27, 0.13], [0.48, 0.56, 0.34], [0.04, 0, -0.1]);
+      mesh(group, earGeometry, ear, [0.34, 0.27, 0.13], [0.48, 0.56, 0.34], [0.04, 0, 0.1]);
+    } else {
+      mesh(group, sphere, fur, [0, -0.07, 0], [0.64, 0.32, 0.46]);
+      mesh(group, sphere, fur, [-0.43, 0.17, 0], [0.3, 0.3, 0.22]);
+      mesh(group, sphere, fur, [0.43, 0.17, 0], [0.3, 0.3, 0.22]);
+      mesh(group, sphere, ear, [-0.43, 0.18, 0.13], [0.14, 0.14, 0.08]);
+      mesh(group, sphere, ear, [0.43, 0.18, 0.13], [0.14, 0.14, 0.08]);
+    }
+    return group;
+  }
+
+  const clueStage = new THREE.Group();
+  clueStage.name = 'peek-clue-stage';
+  const peekModels = [0, 1, 2].map(index => {
+    const peek = buildPeek(index);
+    peek.visible = false;
+    clueStage.add(peek);
+    return peek;
+  });
+  scene.add(clueStage);
+
+  const rustleMarker = new THREE.Group();
+  rustleMarker.name = 'reduced-motion-rustle-marker';
+  const rustleGold = makeMaterial('#ffd45b', { roughness: 0.64, emissive: 0x4a2b00, emissiveIntensity: 0.18 });
+  const rustleRayGeometry = rememberGeometry(new THREE.SphereGeometry(0.12, 9, 7));
+  [[-0.58, 0, 0.5], [-0.29, 0.19, 0.22], [0, 0.28, 0], [0.29, 0.19, -0.22], [0.58, 0, -0.5]].forEach(([x, y, angle]) => {
+    mesh(rustleMarker, rustleRayGeometry, rustleGold, [x, y, 0], [0.62, 1.65, 0.42], [0, 0, angle]);
+  });
+  rustleMarker.visible = false;
+  scene.add(rustleMarker);
+
+  let state = { count: 2, target: -1, phase: 'watch', animal: 0, clue: 'none' };
   let width = 1;
   let height = 1;
   let portrait = true;
@@ -287,8 +330,6 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   let raf = 0;
   let lastFrame = -Infinity;
   let elapsed = 0;
-  let phaseStarted = performance.now() / 1000;
-  const transitionFrom = new THREE.Vector3();
   const goal = new THREE.Vector3();
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -300,28 +341,19 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   }
 
   function targetGoal(phase = state.phase) {
-    const place = places[state.target].group.position;
-    if (phase === 'found') return goal.set(place.x, 0.1, place.z + 1.28);
-    if (phase === 'watch') return goal.set(place.x, 1.02, place.z - 0.34);
-    return goal.set(place.x, -2.35, place.z - 0.34);
+    if (phase === 'found' && state.target >= 0 && state.target < state.count) {
+      const place = places[state.target].group.position;
+      return goal.set(place.x, 0.1, place.z + 1.28);
+    }
+    return goal.set(0, -2.8, 0);
   }
 
-  function transitionDuration() {
-    if (reducedMotion.matches) return 0;
-    if (state.phase === 'hiding') return 0.35;
-    if (state.phase === 'found') return 0.48;
-    return 0.36;
-  }
-
-  function poseAnimal(nowSeconds) {
-    const duration = transitionDuration();
-    const raw = duration ? clamp((nowSeconds - phaseStarted) / duration, 0, 1) : 1;
-    const amount = state.phase === 'found' ? easeOutBack(raw) : easeInOut(raw);
+  function poseScene() {
     targetGoal();
-    animalStage.position.lerpVectors(transitionFrom, goal, amount);
-    // Duck during the locked hiding transition; no ear or tail remains
-    // visible when the child can choose a hiding place.
-    animalStage.visible = state.phase !== 'seek' && (state.phase !== 'hiding' || raw < 1);
+    const validTarget = state.target >= 0 && state.target < state.count;
+    const found = state.phase === 'found' && validTarget;
+    animalStage.position.copy(goal);
+    animalStage.visible = found;
     animalModels.forEach((animal, index) => {
       animal.visible = index === state.animal;
       if (index !== state.animal) return;
@@ -332,6 +364,27 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
       const tail = animal.children.find(child => child.userData.tail);
       if (tail) tail.rotation.z = -0.4 + (reducedMotion.matches ? 0 : Math.sin(elapsed * 3.1) * 0.22);
     });
+
+    const peeking = state.phase === 'seek' && state.clue === 'peek' && validTarget;
+    clueStage.visible = peeking;
+    peekModels.forEach((peek, index) => {
+      peek.visible = peeking && index === state.animal;
+      peek.position.y = reducedMotion.matches ? 0 : Math.sin(elapsed * 1.7) * 0.035;
+      peek.rotation.z = reducedMotion.matches ? 0 : Math.sin(elapsed * 1.25) * 0.018;
+    });
+    if (peeking) {
+      const place = places[state.target].group.position;
+      const bushTops = [1.69, 1.7, 2.02];
+      clueStage.position.set(place.x, bushTops[state.target], place.z - 0.28);
+    }
+
+    const staticRustle = state.phase === 'seek' && state.clue === 'rustle' && validTarget && reducedMotion.matches;
+    rustleMarker.visible = staticRustle;
+    if (staticRustle) {
+      const place = places[state.target].group.position;
+      const markerHeights = [2.02, 2.02, 2.34];
+      rustleMarker.position.set(place.x, markerHeights[state.target], place.z + 0.04);
+    }
   }
 
   const projectPoint = new THREE.Vector3();
@@ -384,7 +437,7 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     camera.updateProjectionMatrix();
     placeLayout();
     targetGoal();
-    if (reducedMotion.matches) animalStage.position.copy(goal);
+    poseScene();
     scene.updateMatrixWorld(true);
     placeControls();
     renderOnce();
@@ -402,12 +455,15 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     const delta = Math.min(Math.max((now - lastFrame) / 1000, 0), 0.08);
     lastFrame = now;
     elapsed += Number.isFinite(delta) ? delta : 0;
-    poseAnimal(now / 1000);
+    poseScene();
     if (!reducedMotion.matches) {
+      const rustleTarget = state.phase === 'seek' && state.clue === 'rustle'
+        && state.target >= 0 && state.target < state.count ? state.target : -1;
       places.forEach((place, index) => {
         place.foliage.forEach((leaf, part) => {
-          const rustle = state.phase === 'hiding' && index === state.target ? 0.055 : 0.018;
-          leaf.rotation.z = Math.sin(elapsed * 0.72 + index * 1.4 + part) * rustle;
+          const strength = index === rustleTarget ? 0.075 : 0.008;
+          const speed = index === rustleTarget ? 6.2 : 0.55;
+          leaf.rotation.z = Math.sin(elapsed * speed + index * 1.4 + part) * strength;
         });
       });
     }
@@ -436,22 +492,18 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   function update(next = {}) {
     if (disposed) return;
     const nextCount = Number(next.count) === 3 ? 3 : 2;
-    const nextTarget = clamp(Number.isInteger(next.target) ? next.target : state.target, 0, nextCount - 1);
+    const requestedTarget = Number.isInteger(next.target) ? next.target : state.target;
+    const nextTarget = requestedTarget >= 0 && requestedTarget < nextCount ? requestedTarget : -1;
     const nextPhase = PHASES.has(next.phase) ? next.phase : state.phase;
     const nextAnimal = clamp(Number.isInteger(next.animal) ? next.animal : state.animal, 0, 2);
-    const phaseChanged = nextPhase !== state.phase || nextTarget !== state.target || nextAnimal !== state.animal;
-    if (phaseChanged) transitionFrom.copy(animalStage.position);
-    state = { count: nextCount, target: nextTarget, phase: nextPhase, animal: nextAnimal };
+    const nextClue = CLUES.has(next.clue) ? next.clue : state.clue;
+    state = { count: nextCount, target: nextTarget, phase: nextPhase, animal: nextAnimal, clue: nextClue };
     places.forEach((place, index) => { place.group.visible = index < state.count; });
-    if (phaseChanged) phaseStarted = performance.now() / 1000;
-    if (reducedMotion.matches) {
-      targetGoal();
-      animalStage.position.copy(goal);
-      poseAnimal(phaseStarted + 1);
-    } else {
-      // Apply visibility now so a late scene load cannot paint the old
-      // watched animal for one frame after the game has entered seek.
-      poseAnimal(performance.now() / 1000);
+    // Apply every visibility and clue state before this synchronous render.
+    // A late module load therefore cannot flash a previous animal or target.
+    poseScene();
+    if (state.phase !== 'seek' || state.clue !== 'rustle' || reducedMotion.matches) {
+      places.forEach(place => place.foliage.forEach(leaf => { leaf.rotation.z = 0; }));
     }
     placeControls();
     renderOnce();
@@ -491,9 +543,9 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     targetGoal();
     if (reducedMotion.matches) {
       animalStage.position.copy(goal);
-      poseAnimal(performance.now() / 1000 + 1);
       places.forEach(place => place.foliage.forEach(leaf => { leaf.rotation.z = 0; }));
     }
+    poseScene();
     renderOnce();
     startLoop();
   }
@@ -525,7 +577,7 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   places.forEach((place, index) => { place.group.visible = index < state.count; });
   targetGoal('watch');
   animalStage.position.copy(goal);
-  transitionFrom.copy(goal);
+  poseScene();
   resize();
   startLoop();
 
