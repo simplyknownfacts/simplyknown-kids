@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v147';
+const CACHE = 'vb-v148';
+// v148: animated personal world, redesigned rooms, bounded awards and owned play timers.
 // v145 FIX (Codex 0905-1, HIGH): js/pin-lockout.js -- loaded by both
 // home.html's exit dialog and parent/settings.html's PIN gate -- was missing
 // from ASSETS. After an SW update plus an offline launch the file could be
