@@ -347,3 +347,27 @@ test('award dwell is bounded under a late burst and cooldown survives navigation
     assert.equal(await page.locator('.vb-celebrate').count(), 0, 'navigation reset the shared cooldown');
     await ctx.close();
   });
+
+
+test('early age-gate redirects can cancel speech before activity startup',
+  { skip: NEEDS_BROWSER }, async t => {
+    for (const [activity, months] of [['math', 6], ['abcs', 96]]) {
+      await t.test(activity, async () => {
+        const seed = profile('guard-' + activity, activity, 5);
+        const birthday = new Date(); birthday.setMonth(birthday.getMonth() - months);
+        seed.birthday = birthday.toISOString().slice(0, 10);
+        const ctx = await contextFor(seed, { serviceWorkers: 'block' });
+        const page = await ctx.newPage(), errors = [];
+        page.on('pageerror', e => errors.push(e.message));
+        await Promise.all([
+          page.waitForURL('**/home.html'),
+          page.goto(BASE + '/learning/' + activity + '.html').catch(e => {
+            if (!e.message.includes('ERR_ABORTED')) throw e;
+          }),
+        ]);
+        assert.match(page.url(), /home\.html$/);
+        assert.deepEqual(errors, [], 'early navigation threw before it could enforce the age gate');
+        await ctx.close();
+      });
+    }
+  });

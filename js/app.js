@@ -1,5 +1,14 @@
 // Stop stale callbacks from starting speech after leaving this page.
 var _pageAcceptsSpeech = true;
+// The direct-URL age guard can navigate before the rest of this file runs.
+// Its audio cleanup must already have initialized state.
+let _audio = null;
+let _speakGen = 0; // bumps every cancel; in-flight chains check before each clip
+let _clipResolve = null;
+let _activeSpeechKind = null;
+let _lastInstructionText = '';
+let _vbReplayEl = null;
+
 // Zoom defense — toddlers triggering pinch/wheel-zoom shouldn't break the
 // layout. Viewport meta user-scalable=no is ignored on modern iOS, and a
 // Chrome PWA on desktop still honors Ctrl+wheel and Ctrl+=. Trap the routes
@@ -319,12 +328,6 @@ function _matchClips(text) {
 // stacked up faster than cancel could pause them, producing lag + duplicate
 // playback. One element + immediate src reassignment is what mobile browsers
 // actually optimize for.
-let _audio = null;
-let _speakGen = 0; // bumps every cancel; in-flight chains check before each clip
-let _clipResolve = null;
-let _activeSpeechKind = null;
-let _lastInstructionText = '';
-let _vbReplayEl = null;
 
 function _ensureAudio() {
   if (!_audio) {
