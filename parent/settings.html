@@ -934,6 +934,7 @@
 
     function setSettingsChild(id) {
       if (!getProfiles().some(p => p.id === id)) return;
+      _stopVoiceSample();
       _settingsChildId = id;
       document.getElementById('settingsSaveStatus').textContent = '';
       buildKidsBar();
@@ -1370,7 +1371,7 @@
       const msg = document.getElementById('yotoMsg');
       if (!id || id.length < 6) { msg.textContent = 'Client ID looks wrong — paste the value from Yoto.'; return; }
       localStorage.setItem('vb_yoto_client_id', id);
-      msg.style.color = '#a8e6cf';
+      msg.style.color = 'var(--parent-accent)';
       msg.textContent = '✓ Saved. Reloading…';
       setTimeout(() => location.reload(), 800);
     }
@@ -1487,7 +1488,7 @@
       const msg = document.getElementById('syncMsg');
       const btn = document.getElementById('syncSubmit');
       const btnLabel = btn ? btn.textContent : '';
-      msg.style.color = '#FF6B6B';
+      msg.style.color = 'var(--parent-danger)';
       msg.textContent = 'Working…';
       if (btn) { btn.disabled = true; btn.textContent = '⏳ Working…'; }
       const codeEl = document.getElementById('syncCode');
@@ -1525,7 +1526,7 @@
         msg.textContent = friendly;
         return;
       }
-      msg.style.color = '#a8e6cf';
+      msg.style.color = 'var(--parent-accent)';
       if (r.conflict) {
         // Cloud and this device have different kid lists — reload so sync.js's
         // chooser overlay appears and the parent picks which kids to keep.
@@ -1554,7 +1555,7 @@
       const r = await window.cloudSync.deleteAccount();
       const msg = document.getElementById('syncMsg');
       if (msg) {
-        msg.style.color = r.ok ? '#a8e6cf' : '#FF6B6B';
+        msg.style.color = r.ok ? 'var(--parent-accent)' : 'var(--parent-danger)';
         msg.textContent = r.ok ? 'Cloud account deleted.' : 'Could not delete right now — try again.';
       }
       if (r.ok) buildSyncSection();
@@ -1570,18 +1571,18 @@
       const btn = document.getElementById('syncNowBtn');
       const msg = document.getElementById('syncMsg');
       if (btn) { btn.disabled = true; btn.textContent = '⏳ Syncing…'; }
-      if (msg) { msg.style.color = '#a8e6cf'; msg.textContent = ''; }
+      if (msg) { msg.style.color = 'var(--parent-accent)'; msg.textContent = ''; }
       let r;
       try { r = await window.cloudSync.syncNow(); }
       catch { r = { ok: false }; }
       _syncNowBusy = false;
       if (!r || !r.ok) {
-        if (msg) { msg.style.color = '#FF6B6B'; msg.textContent = 'Sync failed — check your internet and try again.'; }
+        if (msg) { msg.style.color = 'var(--parent-danger)'; msg.textContent = 'Sync failed — check your internet and try again.'; }
         if (btn) { btn.disabled = false; btn.textContent = '🔄 Sync now'; }
         return;
       }
       if (r.conflict) { location.reload(); return; }  // chooser overlay handles it
-      if (msg) { msg.style.color = '#a8e6cf'; msg.textContent = '✓ Synced — this device is up to date.'; }
+      if (msg) { msg.style.color = 'var(--parent-accent)'; msg.textContent = '✓ Synced — this device is up to date.'; }
       setTimeout(buildSyncSection, 1000);
     }
 
@@ -1732,9 +1733,9 @@
       }
       await Promise.all(Array.from({ length: 6 }, worker));  // 6 parallel fetches
       if (status) {
-        if (quota) { status.style.color = '#ffb4b4'; status.textContent = 'Stopped — this device is out of storage. Free up space (or remove some, then re-download).'; }
-        else if (failed) { status.style.color = '#ffb4b4'; status.textContent = `Downloaded with ${failed} skipped — check your connection and tap Re-download.`; }
-        else { status.style.color = '#7be0c0'; status.textContent = '✓ Downloaded — ready for offline use.'; }
+        if (quota) { status.style.color = 'var(--parent-danger)'; status.textContent = 'Stopped — this device is out of storage. Free up space (or remove some, then re-download).'; }
+        else if (failed) { status.style.color = 'var(--parent-danger)'; status.textContent = `Downloaded with ${failed} skipped — check your connection and tap Re-download.`; }
+        else { status.style.color = 'var(--parent-accent)'; status.textContent = '✓ Downloaded — ready for offline use.'; }
       }
       _offlineBusy = false;
       buildOfflineSection();  // refresh button label + remove button + status
