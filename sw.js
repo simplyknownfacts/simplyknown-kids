@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v162';
+const CACHE = 'vb-v163';
+// v163: anchor peeking ears and preserve finger-sized search targets in landscape.
 // v162: include the final partial-ear and rustling-bush 3D clue renderer.
 // v161: clue-based Hide & Seek, with partial peeks and a hidden hiding place.
 // v160: keep Bubble Pop canvas and touch coordinates aligned after HUD reflow.
