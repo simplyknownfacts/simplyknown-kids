@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v156';
+const CACHE = 'vb-v157';
+// v157: the parent Add child navigation can use its cached page while offline.
 // v156: readable parent settings and guided child setup, available offline.
 // v155: visible, cancellable elapsed-time progress for the parent hold.
 // v154: separate Free Paint brushes and Color In tap-to-fill studios.
@@ -281,7 +282,20 @@ self.addEventListener('fetch', e => {
           );
         }
         return res;
-      }).catch(() => caches.match(e.request))
+      }).catch(async () => {
+        const exact = await caches.match(e.request);
+        if (exact) return exact;
+        // Parent actions are handled in the browser. The first offline visit
+        // to ?action=add can use the precached HTML without ever having loaded
+        // that exact query online. Keep query matching strict for other URLs,
+        // code assets and requests that are not a page navigation.
+        const parentPage = new URL('./parent/settings.html', self.location.href);
+        if (e.request.mode === 'navigate' && url.origin === parentPage.origin &&
+            url.pathname === parentPage.pathname) {
+          return caches.match(parentPage.href);
+        }
+        return undefined;
+      })
     );
   } else {
     // Cache-first for heavy, immutable assets (audio/video/images/icons/fonts).
