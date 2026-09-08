@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
-const ANIMALS = ['Rabbit', 'Cat', 'Bear'];
+const ANIMALS = ['Rabbit', 'Cat', 'Panda'];
 let server, browser, base;
 
 before(async () => {
@@ -157,7 +157,7 @@ test('neutral intro conceals the answer; hiding, retry, hint, found, and replay 
     for (let i=0; i<10; i++) await page.mouse.click(targetBox.x + targetBox.width/2, targetBox.y + targetBox.height*.7);
     await phase(page, 'found');
     assert.deepEqual(await page.evaluate(() => seekAwards), ['peek-a-boo'], 'correct answer was not awarded exactly once');
-    assert.notEqual((await page.locator('.hiding-spot').nth(target).locator('.fallback-animal').textContent()).trim(), '', 'found animal is not fully shown');
+    assert.equal(await page.locator('#seekCompanion').evaluate(host=>host.dataset.pose), 'found', 'found companion is not fully shown');
     await page.waitForFunction(() => document.querySelector('#playAgain').getAttribute('aria-disabled') === 'false');
     await physicalClick(page, page.locator('#playAgain'));
     await neutral(page);
