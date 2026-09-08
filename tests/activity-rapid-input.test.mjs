@@ -119,10 +119,32 @@ test('Hide and Seek accepts the clue location once under repeated physical taps'
     const r = await page.locator('.hiding-spot').nth(target).boundingBox();
     for(let i=0;i<10;i++) await page.mouse.click(r.x+r.width/2,r.y+r.height*.7);
     assert.deepEqual(await page.evaluate(()=>seekCalls), ['peek-a-boo']);
-    const html = await page.locator('#stage').innerHTML();
-    await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide')));
+    const beforeHide = await page.evaluate(() => ({
+      phase:document.querySelector('#stage').dataset.phase,
+      target:Number(document.querySelector('#seekCompanion').dataset.target),
+      name:document.querySelector('.intro-name').textContent,
+      hint:document.querySelector('#hint').textContent,
+      calls:[...seekCalls],
+    }));
+    assert.deepEqual({phase:beforeHide.phase,target:beforeHide.target}, {phase:'found',target});
+    // pagehide synchronously conceals and pauses the companion. Verify that
+    // lifecycle response, then make sure no stale round callback runs later.
+    const hidden = await page.evaluate(() => {
+      window.dispatchEvent(new PageTransitionEvent('pagehide'));
+      const host=document.querySelector('#seekCompanion'),video=host.querySelector('video');
+      return {phase:document.querySelector('#stage').dataset.phase,hidden:host.hidden,
+        target:Number(host.dataset.target),paused:video.paused,name:document.querySelector('.intro-name').textContent,
+        hint:document.querySelector('#hint').textContent,calls:[...seekCalls]};
+    });
+    assert.deepEqual(hidden,{phase:'found',hidden:true,target:-1,paused:true,
+      name:beforeHide.name,hint:beforeHide.hint,calls:['peek-a-boo']});
     await page.waitForTimeout(700);
-    assert.equal(await page.locator('#stage').innerHTML(), html, 'game changed after pagehide');
+    const later = await page.evaluate(() => ({phase:document.querySelector('#stage').dataset.phase,
+      name:document.querySelector('.intro-name').textContent,hint:document.querySelector('#hint').textContent,
+      calls:[...seekCalls],hidden:document.querySelector('#seekCompanion').hidden,
+      paused:document.querySelector('#seekCompanion video').paused}));
+    assert.deepEqual(later,{phase:'found',name:beforeHide.name,hint:beforeHide.hint,
+      calls:['peek-a-boo'],hidden:true,paused:true},'game changed after pagehide');
   } finally { await ctx.close(); }
 });
 
