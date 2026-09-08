@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
 const CACHE = 'vb-v154';
+// v154: separate Free Paint brushes and Color In tap-to-fill studios.
 // v148: animated personal world, redesigned rooms, bounded awards and owned play timers.
 // v145 FIX (Codex 0905-1, HIGH): js/pin-lockout.js -- loaded by both
 // home.html's exit dialog and parent/settings.html's PIN gate -- was missing
@@ -164,7 +165,7 @@ const ASSETS = [
   './js/atmosphere.js', './js/version.js',
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js', './js/pin-lockout.js',
   './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',
-  './js/game-settings.js', './js/paint.js', './js/sw-cache-policy.js',
+  './js/game-settings.js', './js/paint.js', './js/free-paint.js', './js/color-fill.js', './js/sw-cache-policy.js',
   './js/sleep-timer.js',
   './js/yoto.js', './js/yoto-config.js', './js/yoto-player.js',
   './games/index.html', './games/tap-pop.html', './games/peek-a-boo.html',
@@ -198,6 +199,7 @@ const ASSETS = [
 // retries install later, rather than a new "ready" service worker quietly
 // missing a piece the app cannot run without.
 const REQUIRED_SHELL = [
+  './js/free-paint.js', './js/color-fill.js',
   './css/world-home.css', './js/world-home.js', './js/world-art.js',
   './js/world-scene.js', './js/world-huts.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
   './js/vendor/three-r180/three.module.min.js', './js/vendor/three-r180/three.core.min.js',

@@ -353,28 +353,29 @@ async function play(page, act, tier) {
       const hasCanvas = !!(await page.locator('canvas').count());
       return { ok: hasCanvas || await bumped(), signal: hasCanvas ? 'game canvas running' : 'no canvas' };
     }
-    // color-in switched to the shared freeform paint engine in v120 — it's
-    // brush-tested with the other art below (canvas id vbPaintCanvas).
-    if (['color-splash', 'finger-paint', 'stamp-art', 'color-in'].includes(id)) {
-      // finger-paint & stamp-art keep their own #canvas; color-splash & color-in
-      // use the shared paint engine's #vbPaintCanvas (v119/v120).
+    if (id === 'color-in') {
+      const canvas=page.locator('#colorFillCanvas[data-ready="1"]'); await canvas.waitFor();
+      const points=[[.5,.375],[.575,.375],[.5,.1125],[.42,.47]];
+      const sample=()=>canvas.evaluate((c,points)=>points.map(([x,y])=>Array.from(c.getContext('2d').getImageData(Math.floor(c.width*x),Math.floor(c.height*y),1,1).data)),points);
+      const before=await sample(), box=await canvas.boundingBox();
+      await page.mouse.click(box.x+box.width*.5,box.y+box.height*.375);
+      const after=await sample(),eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+      const filled=!eq(before[0],after[0])&&!eq(before[1],after[1])&&eq(after[0],after[1])&&eq(before[2],after[2])&&eq(before[3],after[3]);
+      return {ok:filled,signal:filled?'enclosed face filled; ray and pupil preserved':'tap did not fill only the selected region'};
+    }
+    if (['color-splash', 'finger-paint', 'stamp-art'].includes(id)) {
+      // Free Paint and Stamp Art own #canvas; Color Splash uses vbPaintCanvas.
       const box = await page.locator('#canvas, #vbPaintCanvas').first().boundingBox();
       if (!box) return { ok: false, signal: 'no canvas' };
+      const signature=()=>page.locator('#canvas, #vbPaintCanvas').first().evaluate(c=>c.toDataURL());
+      const before=await signature();
       const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
-      if (id === 'finger-paint' || id === 'color-splash' || id === 'color-in') { await page.mouse.move(cx - 130, cy); await page.mouse.down(); await page.mouse.move(cx + 130, cy, { steps: 14 }); await page.mouse.up(); }
+      if (id === 'finger-paint' || id === 'color-splash') { await page.mouse.move(cx - box.width*.2, cy); await page.mouse.down(); await page.mouse.move(cx + box.width*.2, cy, { steps: 14 }); await page.mouse.up(); }
       else { await page.mouse.move(cx, cy); await page.mouse.down(); await page.mouse.up(); }
       await sleep(300);
-      // sample a box centered on canvas center (where the stroke/stamp/splash lands)
-      const painted = await page.evaluate((boxsz) => {
-        const c = document.querySelector('#canvas, #vbPaintCanvas'); if (!c) return false; const ctx = c.getContext('2d'); if (!ctx) return false;
-        const px = Math.floor(c.width / 2), py = Math.floor(c.height / 2), half = Math.floor(boxsz / 2);
-        const sx = Math.max(0, px - half), sy = Math.max(0, py - half);
-        const w = Math.min(boxsz, c.width - sx), h = Math.min(boxsz, c.height - sy);
-        const d = ctx.getImageData(sx, sy, w, h).data; const bg = [26, 26, 46];
-        for (let i = 0; i < d.length; i += 4) { if (d[i + 3] > 0 && Math.abs(d[i] - bg[0]) + Math.abs(d[i + 1] - bg[1]) + Math.abs(d[i + 2] - bg[2]) > 24) return true; }
-        return false;
-      }, id === 'stamp-art' ? 80 : 44).catch(() => false);
-      return { ok: painted, signal: painted ? 'canvas painted (non-bg pixels)' : 'canvas appears unchanged' };
+      // Compare before/after: a preexisting white sheet is not painted content.
+      const painted=before!==await signature();
+      return { ok: painted, signal: painted ? 'canvas pixels changed after drawing' : 'canvas appears unchanged' };
     }
     return { ok: false, signal: 'no recipe' };
   } catch (e) {
