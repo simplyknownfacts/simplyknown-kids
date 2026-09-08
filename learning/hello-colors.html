@@ -198,6 +198,7 @@
 
     // "Tap the <colour> thing" (+ half the rounds: strict "tap the <colour> <thing>")
     function identifyRound() {
+      let settled = false;
       const palette = quizPalette();
       const strict = Math.random() < 0.5;
       const targetColor = palette[Math.floor(Math.random() * palette.length)];
@@ -215,9 +216,14 @@
       }
       lineup.sort(() => Math.random()-0.5);
       const promptText = strict ? `Tap the ${targetColor.name} ${targetThing.n}!` : `Tap the ${targetColor.name} thing!`;
-      quizLbl.textContent = promptText; setTimeout(() => speak(promptText), 300);
+      quizLbl.textContent = promptText; setTimeout(() => {
+        if (typeof speakInstruction === 'function') speakInstruction(promptText);
+        else speak(promptText);
+      }, 300);
       lineup.forEach(slot => makeThingCard(slot.thing, (card) => {
+        if (settled) return;
         if (slot.isAnswer) {
+          settled = true;
           playSuccess();
           if (window.vbProgress) { vbProgress.record('hello-colors'); vbProgress.mastery('hello-colors.mastery'); }
           speak(`Yes! ${slot.thing.n} is ${slot.color.name}!`);
@@ -233,6 +239,7 @@
 
     // "Which one is NOT <colour>?" — 3 things of that colour + 1 odd one out (T6+)
     function oddRound() {
+      let settled = false;
       const palette = quizPalette();
       const c = palette[Math.floor(Math.random() * palette.length)];
       const odd = palette.filter(x => x.name !== c.name).sort(() => Math.random()-0.5)[0];
@@ -241,9 +248,14 @@
         { thing: odd.things[Math.floor(Math.random()*odd.things.length)], isAnswer:true },
       ].sort(() => Math.random()-0.5);
       const promptText = `Which one is NOT ${c.name}?`;
-      quizLbl.textContent = promptText; setTimeout(() => speak(promptText), 300);
+      quizLbl.textContent = promptText; setTimeout(() => {
+        if (typeof speakInstruction === 'function') speakInstruction(promptText);
+        else speak(promptText);
+      }, 300);
       lineup.forEach(slot => makeThingCard(slot.thing, (card) => {
+        if (settled) return;
         if (slot.isAnswer) {
+          settled = true;
           playSuccess();
           if (window.vbProgress) { vbProgress.record('hello-colors'); vbProgress.mastery('hello-colors.mastery'); }
           speak(`Yes! That one is not ${c.name}.`);
@@ -254,9 +266,14 @@
 
     // Colour mixing: "Red + Blue = ?" → tap the result swatch (T8+)
     function mixRound() {
+      let settled = false;
       const mix = MIXES[Math.floor(Math.random() * MIXES.length)];
       const promptText = `${mix.a} + ${mix.b} = ?`;
-      quizLbl.textContent = promptText; setTimeout(() => speak(`${mix.a} plus ${mix.b} makes what?`), 300);
+      quizLbl.textContent = promptText; setTimeout(() => {
+        const spokenPrompt = `${mix.a} plus ${mix.b} makes what?`;
+        if (typeof speakInstruction === 'function') speakInstruction(spokenPrompt);
+        else speak(spokenPrompt);
+      }, 300);
       const choices = new Set([mix.r]);
       const pool = ALL_COLORS.map(c => c.name).filter(n => n !== mix.a && n !== mix.b);
       while (choices.size < 4) choices.add(pool[Math.floor(Math.random()*pool.length)]);
@@ -265,7 +282,9 @@
         card.className = 'thing-card pop-in revealed';
         card.innerHTML = `<span class="thing-emoji" style="width:clamp(56px,13vw,90px);height:clamp(56px,13vw,90px);border-radius:50%;background:${hexOf(name)};border:3px solid rgba(255,255,255,0.6);"></span><span class="thing-name">${name}</span>`;
         card.addEventListener('pointerdown', () => {
+          if (settled) return;
           if (name === mix.r) {
+            settled = true;
             playSuccess();
             if (window.vbProgress) { vbProgress.record('hello-colors'); vbProgress.mastery('hello-colors.mastery'); }
             speak(`Yes! ${mix.a} and ${mix.b} make ${mix.r}!`);

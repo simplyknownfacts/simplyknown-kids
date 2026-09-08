@@ -167,7 +167,7 @@
 
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
-    let roundTimer = null;
+    let roundTimer = null, roundSettled = false;
     let lastTargetId = null;
     window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
 
@@ -183,6 +183,10 @@
       const change = paid - price;
 
       hint.textContent = `It costs ${moneyLabel(price)}. You pay ${moneyLabel(paid)}. How much change?`;
+      setTimeout(() => {
+        if (typeof speakInstruction === 'function') speakInstruction(hint.textContent);
+        else speak(hint.textContent);
+      }, 300);
 
       const row = document.createElement('div'); row.className = 'money-row';
       const tag = document.createElement('div');
@@ -203,14 +207,19 @@
         const btn = document.createElement('div');
         btn.className = 'num-btn'; btn.textContent = moneyLabel(n);
         btn.addEventListener('pointerdown', () => {
+          if (roundSettled) return;
           if (n === change) {
+            roundSettled = true;
             playSuccess();
             if (window.vbProgress) vbProgress.record('money');
             btn.style.background = 'rgba(168,230,207,0.5)';
+            hint.textContent = `${moneyLabel(paid)} − ${moneyLabel(price)} = ${moneyLabel(change)} change.`;
             roundTimer = setTimeout(nextRound, 2000);
           } else {
             btn.classList.add('wrong');
             playBoop();
+            hint.textContent = `Count up from ${moneyLabel(price)} to ${moneyLabel(paid)}. Try again!`;
+            speak('Try again!');
             setTimeout(() => btn.classList.remove('wrong'), 350);
           }
         });
@@ -220,7 +229,7 @@
     }
 
     function nextRound() {
-      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer); roundSettled = false;
       if (changeOn && Math.random() < 0.45) { changeRound(); return; }
 
       // Pool by tier
@@ -236,12 +245,18 @@
         const target = choosable[Math.floor(Math.random() * choosable.length)];
         lastTargetId = target.id;
         hint.textContent = `Tap the ${target.name}!`;
-        setTimeout(() => speak(`Tap the ${target.name}.`), 300);
+        setTimeout(() => {
+          const prompt = `Tap the ${target.name}.`;
+          if (typeof speakInstruction === 'function') speakInstruction(prompt);
+          else speak(prompt);
+        }, 300);
         const row = document.createElement('div'); row.className = 'money-row';
         [...pool].sort(() => Math.random() - 0.5).forEach(m => {
           const node = makeMoney(m);
           node.addEventListener('pointerdown', () => {
+            if (roundSettled) return;
             if (m.id === target.id) {
+              roundSettled = true;
               node.classList.add('matched');
               playSuccess();
               if (window.vbProgress) vbProgress.record('money');
@@ -250,6 +265,8 @@
             } else {
               node.classList.add('wrong');
               playBoop();
+              hint.textContent = `${m.name} is ${moneyLabel(m.cents)}. Find the ${target.name}.`;
+              speak('Try again!');
               setTimeout(() => node.classList.remove('wrong'), 350);
             }
           });
@@ -268,7 +285,10 @@
           pile.push(m); total += m.cents;
         }
         hint.textContent = 'How much money?';
-        setTimeout(() => speak('How much money is here?'), 300);
+        setTimeout(() => {
+          if (typeof speakInstruction === 'function') speakInstruction('How much money is here?');
+          else speak('How much money is here?');
+        }, 300);
         const row = document.createElement('div'); row.className = 'money-row';
         pile.forEach(m => row.appendChild(makeMoney(m)));
         bodyEl.appendChild(row);
@@ -285,15 +305,20 @@
           const btn = document.createElement('div');
           btn.className = 'num-btn'; btn.textContent = moneyLabel(n);
           btn.addEventListener('pointerdown', () => {
+            if (roundSettled) return;
             if (n === total) {
+              roundSettled = true;
               playSuccess();
               if (window.vbProgress) { vbProgress.record('money'); vbProgress.mastery('money.mastery'); }
               speak(`Yes! ${moneyLabel(total)}.`);
               btn.style.background = 'rgba(168,230,207,0.5)';
+              hint.textContent = `${pile.map(m => moneyLabel(m.cents)).join(' + ')} = ${moneyLabel(total)}.`;
               roundTimer = setTimeout(nextRound, 2000);
             } else {
               btn.classList.add('wrong');
               playBoop();
+              hint.textContent = `Add each value once. Try again!`;
+              speak('Try again!');
               setTimeout(() => btn.classList.remove('wrong'), 350);
             }
           });

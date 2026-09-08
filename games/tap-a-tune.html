@@ -209,7 +209,8 @@
       } else {
         const p = pads[i]; p.classList.add('wrong'); setTimeout(() => p.classList.remove('wrong'), 300);
         if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
-        hintEl.textContent = '❌ Watch again…';
+        hintEl.textContent = `❌ That was ${NOTES[i].name}. Watch the pattern again…`;
+        try { speak('Try again!'); } catch (e) {}
         memPos = 0; setTimeout(memPlayback, 950);
       }
     }
@@ -231,6 +232,8 @@
         const p = pads[i];
         p.classList.add('wrong'); setTimeout(() => p.classList.remove('wrong'), 300);
         if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
+        hintEl.textContent = `That was ${NOTES[i].name}. Follow the glowing key.`;
+        try { speak('Try again!'); } catch (e) {}
       }
     }
     padsEl.addEventListener('pointerdown', (e) => {

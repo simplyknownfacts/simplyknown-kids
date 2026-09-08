@@ -137,7 +137,11 @@
           hint.textContent = `Tap the ${target.name}!`;
         } else {
           hint.textContent = '🔊 Listen...';
-          setTimeout(() => speak(`${target.sound}! ${target.sound}! Who am I?`), 400);
+          setTimeout(() => {
+            const prompt = `${target.sound}! ${target.sound}! Who am I?`;
+            if (typeof speakInstruction === 'function') speakInstruction(prompt);
+            else speak(prompt);
+          }, 400);
         }
 
         animals.forEach((a, i) => {

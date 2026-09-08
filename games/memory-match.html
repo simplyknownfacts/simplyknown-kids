@@ -133,8 +133,11 @@
         card.addEventListener('pointerdown', () => flip(card));
         board.appendChild(card);
       });
-      hint.textContent = 'Find the matching pairs!';
-      setTimeout(() => speak('Find the matching pairs!'), 400);
+      hint.textContent = `Find the matching pairs! 0 / ${PAIRS}`;
+      setTimeout(() => {
+        if (typeof speakInstruction === 'function') speakInstruction('Find the matching pairs!');
+        else speak('Find the matching pairs!');
+      }, 400);
     }
 
     function flip(card) {
@@ -150,9 +153,11 @@
         matched++;
         playSuccess();
         speak('A match!');
+        hint.textContent = `A match! ${matched} / ${PAIRS}`;
         if (window.vbProgress) vbProgress.record('memory-match');
         if (matched === PAIRS) {
-          hint.textContent = 'You found them all! 🎉';
+          lock = true;
+          hint.textContent = 'You found them all! New cards coming… 🎉';
           if (window.vbProgress) vbProgress.mastery('memory-match.mastery');
           timer = setTimeout(buildBoard, 2200);
         }
@@ -161,9 +166,12 @@
         const a = card, b = first; first = null;
         a.classList.add('wrong'); b.classList.add('wrong');
         playBoop();
+        hint.textContent = 'Not a pair. Remember where they are, then try again!';
+        speak('Try again!');
         timer = setTimeout(() => {
           a.classList.remove('up', 'wrong'); b.classList.remove('up', 'wrong');
           lock = false;
+          hint.textContent = `Find the matching pairs! ${matched} / ${PAIRS}`;
         }, FLIP_BACK_MS);
       }
     }

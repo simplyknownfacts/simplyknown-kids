@@ -125,11 +125,11 @@
 
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
-    let roundTimer = null;
+    let roundTimer = null, roundSettled = false;
     window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
 
     function nextRound() {
-      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer); roundSettled = false;
 
       if (!spellOn) {
         // Multiple choice: show picture, tap the matching word from 3-4 choices
@@ -148,7 +148,9 @@
           const card = document.createElement('div');
           card.className = 'word-card'; card.textContent = w;
           card.addEventListener('pointerdown', () => {
+            if (roundSettled) return;
             if (w === target.w) {
+              roundSettled = true;
               card.classList.add('matched');
               playSuccess();
               if (window.vbProgress) vbProgress.record('spelling');
@@ -157,13 +159,18 @@
             } else {
               card.classList.add('wrong');
               playBoop();
+              hint.textContent = `${w} is not ${target.w}. Look for the word that starts with ${target.w[0]}.`;
+              speak('Try again!');
               setTimeout(() => card.classList.remove('wrong'), 350);
             }
           });
           grid.appendChild(card);
         });
         bodyEl.appendChild(grid);
-        setTimeout(() => speak(target.w), 400);
+        setTimeout(() => {
+          if (typeof speakInstruction === 'function') speakInstruction(target.w);
+          else speak(target.w);
+        }, 400);
 
       } else {
         // Tier 6+: spell the word — tap letters in order from a bank.
@@ -191,6 +198,7 @@
           const tile = document.createElement('div');
           tile.className = 'letter-tile'; tile.textContent = L;
           tile.addEventListener('pointerdown', () => {
+            if (roundSettled) return;
             const nextEmpty = slots.findIndex(s => !s.textContent);
             if (nextEmpty === -1) return;
             if (slots[nextEmpty].dataset.target === L) {
@@ -198,6 +206,7 @@
               slots[nextEmpty].classList.add('filled');
               speak(L);
               if (slots.every(s => s.textContent)) {
+                roundSettled = true;
                 playSuccess();
                 if (window.vbProgress) { vbProgress.record('spelling'); vbProgress.mastery('spelling.mastery'); }
                 setTimeout(() => speak(target.w), 400);
@@ -206,13 +215,19 @@
             } else {
               tile.classList.add('wrong');
               playBoop();
+              hint.textContent = `Next letter: ${slots[nextEmpty].dataset.target}. Try again!`;
+              speak('Try again!');
               setTimeout(() => tile.classList.remove('wrong'), 350);
             }
           });
           grid.appendChild(tile);
         });
         bodyEl.appendChild(grid);
-        setTimeout(() => speak(`Spell ${target.w}!`), 400);
+        setTimeout(() => {
+          const prompt = `Spell ${target.w}!`;
+          if (typeof speakInstruction === 'function') speakInstruction(prompt);
+          else speak(prompt);
+        }, 400);
       }
     }
     nextRound();

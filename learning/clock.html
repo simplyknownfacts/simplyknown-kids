@@ -72,7 +72,7 @@
     const NS = 'http://www.w3.org/2000/svg';
     const wrap = document.getElementById('clockWrap');
     const choicesRow = document.getElementById('choices');
-    let roundTimer = null, lastKey = null;
+    let roundTimer = null, lastKey = null, roundSettled = false;
     window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
 
     function el(tag, attrs) {
@@ -120,7 +120,7 @@
     const fmt = (h, m) => `${h}:${String(m).padStart(2, '0')}`;
 
     function nextRound() {
-      choicesRow.innerHTML = ''; clearTimeout(roundTimer);
+      choicesRow.innerHTML = ''; clearTimeout(roundTimer); roundSettled = false;
       let h, m, key;
       do {
         h = 1 + Math.floor(Math.random() * 12);
@@ -130,8 +130,12 @@
       lastKey = key;
 
       drawClock(h, m);
-      document.getElementById('hint').textContent = 'What time is it?';
-      setTimeout(() => speak('What time is it?'), 400);
+      const hint = document.getElementById('hint');
+      hint.textContent = 'What time is it? Short blue hand = hour. Long red hand = minutes.';
+      setTimeout(() => {
+        if (typeof speakInstruction === 'function') speakInstruction('What time is it?');
+        else speak('What time is it?');
+      }, 400);
 
       // 4 choices: right one + distractors (different hour, or different minutes)
       const opts = new Set([key]);
@@ -145,8 +149,11 @@
         const btn = document.createElement('div');
         btn.className = 'num-btn'; btn.textContent = k;
         btn.addEventListener('pointerdown', () => {
+          if (roundSettled) return;
           if (k === key) {
+            roundSettled = true;
             btn.classList.add('right');
+            hint.textContent = `${key}. The blue hand shows ${h}; the red hand shows ${m} minutes.`;
             playSuccess();
             if (window.vbProgress) {
               vbProgress.record('clock');
@@ -156,6 +163,8 @@
           } else {
             btn.classList.add('wrong');
             playBoop();
+            hint.textContent = `The red hand shows ${m} minutes. Look where the short blue hand points. Try again!`;
+            speak('Try again!');
             setTimeout(() => btn.classList.remove('wrong'), 350);
           }
         });

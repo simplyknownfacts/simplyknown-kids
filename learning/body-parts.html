@@ -259,7 +259,10 @@
       lastTarget = target;
       const prompt = tier <= 2 ? `Where's the ${target}?` : `Tap the ${PRONOUN(target)}!`;
       hint.textContent = prompt;
-      setTimeout(() => speak(prompt), 400);
+      setTimeout(() => {
+        if (typeof speakInstruction === 'function') speakInstruction(prompt);
+        else speak(prompt);
+      }, 400);
       figure.querySelectorAll('.hit').forEach(el => {
         el.classList.remove('flash','wrong');
       });
@@ -304,7 +307,9 @@
         best.el.classList.add('wrong');
         playBoop();
         setTimeout(() => best.el.classList.remove('wrong'), 350);
+        hint.textContent = `That's the ${PRONOUN(name)}. Find the ${PRONOUN(target)}.`;
         if (tier <= 3) speak(`That's the ${PRONOUN(name)}.`);
+        else speak('Try again!');
       }
     }
     figure.addEventListener('pointerdown', handleFigureTap);

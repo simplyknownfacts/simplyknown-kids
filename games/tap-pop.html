@@ -96,6 +96,11 @@
       targetSwatch.style.background = c;
       targetNameEl.textContent = COLOR_NAMES[c] || '';
       correctSincePick = 0;
+      const prompt = `Tap the ${COLOR_NAMES[c]} thing!`;
+      setTimeout(() => {
+        if (typeof speakInstruction === 'function') speakInstruction(prompt);
+        else speak(prompt);
+      }, 150);
     }
     if (challengeOn) { targetEl.style.display = 'flex'; pickTarget(); }
 
@@ -493,6 +498,8 @@
           if (challengeOn && !b.shiny && b.color !== targetColor) {
             combo = 0; showCombo();
             if (typeof playBoop === 'function') playBoop();
+            if (typeof _showCaption === 'function') _showCaption(`Try again! Pop only ${COLOR_NAMES[targetColor]}.`);
+            speak('Try again!');
             targetEl.classList.add('miss');
             setTimeout(() => targetEl.classList.remove('miss'), 250);
           } else {

@@ -95,7 +95,7 @@
     const ITEMS = ['🍎','🍌','🚗','⭐','🐱','🎈','🍦','🦋'];
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
-    let roundTimer = null;
+    let roundTimer = null, roundSettled = false;
     window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
 
     function pile(n, emoji) {
@@ -118,7 +118,7 @@
     }
 
     function nextRound() {
-      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer); roundSettled = false;
       const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
 
       const op = pickOp();
@@ -183,7 +183,11 @@
 
       // Speak the equation
       const opWord = op === '+' ? 'plus' : op === '−' ? 'minus' : op === '×' ? 'times' : 'divided by';
-      setTimeout(() => speak(missing ? `${a} ${opWord} what equals ${ans}?` : `${a} ${opWord} ${b}?`), 400);
+      const spokenPrompt = missing ? `${a} ${opWord} what equals ${ans}?` : `${a} ${opWord} ${b}?`;
+      setTimeout(() => {
+        if (typeof speakInstruction === 'function') speakInstruction(spokenPrompt);
+        else speak(spokenPrompt);
+      }, 400);
 
       // Number choices: target + 3 plausible distractors
       const choices = new Set([target]);
@@ -196,7 +200,9 @@
         const btn = document.createElement('div');
         btn.className = 'num-btn'; btn.textContent = n;
         btn.addEventListener('pointerdown', () => {
+          if (roundSettled) return;
           if (n === target) {
+            roundSettled = true;
             box.textContent = target; box.classList.add('filled');
             playSuccess();
             if (window.vbProgress) { vbProgress.record('math'); if (op === '−') vbProgress.mastery('math.mastery'); }
@@ -205,6 +211,14 @@
           } else {
             btn.classList.add('wrong');
             playBoop();
+            hint.textContent = missing
+              ? `Put a number in the box so ${a} ${op} it makes ${ans}. Try again!`
+              : op === '−'
+                ? `Start with ${a} and take away ${b}. Try again!`
+                : op === '+'
+                  ? `Count ${a}, then count ${b} more. Try again!`
+                  : `Work out ${a} ${op} ${b}. Try again!`;
+            speak('Try again!');
             setTimeout(() => btn.classList.remove('wrong'), 350);
           }
         });
