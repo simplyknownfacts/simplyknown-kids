@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v158';
+const CACHE = 'vb-v159';
+// v159: Bubble Pop reserves separate rows for controls, challenge and score.
 // v158: separate themed islands and animated ocean, available offline.
 // v157: the parent Add child navigation can use its cached page while offline.
 // v156: readable parent settings and guided child setup, available offline.
