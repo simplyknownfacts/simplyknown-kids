@@ -73,7 +73,8 @@ test('the parent zoom opt-out toggle exists, persists, and actually takes effect
     await page.waitForSelector('#pinPad .pin-key');
     for (const i of [0, 1, 2, 3]) await page.locator('#pinPad .pin-key').nth(i).click();
     await page.waitForSelector('#mainSettings', { state: 'visible', timeout: 10000 });
-    await page.locator('#panel-theme .acc-title').click();
+    await page.locator('#settingsSectionPicker').selectOption('theme');
+    await page.waitForSelector('#panel-theme', { state: 'visible' });
     const box = page.locator('#allowZoomToggle');
     await box.waitFor({ state: 'visible' });
     assert.equal(await box.isChecked(), false, 'off by default');

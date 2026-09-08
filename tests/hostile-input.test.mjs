@@ -263,8 +263,9 @@ async function unlockParentSettings(page, panel) {
   await page.waitForSelector('#pinPad .pin-key');
   for (const i of [0, 1, 2, 3]) await page.locator('#pinPad .pin-key').nth(i).click();  // 1-2-3-4
   await page.waitForSelector('#mainSettings', { state: 'visible', timeout: 10000 });
-  // At phone width the panels are an accordion, opened by tapping their heading.
-  await page.locator(`#panel-${panel} .acc-title`).click();
+  // Phone settings use one grouped section picker, with one panel visible.
+  await page.locator('#settingsSectionPicker').selectOption(panel);
+  await page.waitForSelector(`#panel-${panel}`, { state: 'visible' });
 }
 
 test('Watch: a hostile channel label and emoji are shown as text, not run as code',

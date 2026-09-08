@@ -68,7 +68,8 @@ test('offline download status checks each required file, not just how many cache
     await page.waitForSelector('#pinPad .pin-key');
     for (const i of [0, 1, 2, 3]) await page.locator('#pinPad .pin-key').nth(i).click();
     await page.waitForSelector('#mainSettings', { state: 'visible', timeout: 10000 });
-    await page.locator('#panel-offline .acc-title').click();
+    await page.locator('#settingsSectionPicker').selectOption('offline');
+    await page.waitForSelector('#panel-offline', { state: 'visible' });
     await page.waitForSelector('#offlineStatus');
 
     // Let it render for real once so we can read off the actual expected
