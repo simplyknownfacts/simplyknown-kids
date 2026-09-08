@@ -22,25 +22,21 @@
       </div>
     </header>
     <main class="world-main">
-      <div class="world-greeting"><h1 id="hiText">A little world of wonder.</h1><p>Pick a house. Find an adventure.</p></div>
-      <nav class="world-scene" id="worldScene" aria-label="Activity worlds">
-        <div class="world-cloud cloud-one" aria-hidden="true"></div><div class="world-cloud cloud-two" aria-hidden="true"></div>
-        <div class="world-island" aria-hidden="true"></div>
-        <svg class="world-paths" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><path id="pathShadow" class="path-shadow" fill="none" stroke-linecap="round"/><path id="worldPath" class="path" fill="none" stroke-linecap="round"/><path id="pathDash" class="path-dash" fill="none" stroke-linecap="round"/></svg>
-        <div class="world-tree" aria-hidden="true"></div><div class="world-tree tree-right" aria-hidden="true"></div><div class="world-tree tree-top" aria-hidden="true"></div>
-        <div class="world-flower" style="left:43%;top:84%" aria-hidden="true"></div><div class="world-flower" style="left:65%;top:43%" aria-hidden="true"></div><div class="world-flower" style="left:10%;top:60%" aria-hidden="true"></div>
-        <div class="world-butterfly" aria-hidden="true"></div>
-        <button class="house house-games" type="button" data-world="games" aria-label="Games"><span class="house-art"></span><span class="house-label">Games</span><span class="house-caption">Little challenges. Big smiles.</span></button>
-        <button class="house house-learn" type="button" data-world="learn" aria-label="Learn"><span class="house-art"></span><span class="house-label">Learn</span><span class="house-caption">A new discovery awaits.</span></button>
-        <button class="house house-artworld" type="button" data-world="art" aria-label="Art"><span class="house-art"></span><span class="house-label">Art</span><span class="house-caption">Make something wonderful.</span></button>
-        <button class="house house-watch" type="button" data-world="watch" aria-label="Watch"><span class="house-art"></span><span class="house-label">Watch</span><span class="house-caption">A little movie magic.</span></button>
-        <button class="house house-listen" type="button" data-world="listen" aria-label="Listening Hut"><span class="house-art"></span><span class="house-label">Listen</span><span class="house-caption">Stories for curious ears.</span></button>
-        <div class="world-companion" id="worldCompanion" data-world-companion aria-hidden="true"><span class="companion-shadow"></span><span class="companion-fallback" id="companionFallback">🐾</span><span class="companion-bubble" id="companionBubble">Let's explore!</span></div>
+      <div class="world-greeting"><h1 id="hiText">Your little world</h1></div>
+      <nav class="world-scene" id="worldScene" aria-label="Activity worlds" data-state="loading">
+        <canvas id="worldCanvas" aria-hidden="true"></canvas>
+        <div class="world-loading" role="status">Opening your world…</div>
+        <button class="house" type="button" data-world="games" aria-label="Games"><span>Games</span></button>
+        <button class="house" type="button" data-world="learn" aria-label="Learn"><span>Learn</span></button>
+        <button class="house" type="button" data-world="art" aria-label="Art"><span>Art</span></button>
+        <button class="house" type="button" data-world="watch" aria-label="Watch"><span>Watch</span></button>
+        <button class="house" type="button" data-world="listen" aria-label="Listening Hut"><span>Listen</span></button>
+        <button class="world-companion" id="worldCompanion" data-world-companion type="button" aria-label="Play your animal's sound"><span class="companion-shadow" aria-hidden="true"></span><span class="companion-fallback" id="companionFallback" aria-hidden="true">🐾</span></button>
       </nav>
     </main>
     <footer class="world-footer">
       <button type="button" class="ribbon-link" id="ribbonLink"><svg viewBox="0 0 24 30" aria-hidden="true"><path d="M5 17L3 29l9-5 9 5-2-12" fill="#e99b73"/><circle cx="12" cy="11" r="10" fill="#f6cb74" stroke="#d9a85d" stroke-width="2"/><path d="M12 4l2 4 5 1-4 3 1 5-4-2-4 2 1-5-4-3 5-1z" fill="#fff5d9"/></svg>My ribbons</button>
-      <button type="button" class="world-hello" id="helloCompanion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4zM17 8a6 6 0 010 8m3-11a10 10 0 010 14"/></svg><span>Say hello to your buddy</span></button>
+
     </footer>
     <div class="world-status" id="worldStatus" role="status" aria-live="polite"></div>
   </div>
@@ -61,7 +57,6 @@
   <script src="js/celebrate.js"></script>
   <script src="js/progress.js"></script>
   <script src="js/shelf.js"></script>
-  <script src="js/world-art.js"></script>
   <script>
     async function _sha256Hex(s) {
       const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));

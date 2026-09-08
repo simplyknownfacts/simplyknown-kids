@@ -1,5 +1,5 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v149';
+const CACHE = 'vb-v150';
 // v148: animated personal world, redesigned rooms, bounded awards and owned play timers.
 // v145 FIX (Codex 0905-1, HIGH): js/pin-lockout.js -- loaded by both
 // home.html's exit dialog and parent/settings.html's PIN gate -- was missing
@@ -156,6 +156,8 @@ const ASSETS = [
   './css/world-home.css',
   './js/world-home.js',
   './js/world-art.js',
+  './js/world-scene.js', './js/world-huts.js',
+  './js/vendor/three-r180/three.module.min.js', './js/vendor/three-r180/three.core.min.js',
   './', './index.html', './home.html', './achievements.html',
   './redesign-hub-bg.jpg',
   './css/style.css', './css/achievements.css', './css/themes.css',
@@ -197,6 +199,8 @@ const ASSETS = [
 // missing a piece the app cannot run without.
 const REQUIRED_SHELL = [
   './css/world-home.css', './js/world-home.js', './js/world-art.js',
+  './js/world-scene.js', './js/world-huts.js',
+  './js/vendor/three-r180/three.module.min.js', './js/vendor/three-r180/three.core.min.js',
   './', './index.html', './home.html', './redesign-hub-bg.jpg',
   './css/style.css', './css/themes.css',
   './js/atmosphere.js', './js/version.js', './js/tiers.js', './js/profiles.js', './js/app.js', './js/mascot.js', './js/sync.js',

@@ -2,7 +2,7 @@
   "name": "simplyknown-kids",
   "version": "1.1.0",
   "private": true,
-  "description": "SimplyKnown Kids — static offline-first PWA. Scripts only: this project has no dependencies and no build step.",
+  "description": "SimplyKnown Kids — static offline-first PWA. Self-hosted Three.js for the 3D village; no build step.",
   "scripts": {
     "test": "node --test \"tests/*.test.*\"",
     "stage": "node scripts/stage-site.mjs",
