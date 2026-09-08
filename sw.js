@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v164';
+const CACHE = 'vb-v165';
+// v165: finalize hidden companion playback, static fallbacks and safe switching.
 // v164: use the existing animated Bunny, Tabby Cat and Panda in Hide & Seek.
 // v163: anchor peeking ears and preserve finger-sized search targets in landscape.
 // v162: include the final partial-ear and rustling-bush 3D clue renderer.
