@@ -1,5 +1,8 @@
 # Kids first-pass preview — 2026-09-08 (codex)
 
+**Superseded 2026-09-08 (codex):** Scott rejected this flat home design. Continue from [the true 3D correction](handoff-2026-09-08-3d-correction.md); the history below records the rejected first pass.
+
+
 ## Resume here
 1. Scott's requested local first-pass revamp is implemented and open for visual review. Preview: http://localhost:8795/preview.html on this computer. Server session 61838 runs from `.worktrees/kids-child-experience`; restart only this loopback preview server if it has stopped. Do not repeat the failed Codex restart/access advice or recreate retired reviews.
 2. Branch `kids/child-experience`; tested application revision `ea68a48ba071ab6ffabe6d7b4935cd7c4255479c`. The following documentation-only commit records this handoff; resolve current HEAD rather than guessing it. Original production/main remains `30d28e772aea51d5b19b80fbca46aeb34d05787e` with only pre-existing excluded `.publish-real-test/` scratch. Do not touch that scratch.
