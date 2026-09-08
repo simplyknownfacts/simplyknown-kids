@@ -1,0 +1,27 @@
+# Distinct Art studios - 2026-09-08 (codex)
+
+## Resume here
+1. Scott said Finger Paint and Color In were basically the same. **Free Paint** now provides blank free drawing with brush options; **Color In** provides palette selection and enclosed-region tap fill. Local Art Studio is open and marked as a browser deliverable: http://localhost:8795/art/index.html . The existing local preview server on8795 remains running.
+2. Worktree `.worktrees/kids-child-experience`, branch `kids/child-experience`, tested application commit **f0c0f25fd6f59df47368d80215d60cba5ba48e3b**. This adds to [Hide and Seek](handoff-2026-09-08-hide-and-seek.md), [Body Parts](handoff-2026-09-08-body-parts.md), and the corrected 3D home. It does not replace those fixes.
+3. Preview only. Main remains **30d28e772aea51d5b19b80fbca46aeb34d05787e**. No push, main merge, deployment, promote, dev-verification stamp or scheduled review. Gate/staging implementation is unchanged. Existing `.publish-real-test/` in the original checkout remains untouched. Video Bot remains with its existing owner.
+
+## What changed
+1. Free Paint keeps the `finger-paint` activity id and URL, preserving progress/visibility/ribbons. All ages get six colors; brush, marker and dotted brushes; three sizes; eraser; eight undo levels; and undoable clear. The obsolete palette/eraser feature toggles were removed from visible metadata; old stored flags remain harmless.
+2. Free Paint now makes a real mark on a tap, owns one pointer, cleans up cancelled/lost capture and page exits, and avoids rewards for erasing a blank canvas. A canonical artwork snapshot and uniform scaling preserve proportions through rotation and undo. The landscape drawing area starts below navigation.
+3. Color In keeps its six built-in scenes and valid parent-uploaded line art. Its new bounded raster component fill preserves outlines, supports recoloring/undo, and retains page colors while switching pictures during the visit. Blank Page and freehand tools are removed from Color In. Palette names are accessible; pager arrows and status text sit outside the picture.
+4. Uploaded line art is accepted as bounded image data, with safe name rendering and failed-decode recovery. Open regions connected to the picture edge are refused with gentle guidance. Failed or late image loads cannot replace a newer page. Back-forward page restoration and lost pointer capture recover instead of leaving the activity inert.
+5. Menu, ribbons, parent metadata and legacy browser-oracle descriptions use Free Paint and the distinct fill behavior. Offline cache is `vb-v154`; both new engines are cached. The current activity inventory was updated.
+
+## Validation and exact limits
+1. At final application **f0c0f25**: **249/249 full tests**, zero failures/skips,216.1s; **80/80 app walkthrough** checks. Focused suites include7 Free Paint and4 Color In tests. Both updated physical-interaction browser oracles pass14/14 each (28 total), covering phone/tablet and youngest tiers.
+2. Independent Codex review checked all six coloring scenes with picture-coordinate pixel probes. It found BFCache recovery, lost capture and palette-label defects; all were fixed and independently verified. Final Free Paint proportion/undo/header delta was independently reviewed and its focused rotation check passed1/1. This is not a Claude signoff.
+3. Direct baseline probe: a single old Finger Paint tap made no mark; old Color In changed only342 colored pixels, a brush dot. Fail-first suites also rejected the old title/controls/missing fill canvas. Final fill oracles require two distant points inside the same face to change while a ray and pupil remain unchanged; a dot cannot satisfy that test.
+4. Visual inspection covered320x568,390x844,756x1270 and844x390. Both games fit without document scrolling; visible controls are at least44px and their centers are unobscured. These are Chromium viewport checks, not physical-device certification.
+5. Offline test installed `vb-v154`, stopped an isolated origin server, confirmed an uncached network probe failed, then opened both cached studios and changed their canvas pixels. Evidence is origin unavailability, not a claim about physical airplane mode.
+6. Ignored evidence: `.publish-test-first-pass-evidence/art-*`; app walkthrough images are in `docs/verify/shots/`. All testing used synthetic profiles/fixtures. Screenshots, browser data and scratch fixtures were not committed. Local allow-list staging must contain both new engines and exclude `preview.html`; it is packaging only, not deployment.
+
+## Remaining review
+1. Scott's visual/touch-device feedback remains. Arbitrary photo-derived line art is best-effort: broken contours may be unfillable. Session art survives rotation and picture changes, but is not a new permanent saved-drawing feature.
+2. Color Splash remains the existing second blank-paint activity and is still an inventory consolidation candidate. This request explicitly changed Free Paint and Color In; no extra Color Splash redesign is claimed.
+3. Full-app independent Claude code review is still pending from earlier timed-out attempts. Direct Claude documentation confirmation was already completed separately. Existing production promotion remains Scott's typed gate action after review.
+4. Release the four exact Art claims after recording this handoff. Keep the preview available; do not recreate retired reviews or take over Video Bot.
