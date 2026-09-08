@@ -253,7 +253,7 @@ function buildArt(THREE, island, assets, animators) {
 function buildWatch(THREE, island, assets, animators) {
   const stand = new THREE.Group();
   stand.name = 'watch-popcorn-ticket-stand';
-  stand.position.set(2.44, .56, -.08);
+  stand.position.set(2.47, .56, -.08);
   island.add(stand);
   addBlock(THREE, stand, assets, [0, .42, 0], [.92, .82, .66], 0xe85e65);
   for (const x of [-.3, 0, .3]) addBlock(THREE, stand, assets, [x, .45, .342], [.13, .73, .035], 0xfff1c2);
