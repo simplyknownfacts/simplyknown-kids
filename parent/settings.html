@@ -1828,15 +1828,7 @@
           section.querySelectorAll('.vcard').forEach(c => c.classList.toggle('sel', c === card));
           section.querySelectorAll('.vcard').forEach(c => c.setAttribute('aria-pressed', String(c === card)));
           showSaved();
-          // Live-apply when editing the ACTIVE kid so the parent sees it instantly.
-          try {
-            const active = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
-            if (active && active.id === p.id) {
-              if (themeId === 'storybook') document.documentElement.removeAttribute('data-vbtheme');
-              else document.documentElement.setAttribute('data-vbtheme', themeId);
-              if (window.vbAtmosphere) vbAtmosphere.refresh();
-            }
-          } catch (e) {}
+          // Child pages apply this saved choice when opened; settings stays readable.
         });
       });
     }
