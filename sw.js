@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v161';
+const CACHE = 'vb-v162';
+// v162: include the final partial-ear and rustling-bush 3D clue renderer.
 // v161: clue-based Hide & Seek, with partial peeks and a hidden hiding place.
 // v160: keep Bubble Pop canvas and touch coordinates aligned after HUD reflow.
 // v159: Bubble Pop reserves separate rows for controls, challenge and score.
