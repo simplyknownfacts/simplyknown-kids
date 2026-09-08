@@ -187,12 +187,26 @@ async function play(page, act, tier) {
       return { ok: await bumped(), signal: `clock quiz, tried ${n} times` };
     }
     if (id === 'peek-a-boo') {
-      await page.waitForSelector('.peek-marker');
-      const target = await page.locator('.peek-marker').evaluate(e => Number(e.closest('button').dataset.spot));
+      await page.waitForSelector('#friendIntro');
+      const neutral = await page.evaluate(() => document.querySelector('#stage').dataset.phase === 'watch'
+        && !document.querySelector('#friendIntro').hidden
+        && !document.querySelector('.hiding-spot.clue-peek,.hiding-spot.clue-rustle')
+        && ![...document.querySelectorAll('.hiding-spot .fallback-animal')].some(element => element.textContent.trim()));
+      await page.waitForFunction(() => document.querySelector('#roundAction').getAttribute('aria-disabled') === 'false');
       await page.locator('#roundAction').click();
       await page.waitForFunction(() => document.querySelector('#stage').dataset.phase === 'seek');
+      const firstClue = page.locator('.hiding-spot.clue-peek,.hiding-spot.clue-rustle').first();
+      await firstClue.waitFor();
+      const target = Number(await firstClue.getAttribute('data-spot'));
+      await page.locator('#showAgain').click();
+      const peek = page.locator('.hiding-spot.clue-peek').first();
+      await peek.waitFor();
+      const hintKeptTarget = Number(await peek.getAttribute('data-spot')) === target;
+      const count = await page.locator('.hiding-spot').count();
+      await page.locator('.hiding-spot').nth((target + 1) % count).click();
+      const wrongStayedOpen = await page.locator('#stage').getAttribute('data-phase') === 'seek' && !(await bumped());
       await page.locator('.hiding-spot').nth(target).click();
-      return { ok: await bumped(), signal: 'remembered the visible hiding place' };
+      return { ok: neutral && hintKeptTarget && wrongStayedOpen && await bumped(), signal: 'neutral intro, partial clue, wrong retry, then found friend' };
     }
     if (id === 'abcs') {
       // ABCs is LETTERS-ONLY since v117 (Spelling Bee owns spelling) and

@@ -28,21 +28,29 @@ const domGame = (id, url, tiers, ready = 'body') => ({
 const hideSeek = {
   id: 'peek-a-boo', url: '/games/peek-a-boo.html', tiers: [1,5],
   async check(page, info) {
-    if (!await assertLoaded(page, info.report, info, '.peek-marker')) return;
-    const target = await page.locator('.peek-marker').evaluate(e => Number(e.closest('button').dataset.spot));
+    if (!await assertLoaded(page, info.report, info, '#friendIntro')) return;
+    const neutral = await page.evaluate(() => document.querySelector('#stage').dataset.phase === 'watch'
+      && !document.querySelector('#friendIntro').hidden
+      && !document.querySelector('.hiding-spot.clue-peek,.hiding-spot.clue-rustle')
+      && ![...document.querySelectorAll('.hiding-spot .fallback-animal')].some(element => element.textContent.trim()));
+    info.report.add({ id: `${info.id} neutral-intro`, pass: neutral, severity:'High', detail:'The friend is introduced away from every bush without revealing the answer.' });
     const count = await page.locator('.hiding-spot').count();
+    await page.waitForFunction(() => document.querySelector('#roundAction').getAttribute('aria-disabled') === 'false');
     await page.locator('#roundAction').click();
     await page.waitForFunction(() => document.querySelector('#stage').dataset.phase === 'seek');
-    info.report.add({ id: `${info.id} animal-hidden`, pass: await page.locator('.peek-marker').count() === 0, severity:'High', detail:'The observed animal hides before the child chooses.' });
+    const automatic = page.locator('.hiding-spot.clue-peek,.hiding-spot.clue-rustle').first();
+    await automatic.waitFor();
+    const target = Number(await automatic.getAttribute('data-spot'));
+    info.report.add({ id: `${info.id} fair-initial-clue`, pass: Number.isInteger(target), severity:'High', detail:'Seeking begins with one partial clue instead of a blind guess.' });
+    await page.locator('#showAgain').click();
+    const peek = page.locator('.hiding-spot.clue-peek').first();
+    await peek.waitFor();
+    const hintedTarget = Number(await peek.getAttribute('data-spot'));
+    info.report.add({ id: `${info.id} same-hint`, pass: hintedTarget === target && await page.locator('#stage').getAttribute('data-phase') === 'seek', severity:'High', detail:'A little hint keeps the same round and shows a partial peek.' });
     await page.locator('.hiding-spot').nth((target+1)%count).click();
     info.report.add({ id: `${info.id} wrong-retry`, pass: await page.locator('#stage').getAttribute('data-phase') === 'seek', severity:'High', detail:'An empty bush does not complete the round.' });
-    await page.locator('#showAgain').click();
-    const replay = await page.locator('.peek-marker').evaluate(e => Number(e.closest('button').dataset.spot));
-    info.report.add({ id: `${info.id} same-replay`, pass: replay === target, severity:'High', detail:'Replay keeps the observed location.' });
-    await page.locator('#roundAction').click();
-    await page.waitForFunction(() => document.querySelector('#stage').dataset.phase === 'seek');
     await page.locator('.hiding-spot').nth(target).click();
-    info.report.add({ id: `${info.id} remembered-location`, pass: await page.locator('#stage').getAttribute('data-phase') === 'found', severity:'High', detail:'The watched location completes the round.' });
+    info.report.add({ id: `${info.id} found-from-clue`, pass: await page.locator('#stage').getAttribute('data-phase') === 'found', severity:'High', detail:'The physically selected clue location finds the friend.' });
     await shot(page, `peek-a-boo-t${info.tier}-${info.vp}`);
   },
 };
