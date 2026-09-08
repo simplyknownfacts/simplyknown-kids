@@ -97,10 +97,8 @@
       targetNameEl.textContent = COLOR_NAMES[c] || '';
       correctSincePick = 0;
       const prompt = `Tap the ${COLOR_NAMES[c]} thing!`;
-      setTimeout(() => {
-        if (typeof speakInstruction === 'function') speakInstruction(prompt);
-        else speak(prompt);
-      }, 150);
+      if (typeof speakInstruction === 'function') speakInstruction(prompt);
+      else speak(prompt);
     }
     if (challengeOn) { targetEl.style.display = 'flex'; pickTarget(); }
 
