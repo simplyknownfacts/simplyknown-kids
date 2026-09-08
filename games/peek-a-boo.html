@@ -75,7 +75,31 @@
     if (window.vbProgress) { vbProgress.firstPlay('peek-a-boo'); vbProgress.touchStreak(); }
 
     let roundTimer = null;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    let promptTimer = null;
+    let roundGeneration = 0;
+    let roundSettled = false;
+    let pageActive = true;
+    function clearRoundTimers() {
+      clearTimeout(roundTimer);
+      clearTimeout(promptTimer);
+      roundTimer = promptTimer = null;
+    }
+    function scheduleRound(fn, delay, round) {
+      clearTimeout(roundTimer);
+      roundTimer = setTimeout(() => {
+        if (pageActive && round === roundGeneration) fn();
+      }, delay);
+    }
+    function disposePage() {
+      pageActive = false;
+      roundGeneration++;
+      clearRoundTimers();
+    }
+    window.addEventListener('pagehide', disposePage);
+    window.addEventListener('beforeunload', disposePage);
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) { pageActive = true; nextRound(); }
+    });
 
     const ANIMALS = [
       { emoji:'🐮', name:'Cow',      sound:'Moo' },
@@ -94,15 +118,19 @@
       return shuffled.slice(0, n);
     }
 
-    function reveal(wrap, onDone) {
+    function reveal(wrap, onDone, round) {
       const curtain = wrap.querySelector('.curtain');
       curtain.classList.add('open');
       playSuccess();
       if (window.vbProgress) vbProgress.record('peek-a-boo');
-      setTimeout(onDone, 1800);
+      scheduleRound(onDone, 1800, round);
     }
 
     function nextRound() {
+      if (!pageActive) return;
+      clearRoundTimers();
+      roundSettled = false;
+      const round = ++roundGeneration;
       const stage = document.getElementById('stage');
       const hint  = document.getElementById('hint');
       stage.innerHTML = '';
@@ -120,10 +148,12 @@
           <div class="animal"><span>${a.emoji}</span><span class="animal-name">${a.name}</span></div>
           <div class="curtain wiggle">🎀</div>`;
         wrap.querySelector('.curtain').addEventListener('click', () => {
+          if (roundSettled || round !== roundGeneration) return;
+          roundSettled = true;
           reveal(wrap, () => {
             speak(little ? `${a.name}! ${a.sound}` : a.name);
-            setTimeout(nextRound, little ? 1900 : 1500);
-          });
+            scheduleRound(nextRound, little ? 1900 : 1500, round);
+          }, round);
         });
         stage.appendChild(wrap);
 
@@ -137,7 +167,8 @@
           hint.textContent = `Tap the ${target.name}!`;
         } else {
           hint.textContent = '🔊 Listen...';
-          setTimeout(() => {
+          promptTimer = setTimeout(() => {
+            if (!pageActive || round !== roundGeneration || roundSettled) return;
             const prompt = `${target.sound}! ${target.sound}! Who am I?`;
             if (typeof speakInstruction === 'function') speakInstruction(prompt);
             else speak(prompt);
@@ -151,12 +182,19 @@
             <div class="animal"><span>${a.emoji}</span><span class="animal-name">${a.name}</span></div>
             <div class="curtain">🎀</div>`;
           wrap.querySelector('.curtain').addEventListener('click', () => {
+            if (roundSettled || round !== roundGeneration) return;
             if (i === answerIdx) {
-              reveal(wrap, () => { speak(`Yes! ${a.name}!`); setTimeout(nextRound, 1500); });
+              roundSettled = true;
+              clearTimeout(promptTimer);
+              reveal(wrap, () => {
+                speak(`Yes! ${a.name}!`);
+                scheduleRound(nextRound, 1500, round);
+              }, round);
             } else {
               playBoop();
               wrap.querySelector('.curtain').style.background = '#FF6B6B';
               setTimeout(() => {
+                if (!pageActive || round !== roundGeneration || roundSettled) return;
                 wrap.querySelector('.curtain').style.background = '';
                 speak(`Try again!`);
               }, 600);

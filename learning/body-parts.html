@@ -237,8 +237,22 @@
     let target = null;
     let lastTarget = null;
     let roundTimer = null;
+    let promptTimer = null;
+    let roundGeneration = 0;
+    let roundSettled = false;
+    let pageActive = true;
     let correctCount = 0; // taps since last body switch — rotate every 5
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    function disposePage() {
+      pageActive = false;
+      roundGeneration++;
+      clearTimeout(roundTimer);
+      clearTimeout(promptTimer);
+    }
+    window.addEventListener('pagehide', disposePage);
+    window.addEventListener('beforeunload', disposePage);
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) { pageActive = true; nextRound(); }
+    });
 
     // Shuffled "bag": ask EVERY part once before any repeats (random picking gave
     // the same part 3× in 5 taps). Refill + reshuffle when empty, avoiding an
@@ -254,12 +268,17 @@
     }
 
     function nextRound() {
+      if (!pageActive) return;
       clearTimeout(roundTimer);
+      clearTimeout(promptTimer);
+      roundSettled = false;
+      const round = ++roundGeneration;
       target = _drawTarget();
       lastTarget = target;
       const prompt = tier <= 2 ? `Where's the ${target}?` : `Tap the ${PRONOUN(target)}!`;
       hint.textContent = prompt;
-      setTimeout(() => {
+      promptTimer = setTimeout(() => {
+        if (!pageActive || round !== roundGeneration || roundSettled) return;
         if (typeof speakInstruction === 'function') speakInstruction(prompt);
         else speak(prompt);
       }, 400);
@@ -275,7 +294,7 @@
     // tap on the mouth (the old nearest-CENTRE test mis-fired on clustered faces).
     // One handler on the figure; the <img> + .hit buttons are pointer-events:none.
     function handleFigureTap(e) {
-      if (!currentHits.length || !target) return;
+      if (!pageActive || roundSettled || !currentHits.length || !target) return;
       const r = figure.getBoundingClientRect();
       const px = (e.clientX - r.left) / r.width * 100;   // tap as % of figure (x)
       const py = (e.clientY - r.top) / r.height * 100;   // and y
@@ -290,6 +309,9 @@
       const name = best.z.n;
       currentHits.forEach(h => h.el.classList.remove('flash', 'wrong'));
       if (name === target) {
+        roundSettled = true;
+        clearTimeout(promptTimer);
+        const completedRound = roundGeneration;
         best.el.classList.add('flash');
         if (typeof haptic === 'function') haptic(25);
         playSuccess();
@@ -302,7 +324,11 @@
         speak(`Yes! That's the ${PRONOUN(target)}.`);
         correctCount++;
         const rotate = correctCount % 5 === 0;
-        roundTimer = setTimeout(async () => { if (rotate) await switchBody(); nextRound(); }, 1800);
+        roundTimer = setTimeout(async () => {
+          if (!pageActive || completedRound !== roundGeneration) return;
+          if (rotate) await switchBody();
+          if (pageActive && completedRound === roundGeneration) nextRound();
+        }, 1800);
       } else {
         best.el.classList.add('wrong');
         playBoop();
