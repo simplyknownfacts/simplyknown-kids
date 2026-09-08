@@ -52,23 +52,33 @@
       stroke-linecap: round; pointer-events: none;
     }
     .dot { fill: #1a1a2e; pointer-events: none; }
-    /* Photo coloring uses two stacked canvases */
-    .photo-page {
-      position: relative; width: 100%; height: 100%;
-      background: white;
+    #colorFillCanvas {
+      display: block; width: auto; height: auto; max-width: 100%; max-height: 100%;
+      object-fit: contain; touch-action: none; cursor: pointer; background: #fff;
     }
-    .photo-page canvas { position: absolute; inset: 0; touch-action: none; }
-    .photo-lineart { z-index: 2; pointer-events: none; mix-blend-mode: multiply; }
-    .photo-paint   { z-index: 1; }
+    .fill-message {
+      position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
+      color: #237f7a; background: rgba(255,255,255,.92); border-radius: 16px;
+      padding: 5px 12px; font-weight: 800; font-size: 13px; white-space: nowrap;
+      pointer-events: none;
+    }
+    .fill-error {
+      position: absolute; inset: 20%; display: grid; place-items: center; text-align: center;
+      color: #237f7a; font-weight: 900; font-size: 18px; padding: 20px;
+      background: #fff8e8; border: 3px dashed #a992d4; border-radius: 24px;
+    }
+    .fill-error[hidden] { display: none; }
 
     #toolbar {
       position: fixed; bottom: 0; left: 0; right: 0;
       display: flex; align-items: center; justify-content: center;
       gap: 10px; flex-wrap: wrap;
       padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
-      background: rgba(10,10,40,0.88); backdrop-filter: blur(8px); z-index: 10;
+      background: rgba(55,117,116,0.94); backdrop-filter: blur(8px); z-index: 10;
     }
-    @media (orientation: landscape) and (min-width: 768px) {
+    #colorPalette { display: flex; gap: 6px; align-items: center; justify-content: center; }
+    #colorFillDock { min-width: 44px; min-height: 44px; }
+    @media (orientation: landscape) and (min-width: 768px) and (min-height: 501px) {
       #toolbar {
         flex-direction: column; flex-wrap: wrap; align-content: flex-start;
         top: 0; right: 0; bottom: 0; left: auto;
@@ -78,18 +88,31 @@
       }
       .book { padding-right: 200px; padding-bottom: 16px; }
       .page { right: 200px; bottom: 16px; }
+      #colorPalette { display: grid; grid-template-columns: repeat(2, 46px); }
     }
     .pip {
       width: 46px; height: 46px; border-radius: 50%;
       border: 4px solid rgba(255,255,255,0.45); cursor: pointer;
       transition: border-color 0.1s, box-shadow 0.1s;
+      flex: 0 0 46px;
     }
     .pip.active { border-color: white; box-shadow: 0 0 0 3px white; }
     .tool-btn {
-      padding: 10px 14px; border-radius: 14px;
+      min-width: 68px; min-height: 46px; padding: 10px 14px; border-radius: 14px;
       background: rgba(255,255,255,0.18);
       border: 2px solid rgba(255,255,255,0.3);
       color: white; font-weight: 800; font-size: 13px; cursor: pointer;
+    }
+    @media (max-width: 400px) {
+      .book { padding-bottom: 126px; }
+      .page { bottom: 126px; }
+      .pip { width: 44px; height: 44px; flex-basis: 44px; }
+      #colorPalette { gap: 5px; }
+    }
+    @media (max-height: 500px) and (orientation: landscape) {
+      .book { padding-bottom: 72px; }
+      .page { bottom: 72px; }
+      #toolbar { flex-wrap: nowrap; }
     }
     /* Page nav arrows (sit OUTSIDE the toolbar so kid can flip mid-coloring) */
     .page-nav {
@@ -104,7 +127,7 @@
     .page-nav:active { opacity: 1; }
     .page-nav.prev { left: 4px; }
     .page-nav.next { right: 4px; }
-    @media (orientation: landscape) and (min-width: 768px) {
+    @media (orientation: landscape) and (min-width: 768px) and (min-height: 501px) {
       .page-nav.next { right: 204px; }
     }
     .scene-title {
@@ -143,7 +166,7 @@
   <script src="../js/celebrate.js"></script>
   <script src="../js/progress.js"></script>
   <script src="../js/sync.js"></script>
-  <script src="../js/paint.js"></script>
+  <script src="../js/color-fill.js"></script>
   <script>window.VB_ASSET_BASE='../';</script>
   <script>
     (function() {
@@ -301,25 +324,25 @@
     ];
 
     function getUploadedPages() {
-      try { return JSON.parse(localStorage.getItem('vb_coloring_pages') || '[]'); }
+      try {
+        const saved = JSON.parse(localStorage.getItem('vb_coloring_pages') || '[]');
+        return Array.isArray(saved) ? saved : [];
+      }
       catch { return []; }
     }
 
-    // Pages for the shared paint engine: built-in coloring scenes (inline SVG,
-    // styled by this page's .region/.detail CSS) → uploaded photos (XDoG line
-    // art) → a Blank page for pure freeform drawing. The 🖼️ tool in the dock
-    // flips between them; brushes/sizes/eraser/undo scale with the kid's tier.
+    // Built-in coloring scenes followed by parent-uploaded line art. Free Paint
+    // owns blank-canvas drawing; Color In only fills spaces bounded by outlines.
     const pages = [
       ...BUILTIN_SCENES.map(s => ({ name: s.name, svg: s.svg })),
-      ...getUploadedPages().map(p => ({ name: p.name || 'My Photo', src: p.lineArt })),
-      { name: 'Blank Page' },
+      ...getUploadedPages().map(p => ({ name: p && p.name || 'My Photo', src: p && p.lineArt })),
     ];
-    vbPaint.mount({
+    vbColorFill.mount({
       tier,
       pages,
-      onStroke: () => { if (window.vbProgress) vbProgress.record('color-in'); },
+      onFill: () => { if (window.vbProgress) vbProgress.record('color-in'); },
     });
-    gameSettings.attach('color-in', { container: '#vbPaintDock' });
+    gameSettings.attach('color-in', { container: '#colorFillDock' });
     })();
   </script>
 </body>
