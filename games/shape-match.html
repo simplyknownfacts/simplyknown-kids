@@ -88,7 +88,27 @@
     // A parent can still force drag earlier via the dragMode feature toggle.
     const dragOn = tier >= 3 || getProfileFeature(profile, 'shape-match', 'dragMode');
     let shapeTimer = null;
-    window.addEventListener('beforeunload', () => clearTimeout(shapeTimer));
+    let roundGeneration = 0;
+    let disposed = false;
+    const dragCleanups = new Set();
+    function clearRoundWork() {
+      clearTimeout(shapeTimer);
+      shapeTimer = null;
+      dragCleanups.forEach(cleanup => cleanup());
+      dragCleanups.clear();
+    }
+    function scheduleNext(delay, round) {
+      clearTimeout(shapeTimer);
+      shapeTimer = setTimeout(() => {
+        if (!disposed && round === roundGeneration) nextRound();
+      }, delay);
+    }
+    function disposePage() { disposed = true; clearRoundWork(); }
+    window.addEventListener('pagehide', disposePage);
+    window.addEventListener('beforeunload', disposePage);
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) { disposed = false; nextRound(); }
+    });
 
     const SHAPES = [
       { name: 'Circle',   color: '#FF6B6B', path: (s) => `<circle cx="50" cy="50" r="${s*0.45}" fill="currentColor"/>` },
@@ -147,7 +167,7 @@
     }
 
     // Tier 7+: "How many sides?" — show a polygon, tap the right side count.
-    function sidesRound() {
+    function sidesRound(round) {
       const shapesRow = document.getElementById('shapesRow');
       const targetsRow = document.getElementById('targetsRow');
       const hint = document.getElementById('hint');
@@ -168,7 +188,8 @@
       });
       shapesRow.appendChild(svg);
       hint.textContent = 'How many sides?';
-      speak('How many sides?');
+      speakInstruction('How many sides?');
+      let roundDone = false;
 
       const choices = new Set([s.sides]);
       while (choices.size < 3) {
@@ -181,13 +202,17 @@
         btn.className = 'num-choice'; btn.textContent = n;
         btn.addEventListener('pointerdown', (e) => {
           e.preventDefault();
+          if (disposed || round !== roundGeneration || roundDone) return;
           if (n === s.sides) {
+            roundDone = true;
             btn.classList.add('ok'); playSuccess(); speak(String(s.sides));
             if (window.vbProgress) { vbProgress.record('shape-match'); vbProgress.mastery('shape-match.mastery'); }
-            clearTimeout(shapeTimer); shapeTimer = setTimeout(nextRound, 1500);
+            scheduleNext(1500, round);
           } else {
             btn.classList.add('bad'); playBoop();
-            setTimeout(() => btn.classList.remove('bad'), 400);
+            setTimeout(() => {
+              if (!disposed && round === roundGeneration && btn.isConnected) btn.classList.remove('bad');
+            }, 400);
           }
         });
         row.appendChild(btn);
@@ -196,7 +221,7 @@
     }
 
     // Tier 8+: odd-one-out — three of one shape + one different; tap the different.
-    function oddRound() {
+    function oddRound(round) {
       const shapesRow = document.getElementById('shapesRow');
       const targetsRow = document.getElementById('targetsRow');
       const hint = document.getElementById('hint');
@@ -206,20 +231,25 @@
       const pick = [...pool].sort(() => Math.random() - 0.5).slice(0, 2);
       const majority = pick[0], odd = pick[1];
       const items = [odd, majority, majority, majority].sort(() => Math.random() - 0.5);
-      hint.textContent = 'Which one is different?'; speak('Which one is different?');
+      hint.textContent = 'Which one is different?'; speakInstruction('Which one is different?');
+      let roundDone = false;
       const row = document.createElement('div'); row.className = 'shapes-row'; row.style.gap = '20px';
       items.forEach(s => {
         const svg = makeSVG(s, 92); svg.style.cursor = 'pointer'; svg.style.transition = 'transform .12s, opacity .2s';
         svg.addEventListener('pointerdown', (e) => {
           e.preventDefault();
+          if (disposed || round !== roundGeneration || roundDone) return;
           if (s === odd) {
+            roundDone = true;
             playSuccess(); speak(s.name);
             if (window.vbProgress) { vbProgress.record('shape-match'); vbProgress.mastery('shape-match.mastery'); }
             svg.style.transform = 'scale(1.2)';
-            clearTimeout(shapeTimer); shapeTimer = setTimeout(nextRound, 1500);
+            scheduleNext(1500, round);
           } else {
             playBoop(); svg.style.opacity = '0.35';
-            setTimeout(() => { svg.style.opacity = '1'; }, 500);
+            setTimeout(() => {
+              if (!disposed && round === roundGeneration && svg.isConnected) svg.style.opacity = '1';
+            }, 500);
           }
         });
         row.appendChild(svg);
@@ -228,8 +258,11 @@
     }
 
     function nextRound() {
-      if (sidesOn && Math.random() < 0.33) { sidesRound(); return; }
-      if (oddOn && Math.random() < 0.33) { oddRound(); return; }
+      if (disposed) return;
+      clearRoundWork();
+      const round = ++roundGeneration;
+      if (sidesOn && Math.random() < 0.33) { sidesRound(round); return; }
+      if (oddOn && Math.random() < 0.33) { oddRound(round); return; }
       const shapesRow = document.getElementById('shapesRow');
       const targetsRow = document.getElementById('targetsRow');
       const hint = document.getElementById('hint');
@@ -254,7 +287,7 @@
         let done = false;
         const reveal = (e) => {
           if (e) { e.preventDefault(); e.stopPropagation(); }
-          if (done) return; // one reaction per shape
+          if (disposed || round !== roundGeneration || done) return; // one reaction per shape
           done = true;
           // Immediate, obvious feedback so a tap never feels dead:
           hint.textContent = s.name;            // show the name big
@@ -264,19 +297,19 @@
           playChime();
           if (window.vbProgress) vbProgress.record('shape-match');
           speak(s.name);
-          clearTimeout(shapeTimer);
-          shapeTimer = setTimeout(nextRound, 1600);
+          scheduleNext(1600, round);
         };
         // pointerdown = no 300ms tap delay, fires reliably on touch + mouse.
         svg.addEventListener('pointerdown', reveal);
         shapesRow.appendChild(svg);
         hint.textContent = tier <= 2 ? '👆 Tap the shape!' : `Tap the ${s.name}!`;
-        speak(s.name);
+        speakInstruction(s.name);
         return;
       }
 
       hint.textContent = '👆 Drag each shape to its matching box!';
       let matched = 0;
+      let roundDone = false;
 
       const shuffledTargets = [...selected].sort(() => Math.random() - 0.5);
       const targetEls = {};
@@ -293,10 +326,31 @@
         const svg = makeSVG(s, srcSize);
         svg.classList.add('pulse');
         svg.dataset.shape = s.name;
-        let dragging = false, startX, startY, origX, origY;
+        let activePointerId = null, startX, startY, origX, origY;
+        function restoreSource() {
+          svg.style.position = '';
+          svg.style.zIndex = '';
+          svg.style.left = '';
+          svg.style.top = '';
+        }
+        function removeDragListeners() {
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+          window.removeEventListener('pointercancel', onUp);
+        }
+        function abandonDrag() {
+          if (activePointerId != null) {
+            try { svg.releasePointerCapture(activePointerId); } catch {}
+          }
+          activePointerId = null;
+          removeDragListeners();
+          if (svg.style.display !== 'none') restoreSource();
+        }
+        dragCleanups.add(abandonDrag);
         svg.addEventListener('pointerdown', e => {
+          if (disposed || round !== roundGeneration || roundDone || activePointerId != null) return;
           svg.classList.remove('pulse');
-          dragging = true;
+          activePointerId = e.pointerId;
           const r = svg.getBoundingClientRect();
           startX = e.clientX; startY = e.clientY;
           origX = r.left; origY = r.top;
@@ -313,19 +367,20 @@
           window.addEventListener('pointercancel', onUp);
         });
         function onMove(e) {
-          if (!dragging) return;
+          if (disposed || round !== roundGeneration || e.pointerId !== activePointerId) return;
           if (e.cancelable) e.preventDefault();
           svg.style.left = (origX + e.clientX - startX) + 'px';
           svg.style.top  = (origY + e.clientY - startY)  + 'px';
         }
         function onUp(e) {
-          if (!dragging) return;
-          dragging = false;
-          window.removeEventListener('pointermove', onMove);
-          window.removeEventListener('pointerup', onUp);
-          window.removeEventListener('pointercancel', onUp);
+          if (disposed || round !== roundGeneration || e.pointerId !== activePointerId) return;
+          const cancelled = e.type === 'pointercancel';
+          try { svg.releasePointerCapture(activePointerId); } catch {}
+          activePointerId = null;
+          removeDragListeners();
+          if (cancelled) { restoreSource(); return; }
           const target = targetEls[s.name];
-          if (!target) return;
+          if (!target) { restoreSource(); return; }
           const tr = target.getBoundingClientRect();
           if (e.clientX > tr.left && e.clientX < tr.right &&
               e.clientY > tr.top  && e.clientY < tr.bottom) {
@@ -336,12 +391,13 @@
             if (window.vbProgress) vbProgress.record('shape-match');
             matched++;
             if (matched === count) {
+              roundDone = true;
               if (count === 6 && window.vbProgress) vbProgress.mastery('shape-match.mastery');
-              setTimeout(nextRound, 1500);
+              scheduleNext(1500, round);
             }
           } else {
             playBoop();
-            svg.style.position = ''; svg.style.left = ''; svg.style.top = '';
+            restoreSource();
           }
         }
         shapesRow.appendChild(svg);

@@ -25,14 +25,14 @@
   }
 
   // ---------------------------------------------------------------------
-  // Trophy Joy pause-point logic (2026-08-31 spec, approved by master).
+  // Award-notice pause-point logic.
   //
   // Nothing here needs any of the 21 activity pages to change: this file and
   // celebrate.js already load on every one of them, so hooking the pause
   // signals here covers the whole app from two files.
   //
-  // Every unlock still glints immediately (non-blocking, always safe). The
-  // BIG celebration is batched and only fires at an actual pause:
+  // Every unlock still glints immediately (visual only). The compact corner
+  // notice is batched and only fires at an actual pause:
   //   - tiers 3-10: after IDLE_MS of no further unlock (a round-based
   //     quiz's between-question pause and a continuous game's breather both
   //     naturally clear this; a tap-frenzy does not).

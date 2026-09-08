@@ -108,7 +108,12 @@
 })();
 
 // Navigation
-function goTo(path) { window.location.href = path; }
+function goTo(path) {
+  // Stop page-owned speech before navigation begins. pagehide is the backstop,
+  // but cancelling here also covers slow navigations and history transitions.
+  if (typeof cancelSpeak === 'function') cancelSpeak();
+  window.location.href = path;
+}
 function goHome()    { goTo(rootPath() + 'home.html'); }
 function goProfiles(){ goTo(rootPath() + 'index.html'); }
 
@@ -301,6 +306,10 @@ function _matchClips(text) {
 // actually optimize for.
 let _audio = null;
 let _speakGen = 0; // bumps every cancel; in-flight chains check before each clip
+let _clipResolve = null;
+let _activeSpeechKind = null;
+let _lastInstructionText = '';
+let _vbReplayEl = null;
 
 function _ensureAudio() {
   if (!_audio) {
@@ -320,20 +329,31 @@ function _playClip(voice, hash, gen) {
     try { a.pause(); } catch {}
     a.onended = a.onerror = null;  // clear stale handlers
     a.src = `${rootPath()}audio/${voice}/${hash}.mp3`;
-    a.onended = () => { if (gen === _speakGen) resolve(); };
-    a.onerror = () => resolve();
+    _clipResolve = resolve;
+    const finish = () => {
+      if (_clipResolve === resolve) _clipResolve = null;
+      resolve();
+    };
+    a.onended = finish;
+    a.onerror = finish;
     // play() returns a promise that may reject if cancelSpeak fires mid-load.
     a.play().catch((e) => {
       // Phones block un-gestured audio (NotAllowedError) — flag it so pages can
       // replay the phrase on the first real tap (see home.html greeting retry).
       if (e && e.name === 'NotAllowedError') window._vbAudioBlocked = true;
-      resolve();
+      finish();
     });
   });
 }
 
 function cancelSpeak() {
   _speakGen++;
+  _activeSpeechKind = null;
+  if (_clipResolve) {
+    const finish = _clipResolve;
+    _clipResolve = null;
+    try { finish(); } catch {}
+  }
   if (_audio) {
     try { _audio.pause(); _audio.removeAttribute('src'); _audio.load(); } catch {}
   }
@@ -347,7 +367,7 @@ function _voiceSpeak(text, voice) {
   const gen = _speakGen;
   // Fire-and-forget IIFE — no shared queue, so a new speak() never waits for
   // the previous to clean up. The gen check inside _playClip aborts stale chains.
-  (async () => {
+  return (async () => {
     for (const h of hashes) {
       if (gen !== _speakGen) return;
       await _playClip(voice, h, gen);
@@ -362,23 +382,78 @@ function _getActiveVoice() {
   return v;
 }
 
-function speak(text, rate = 0.85, pitch = 1.2) {
-  // Always cancel any in-flight speech before queuing the next phrase. Without
-  // this, a kid spam-tapping in a game stacks up clips that play long after
-  // they're done. The internal clip-sequencing for multi-clip phrases (e.g.
-  // "3 ducks" = ["3","ducks"]) is unaffected because that's a single speak()
-  // call that builds one chain.
-  cancelSpeak();
-  _showCaption(text);
-  // Big kids (Grade 3+, age tier ≥9) read: captions + SFX only, no spoken
-  // prompts — a 9-year-old finds the narration babyish. Age-based on purpose
-  // (not per-activity override) so one kid gets one consistent experience.
+function _speechEnabledForProfile() {
+  // Big kids (Grade 3+, age tier >=9) read: captions + SFX only, no spoken
+  // prompts. Keep this decision shared by feedback and instructions.
   try {
     const p = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
-    if (p && typeof tierForAge === 'function' && tierForAge(getAgeMonths(p.birthday)) >= 9) return;
-  } catch (e) {}
-  const v = _getActiveVoice();
-  return _voiceSpeak(text, v);
+    return !(p && typeof tierForAge === 'function' && tierForAge(getAgeMonths(p.birthday)) >= 9);
+  } catch (e) { return true; }
+}
+
+function _startSpeech(text, kind) {
+  cancelSpeak();
+  _activeSpeechKind = kind;
+  const gen = _speakGen;
+  const playback = _voiceSpeak(text, _getActiveVoice());
+  Promise.resolve(playback).finally(() => {
+    if (gen === _speakGen && _activeSpeechKind === kind) _activeSpeechKind = null;
+  });
+  return playback;
+}
+
+function _ensureInstructionReplay() {
+  if (_vbReplayEl && _vbReplayEl.isConnected) return _vbReplayEl;
+  if (!document.getElementById('vb-replay-instruction-style')) {
+    const style = document.createElement('style');
+    style.id = 'vb-replay-instruction-style';
+    style.textContent =
+      '.vb-replay-instruction{position:fixed;top:calc(14px + env(safe-area-inset-top));right:14px;z-index:1090;' +
+      'min-width:72px;min-height:48px;padding:8px 12px;border:2px solid rgba(255,255,255,.7);border-radius:999px;' +
+      'background:rgba(20,20,40,.78);color:#fff;font:800 14px/1.1 system-ui,-apple-system,sans-serif;' +
+      'box-shadow:0 4px 14px rgba(0,0,0,.24);cursor:pointer;touch-action:manipulation}' +
+      '.vb-replay-instruction:active{transform:scale(.96)}' +
+      '@media(prefers-reduced-motion:reduce){.vb-replay-instruction{transition:none}}';
+    document.head.appendChild(style);
+  }
+  _vbReplayEl = document.createElement('button');
+  _vbReplayEl.type = 'button';
+  _vbReplayEl.className = 'vb-replay-instruction';
+  _vbReplayEl.textContent = '\ud83d\udd0a Again';
+  _vbReplayEl.setAttribute('aria-label', 'Hear the instruction again');
+  _vbReplayEl.addEventListener('click', replayInstruction);
+  (document.body || document.documentElement).appendChild(_vbReplayEl);
+  return _vbReplayEl;
+}
+
+// Optional feedback: the latest tap wins, but it never cuts off an essential
+// instruction and never waits in a queue to play after the moment has passed.
+function speak(text, rate = 0.85, pitch = 1.2) {
+  _showCaption(text);
+  if (!_speechEnabledForProfile()) return;
+  if (_activeSpeechKind === 'instruction') return false;
+  return _startSpeech(text, 'feedback');
+}
+
+// Essential activity guidance gets one protected playback and a persistent,
+// explicit replay control. A newer instruction replaces an obsolete one.
+function speakInstruction(text) {
+  _lastInstructionText = String(text || '');
+  if (!_lastInstructionText) return;
+  _ensureInstructionReplay();
+  _showCaption(_lastInstructionText);
+  if (!_speechEnabledForProfile()) return;
+  return _startSpeech(_lastInstructionText, 'instruction');
+}
+
+function replayInstruction() {
+  if (_lastInstructionText) return speakInstruction(_lastInstructionText);
+}
+
+// A page's audio and clip chain must not survive deliberate navigation.
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', cancelSpeak);
+  window.addEventListener('beforeunload', cancelSpeak);
 }
 
 // Render the nav chrome: a Back + Home pair, top-left. Both are big rounded
