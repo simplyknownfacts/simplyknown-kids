@@ -28,16 +28,26 @@
     }
   </style>
 </head>
-<body class="section-learn">
+<body class="section-learn world-page world-learn">
+  <div class="world-decor" aria-hidden="true">
+    <span class="world-spark s1"></span><span class="world-spark s2"></span><span class="world-spark s3"></span>
+  </div>
   <div class="hub-screen">
-    <h1 class="hub-title">Learn</h1>
+    <header class="world-intro">
+      <div class="world-intro-copy">
+        <span class="world-kicker">Golden Observatory</span>
+        <h1 class="hub-title">Learning Observatory</h1>
+        <p class="world-intro-text">Follow your curiosity and discover something new.</p>
+      </div>
+      <div class="world-emblem" data-world-house="learn" aria-hidden="true">🔭</div>
+    </header>
     <div class="cards-row" id="cardsRow"></div>
     <div class="empty-msg" id="emptyMsg" style="display:none;">
       No learning activities are turned on for this child yet.<br>
       A grown-up can enable them in ⚙️ Parent Settings → Activities.
     </div>
 
-    <div id="vbShelfMount" style="width:100%;max-width:760px;margin:8px auto 30px;"></div>
+    <div class="world-shelf" id="vbShelfMount"></div>
   </div>
 
   <script src="../js/atmosphere.js"></script>
@@ -62,6 +72,18 @@
     const profile = getActiveProfile();
     if (!profile) goProfiles();
     const row = document.getElementById('cardsRow');
+    const descriptions = {
+      'hello-colors': 'Meet colors, then spot the right one.',
+      'animal-sounds': 'Hear an animal and learn who made the sound.',
+      'count-along': 'Count cheerful objects one by one.',
+      'abcs': 'Explore letters, sounds, and first words.',
+      'days': 'Put the days of the week in order.',
+      'math': 'Climb through number puzzles at your level.',
+      'clock': 'Read the hands and tell the time.',
+      'spelling': 'Listen, choose letters, and build words.',
+      'money': 'Recognize money and practice making totals.',
+      'body-parts': 'Point, listen, and learn the parts of the body.'
+    };
     const visible = ACTIVITY_FEATURES
       .filter(a => a.section === 'learn')
       .filter(a => isActivityVisible(profile, a.id));
@@ -73,8 +95,18 @@
         const card = document.createElement('button');
         card.type = 'button';
         card.className = 'activity-card';
+        card.dataset.activity = a.id;
+        card.setAttribute('aria-label', a.name + '. ' + (descriptions[a.id] || 'Open activity.'));
         card.onclick = () => go(a.file);
-        card.innerHTML = `<div class="icon" aria-hidden="true">${a.icon}</div><div class="label">${a.name}</div>`;
+        const icon = document.createElement('span');
+        icon.className = 'icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = a.icon;
+        const label = document.createElement('span');
+        label.className = 'label'; label.textContent = a.name;
+        const note = document.createElement('span');
+        note.className = 'activity-note'; note.textContent = descriptions[a.id] || 'Open activity.';
+        const arrow = document.createElement('span');
+        arrow.className = 'activity-go'; arrow.setAttribute('aria-hidden', 'true'); arrow.textContent = '›';
+        card.append(icon, label, note, arrow);
         row.appendChild(card);
       });
     }

@@ -101,10 +101,20 @@
     .yt-cover-tr { position: absolute; right: 0; top: 0;    width: 56px;  height: 56px; background: #000; z-index: 201; }
   </style>
 </head>
-<body class="section-watch">
+<body class="section-watch world-page world-watch">
+  <div class="world-decor" aria-hidden="true">
+    <span class="world-spark s1"></span><span class="world-spark s2"></span><span class="world-spark s3"></span>
+  </div>
   <div class="channels-screen" id="channelsScreen">
-    <h1 class="hub-title">Watch</h1>
-    <div class="hub-subtitle" id="subtitle"></div>
+    <header class="world-intro">
+      <div class="world-intro-copy">
+        <span class="world-kicker">Bluebird Cinema</span>
+        <h1 class="hub-title">Watch Cinema</h1>
+        <div class="hub-subtitle" id="subtitle"></div>
+      </div>
+      <div class="world-emblem" data-world-house="watch" aria-hidden="true">🎬</div>
+    </header>
+    <p class="world-note"><strong>Grown-up picked:</strong> only channels added in Parent Settings appear here.</p>
     <div class="channels-grid" id="channelsGrid"></div>
   </div>
 

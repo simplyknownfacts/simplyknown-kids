@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SimplyKnown Kids">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#08061C">
+  <meta name="theme-color" content="#FFF6DD">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="manifest" href="manifest.json">
@@ -87,10 +87,16 @@
     }
   </style>
 </head>
-<body>
+<body class="picker-world">
+  <div class="world-decor" aria-hidden="true">
+    <span class="world-spark s1"></span>
+    <span class="world-spark s2"></span>
+    <span class="world-spark s3"></span>
+  </div>
   <div class="picker-screen">
-    <div class="picker-greeting" id="greeting">At SimplyKnown</div>
-    <h1 class="picker-title" id="pickerTitle">Who's playing?</h1>
+    <div class="picker-kicker">Welcome to Wonderwood</div>
+    <h1 class="picker-title" id="pickerTitle">Choose your explorer</h1>
+    <div class="picker-greeting" id="greeting">Your animal friend is ready for an adventure.</div>
 
     <div class="profiles-row" id="profilesRow"></div>
 
@@ -111,25 +117,18 @@
   <script src="js/app.js"></script>
   <script src="js/sync.js"></script>
   <script>
-    // Time-of-day greeting copy (runs after atmosphere.js has set data-tod)
+    // A small time-of-day welcome; the main prompt stays direct for young readers.
     function updateGreetingCopy() {
       var tod = document.documentElement.getAttribute('data-tod') ||
                 (window.vbAtmosphere && window.vbAtmosphere.pickTOD && window.vbAtmosphere.pickTOD()) ||
                 'night';
       var greet = {
-        morning:   'Good morning at SimplyKnown',
-        afternoon: 'This afternoon at SimplyKnown',
-        evening:   'Good evening at SimplyKnown',
-        night:     'Tonight at SimplyKnown',
-      }[tod];
-      var title = {
-        morning:   "Who's awake?",
-        afternoon: "Who's playing?",
-        evening:   "Who's joining us?",
-        night:     "Who's playing tonight?",
+        morning:   'Good morning! Your animal friend is ready.',
+        afternoon: 'Ready for an afternoon adventure?',
+        evening:   'Your evening adventure is waiting.',
+        night:     'One more cozy adventure?',
       }[tod];
       document.getElementById('greeting').textContent = greet;
-      document.getElementById('pickerTitle').textContent = title;
     }
     updateGreetingCopy();
     // Run again after DOMContentLoaded in case atmosphere.js stamped data-tod
