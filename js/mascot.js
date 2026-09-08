@@ -4,7 +4,7 @@
 //   - On show: play base idle on loop (subtle breathing/sitting)
 //   - Every 5-15s random: interrupt with a random action gesture, then return to base
 //   - speak: play speaking clip, then return to base
-//   - Tap mascot: nothing (disabled per user request)
+//   - World companion button: mascot.react() plays its animal sound + welcome motion
 
 const MASCOT_AVAILABLE = ['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle', 'axolotl', 'tabby',
   'owl', 'parrot', 'dolphin', 'octopus', 'lion', 'bunny', 'fox', 'penguin'];
@@ -81,7 +81,14 @@ let _lastAction = null;
 let _state = 'hidden';
 let _frontIdx = 0;
 let _lastSfxAt = 0;
+let _reactionBusy = false;
+let _reactionTimer = null;
+let _reactionAudio = null;
+let _reactionGeneration = 0;
+let _hideTimer = null;
+let _pageActive = true;
 const SFX_COOLDOWN_MS = 15000;
+const REACTION_TIMEOUT_MS = 8000;
 
 function _activeProfile() {
   return (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
@@ -194,7 +201,13 @@ function _ensureEl() {
   // threshold turns it into a reposition (no tap fires). See _attachDrag.
   // pointerdown beats click on toddler taps (no 300ms delay, no shrink-target miss).
   const worldHost = document.querySelector('[data-world-companion]');
-  if (worldHost) wrap.dataset.inWorld = '1';
+  if (worldHost) {
+    wrap.dataset.inWorld = '1';
+    // The scene's real button owns interaction and focus. The rendered mascot
+    // is only its visual child, so it must never cover or consume scene taps.
+    wrap.style.pointerEvents = 'none';
+    wrap.style.touchAction = 'auto';
+  }
   else _attachDrag(wrap);
   (worldHost || document.body).appendChild(wrap);
   _mascotEl = wrap;
@@ -640,21 +653,108 @@ function play(key, opts) {
   _scheduleSettle();   // nudge off any control it's covering on this screen
 }
 
+function _finishReaction(generation, resumeBase) {
+  if (!_reactionBusy || generation !== _reactionGeneration) return;
+  clearTimeout(_reactionTimer);
+  _reactionTimer = null;
+  if (_reactionAudio) {
+    _reactionAudio.onended = null;
+    _reactionAudio.onerror = null;
+    try { _reactionAudio.pause(); } catch {}
+  }
+  _reactionAudio = null;
+  _reactionBusy = false;
+  if (resumeBase && _pageActive) _playBase();
+}
+
+// Play the selected species' existing real animal sound and pair it with the
+// mascot's existing welcome video as a muted visual reaction.
+// Returns true only when this tap owns a new reaction; callers can use that to
+// start their own button animation without reacting to toddler tap bursts.
+function react() {
+  if (_reactionBusy || !_pageActive) return false;
+  const profile = _activeProfile();
+  if (!profile) return false;
+
+  const mascotId = _mascotIdFor(profile);
+  const voice = _mascotVoiceFor(profile);
+  const soundFile = MASCOT_SOUND_FILE[mascotId];
+  if (!soundFile) return false;
+  let audio;
+  try {
+    audio = new Audio(`${rootPath()}audio/sounds/${soundFile}`);
+  } catch {
+    return false;
+  }
+  const wrap = _ensureEl();
+
+  clearTimeout(_actionTimer);
+  clearTimeout(_hideTimer);
+  _reactionBusy = true;
+  const generation = ++_reactionGeneration;
+  _state = 'speaking';
+  wrap.style.display = 'block';
+  wrap.style.opacity = '1';
+  wrap.style.transform = 'scale(1)';
+
+  const finish = () => _finishReaction(generation, true);
+  _reactionAudio = audio;
+  audio.volume = 0.7;
+  audio.onended = finish;
+  audio.onerror = finish;
+  // A missing/corrupt asset or a browser that never emits an end/error event
+  // must not leave the companion locked. The next tap can retry after this.
+  _reactionTimer = setTimeout(finish, REACTION_TIMEOUT_MS);
+  _setChromaMode(_isChroma(mascotId));
+  _crossfadeTo(_src(mascotId, voice, 'welcome'), {
+    muted: true,
+    loop: false,
+    onended: () => {
+      if (_reactionBusy && generation === _reactionGeneration && _pageActive) _playBase();
+    },
+  });
+  try {
+    const started = audio.play();
+    if (started && typeof started.catch === 'function') started.catch(finish);
+  } catch {
+    _finishReaction(generation, true);
+    return false;
+  }
+  return true;
+}
+
 function show() {
   // Just show + start base loop, no speech
+  clearTimeout(_hideTimer);
   _playBase();
 }
 
 function hide() {
   if (!_mascotEl) return;
   clearTimeout(_actionTimer);
+  clearTimeout(_hideTimer);
+  _finishReaction(_reactionGeneration, false);
   if (_chromaRaf) { cancelAnimationFrame(_chromaRaf); _chromaRaf = null; }
-  _videos().forEach(v => { try { v.pause(); } catch {} v.removeAttribute('src'); v.load(); });
+  _videos().forEach(v => {
+    v.onended = null;
+    try { v.pause(); } catch {}
+    v.removeAttribute('src');
+    v.load();
+  });
   _mascotEl.style.opacity = '0';
   _mascotEl.style.transform = 'scale(0.5)';
-  setTimeout(() => { if (_mascotEl) _mascotEl.style.display = 'none'; }, 300);
+  _hideTimer = setTimeout(() => { if (_mascotEl) _mascotEl.style.display = 'none'; }, 300);
   _state = 'hidden';
 }
+
+window.addEventListener('pagehide', () => {
+  _pageActive = false;
+  _finishReaction(_reactionGeneration, false);
+  hide();
+});
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) _pageActive = true;
+});
 
 // Respect global idle/active events from app.js — stop scheduling actions when idle,
 // resume base loop when the user comes back.
@@ -672,4 +772,4 @@ document.addEventListener('vb:active', () => {
   }
 });
 
-window.mascot = { play, show, hide, available: MASCOT_AVAILABLE, labels: MASCOT_LABELS };
+window.mascot = { play, show, hide, react, available: MASCOT_AVAILABLE, labels: MASCOT_LABELS };
