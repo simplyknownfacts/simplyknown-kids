@@ -5,12 +5,16 @@
   if (!profile) { goProfiles(); return; }
   const id = 'peek-a-boo', tier = getActivityTier(profile, id);
   const count = tier >= 5 || getProfileFeature(profile, id, 'multiChoice') ? 3 : 2;
-  const animals = [{name:'Rabbit',icon:'🐰'}, {name:'Cat',icon:'🐱'}, {name:'Bear',icon:'🐻'}];
+  const animals = [{name:'Rabbit',id:'bunny'}, {name:'Cat',id:'tabby'}, {name:'Panda',id:'panda',spokenName:'Bear'}];
   const places = ['Pink flower bush', 'Yellow flower bush', 'Blue flower bush'];
   const stage = document.getElementById('stage'), hint = document.getElementById('hint');
   const action = document.getElementById('roundAction'), again = document.getElementById('showAgain');
   const next = document.getElementById('playAgain'), intro = document.getElementById('friendIntro');
   const cover = document.getElementById('hideCover');
+  const companionHost = document.getElementById('seekCompanion');
+  const companion = window.mascot?.createActor({host:companionHost,id:animals[0].id});
+  const anchors = [];
+  let companionId = animals[0].id;
   let active = true, generation = 0, timer = null, clueTimer = null, renderer = null, loadTimer = null;
   let rendererFactory = null, loadFailed = false, rendererBroken = false;
   let target = -1, animal = -1, phase = 'watch', clue = 'none', readyAt = 0, hintAt = 0, pinnedHint = false;
@@ -33,7 +37,7 @@
       if (active && phase === 'seek' && round === generation && !document.hidden) fn();
     }, delay);
   }
-  function moveSpot(i, rect) {
+  function moveSpot(i, rect, anchor) {
     if (!spots[i]) return;
     const bounds = stage.getBoundingClientRect();
     // A distant bush can project smaller than a finger on short landscape
@@ -46,6 +50,11 @@
       top: Math.max(0, Math.min(1-height, rect.top-(height-rect.height)/2)),
     };
     for (const key of ['left','top','width','height']) spots[i].style[key] = box[key] * 100 + '%';
+    anchors[i] = anchor || {
+      peek:{x:rect.left+rect.width*.5,y:rect.top+rect.height*.35},
+      found:{x:rect.left+rect.width*.5,y:rect.top+rect.height*.82}, width:rect.width*.8,
+    };
+    positionCompanion();
   }
   function fallbackPositions() {
     spots.forEach((_,i) => moveSpot(i, count === 2
@@ -53,12 +62,30 @@
       : i === 2 ? {left:.33,top:.01,width:.34,height:.47}
         : {left:i*.54+.035,top:.48,width:.39,height:.49}));
   }
+  function positionCompanion() {
+    if (phase === 'watch') {
+      if (companionHost.parentNode !== intro) intro.prepend(companionHost);
+      companionHost.removeAttribute('style');
+      companionHost.dataset.pose = 'intro';
+      return;
+    }
+    if (companionHost.parentNode !== stage) stage.appendChild(companionHost);
+    const anchor = anchors[target];
+    if (!anchor) return;
+    const bounds = stage.getBoundingClientRect();
+    const size = Math.min(bounds.width * anchor.width, bounds.height * .75);
+    const peek = phase === 'seek';
+    const point = peek ? anchor.peek : anchor.found;
+    const x = Math.max(0, Math.min(bounds.width-size, point.x*bounds.width-size/2));
+    const y = point.y*bounds.height-size*(peek ? .36 : .94);
+    companionHost.dataset.pose = peek ? 'peek' : 'found';
+    Object.assign(companionHost.style,{left:x+'px',top:y+'px',width:size+'px',height:size+'px'});
+  }
   function render() {
     stage.dataset.phase = phase;
     stage.dataset.clue = clue;
     intro.hidden = phase !== 'watch';
     cover.hidden = phase !== 'hiding';
-    intro.querySelector('.intro-animal').textContent = animals[animal].icon;
     intro.querySelector('.intro-name').textContent = animals[animal].name;
     spots.forEach((spot,i) => {
       const isClue = phase === 'seek' && i === target;
@@ -66,10 +93,6 @@
       spot.classList.toggle('empty', phase === 'seek' && tried.has(i));
       spot.classList.toggle('clue-peek', isClue && clue === 'peek');
       spot.classList.toggle('clue-rustle', isClue && clue === 'rustle');
-      spot.querySelector('.fallback-animal').textContent = phase === 'found' && i === target ? animals[animal].icon : '';
-      const ears = spot.querySelector('.peek-clue');
-      ears.hidden = !isClue || clue !== 'peek';
-      ears.dataset.animal = String(animal);
       spot.querySelector('.rustle-clue').hidden = !isClue || clue !== 'rustle';
       // Expose only a clue actually visible now; never leak the future answer.
       spot.setAttribute('aria-label', places[i] + (isClue && clue !== 'none'
@@ -85,7 +108,12 @@
     next.setAttribute('aria-disabled', String(performance.now() < readyAt));
     again.hidden = phase !== 'seek';
     again.disabled = !active;
-    renderer?.update({count,target,phase,animal,clue});
+    if (companionId !== animals[animal].id) {
+      companionId = animals[animal].id; companion?.setId(companionId);
+    }
+    companion?.setVisible(active && !document.hidden && (phase === 'watch' || phase === 'found' || (phase === 'seek' && clue === 'peek')));
+    positionCompanion();
+    renderer?.update({count,target,phase,clue});
   }
   function pulseClue() {
     if (phase !== 'seek' || !active) return;
@@ -110,9 +138,9 @@
     readyAt = performance.now() + 350;
     hint.textContent = animals[animal].name + ' wants to play hide-and-seek!';
     render(); if (focusAction) action.focus({preventScroll:true}); later(render, 360);
-    // Recorded animal names introduce the friend. New directions are written;
-    // no unrecorded sentence is presented as spoken audio.
-    speakInstruction(animals[animal].name);
+    // Panda uses the existing recorded species name, Bear; the visual label
+    // stays specific. Do not request a missing paid voice clip.
+    speakInstruction(animals[animal].spokenName || animals[animal].name);
   }
   function nextRound(focusAction = false) {
     generation++; animal = (animal+1)%animals.length; show(focusAction);
@@ -130,14 +158,14 @@
     clearClues(); phase = 'found'; readyAt = performance.now()+500;
     hint.textContent = 'You found ' + animals[animal].name + '!';
     render(); if (keyboard) next.focus({preventScroll:true}); later(render,510);
-    playSuccess(); speak('Yes! '+animals[animal].name+'!');
+    playSuccess(); speak('Yes! '+(animals[animal].spokenName || animals[animal].name)+'!');
     if (window.vbProgress) vbProgress.record(id);
   }
   for (let i=0;i<count;i++) {
     const spot = document.createElement('button'); spot.type='button'; spot.className='hiding-spot';
     spot.dataset.spot=String(i); spot.setAttribute('aria-label',places[i]);
     spot.style.setProperty('--flower',['#f5a7ce','#ffe071','#95c7ff'][i]);
-    spot.innerHTML='<span class="fallback-animal" aria-hidden="true"></span><span class="peek-clue" aria-hidden="true" hidden><i></i><i></i></span><span class="fallback-bush" aria-hidden="true"></span><span class="rustle-clue" aria-hidden="true" hidden>🍃</span>';
+    spot.innerHTML='<span class="fallback-bush" aria-hidden="true"></span><span class="rustle-clue" aria-hidden="true" hidden>🍃</span>';
     spot.addEventListener('click',event => { if (event.button === 0) choose(i, event.detail === 0); });
     stage.appendChild(spot); spots.push(spot);
   }
@@ -163,7 +191,7 @@
   }
   function leave() {
     active=false; generation++; clearTimeout(timer); clearTimeout(loadTimer);
-    timer=null; clearClues(); renderer?.pause(); render();
+    timer=null; clearClues(); renderer?.pause(); companion?.pause(); render();
   }
   window.addEventListener('pagehide',leave);
   window.addEventListener('beforeunload',leave);
@@ -175,15 +203,16 @@
       if(rendererFactory) startRenderer();
       else loadTimer=setTimeout(useFallback,3500);
     }
-    renderer?.resume();
+    renderer?.resume(); companion?.resume();
     if(phase==='seek') pulseClue();
     else if(phase==='found') {readyAt=0;render();}
     else show();
   });
   document.addEventListener('visibilitychange',()=>{
-    if(document.hidden) {clearTimeout(clueTimer);clueTimer=null;}
-    else if(active && phase==='seek') pulseClue();
+    if(document.hidden) {clearTimeout(clueTimer);clueTimer=null;companion?.pause();}
+    else if(active) {companion?.resume(); if(phase==='seek') pulseClue(); else render();}
   });
+  new ResizeObserver(() => {if(!renderer) fallbackPositions(); else positionCompanion();}).observe(stage);
   stage.addEventListener('sceneerror',()=>{rendererBroken=true;useFallback();});
   fallbackPositions(); nextRound();
   loadTimer=setTimeout(useFallback,3500);

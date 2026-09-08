@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v163';
+const CACHE = 'vb-v164';
+// v164: use the existing animated Bunny, Tabby Cat and Panda in Hide & Seek.
 // v163: anchor peeking ears and preserve finger-sized search targets in landscape.
 // v162: include the final partial-ear and rustling-bush 3D clue renderer.
 // v161: clue-based Hide & Seek, with partial peeks and a hidden hiding place.
@@ -163,6 +164,11 @@ const CACHE = 'vb-v163';
 //      missing from the precache list -> those pages broke offline. Both added.
 // Full version history: git log.
 const ASSETS = [
+  // These three small idle clips and keyed stills support this activity offline.
+  // Optional media never makes a working shell update fail.
+  './mascots/bunny/green/master.png', './mascots/bunny/green/idle/idle_base.mp4',
+  './mascots/tabby/green/master.png', './mascots/tabby/green/idle/idle_base.mp4',
+  './mascots/panda/green/master.png', './mascots/panda/green/idle/idle_base.mp4',
   './css/parent-settings.css', './css/world-home.css',
   './js/world-home.js',
   './js/world-art.js',

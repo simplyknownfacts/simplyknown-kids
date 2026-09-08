@@ -21,7 +21,7 @@ function clamp(value, min, max) {
  */
 export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   if (!host || typeof host.querySelector !== 'function') throw new TypeError('createHideSeekScene requires a host element');
-  const canvas = host.querySelector('canvas');
+  const canvas = host.querySelector(':scope > canvas');
   if (!canvas) throw new TypeError('createHideSeekScene host must contain a canvas');
 
   let renderer;
@@ -212,104 +212,6 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     hill.castShadow = false;
   });
 
-  function buildAnimal(kind) {
-    const group = new THREE.Group();
-    group.name = ['bunny', 'cat', 'bear'][kind];
-    const furColors = ['#f5eee1', '#e9a96d', '#ae7b55'];
-    const earColors = ['#efafbe', '#d98562', '#8d5d43'];
-    const fur = makeMaterial(furColors[kind], { roughness: 0.86 });
-    const ear = makeMaterial(earColors[kind], { roughness: 0.82 });
-    const white = makeMaterial('#fffdf5', { roughness: 0.7 });
-    const ink = makeMaterial('#173f42', { roughness: 0.72 });
-    const blush = makeMaterial('#f39aa5', { roughness: 0.76 });
-    const bodyGeo = rememberGeometry(new THREE.SphereGeometry(0.5, 18, 12));
-    mesh(group, bodyGeo, fur, [0, 0.72, 0], [0.72, 0.9, 0.62]);
-    mesh(group, bodyGeo, fur, [0, 1.48, 0.03], [0.72, 0.67, 0.64]);
-    mesh(group, bodyGeo, white, [0, 1.35, 0.54], [0.36, 0.25, 0.18]);
-    mesh(group, bodyGeo, fur, [-0.48, 0.77, 0.18], [0.23, 0.56, 0.22], [0, 0, 0.32]);
-    mesh(group, bodyGeo, fur, [0.48, 0.77, 0.18], [0.23, 0.56, 0.22], [0, 0, -0.32]);
-    mesh(group, bodyGeo, fur, [-0.29, 0.12, 0.18], [0.38, 0.22, 0.48]);
-    mesh(group, bodyGeo, fur, [0.29, 0.12, 0.18], [0.38, 0.22, 0.48]);
-    mesh(group, bodyGeo, white, [-0.23, 1.62, 0.56], [0.16, 0.2, 0.1]);
-    mesh(group, bodyGeo, white, [0.23, 1.62, 0.56], [0.16, 0.2, 0.1]);
-    mesh(group, bodyGeo, ink, [-0.23, 1.63, 0.65], [0.075, 0.1, 0.055]);
-    mesh(group, bodyGeo, ink, [0.23, 1.63, 0.65], [0.075, 0.1, 0.055]);
-    mesh(group, bodyGeo, ink, [0, 1.39, 0.71], [0.12, 0.09, 0.08]);
-    mesh(group, bodyGeo, blush, [-0.4, 1.38, 0.61], [0.11, 0.065, 0.045]);
-    mesh(group, bodyGeo, blush, [0.4, 1.38, 0.61], [0.11, 0.065, 0.045]);
-
-    if (kind === 0) {
-      mesh(group, bodyGeo, fur, [-0.27, 2.17, 0.02], [0.25, 0.78, 0.2], [0, 0, 0.12]);
-      mesh(group, bodyGeo, fur, [0.27, 2.17, 0.02], [0.25, 0.78, 0.2], [0, 0, -0.12]);
-      mesh(group, bodyGeo, ear, [-0.27, 2.2, 0.18], [0.11, 0.55, 0.09], [0, 0, 0.12]);
-      mesh(group, bodyGeo, ear, [0.27, 2.2, 0.18], [0.11, 0.55, 0.09], [0, 0, -0.12]);
-    } else if (kind === 1) {
-      const earGeo = rememberGeometry(new THREE.ConeGeometry(0.31, 0.55, 3, 2));
-      mesh(group, earGeo, fur, [-0.39, 1.99, 0.02], [1, 1, 0.62], [0.05, 0, -0.12]);
-      mesh(group, earGeo, fur, [0.39, 1.99, 0.02], [1, 1, 0.62], [0.05, 0, 0.12]);
-      const tail = mesh(group, rememberGeometry(new THREE.TorusGeometry(0.43, 0.1, 10, 22, Math.PI * 1.45)), fur,
-        [0.52, 0.72, -0.16], [1, 1, 1], [0, Math.PI / 2, -0.4]);
-      tail.userData.tail = true;
-    } else {
-      mesh(group, bodyGeo, fur, [-0.48, 1.86, 0.02], [0.32, 0.32, 0.25]);
-      mesh(group, bodyGeo, fur, [0.48, 1.86, 0.02], [0.32, 0.32, 0.25]);
-      mesh(group, bodyGeo, ear, [-0.48, 1.87, 0.19], [0.15, 0.15, 0.09]);
-      mesh(group, bodyGeo, ear, [0.48, 1.87, 0.19], [0.15, 0.15, 0.09]);
-    }
-    return group;
-  }
-
-  const animalStage = new THREE.Group();
-  const animalModels = [0, 1, 2].map(index => {
-    const animal = buildAnimal(index);
-    animal.visible = index === 0;
-    animalStage.add(animal);
-    return animal;
-  });
-  scene.add(animalStage);
-
-  // Clue models contain only the top of each friend. The bush hides their
-  // lower edge, so "peek" reads as ears poking out rather than a floating pet.
-  function buildPeek(kind) {
-    const group = new THREE.Group();
-    group.name = ['bunny-ears-clue', 'cat-ears-clue', 'bear-ears-clue'][kind];
-    const furColors = ['#f5eee1', '#e9a96d', '#ae7b55'];
-    const earColors = ['#efafbe', '#d98562', '#8d5d43'];
-    const fur = makeMaterial(furColors[kind], { roughness: 0.86 });
-    const ear = makeMaterial(earColors[kind], { roughness: 0.82 });
-    const sphere = rememberGeometry(new THREE.SphereGeometry(0.5, 16, 10));
-    if (kind === 0) {
-      mesh(group, sphere, fur, [-0.25, 0.34, 0], [0.24, 0.76, 0.2], [0, 0, 0.1]);
-      mesh(group, sphere, fur, [0.25, 0.34, 0], [0.24, 0.76, 0.2], [0, 0, -0.1]);
-      mesh(group, sphere, ear, [-0.25, 0.37, 0.12], [0.1, 0.55, 0.075], [0, 0, 0.1]);
-      mesh(group, sphere, ear, [0.25, 0.37, 0.12], [0.1, 0.55, 0.075], [0, 0, -0.1]);
-    } else if (kind === 1) {
-      mesh(group, sphere, fur, [0, -0.04, 0], [0.58, 0.3, 0.42]);
-      const earGeometry = rememberGeometry(new THREE.ConeGeometry(0.3, 0.56, 3, 2));
-      mesh(group, earGeometry, fur, [-0.34, 0.28, 0], [1, 1, 0.7], [0.04, 0, -0.1]);
-      mesh(group, earGeometry, fur, [0.34, 0.28, 0], [1, 1, 0.7], [0.04, 0, 0.1]);
-      mesh(group, earGeometry, ear, [-0.34, 0.27, 0.13], [0.48, 0.56, 0.34], [0.04, 0, -0.1]);
-      mesh(group, earGeometry, ear, [0.34, 0.27, 0.13], [0.48, 0.56, 0.34], [0.04, 0, 0.1]);
-    } else {
-      mesh(group, sphere, fur, [0, -0.07, 0], [0.64, 0.32, 0.46]);
-      mesh(group, sphere, fur, [-0.43, 0.17, 0], [0.3, 0.3, 0.22]);
-      mesh(group, sphere, fur, [0.43, 0.17, 0], [0.3, 0.3, 0.22]);
-      mesh(group, sphere, ear, [-0.43, 0.18, 0.13], [0.14, 0.14, 0.08]);
-      mesh(group, sphere, ear, [0.43, 0.18, 0.13], [0.14, 0.14, 0.08]);
-    }
-    return group;
-  }
-
-  const clueStage = new THREE.Group();
-  clueStage.name = 'peek-clue-stage';
-  const peekModels = [0, 1, 2].map(index => {
-    const peek = buildPeek(index);
-    peek.visible = false;
-    clueStage.add(peek);
-    return peek;
-  });
-  scene.add(clueStage);
-
   const rustleMarker = new THREE.Group();
   rustleMarker.name = 'reduced-motion-rustle-marker';
   const rustleGold = makeMaterial('#ffd45b', { roughness: 0.64, emissive: 0x4a2b00, emissiveIntensity: 0.18 });
@@ -320,7 +222,7 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   rustleMarker.visible = false;
   scene.add(rustleMarker);
 
-  let state = { count: 2, target: -1, phase: 'watch', animal: 0, clue: 'none' };
+  let state = { count: 2, target: -1, phase: 'watch', clue: 'none' };
   let width = 1;
   let height = 1;
   let portrait = true;
@@ -330,7 +232,6 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   let raf = 0;
   let lastFrame = -Infinity;
   let elapsed = 0;
-  const goal = new THREE.Vector3();
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
   function placeLayout() {
@@ -340,44 +241,8 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     places.forEach((place, index) => place.group.position.set(...layout[index]));
   }
 
-  function targetGoal(phase = state.phase) {
-    if (phase === 'found' && state.target >= 0 && state.target < state.count) {
-      const place = places[state.target].group.position;
-      return goal.set(place.x, 0.1, place.z + 1.28);
-    }
-    return goal.set(0, -2.8, 0);
-  }
-
   function poseScene() {
-    targetGoal();
     const validTarget = state.target >= 0 && state.target < state.count;
-    const found = state.phase === 'found' && validTarget;
-    animalStage.position.copy(goal);
-    animalStage.visible = found;
-    animalModels.forEach((animal, index) => {
-      animal.visible = index === state.animal;
-      if (index !== state.animal) return;
-      const idle = reducedMotion.matches ? 0 : Math.sin(elapsed * 2.1) * 0.035;
-      const bounce = state.phase === 'found' && !reducedMotion.matches ? Math.abs(Math.sin(elapsed * 4.4)) * 0.2 : 0;
-      animal.position.y = idle + bounce;
-      animal.rotation.z = reducedMotion.matches ? 0 : Math.sin(elapsed * 1.55) * 0.018;
-      const tail = animal.children.find(child => child.userData.tail);
-      if (tail) tail.rotation.z = -0.4 + (reducedMotion.matches ? 0 : Math.sin(elapsed * 3.1) * 0.22);
-    });
-
-    const peeking = state.phase === 'seek' && state.clue === 'peek' && validTarget;
-    clueStage.visible = peeking;
-    peekModels.forEach((peek, index) => {
-      peek.visible = peeking && index === state.animal;
-      peek.position.y = reducedMotion.matches ? 0 : Math.sin(elapsed * 1.7) * 0.035;
-      peek.rotation.z = reducedMotion.matches ? 0 : Math.sin(elapsed * 1.25) * 0.018;
-    });
-    if (peeking) {
-      const place = places[state.target].group.position;
-      const bushTops = [1.54, 1.55, 1.87];
-      clueStage.position.set(place.x, bushTops[state.target], place.z - 0.28);
-    }
-
     const staticRustle = state.phase === 'seek' && state.clue === 'rustle' && validTarget && reducedMotion.matches;
     rustleMarker.visible = staticRustle;
     if (staticRustle) {
@@ -413,7 +278,16 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
       return { left, top, width: right - left, height: bottom - top };
     });
 
-    rects.forEach((rect, index) => onPlace(index, rect));
+    rects.forEach((rect, index) => {
+      const p = places[index].group.position;
+      // Artwork follows projected world anchors, independently of enlarged
+      // touch targets on small landscape screens.
+      const peek = project(p.x, [1.65, 1.66, 1.98][index], p.z - 0.28);
+      const found = project(p.x, 0.1, p.z + 1.3);
+      const left = project(p.x - 1.3, 1.2, p.z);
+      const right = project(p.x + 1.3, 1.2, p.z);
+      onPlace(index, rect, {peek, found, width: right.x - left.x});
+    });
   }
 
   function renderOnce() {
@@ -436,7 +310,6 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     camera.lookAt(0, 1.05, -0.55);
     camera.updateProjectionMatrix();
     placeLayout();
-    targetGoal();
     poseScene();
     scene.updateMatrixWorld(true);
     placeControls();
@@ -495,9 +368,8 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     const requestedTarget = Number.isInteger(next.target) ? next.target : state.target;
     const nextTarget = requestedTarget >= 0 && requestedTarget < nextCount ? requestedTarget : -1;
     const nextPhase = PHASES.has(next.phase) ? next.phase : state.phase;
-    const nextAnimal = clamp(Number.isInteger(next.animal) ? next.animal : state.animal, 0, 2);
     const nextClue = CLUES.has(next.clue) ? next.clue : state.clue;
-    state = { count: nextCount, target: nextTarget, phase: nextPhase, animal: nextAnimal, clue: nextClue };
+    state = { count: nextCount, target: nextTarget, phase: nextPhase, clue: nextClue };
     places.forEach((place, index) => { place.group.visible = index < state.count; });
     // Apply every visibility and clue state before this synchronous render.
     // A late module load therefore cannot flash a previous animal or target.
@@ -540,9 +412,7 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   }
 
   function onReducedMotionChange() {
-    targetGoal();
     if (reducedMotion.matches) {
-      animalStage.position.copy(goal);
       places.forEach(place => place.foliage.forEach(leaf => { leaf.rotation.z = 0; }));
     }
     poseScene();
@@ -575,8 +445,6 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
 
   placeLayout();
   places.forEach((place, index) => { place.group.visible = index < state.count; });
-  targetGoal('watch');
-  animalStage.position.copy(goal);
   poseScene();
   resize();
   startLoop();
