@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../css/achievements.css">
   <style>
     html,body { margin:0; width:100%; height:100%; overflow:hidden; }
-    body.seek-game { color:#184d4a; background:#c5eaf1; touch-action:manipulation; }
+    body.seek-game { color:#184d4a; background:#dff3ee !important; touch-action:manipulation; }
     .seek-screen { height:100dvh; display:grid; grid-template-rows:auto minmax(0,1fr) auto; padding:calc(88px + env(safe-area-inset-top)) 12px calc(52px + env(safe-area-inset-bottom)); gap:6px; box-sizing:border-box; }
     .seek-heading { text-align:center; z-index:2; }
     .seek-heading h1 { margin:0 0 6px; font:900 clamp(26px,5vw,44px)/1.1 var(--font-display); color:#184d4a; }
@@ -28,16 +28,17 @@
     .fallback-animal { display:none; position:absolute; inset:0 0 35%; font-size:clamp(46px,12vw,100px); line-height:1.2; text-align:center; }
     #stage:not([data-renderer="webgl"]) canvas { display:none; }
     #stage:not([data-renderer="webgl"]) .fallback-bush, #stage:not([data-renderer="webgl"]) .fallback-animal { display:block; }
-    .seek-controls { display:flex; justify-content:center; align-items:center; gap:12px; padding-top:12px; z-index:3; }
+    .seek-controls { display:grid; grid-template-columns:1fr 1fr; width:min(100%,480px); justify-self:center; align-items:center; gap:12px; padding-top:12px; z-index:3; }
     .seek-controls button { min-height:56px; padding:11px 20px; border:3px solid #ffffffc0; border-radius:22px; font:900 clamp(15px,2.6vw,20px) var(--font-ui); color:#184d4a; cursor:pointer; box-shadow:0 5px 0 #367b683d; }
-    #roundAction { background:#ffe18b; min-width:160px; }
-    #showAgain { background:#ffffffd9; }
+    #roundAction { grid-column:1; grid-row:1; background:#ffe18b; min-width:128px; }
+    #playAgain { grid-column:2; grid-row:1; background:#ffe18b; visibility:hidden; }
+    #showAgain { grid-column:2; grid-row:1; background:#ffffffd9; }
     .seek-controls button:disabled { cursor:default; }
     .seek-controls button:focus-visible { outline:3px solid #184d4a; outline-offset:3px; }
     .seek-controls button:active:not(:disabled) { transform:translateY(3px); box-shadow:0 2px 0 #367b683d; }
     [hidden] { display:none !important; }
     @media(max-height:650px) { .seek-screen { padding-top:82px; gap:2px; padding-bottom:44px; } .seek-heading h1{font-size:26px;margin-bottom:3px} #hint{font-size:14px;min-height:2.5em} .seek-controls{padding-top:5px;gap:8px} .seek-controls button{min-height:48px;padding:7px 12px;font-size:14px} #roundAction{min-width:128px} #stage{border-radius:24px} }
-    @media(orientation:landscape) and (max-height:550px) { .seek-screen { grid-template-columns:210px minmax(0,1fr);grid-template-rows:1fr auto;padding:90px 16px 38px;gap:4px 18px} .seek-heading{grid-column:1;align-self:center} #stage{grid-column:2;grid-row:1/3;height:100%} .seek-controls{grid-column:1;flex-direction:column;gap:7px} .seek-controls button{width:100%;min-height:44px;padding:5px 8px} }
+    @media(orientation:landscape) and (max-height:550px) { .seek-screen { grid-template-columns:210px minmax(0,1fr);grid-template-rows:1fr auto;padding:90px 16px 38px;gap:4px 18px} .seek-heading{grid-column:1;align-self:center} #stage{grid-column:2;grid-row:1/3;height:100%} .seek-controls{grid-column:1;grid-template-columns:1fr;grid-template-rows:44px 44px;gap:7px} #showAgain,#playAgain{grid-column:1;grid-row:2} .seek-controls button{width:100%;min-height:44px;padding:5px 8px} }
     @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important;transition:none !important; } }
   </style>
 </head>
@@ -47,6 +48,7 @@
     <div id="stage" role="group" aria-label="Hide-and-seek garden" data-renderer="loading"><canvas aria-hidden="true"></canvas></div>
     <div class="seek-controls">
       <button type="button" id="roundAction">🙈 Hide!</button>
+      <button type="button" id="playAgain" disabled>↻ Play again</button>
       <button type="button" id="showAgain" hidden>👀 Show me again</button>
     </div>
   </main>

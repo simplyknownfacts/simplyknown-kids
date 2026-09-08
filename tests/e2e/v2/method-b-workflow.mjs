@@ -6,7 +6,7 @@ export const meta = {
 
 const BASE = 'https://kids.simplyknown.co';
 const BANDS = [
-  { tiers: [1, 2], birthday: '2025-06-05', label: 'Sensory/Explore (0-2y)', focus: 'auto-play/sensory modes: tap-pop, magic-touch, hello-colors (auto-cycle), animal-sounds (garden), peek-a-boo, stamp-art/finger-paint/color-splash (auto), body-parts (6 parts), count-along (tier2 dots)' },
+  { tiers: [1, 2], birthday: '2025-06-05', label: 'Sensory/Explore (0-2y)', focus: 'auto-play/sensory modes: tap-pop, magic-touch, hello-colors (auto-cycle), animal-sounds (garden), hide-and-seek (child starts hiding, remembers location), stamp-art/finger-paint/color-splash (auto), body-parts (6 parts), count-along (tier2 dots)' },
   { tiers: [3, 4], birthday: '2023-06-05', label: 'Match/Pre-K (2-4y)', focus: 'tap-to-match + early quizzes: shape-match, abcs (word hints), days (tap), math (+), body-parts (10 parts at t4), color-in, money (identify), animal-sounds' },
   { tiers: [5, 6], birthday: '2021-06-05', label: 'Pre-K+/Kindergarten (4-6y)', focus: 'quiz modes: hello-colors quiz, animal-sounds quiz, count-along quiz, days quiz, math (incl subtraction), spelling (spell mode), money (count mode), abcs' },
   { tiers: [7, 8], birthday: '2018-06-05', label: 'Grade 1-2 (6-8y)', focus: 'advanced: count-along skip-count, days ordinal/relative, math (incl multiplication), spelling (longer words), abcs (spell)' },

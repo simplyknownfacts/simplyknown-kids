@@ -9,8 +9,9 @@
   const places = ['Pink flower bush', 'Yellow flower bush', 'Blue flower bush'];
   const stage = document.getElementById('stage'), hint = document.getElementById('hint');
   const action = document.getElementById('roundAction'), again = document.getElementById('showAgain');
+  const next = document.getElementById('playAgain');
   let active = true, generation = 0, timer = null, renderer = null, loadTimer = null;
-  let rendererFactory = null, loadFailed = false;
+  let rendererFactory = null, loadFailed = false, rendererBroken = false;
   let target = -1, animal = -1, phase = 'watch', readyAt = 0;
   const tried = new Set(), spots = [];
   renderBackBtn('index.html');
@@ -39,17 +40,22 @@
       spot.disabled = !active || phase !== 'seek' || tried.has(i);
       spot.classList.toggle('empty', phase === 'seek' && tried.has(i));
       spot.classList.toggle('guide', phase === 'seek' && i === target && (tier <= 2 || tried.size >= 2));
-      spot.querySelector('.peek-marker')?.remove();
+      let marker = spot.querySelector('.peek-marker');
       const sprite = spot.querySelector('.fallback-animal');
       sprite.textContent = visible && i === target ? animals[animal].icon : '';
-      if (visible && i === target) {
-        const marker = document.createElement('span'); marker.className = 'peek-marker';
-        marker.textContent = animals[animal].name; marker.setAttribute('aria-hidden','true'); spot.appendChild(marker);
-      }
+      if (phase === 'watch' && i === target) {
+        if (!marker) {
+          marker = document.createElement('span'); marker.className = 'peek-marker';
+          marker.setAttribute('aria-hidden','true'); spot.appendChild(marker);
+        }
+        marker.textContent = animals[animal].name;
+      } else marker?.remove();
     });
-    action.hidden = phase === 'seek';
-    action.disabled = !active || phase === 'hiding' || performance.now() < readyAt;
-    action.textContent = phase === 'found' ? '↻ Play again' : phase === 'hiding' ? '🙈 Hiding…' : '🙈 Hide!';
+    action.style.visibility = phase === 'watch' || phase === 'hiding' ? 'visible' : 'hidden';
+    action.disabled = !active || phase !== 'watch' || performance.now() < readyAt;
+    action.textContent = phase === 'hiding' ? '🙈 Hiding…' : '🙈 Hide!';
+    next.style.visibility = phase === 'found' ? 'visible' : 'hidden';
+    next.disabled = !active || phase !== 'found' || performance.now() < readyAt;
     again.hidden = phase !== 'seek';
     again.disabled = !active;
     renderer?.update({count,target,phase,animal});
@@ -92,10 +98,12 @@
   }
   action.addEventListener('click',event => {
     if (event.button !== 0 || !active || performance.now()<readyAt) return;
-    if (phase === 'found') { nextRound(); return; }
     if (phase !== 'watch') return;
     phase='hiding'; hint.textContent='Watch…'; render();
     later(() => { phase='seek'; hint.textContent='Where did our friend hide? Tap a bush.';render();spots[0].focus({preventScroll:true}); },450);
+  });
+  next.addEventListener('click',event=>{
+    if(event.button===0 && active && phase==='found' && performance.now()>=readyAt) nextRound();
   });
   again.addEventListener('click',event=>{if(event.button===0 && active && phase==='seek') show();});
   function useFallback() {
@@ -110,21 +118,21 @@
     if(!event.persisted) return;
     active=true;
     if(loadFailed) useFallback();
-    else if(!renderer && stage.dataset.renderer==='loading') {
+    else if(!renderer && !rendererBroken) {
       if(rendererFactory) startRenderer();
       else loadTimer=setTimeout(useFallback,3500);
     }
     renderer?.resume();show();
   });
-  stage.addEventListener('sceneerror',useFallback);
+  stage.addEventListener('sceneerror',()=>{rendererBroken=true;useFallback();});
   fallbackPositions(); nextRound();
   loadTimer=setTimeout(useFallback,3500);
   function startRenderer() {
-    if(!active || stage.dataset.renderer==='fallback') return;
+    if(!active || rendererBroken || renderer) return;
     try {
       renderer=rendererFactory(stage,{onPlace:moveSpot});
       clearTimeout(loadTimer); stage.dataset.renderer='webgl';render();
-    } catch { useFallback(); }
+    } catch { rendererBroken=true;useFallback(); }
   }
   import('./hide-seek-scene.js').then(({createHideSeekScene})=>{
     rendererFactory=createHideSeekScene; startRenderer();

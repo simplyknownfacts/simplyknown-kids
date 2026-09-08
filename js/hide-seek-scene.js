@@ -302,13 +302,13 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   function targetGoal(phase = state.phase) {
     const place = places[state.target].group.position;
     if (phase === 'found') return goal.set(place.x, 0.1, place.z + 1.28);
-    if (phase === 'watch') return goal.set(place.x, 0.28, place.z - 0.34);
+    if (phase === 'watch') return goal.set(place.x, 1.02, place.z - 0.34);
     return goal.set(place.x, -2.35, place.z - 0.34);
   }
 
   function transitionDuration() {
     if (reducedMotion.matches) return 0;
-    if (state.phase === 'hiding') return 0.58;
+    if (state.phase === 'hiding') return 0.35;
     if (state.phase === 'found') return 0.48;
     return 0.36;
   }
@@ -319,9 +319,9 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     const amount = state.phase === 'found' ? easeOutBack(raw) : easeInOut(raw);
     targetGoal();
     animalStage.position.lerpVectors(transitionFrom, goal, amount);
-    // Hiding and seek are intentionally unambiguous: no ear or tail can remain
-    // visible while the child is meant to remember or choose a hiding place.
-    animalStage.visible = state.phase !== 'seek' && state.phase !== 'hiding';
+    // Duck during the locked hiding transition; no ear or tail remains
+    // visible when the child can choose a hiding place.
+    animalStage.visible = state.phase !== 'seek' && (state.phase !== 'hiding' || raw < 1);
     animalModels.forEach((animal, index) => {
       animal.visible = index === state.animal;
       if (index !== state.animal) return;
@@ -346,10 +346,10 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
       if (index >= state.count) return { left: 0, top: 0, width: 0, height: 0 };
       const p = place.group.position;
       const points = [];
-      // Fixed interaction volume includes bush, flowers, and the animal's
-      // highest peeking ears. It never changes with the game phase.
+      // Only the bush and flowers are answer targets. Keeping the interaction
+      // volume below the peeking animal preserves every bush edge on phones.
       for (const x of [-1.38, 1.38]) {
-        for (const y of [0.18, 3.15]) {
+        for (const y of [0.18, 2.2]) {
           for (const z of [-0.95, 1.18]) points.push(project(p.x + x, y, p.z + z));
         }
       }
@@ -359,18 +359,6 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
       const bottom = clamp(Math.max(...points.map(point => point.y)), 0, 1);
       return { left, top, width: right - left, height: bottom - top };
     });
-
-    // On portrait screens the back bush sits between the two front bushes.
-    // Trim only their inward edges so all three HTML buttons stay separate.
-    if (portrait && state.count === 3) {
-      const gap = 2 / width;
-      const centerLeft = rects[2].left;
-      const centerRight = rects[2].left + rects[2].width;
-      rects[0].width = Math.max(0, Math.min(rects[0].left + rects[0].width, centerLeft - gap) - rects[0].left);
-      const rightEdge = rects[1].left + rects[1].width;
-      rects[1].left = Math.max(rects[1].left, centerRight + gap);
-      rects[1].width = Math.max(0, rightEdge - rects[1].left);
-    }
 
     rects.forEach((rect, index) => onPlace(index, rect));
   }

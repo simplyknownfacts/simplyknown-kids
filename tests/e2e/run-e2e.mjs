@@ -25,7 +25,7 @@ const TIERS = argVal('tiers') ? argVal('tiers').split(',').map(Number) : [1, 2, 
 const CONC = Number(argVal('conc') || 4);
 const VIEWPORT = { width: 1280, height: 900 }; // wide => settings sidebar layout
 
-// ── catalog (15 in ACTIVITY_FEATURES) + peek-a-boo orphan ────────────────────
+// ── activity catalog; Hide & Seek is reachable through Games ────────────────────
 const SECTION_DIR = { games: 'games', learn: 'learning', art: 'art' };
 const ACTIVITIES = [
   { id: 'tap-pop', name: 'Tap & Pop', section: 'games', file: 'games/tap-pop.html', minTier: 1 },
@@ -45,7 +45,7 @@ const ACTIVITIES = [
   { id: 'finger-paint', name: 'Finger Paint', section: 'art', file: 'art/finger-paint.html', minTier: 1 },
   { id: 'color-splash', name: 'Color Splash', section: 'art', file: 'art/color-splash.html', minTier: 1 },
   { id: 'color-in', name: 'Color In', section: 'art', file: 'art/color-in.html', minTier: 1 },
-  { id: 'peek-a-boo', name: 'Peek-a-boo', section: 'games', file: 'games/peek-a-boo.html', minTier: 1, orphan: true },
+  { id: 'peek-a-boo', name: 'Hide & Seek', section: 'games', file: 'games/peek-a-boo.html', minTier: 1 },
   { id: 'magic-touch', name: 'Magic Touch', section: 'games', file: 'games/magic-touch.html', minTier: 1 },
   { id: 'tap-a-tune', name: 'Tap-a-Tune', section: 'games', file: 'games/tap-a-tune.html', minTier: 1 },
   { id: 'surprise-pop', name: 'Surprise Pop', section: 'games', file: 'games/surprise-pop.html', minTier: 1 },

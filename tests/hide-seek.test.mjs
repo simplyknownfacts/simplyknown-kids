@@ -14,9 +14,10 @@ before(async () => {
   browser=await chromium.launch();
 });
 after(async()=>{await browser?.close();server?.kill();});
-async function open(tier=5,{features={},viewport={width:390,height:844},fallback=false}={}){
+async function open(tier=5,{features={},viewport={width:390,height:844},fallback=false,slow=false}={}){
   const ctx=await browser.newContext({viewport,serviceWorkers:'block',reducedMotion:'reduce'});
   await ctx.route('**/*',r=> new URL(r.request().url()).origin===base?r.continue():r.abort());
+  if(slow) await ctx.route('**/hide-seek-scene.js',async r=>{await new Promise(resolve=>setTimeout(resolve,4100));await r.continue();});
   if(fallback) await ctx.route('**/hide-seek-scene.js',r=>r.abort());
   await ctx.addInitScript(({tier,features})=>{
     localStorage.setItem('vb_profiles',JSON.stringify([{id:'seek-test',name:'Test Explorer',birthday:'2022-01-01',voice:'girl',mascot:{id:'bunny'},tierOverrides:{'peek-a-boo':tier,'surprise-pop':tier},features:{'peek-a-boo':features},activitiesVisible:{},youtube:[]}]));
@@ -25,7 +26,7 @@ async function open(tier=5,{features={},viewport={width:390,height:844},fallback
     Math.random=()=>0.25;
   },{tier,features});
   const page=await ctx.newPage();page.setDefaultTimeout(5000);
-  await page.goto(base+'/games/peek-a-boo.html');
+  await page.goto(base+'/games/peek-a-boo.html',{waitUntil:'domcontentloaded'});
   await page.locator('#roundAction').waitFor();
   await page.evaluate(()=>{window.awards=[];window.vbProgress={record:id=>awards.push(id)};});
   return {ctx,page};
@@ -53,7 +54,7 @@ test('Hide and Seek shows a location first, hides the same animal, and never awa
     await phase(page,'found');
     assert.deepEqual(await page.evaluate(()=>awards),['peek-a-boo']);
     await page.waitForTimeout(1000);await phase(page,'found');
-    await page.locator('#roundAction').click();await phase(page,'watch');
+    await page.locator('#playAgain').click();await phase(page,'watch');
     assert.notEqual(await shownSpot(page),target,'next round should use a different place');
     assert.deepEqual(await page.evaluate(()=>awards),['peek-a-boo']);
   }finally{await ctx.close();}
@@ -115,13 +116,38 @@ test('All three watched locations remain tappable in the live 3D scene',async()=
     for(let round=0;round<3;round++){
       const target=await shownSpot(page);seen.add(target);
       await hide(page);
-      const r=await page.locator('.hiding-spot').nth(target).boundingBox();
-      await page.mouse.click(r.x+r.width/2,r.y+r.height*.7);await phase(page,'found');
+      // Independently selected from the rendered pink/yellow/blue bushes at
+      // 390x844, rather than deriving the answer point from hit-box geometry.
+      const visibleBushPoints=[[80,500],[310,500],[194,425]];
+      await page.mouse.click(...visibleBushPoints[target]);await phase(page,'found');
       assert.equal(await page.evaluate(()=>awards.length),round+1);
-      if(round<2) await page.locator('#roundAction').click();
+      if(round<2) await page.locator('#playAgain').click();
     }
     assert.equal(seen.size,3);
     // The visible canvas has been allocated and WebGL is actually available.
     assert.equal(await page.locator('canvas').evaluate(c=>!!c.getContext('webgl2')&&c.width>0&&c.height>0),true);
+  }finally{await ctx.close();}
+});
+
+test('A continuing Play again tapping burst cannot hide the next watched animal',async()=>{
+  const {ctx,page}=await open();try{
+    const target=await shownSpot(page);await hide(page);await page.locator('.hiding-spot').nth(target).click();
+    await page.waitForFunction(()=>!document.querySelector('#playAgain').disabled);
+    const r=await page.locator('#playAgain').boundingBox();
+    for(let i=0;i<5;i++){await page.mouse.click(r.x+r.width/2,r.y+r.height/2);await page.waitForTimeout(180);}
+    await phase(page,'watch');
+    assert.equal(await page.locator('.peek-marker').count(),1);
+    assert.deepEqual(await page.evaluate(()=>awards),['peek-a-boo']);
+  }finally{await ctx.close();}
+});
+
+test('A slow successful renderer upgrades the playable fallback without rerolling the observed answer',async()=>{
+  const {ctx,page}=await open(5,{slow:true});try{
+    const target=await shownSpot(page);
+    await page.waitForFunction(()=>document.querySelector('#stage').dataset.renderer==='fallback');
+    await page.waitForFunction(()=>document.querySelector('#stage').dataset.renderer==='webgl');
+    assert.equal(await shownSpot(page),target);
+    await hide(page);await page.locator('.hiding-spot').nth(target).click();await phase(page,'found');
+    assert.deepEqual(await page.evaluate(()=>awards),['peek-a-boo']);
   }finally{await ctx.close();}
 });
