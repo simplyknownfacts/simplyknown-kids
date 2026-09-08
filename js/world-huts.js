@@ -5,23 +5,23 @@ const CACHE = new WeakMap();
 const PALETTES = {
   games: {
     wall: 0xff8a76, wallSide: 0xe45d58, roof: 0xb93e4b, trim: 0xffd36a,
-    accent: 0x39a79c, dark: 0x184d4a, glow: 0xfff0a8, sign: 0x9c3542,
+    accent: 0x39a79c, dark: 0x184d4a, glow: 0xfff0a8, glass: 0x79d4dd, sign: 0x9c3542,
   },
   learn: {
     wall: 0xffd96f, wallSide: 0xe4aa3d, roof: 0x58a8c7, trim: 0xfff0b3,
-    accent: 0x8b6bd1, dark: 0x184d4a, glow: 0xfff6c8, sign: 0x28788f,
+    accent: 0x8b6bd1, dark: 0x184d4a, glow: 0xfff6c8, glass: 0x83cce8, sign: 0x28788f,
   },
   art: {
     wall: 0xc9a8ef, wallSide: 0x9a73cb, roof: 0x7752ad, trim: 0xffd5e8,
-    accent: 0xf078a9, dark: 0x184d4a, glow: 0xfff0b8, sign: 0x68459d,
+    accent: 0xf078a9, dark: 0x184d4a, glow: 0xfff0b8, glass: 0x8fd9dd, sign: 0x68459d,
   },
   watch: {
     wall: 0x78bee8, wallSide: 0x4e82bd, roof: 0x334b94, trim: 0xffd56c,
-    accent: 0xef6c6c, dark: 0x173e68, glow: 0xfff2a6, sign: 0x263d7d,
+    accent: 0xef6c6c, dark: 0x173e68, glow: 0xfff2a6, glass: 0x92d7f2, sign: 0x263d7d,
   },
   listen: {
     wall: 0x84d2ae, wallSide: 0x4f9b78, roof: 0x4f9f65, trim: 0xf1cf71,
-    accent: 0xa67bd8, dark: 0x184d4a, glow: 0xfff0ad, sign: 0x367b61,
+    accent: 0xa67bd8, dark: 0x184d4a, glow: 0xfff0ad, glass: 0xa3e3d5, sign: 0x367b61,
   },
 };
 
@@ -220,10 +220,17 @@ function addWindow(THREE, parent, geo, mats, position, rotation = [0, 0, 0], sca
   panePosition[1] += normal.y;
   panePosition[2] += normal.z;
   addRounded(THREE, parent, mats.window, [0.58 * scale[0], 0.58 * scale[1], 0.035], panePosition, 0.1, rotation);
+  const barPosition = [...position];
+  const barNormal = new THREE.Vector3(0, 0, 0.145).applyEuler(new THREE.Euler(...rotation));
+  barPosition[0] += barNormal.x;
+  barPosition[1] += barNormal.y;
+  barPosition[2] += barNormal.z;
+  addRounded(THREE, parent, mats.windowBar, [0.055, 0.56 * scale[1], 0.028], barPosition, 0.018, rotation);
+  addRounded(THREE, parent, mats.windowBar, [0.56 * scale[0], 0.055, 0.028], barPosition, 0.018, rotation);
   return frame;
 }
 
-function addFacade(THREE, group, geo, mats, palette, label) {
+function addFacade(THREE, group, geo, mats) {
   addRounded(THREE, group, mats.wall, [3.24, 2.48, 2.55], [0, 1.48, 0], 0.24);
   addBox(THREE, group, geo, mats.wallSide, [0.18, 2.2, 2.25], [1.61, 1.48, -0.02]);
   addRounded(THREE, group, mats.doorTrim, [1.08, 1.72, 0.18], [0, 1.02, 1.34], 0.28);
@@ -234,19 +241,37 @@ function addFacade(THREE, group, geo, mats, palette, label) {
   addWindow(THREE, group, geo, mats, [1.67, 1.72, 0.15], [0, Math.PI / 2, 0], [0.9, 1]);
   addBox(THREE, group, geo, mats.step, [1.28, 0.18, 0.55], [0, 0.23, 1.58]);
   addBox(THREE, group, geo, mats.step, [1.62, 0.16, 0.45], [0, 0.08, 1.88]);
+}
 
-  // The word is printed on a face attached to a thick, shadow-casting sign.
-  // It is part of the facade, never a floating HTML label or detached word pill.
-  addRounded(THREE, group, mats.sign, [2.52, 0.67, 0.22], [0, 2.57, 1.38], 0.15);
-  addBox(THREE, group, geo, mats.signBracket, [0.12, 0.28, 0.18], [-0.88, 2.24, 1.35]);
-  addBox(THREE, group, geo, mats.signBracket, [0.12, 0.28, 0.18], [0.88, 2.24, 1.35]);
+function addRoofSign(THREE, group, geo, mats, palette, kind) {
+  const mounts = {
+    games:  { y: 4.03, z: 1.2,  tilt: -0.17, post: 1.02 },
+    learn:  { y: 4.28, z: 1.08, tilt: -0.2,  post: 0.9 },
+    art:    { y: 4.02, z: 1.2,  tilt: -0.17, post: 1.0 },
+    watch:  { y: 3.72, z: 1.48, tilt: -0.15, post: 0.84 },
+    listen: { y: 3.93, z: 1.62, tilt: -0.18, post: 0.92 },
+  };
+  const config = mounts[kind];
+  const sign = new THREE.Group();
+  sign.name = `${kind}-roof-sign`;
+  sign.position.set(0, config.y, config.z);
+  sign.rotation.x = config.tilt;
+
+  // Twin posts physically tie the large board into the roof silhouette.
+  // The whole assembly tilts upward so an elevated phone camera sees the face.
+  addBox(THREE, sign, geo, mats.signBracket, [0.15, config.post, 0.18], [-1.06, -0.55, -0.08]);
+  addBox(THREE, sign, geo, mats.signBracket, [0.15, config.post, 0.18], [1.06, -0.55, -0.08]);
+  addRounded(THREE, sign, mats.sign, [3.28, 0.9, 0.26], [0, 0, 0], 0.18);
   const faceMaterial = new THREE.MeshStandardMaterial({
-    map: labelTexture(THREE, label, palette),
+    map: labelTexture(THREE, LABELS[kind], palette),
     color: 0xffffff,
-    roughness: 0.78,
+    roughness: 0.68,
     metalness: 0,
+    emissive: palette.glow,
+    emissiveIntensity: 0.08,
   });
-  addMesh(THREE, group, new THREE.PlaneGeometry(2.31, 0.5), faceMaterial, [0, 2.57, 1.585]);
+  addMesh(THREE, sign, new THREE.PlaneGeometry(3.02, 0.66), faceMaterial, [0, 0, 0.17]);
+  group.add(sign);
 }
 
 function addGableRoof(THREE, group, material, width = 3.66, height = 1.22, depth = 3.02, y = 2.72) {
@@ -395,7 +420,8 @@ export function createHut(THREE, kind) {
     doorTrim: material(palette.trim, { roughness: 0.68 }),
     door: material(palette.dark, { roughness: 0.74 }),
     step: material(0xc78953, { roughness: 0.86 }),
-    window: material(palette.glow, { roughness: 0.34, emissive: palette.glow, emissiveIntensity: 0.3 }),
+    window: material(palette.glass, { roughness: 0.24, metalness: 0.08, emissive: palette.glass, emissiveIntensity: 0.24 }),
+    windowBar: material(palette.dark, { roughness: 0.6 }),
   };
 
   const group = new THREE.Group();
@@ -404,7 +430,7 @@ export function createHut(THREE, kind) {
   group.userData.selectable = true;
 
   addRounded(THREE, group, material(0xf2db9e, { roughness: 0.9 }), [3.74, 0.24, 3.16], [0, 0.12, 0], 0.18);
-  addFacade(THREE, group, geo, mats, palette, LABELS[kind]);
+  addFacade(THREE, group, geo, mats);
 
   const animated = { flags: [], drops: [], leaves: [], telescope: null, star: null };
   if (kind === 'games') buildGames(THREE, group, geo, mats, animated);
@@ -412,6 +438,7 @@ export function createHut(THREE, kind) {
   if (kind === 'art') buildArt(THREE, group, geo, mats, animated);
   if (kind === 'watch') buildWatch(THREE, group, geo, mats, animated);
   if (kind === 'listen') buildListen(THREE, group, geo, mats, animated);
+  addRoofSign(THREE, group, geo, mats, palette, kind);
 
   let meshCount = 0;
   group.traverse(object => {
