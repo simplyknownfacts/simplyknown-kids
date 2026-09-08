@@ -52,14 +52,8 @@
 //      to prove the responsive layout holds, without re-driving all 24
 //      destinations at those widths too.
 //
-// Counted at the bottom of this file's startup log every run. As of this
-// rewrite: 21 activity pages (7 games + 10 learning + 4 art — NOT 22; see
-// "Known traps" #6 in VERIFYING.md for why that number in the original work
-// order didn't add up) + Watch + Listen = 23 destinations driven once each,
-// + 10 tier homes, + 7 shell screens x 3 widths (1 phone + 2 responsive) = 21
-// shell loads. Total: 23 + 10 + 21 = 54 screen loads, one real browser tab
-// each. NOT driven: peek-a-boo.html (registered in ACTIVITY_FEATURES but has
-// had no menu link since commit 5e37113 — deliberately excluded, not drift).
+// Totals are computed from the registry and printed at startup. The first-pass
+// redesign restored Peek-a-boo to Games, so it participates in this drive too.
 // Full list of what this run does NOT prove is in features/NOT-COVERED.md.
 import { chromium } from 'playwright';
 import { mkdir, rm, readFile } from 'node:fs/promises';
@@ -116,10 +110,8 @@ const [profilesSrc, tiersSrc] = await Promise.all([
 const ACTIVITY_FEATURES = extractArrayLiteral(profilesSrc, 'ACTIVITY_FEATURES');
 const TIERS = extractArrayLiteral(tiersSrc, 'TIERS');
 
-// peek-a-boo.html is still registered in ACTIVITY_FEATURES but has had no
-// menu link since commit 5e37113 (see CLAUDE.md's "8 total" activity list).
-// Deliberately excluded here — this is a documented retirement, not drift.
-const RETIRED_IDS = new Set(['peek-a-boo']);
+// No registered activities are retired in the current first-pass menu.
+const RETIRED_IDS = new Set();
 
 // `section` on each ACTIVITY_FEATURES entry ('games' | 'learn' | 'art') is a
 // logical category, not literally the folder name — every activity page
