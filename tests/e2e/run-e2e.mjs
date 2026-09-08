@@ -412,6 +412,24 @@ async function runTier(browser, tier) {
     return true;
   };
   const redirectedToPicker = () => { const p = page.url().replace(BASE, ''); return p === '/' || p === '/index.html' || p === ''; };
+  const selectSettingsChild = async (profileId) => {
+    const picker = page.locator('#settingsChildSelect');
+    if (!(await picker.count())) return false;
+    await picker.selectOption(profileId);
+    return await picker.inputValue() === profileId;
+  };
+  const selectSettingsSection = async (key) => {
+    const picker = page.locator('#settingsSectionPicker');
+    if (await picker.count()) {
+      await picker.selectOption(key);
+      return true;
+    }
+    return page.evaluate((section) => {
+      if (typeof showPanel !== 'function') return false;
+      showPanel(section);
+      return true;
+    }, key).catch(() => false);
+  };
 
   // ── STEP 1: add a 2nd kid via the REAL UI ──
   try {
@@ -423,10 +441,12 @@ async function runTier(browser, tier) {
     await page.waitForSelector('#addForm', { state: 'visible', timeout: 10000 });
     await page.fill('#newName', `Added${tier}`);
     await page.fill('#newBirthday', birthdayForTier(tier));
-    // mascot + voice are REQUIRED since v101 — save silently refuses without them
-    await page.locator('#newMascotPicker div').first().click();
-    await page.locator('#newVoicePicker div').first().click();
-    await page.locator('button', { hasText: /^Save$/ }).first().click();
+    await page.locator('#addNext1').click();
+    // Buddy and voice are deliberate required choices in steps 2 and 3.
+    await page.locator('#newMascotPicker button[data-mascot]').first().click();
+    await page.locator('#addNext2').click();
+    await page.locator('#newVoicePicker button[data-voice]').first().click();
+    await page.locator('#createChild').click();
     await sleep(600);
     const count = await page.evaluate(() => JSON.parse(localStorage.getItem('vb_profiles') || '[]').length);
     await shot('01-add-kid');
@@ -492,10 +512,10 @@ async function runTier(browser, tier) {
     record('settings PIN unlock', 'flow', unlocked ? 'PASS' : 'FAIL', { ...snapErrors(errs) });
     if (unlocked) {
       // 2 kids exist now — make sure settings is editing the base kid
-      await page.locator('#kidsBar .kid-pill', { hasText: `Test${tier}` }).first().click().catch(() => {});
+      const childSelected = await selectSettingsChild('e2e-base').catch(() => false);
       await sleep(200);
       // features panel
-      await page.locator('#sideNav .navitem[data-key="features"]').click().catch(() => {});
+      await selectSettingsSection('features');
       await sleep(300);
       let toggled = 0, toggleFail = 0;
       for (const act of ACTIVITIES) {
@@ -503,21 +523,21 @@ async function runTier(browser, tier) {
           if (f.t > tier) continue;
           const row = page.locator('#featuresTable tr', { hasText: act.name });
           const cb = row.locator('label.feat-label', { hasText: f.label }).locator('input[type=checkbox]').first();
-          if (!(await cb.count())) continue;
+          if (!(await cb.count())) { toggleFail++; continue; }
           await cb.check({ timeout: 3000 }).catch(() => {});
           const on = await page.evaluate(({ a, k }) => { const p = JSON.parse(localStorage.vb_profiles).find((x) => x.id === 'e2e-base'); return !!(p && p.features && p.features[a] && p.features[a][k]); }, { a: act.id, k: f.k }).catch(() => false);
           on ? toggled++ : toggleFail++;
         }
       }
-      record('feature toggles', 'settings', toggleFail ? 'WARN' : 'PASS', { signal: `${toggled} toggled, ${toggleFail} failed`, ...snapErrors(errs) });
+      record('feature toggles', 'settings', !childSelected || toggleFail ? 'WARN' : 'PASS', { signal: `${toggled} toggled, ${toggleFail} failed; child=${childSelected ? 'selected' : 'missing'}`, ...snapErrors(errs) });
       // voice
-      await page.locator('#sideNav .navitem[data-key="voice"]').click().catch(() => {});
+      await selectSettingsSection('voice');
       await sleep(300);
       await page.locator('#voiceSection .vcard[data-voice="woman"]').click().catch(() => {});
       const vsel = await page.locator('#voiceSection .vcard[data-voice="woman"].sel').count().catch(() => 0);
       record('voice pick', 'settings', vsel ? 'PASS' : 'WARN', { ...snapErrors(errs) });
       // hide an activity then restore
-      await page.locator('#sideNav .navitem[data-key="activities"]').click().catch(() => {});
+      await selectSettingsSection('activities');
       await sleep(300);
       const visCb = page.locator('#activitiesSection input.act-vis[data-aid="tap-pop"]').first();
       let hideOk = false;
@@ -542,7 +562,7 @@ async function runTier(browser, tier) {
     await page.waitForSelector('#pinPad', { timeout: 12000 }).catch(() => {});
     for (const d of ['1', '2', '3', '4']) await page.locator('#pinPad .pin-key', { hasText: new RegExp('^' + d + '$') }).first().click().catch(() => {});
     await page.waitForSelector('#mainSettings', { state: 'visible', timeout: 10000 }).catch(() => {});
-    await page.locator('#sideNav .navitem[data-key="children"]').click().catch(() => {});
+    await selectSettingsSection('children');
     await sleep(300);
     const card = page.locator('#profilesList .card', { hasText: `Added${tier}` });
     if (await card.count()) await card.getByRole('button', { name: 'Delete' }).click().catch(() => {});
