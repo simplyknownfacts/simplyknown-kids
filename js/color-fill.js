@@ -3,6 +3,7 @@
   'use strict';
 
   const COLORS = ['#FF5A67', '#FF9F43', '#FFD93D', '#46C76B', '#3988FF', '#845EF7'];
+  const COLOR_NAMES = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple'];
   const MAX_SIDE = 700;
   const MAX_SOURCE_LENGTH = 12 * 1024 * 1024;
   const OUTLINE_LUMA = 190;
@@ -84,7 +85,7 @@
       button.className = 'pip';
       button.dataset.color = color;
       button.style.background = color;
-      button.setAttribute('aria-label', `Color ${index + 1}`);
+      button.setAttribute('aria-label', COLOR_NAMES[index]);
       button.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
       if (index === 0) button.classList.add('active');
       button.addEventListener('click', () => {
@@ -247,7 +248,7 @@
     }
 
     canvas.addEventListener('pointerdown', event => {
-      if (activePointer || canvas.dataset.ready !== '1') return;
+      if (!event.isPrimary || event.button !== 0 || activePointer || canvas.dataset.ready !== '1') return;
       activePointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
       try { canvas.setPointerCapture(event.pointerId); } catch {}
       event.preventDefault();
@@ -259,9 +260,11 @@
       try { canvas.releasePointerCapture(event.pointerId); } catch {}
       if (Math.hypot(event.clientX - start.x, event.clientY - start.y) <= 18) fillAt(event.clientX, event.clientY);
     });
-    canvas.addEventListener('pointercancel', event => {
+    function releasePointer(event) {
       if (activePointer && event.pointerId === activePointer.id) activePointer = null;
-    });
+    }
+    canvas.addEventListener('pointercancel', releasePointer);
+    canvas.addEventListener('lostpointercapture', releasePointer);
 
     document.getElementById('undoFill').addEventListener('click', () => {
       const state = pages[current].state;
@@ -283,6 +286,12 @@
       disposed = true;
       loadGeneration++;
       activePointer = null;
+    });
+    window.addEventListener('pageshow', event => {
+      if (!event.persisted) return;
+      disposed = false;
+      activePointer = null;
+      if (!pages[current].state) loadPage();
     });
 
     loadPage();

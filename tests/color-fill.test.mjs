@@ -183,3 +183,47 @@ test('malformed stored uploads fall back to the six safe built-in pictures', asy
   assert.equal(await page.locator('[data-fill-error]:visible').count(), 0);
   await ctx.close();
 });
+
+test('BFCache return can open an unvisited picture and lost capture releases the next primary tap', async () => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await ctx.addInitScript(() => {
+    localStorage.setItem('vb_profiles', JSON.stringify([{
+      id: 'lifecycle-kid', name: 'Life', birthday: '2020-01-01', voice: 'girl', mascot: { id: 'dog' },
+      tierOverrides: { 'color-in': 3 }, features: {}, activitiesVisible: {}, youtube: [],
+    }]));
+    localStorage.setItem('vb_active_id', 'lifecycle-kid');
+    localStorage.removeItem('vb_coloring_pages');
+  });
+  const page = await ctx.newPage();
+  await page.goto(base + '/art/color-in.html', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#colorFillCanvas[data-ready="1"]');
+  assert.deepEqual(await page.locator('#colorPalette .pip').evaluateAll(buttons =>
+    buttons.map(button => button.getAttribute('aria-label'))),
+  ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple']);
+
+  await page.evaluate(() => {
+    window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }));
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+  });
+  await page.locator('#nextPage').click();
+  await page.waitForFunction(() =>
+    document.querySelector('.scene-title')?.textContent === 'Friendly Cat' &&
+    document.querySelector('#colorFillCanvas')?.dataset.ready === '1', null, { timeout: 1500 });
+
+  await page.evaluate(() => {
+    window.__records = [];
+    window.vbProgress = { record: id => window.__records.push(id) };
+    const canvas = document.getElementById('colorFillCanvas');
+    const rect = canvas.getBoundingClientRect();
+    const point = { clientX: rect.left + rect.width * .5, clientY: rect.top + rect.height * .65, bubbles: true };
+    canvas.dispatchEvent(new PointerEvent('pointerdown', { ...point, pointerId: 71, pointerType: 'touch', isPrimary: true }));
+    canvas.dispatchEvent(new PointerEvent('lostpointercapture', { ...point, pointerId: 71, pointerType: 'touch', isPrimary: true }));
+    canvas.dispatchEvent(new PointerEvent('pointerdown', { ...point, pointerId: 72, pointerType: 'touch', isPrimary: true }));
+    canvas.dispatchEvent(new PointerEvent('pointerup', { ...point, pointerId: 72, pointerType: 'touch', isPrimary: true }));
+    canvas.dispatchEvent(new PointerEvent('pointerdown', { ...point, pointerId: 73, pointerType: 'touch', isPrimary: false }));
+    canvas.dispatchEvent(new PointerEvent('pointerup', { ...point, pointerId: 73, pointerType: 'touch', isPrimary: false }));
+  });
+  assert.equal(await page.evaluate(() => window.__records.length), 1,
+    'lost capture blocked the next tap or non-primary input filled again');
+  await ctx.close();
+});
