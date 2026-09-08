@@ -140,14 +140,28 @@ test('Bubble Pop HUD keeps navigation, instructions, score, and playfield separa
             assert.equal(overlaps(r, result.rects[b]), false, `${a} overlaps ${b}: ${JSON.stringify({[a]:r,[b]:result.rects[b]})}`);
           }
         }
+        await layoutPage.waitForFunction(() => {
+          const canvas = document.getElementById('canvas'), hud = document.getElementById('bubbleHud');
+          if (!hud) return false;
+          const canvasRect = canvas.getBoundingClientRect(), hudRect = hud.getBoundingClientRect();
+          return canvasRect.top >= hudRect.bottom &&
+            canvas.width === Math.round(canvasRect.width) && canvas.height === Math.round(canvasRect.height);
+        });
+        const playfield = await layoutPage.evaluate(() => {
+          const canvas = document.getElementById('canvas'), r = canvas.getBoundingClientRect();
+          return {
+            rect: { left:r.left, top:r.top, right:r.right, bottom:r.bottom, width:r.width, height:r.height },
+            size: { width:canvas.width, height:canvas.height },
+          };
+        });
         assert.equal(result.hudExists, true, 'dedicated Bubble Pop HUD is missing');
         assert.equal(result.parentIds.target, 'bubbleHud');
         assert.equal(result.parentIds.score, 'bubbleHud');
         assert.ok(result.rects.hud.top >= Math.max(result.rects.navigation.bottom, result.rects.replay.bottom), 'HUD is not below top controls');
-        assert.ok(result.rects.canvas.top >= result.rects.hud.bottom, 'bubble canvas begins behind the HUD');
-        assert.ok(result.rects.canvas.bottom <= height, 'bubble canvas extends below the viewport');
-        assert.equal(result.canvasSize.width, Math.round(result.rects.canvas.width), 'canvas drawing width does not match its visible width');
-        assert.equal(result.canvasSize.height, Math.round(result.rects.canvas.height), 'canvas drawing height does not match its visible height');
+        assert.ok(playfield.rect.top >= result.rects.hud.bottom, 'bubble canvas begins behind the HUD');
+        assert.ok(playfield.rect.bottom <= height, 'bubble canvas extends below the viewport');
+        assert.equal(playfield.size.width, Math.round(playfield.rect.width), 'canvas drawing width does not match its visible width');
+        assert.equal(playfield.size.height, Math.round(playfield.rect.height), 'canvas drawing height does not match its visible height');
       });
     }
 
