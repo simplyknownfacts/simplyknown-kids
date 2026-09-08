@@ -374,7 +374,7 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     });
     if (peeking) {
       const place = places[state.target].group.position;
-      const bushTops = [1.69, 1.7, 2.02];
+      const bushTops = [1.54, 1.55, 1.87];
       clueStage.position.set(place.x, bushTops[state.target], place.z - 0.28);
     }
 
