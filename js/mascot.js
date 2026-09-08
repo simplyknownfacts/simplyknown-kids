@@ -747,6 +747,264 @@ function hide() {
   _state = 'hidden';
 }
 
+// A lightweight, isolated companion renderer for activity scenes. Unlike the
+// floating home widget, an actor has no profile state, sounds, gestures,
+// timers, dragging, or global visibility side effects. Its caller owns layout.
+function createActor({ host, id = DEFAULT_MASCOT_ID } = {}) {
+  if (!host || typeof host.appendChild !== 'function') {
+    throw new TypeError('mascot.createActor requires a host element');
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'companion-actor-canvas';
+  canvas.width = 320;
+  canvas.height = 320;
+  canvas.dataset.media = 'loading';
+  canvas.setAttribute('aria-hidden', 'true');
+  canvas.style.cssText = 'display:block;width:100%;height:100%;max-width:320px;max-height:320px;background:transparent;';
+
+  // The source video never paints directly, so native controls, poster icons,
+  // and browser play overlays cannot appear in the child-facing scene.
+  const video = document.createElement('video');
+  video.className = 'companion-actor-source';
+  video.muted = true;
+  video.defaultMuted = true;
+  video.playsInline = true;
+  video.loop = true;
+  video.autoplay = false;
+  video.controls = false;
+  video.preload = 'auto';
+  video.disablePictureInPicture = true;
+  video.setAttribute('muted', '');
+  video.setAttribute('playsinline', '');
+  video.setAttribute('aria-hidden', 'true');
+  video.tabIndex = -1;
+  video.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;clip-path:inset(50%);';
+  host.append(canvas, video);
+
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let currentId = DEFAULT_MASCOT_ID;
+  let poster = null;
+  let posterReady = false;
+  let posterFailed = false;
+  let videoFailed = false;
+  let visible = true;
+  let manuallyPaused = false;
+  let pageActive = !document.hidden;
+  let disposed = false;
+  let generation = 0;
+  let raf = 0;
+  let lastFrameAt = -Infinity;
+
+  function validId(nextId) {
+    return MASCOT_AVAILABLE.includes(nextId) ? nextId : DEFAULT_MASCOT_ID;
+  }
+
+  function setMedia(value) {
+    canvas.dataset.media = value;
+  }
+
+  function drawKeyed(source, sourceWidth, sourceHeight) {
+    if (disposed || !context || !sourceWidth || !sourceHeight) return false;
+    const width = canvas.width;
+    const height = canvas.height;
+    const scale = Math.min(width / sourceWidth, height / sourceHeight);
+    const drawWidth = sourceWidth * scale;
+    const drawHeight = sourceHeight * scale;
+    const x = (width - drawWidth) / 2;
+    const y = (height - drawHeight) / 2;
+    try {
+      context.clearRect(0, 0, width, height);
+      context.drawImage(source, x, y, drawWidth, drawHeight);
+      _chromaKey(context, width, height);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function drawPoster(expectedGeneration = generation) {
+    if (disposed || expectedGeneration !== generation || !posterReady || !poster) return false;
+    const drawn = drawKeyed(poster, poster.naturalWidth, poster.naturalHeight);
+    if (drawn) setMedia('poster');
+    return drawn;
+  }
+
+  function stopFrames() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    try { video.pause(); } catch {}
+  }
+
+  function canAnimate() {
+    return !disposed && visible && !manuallyPaused && pageActive && !document.hidden
+      && !reducedMotion.matches && video.readyState >= 2 && video.videoWidth > 0;
+  }
+
+  function frame(now = 0) {
+    raf = 0;
+    if (!canAnimate()) return;
+    raf = requestAnimationFrame(frame);
+    // The source clips are 24/30fps; re-keying at display refresh rate wastes
+    // battery without producing new motion.
+    if (now - lastFrameAt < 1000 / 24) return;
+    lastFrameAt = now;
+    if (drawKeyed(video, video.videoWidth, video.videoHeight)) setMedia('video');
+    else drawPoster();
+  }
+
+  function startFrames(expectedGeneration = generation) {
+    if (disposed || expectedGeneration !== generation || !canAnimate() || raf) return;
+    lastFrameAt = -Infinity;
+    raf = requestAnimationFrame(frame);
+  }
+
+  function startVideo(expectedGeneration = generation) {
+    if (disposed || expectedGeneration !== generation || !canAnimate()) return;
+    let playResult;
+    try {
+      playResult = video.play();
+    } catch {
+      stopFrames();
+      drawPoster(expectedGeneration);
+      return;
+    }
+    Promise.resolve(playResult).then(() => {
+      if (disposed || expectedGeneration !== generation || !canAnimate()) {
+        try { video.pause(); } catch {}
+        return;
+      }
+      startFrames(expectedGeneration);
+    }).catch(() => {
+      if (disposed || expectedGeneration !== generation) return;
+      stopFrames();
+      drawPoster(expectedGeneration);
+    });
+  }
+
+  function settlePlayback() {
+    if (disposed) return;
+    if (!canAnimate()) {
+      stopFrames();
+      if (reducedMotion.matches) drawPoster();
+      return;
+    }
+    startVideo();
+  }
+
+  function setId(nextId) {
+    if (disposed) return;
+    const expectedGeneration = ++generation;
+    currentId = validId(nextId);
+    canvas.dataset.id = currentId;
+    setMedia('loading');
+    stopFrames();
+    context?.clearRect(0, 0, canvas.width, canvas.height);
+    posterReady = false;
+    posterFailed = false;
+    videoFailed = false;
+    poster = new Image();
+    poster.decoding = 'async';
+    poster.onload = () => {
+      if (disposed || expectedGeneration !== generation) return;
+      posterReady = true;
+      if (canvas.dataset.media !== 'video') drawPoster(expectedGeneration);
+      settlePlayback();
+    };
+    poster.onerror = () => {
+      if (disposed || expectedGeneration !== generation) return;
+      posterReady = false;
+      posterFailed = true;
+      if (videoFailed) setMedia('unavailable');
+    };
+    poster.src = `${rootPath()}mascots/${currentId}/green/master.png`;
+
+    video.onloadeddata = () => {
+      if (disposed || expectedGeneration !== generation) return;
+      settlePlayback();
+    };
+    video.onerror = () => {
+      if (disposed || expectedGeneration !== generation) return;
+      videoFailed = true;
+      stopFrames();
+      if (!drawPoster(expectedGeneration) && posterFailed) setMedia('unavailable');
+    };
+    video.src = _src(currentId, null, 'BASE');
+    video.load();
+  }
+
+  function setVisible(nextVisible) {
+    if (disposed) return;
+    visible = !!nextVisible;
+    canvas.hidden = !visible;
+    if (!visible) stopFrames();
+    else {
+      if (canvas.dataset.media === 'loading') drawPoster();
+      settlePlayback();
+    }
+  }
+
+  function pause() {
+    if (disposed) return;
+    manuallyPaused = true;
+    stopFrames();
+  }
+
+  function resume() {
+    if (disposed) return;
+    manuallyPaused = false;
+    settlePlayback();
+  }
+
+  function onVisibilityChange() {
+    pageActive = !document.hidden;
+    settlePlayback();
+  }
+
+  function onPageHide() {
+    pageActive = false;
+    stopFrames();
+  }
+
+  function onPageShow() {
+    pageActive = true;
+    settlePlayback();
+  }
+
+  function onMotionChange() {
+    if (reducedMotion.matches) {
+      stopFrames();
+      drawPoster();
+    } else settlePlayback();
+  }
+
+  function dispose() {
+    if (disposed) return;
+    disposed = true;
+    generation += 1;
+    stopFrames();
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    window.removeEventListener('pagehide', onPageHide);
+    window.removeEventListener('pageshow', onPageShow);
+    reducedMotion.removeEventListener('change', onMotionChange);
+    video.onloadeddata = null;
+    video.onerror = null;
+    video.removeAttribute('src');
+    try { video.load(); } catch {}
+    poster = null;
+    canvas.remove();
+    video.remove();
+  }
+
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('pagehide', onPageHide);
+  window.addEventListener('pageshow', onPageShow);
+  reducedMotion.addEventListener('change', onMotionChange);
+  setId(id);
+  return { setId, setVisible, pause, resume, dispose };
+}
+
 window.addEventListener('pagehide', () => {
   _pageActive = false;
   _finishReaction(_reactionGeneration, false);
@@ -772,4 +1030,4 @@ document.addEventListener('vb:active', () => {
   }
 });
 
-window.mascot = { play, show, hide, react, available: MASCOT_AVAILABLE, labels: MASCOT_LABELS };
+window.mascot = { play, show, hide, react, createActor, available: MASCOT_AVAILABLE, labels: MASCOT_LABELS };
