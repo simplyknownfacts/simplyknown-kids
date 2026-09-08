@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v160';
+const CACHE = 'vb-v161';
+// v161: clue-based Hide & Seek, with partial peeks and a hidden hiding place.
 // v160: keep Bubble Pop canvas and touch coordinates aligned after HUD reflow.
 // v159: Bubble Pop reserves separate rows for controls, challenge and score.
 // v158: separate themed islands and animated ocean, available offline.
