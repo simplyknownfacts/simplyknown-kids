@@ -1,5 +1,5 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v146';
+const CACHE = 'vb-v147';
 // v145 FIX (Codex 0905-1, HIGH): js/pin-lockout.js -- loaded by both
 // home.html's exit dialog and parent/settings.html's PIN gate -- was missing
 // from ASSETS. After an SW update plus an offline launch the file could be

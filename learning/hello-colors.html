@@ -112,7 +112,7 @@
 
     let colorIdx = 0;
     let autoTimer = null;
-    window.addEventListener('beforeunload', () => clearTimeout(autoTimer));
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(autoTimer)));
 
     const label     = document.getElementById('colorLabel');
     const quizLbl   = document.getElementById('quizLabel');
@@ -216,10 +216,10 @@
       }
       lineup.sort(() => Math.random()-0.5);
       const promptText = strict ? `Tap the ${targetColor.name} ${targetThing.n}!` : `Tap the ${targetColor.name} thing!`;
-      quizLbl.textContent = promptText; setTimeout(() => {
+      quizLbl.textContent = promptText; (() => {
         if (typeof speakInstruction === 'function') speakInstruction(promptText);
         else speak(promptText);
-      }, 300);
+      })();
       lineup.forEach(slot => makeThingCard(slot.thing, (card) => {
         if (settled) return;
         if (slot.isAnswer) {
@@ -248,10 +248,10 @@
         { thing: odd.things[Math.floor(Math.random()*odd.things.length)], isAnswer:true },
       ].sort(() => Math.random()-0.5);
       const promptText = `Which one is NOT ${c.name}?`;
-      quizLbl.textContent = promptText; setTimeout(() => {
+      quizLbl.textContent = promptText; (() => {
         if (typeof speakInstruction === 'function') speakInstruction(promptText);
         else speak(promptText);
-      }, 300);
+      })();
       lineup.forEach(slot => makeThingCard(slot.thing, (card) => {
         if (settled) return;
         if (slot.isAnswer) {
@@ -269,11 +269,11 @@
       let settled = false;
       const mix = MIXES[Math.floor(Math.random() * MIXES.length)];
       const promptText = `${mix.a} + ${mix.b} = ?`;
-      quizLbl.textContent = promptText; setTimeout(() => {
+      quizLbl.textContent = promptText; (() => {
         const spokenPrompt = `${mix.a} plus ${mix.b} makes what?`;
         if (typeof speakInstruction === 'function') speakInstruction(spokenPrompt);
         else speak(spokenPrompt);
-      }, 300);
+      })();
       const choices = new Set([mix.r]);
       const pool = ALL_COLORS.map(c => c.name).filter(n => n !== mix.a && n !== mix.b);
       while (choices.size < 4) choices.add(pool[Math.floor(Math.random()*pool.length)]);

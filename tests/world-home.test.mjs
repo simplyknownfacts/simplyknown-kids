@@ -31,7 +31,7 @@ test('world home supports visible, aligned house targets and personal companions
     const page = await context.newPage(), errors = [];
     page.setDefaultTimeout(7000);
     page.on('pageerror', error => errors.push(error.message));
-    for (const [width,height] of [[390,844],[320,568],[768,1024],[1440,900],[844,390],[568,320]]) {
+    for (const [width,height] of [[390,844],[320,568],[768,1024],[756,1270],[1440,900],[844,390],[568,320]]) {
       await t.test(`${width}×${height}: houses fit and receive their own touch points`, async () => {
         await page.setViewportSize({width,height});
         await page.goto(`http://127.0.0.1:${port}/home.html`);

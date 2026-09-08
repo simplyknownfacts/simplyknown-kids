@@ -9,6 +9,7 @@
     listen: ['#b6e4c6', '#78b999', '#519c7d', '#3f7868'],
   };
   function worldHouse(kind) {
+    if (!Object.hasOwn(colors, kind)) kind = 'games';
     const c = colors[kind] || colors.games;
     const defs = `<defs><linearGradient id="wall-${kind}" x2="0" y2="1"><stop stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient><linearGradient id="roof-${kind}" x2="0" y2="1"><stop stop-color="${c[2]}"/><stop offset="1" stop-color="${c[3]}"/></linearGradient><linearGradient id="door-${kind}" x2="0" y2="1"><stop stop-color="#427573"/><stop offset="1" stop-color="#285653"/></linearGradient></defs>`;
     const ground = '<ellipse cx="143" cy="224" rx="111" ry="19" fill="#306653" opacity=".17"/><ellipse cx="139" cy="219" rx="108" ry="18" fill="#74b983"/><path d="M120 232l10-22h34l10 22" fill="#f2deb0"/><path d="M42 215l-6-11m13 10l4-13m184 15l5-11" stroke="#4b956c" stroke-width="4" stroke-linecap="round"/>';
@@ -23,4 +24,7 @@
     return `<svg viewBox="0 0 280 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${defs}${ground}<g class="house-building">${building}</g><g fill="#fcf2bd"><circle cx="45" cy="221" r="3"/><circle cx="233" cy="224" r="3"/></g></svg>`;
   }
   window.worldHouse = worldHouse;
+  document.querySelectorAll('[data-world-house]').forEach(el => {
+    el.innerHTML = worldHouse(el.dataset.worldHouse);
+  });
 })();

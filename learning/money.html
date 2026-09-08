@@ -169,7 +169,7 @@
     const hint   = document.getElementById('hint');
     let roundTimer = null, roundSettled = false;
     let lastTargetId = null;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(roundTimer)));
 
     // Make-change round (Grade 3+): "It costs 65¢, you pay $1 — what's the change?"
     function changeRound() {
@@ -183,14 +183,14 @@
       const change = paid - price;
 
       hint.textContent = `It costs ${moneyLabel(price)}. You pay ${moneyLabel(paid)}. How much change?`;
-      setTimeout(() => {
+      (() => {
         if (typeof speakInstruction === 'function') speakInstruction(hint.textContent);
         else speak(hint.textContent);
-      }, 300);
+      })();
 
       const row = document.createElement('div'); row.className = 'money-row';
       const tag = document.createElement('div');
-      tag.style.cssText = 'font-size:clamp(34px,8vw,52px);font-weight:900;color:white;display:flex;align-items:center;gap:10px;';
+      tag.style.cssText = 'font-size:clamp(34px,8vw,52px);font-weight:900;color:var(--text);display:flex;align-items:center;gap:10px;';
       tag.textContent = `🏷️ ${moneyLabel(price)}`;
       row.appendChild(tag);
       row.appendChild(makeMoney(MONEY.find(m => m.cents === paid) || MONEY[MONEY.length - 1]));
@@ -245,11 +245,11 @@
         const target = choosable[Math.floor(Math.random() * choosable.length)];
         lastTargetId = target.id;
         hint.textContent = `Tap the ${target.name}!`;
-        setTimeout(() => {
+        (() => {
           const prompt = `Tap the ${target.name}.`;
           if (typeof speakInstruction === 'function') speakInstruction(prompt);
           else speak(prompt);
-        }, 300);
+        })();
         const row = document.createElement('div'); row.className = 'money-row';
         [...pool].sort(() => Math.random() - 0.5).forEach(m => {
           const node = makeMoney(m);
@@ -285,10 +285,10 @@
           pile.push(m); total += m.cents;
         }
         hint.textContent = 'How much money?';
-        setTimeout(() => {
+        (() => {
           if (typeof speakInstruction === 'function') speakInstruction('How much money is here?');
           else speak('How much money is here?');
-        }, 300);
+        })();
         const row = document.createElement('div'); row.className = 'money-row';
         pile.forEach(m => row.appendChild(makeMoney(m)));
         bodyEl.appendChild(row);

@@ -73,7 +73,7 @@
     const wrap = document.getElementById('clockWrap');
     const choicesRow = document.getElementById('choices');
     let roundTimer = null, lastKey = null, roundSettled = false;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(roundTimer)));
 
     function el(tag, attrs) {
       const n = document.createElementNS(NS, tag);
@@ -132,10 +132,10 @@
       drawClock(h, m);
       const hint = document.getElementById('hint');
       hint.textContent = 'What time is it? Short blue hand = hour. Long red hand = minutes.';
-      setTimeout(() => {
+      (() => {
         if (typeof speakInstruction === 'function') speakInstruction('What time is it?');
         else speak('What time is it?');
-      }, 400);
+      })();
 
       // 4 choices: right one + distractors (different hour, or different minutes)
       const opts = new Set([key]);

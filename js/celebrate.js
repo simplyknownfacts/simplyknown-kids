@@ -13,8 +13,13 @@
   var hideTimer = null;
   var cooldownTimer = null;
   var lastShownAt = 0;
+  var LAST_SHOWN_KEY = 'vb_award_last_shown';
+  try {
+    var saved = Number(sessionStorage.getItem(LAST_SHOWN_KEY));
+    if (Number.isFinite(saved) && saved > 0 && saved <= Date.now()) lastShownAt = saved;
+  } catch (e) { /* storage may be disabled; retain this page's cooldown */ }
   var NOTICE_MS = 2600;
-  var COOLDOWN_MS = 5000;
+  var COOLDOWN_MS = 30000;
 
   function ensureGlint() {
     if (glintEl && glintEl.isConnected) return glintEl;
@@ -66,7 +71,7 @@
     noticeEl.replaceChildren();
     var lead = bestDef(visibleDefs);
     var ribbon = (lead && typeof renderRibbon === 'function')
-      ? renderRibbon(lead, { size: 68, count: lead.count })
+      ? renderRibbon(lead, { size: 42, count: lead.count })
       : document.createElement('div');
     ribbon.classList.add('cele-ribbon');
     noticeEl.appendChild(ribbon);
@@ -89,13 +94,14 @@
       if (noticeEl) noticeEl.classList.add('in');
     });
     clearTimeout(hideTimer);
-    hideTimer = setTimeout(function () { dismiss(false); }, NOTICE_MS);
+    hideTimer = setTimeout(function () { dismiss(false); }, Math.max(0, NOTICE_MS - (Date.now() - lastShownAt)));
   }
 
   function begin(defs) {
     visibleDefs = mergeDefs([], defs);
     if (!visibleDefs.length) return;
     lastShownAt = Date.now();
+    try { sessionStorage.setItem(LAST_SHOWN_KEY, String(lastShownAt)); } catch (e) {}
     renderNotice();
   }
 

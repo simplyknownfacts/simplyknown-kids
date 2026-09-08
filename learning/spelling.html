@@ -126,7 +126,7 @@
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
     let roundTimer = null, roundSettled = false;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(roundTimer)));
 
     function nextRound() {
       bodyEl.innerHTML = ''; clearTimeout(roundTimer); roundSettled = false;
@@ -167,10 +167,10 @@
           grid.appendChild(card);
         });
         bodyEl.appendChild(grid);
-        setTimeout(() => {
+        (() => {
           if (typeof speakInstruction === 'function') speakInstruction(target.w);
           else speak(target.w);
-        }, 400);
+        })();
 
       } else {
         // Tier 6+: spell the word — tap letters in order from a bank.
@@ -223,11 +223,11 @@
           grid.appendChild(tile);
         });
         bodyEl.appendChild(grid);
-        setTimeout(() => {
+        (() => {
           const prompt = `Spell ${target.w}!`;
           if (typeof speakInstruction === 'function') speakInstruction(prompt);
           else speak(prompt);
-        }, 400);
+        })();
       }
     }
     nextRound();

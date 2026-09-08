@@ -122,7 +122,7 @@ test('essential speech survives feedback bursts, exposes replay, and cancels on 
       speakInstruction('How many sides?');
       await Promise.resolve();
       const instructionSrc = window.__audioInstances.at(-1).src;
-      for (let i = 0; i < 20; i++) speak('Try again!');
+      for (let i = 0; i < 20; i++) { speak('Try again!'); replayInstruction(); }
       await Promise.resolve();
       const afterBurstSrc = window.__audioInstances.at(-1).src;
       const sourcesBeforeHide = window.__audioEvents.filter((e) => e[0] === 'src' && e[1]);
@@ -134,6 +134,7 @@ test('essential speech survives feedback bursts, exposes replay, and cancels on 
       await Promise.resolve();
       const feedbackAfterEndSrc = window.__audioInstances.at(-1).src;
       window.dispatchEvent(new PageTransitionEvent('pagehide'));
+      speakInstruction('How many sides?'); // stale callback after leaving must stay silent
       return {
         instructionSrc,
         afterBurstSrc,
@@ -235,6 +236,7 @@ test('Count Along accepts one correct answer once and clears its transition on p
       for (let i = 0; i < 8; i++) correct.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       const htmlAfterAnswer = document.getElementById('stage').innerHTML;
       window.dispatchEvent(new PageTransitionEvent('pagehide'));
+      speakInstruction('How many sides?'); // stale callback after leaving must stay silent
       return { calls, htmlAfterAnswer };
     });
 
@@ -327,4 +329,21 @@ test('Shape Match resolves a quiz once and only the owning pointer moves a drag'
     assert.equal(drag.reset, true, 'pointer cancellation did not restore the source shape');
     assert.equal(drag.matched, 0, 'pointer cancellation completed a drop');
     await dragCtx.close();
+  });
+
+
+test('award dwell is bounded under a late burst and cooldown survives navigation',
+  { skip: NEEDS_BROWSER }, async () => {
+    const ctx = await contextFor(profile('ribbon-travel', 'count-along', 5));
+    const page = await ctx.newPage();
+    await page.goto(BASE + '/learning/count-along.html');
+    await page.evaluate(() => vbCelebrate.show([{id:'dwell-one',type:'milestone',title:'First'}]));
+    await page.waitForTimeout(2100);
+    await page.evaluate(() => vbCelebrate.show([{id:'dwell-two',type:'milestone',title:'Second'}]));
+    await page.waitForTimeout(850);
+    assert.equal(await page.locator('.vb-celebrate').count(), 0, 'late award extended the notice over play');
+    await page.goto(BASE + '/games/index.html');
+    await page.evaluate(() => vbCelebrate.show([{id:'travel',type:'milestone',title:'Travel'}]));
+    assert.equal(await page.locator('.vb-celebrate').count(), 0, 'navigation reset the shared cooldown');
+    await ctx.close();
   });

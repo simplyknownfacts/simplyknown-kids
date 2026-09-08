@@ -96,7 +96,7 @@
     const board = document.getElementById('board');
     const hint = document.getElementById('hint');
     let first = null, lock = false, matched = 0, timer = null;
-    window.addEventListener('beforeunload', () => clearTimeout(timer));
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(timer)));
 
     // A card has to stay big enough for a child's finger. COLS above is what the
     // board WANTS; on a narrow phone it cannot always have it — 6 columns inside
@@ -134,10 +134,10 @@
         board.appendChild(card);
       });
       hint.textContent = `Find the matching pairs! 0 / ${PAIRS}`;
-      setTimeout(() => {
+      (() => {
         if (typeof speakInstruction === 'function') speakInstruction('Find the matching pairs!');
         else speak('Find the matching pairs!');
-      }, 400);
+      })();
     }
 
     function flip(card) {

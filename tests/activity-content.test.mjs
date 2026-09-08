@@ -19,7 +19,7 @@ test('child-experience inventory follows every registry entry without a hard-cod
   }
   assert.match(review, /Watch \(`videos\/index\.html`\)/);
   assert.match(review, /Listening Hut \(`listen\/index\.html`\)/);
-  assert.match(review, /registered but is intentionally absent from the current Games menu/i);
+  assert.match(review, /is restored in the redesigned Games menu/i);
 });
 
 test('animal sound quiz asks without announcing the answer and pet habitat answers are not farm claims', () => {

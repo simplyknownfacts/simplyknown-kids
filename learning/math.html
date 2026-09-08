@@ -96,7 +96,7 @@
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
     let roundTimer = null, roundSettled = false;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(roundTimer)));
 
     function pile(n, emoji) {
       const div = document.createElement('div');
@@ -184,10 +184,10 @@
       // Speak the equation
       const opWord = op === '+' ? 'plus' : op === '−' ? 'minus' : op === '×' ? 'times' : 'divided by';
       const spokenPrompt = missing ? `${a} ${opWord} what equals ${ans}?` : `${a} ${opWord} ${b}?`;
-      setTimeout(() => {
+      (() => {
         if (typeof speakInstruction === 'function') speakInstruction(spokenPrompt);
         else speak(spokenPrompt);
-      }, 400);
+      })();
 
       // Number choices: target + 3 plausible distractors
       const choices = new Set([target]);

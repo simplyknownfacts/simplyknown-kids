@@ -32,7 +32,8 @@ after(async () => {
 });
 
 async function activityPage(id, tier, features = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+  await ctx.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
   await ctx.addInitScript(({ id, tier, features }) => {
     localStorage.setItem('vb_profiles', JSON.stringify([{
       id: 'content-kid', name: 'Test Kid', birthday: '2020-01-01', color: '#4ECDC4',
@@ -49,17 +50,23 @@ async function activityPage(id, tier, features = {}) {
 test('changed activity behavior survives real pointer input', async (t) => {
   await t.test('Animal Sounds does not announce the answer before the quiz sound', async () => {
     const { ctx, page } = await activityPage('animal-sounds', 5, { quizMode: true });
-    await page.goto(base + '/learning/animal-sounds.html', { waitUntil: 'domcontentloaded' });
-    await page.evaluate(() => {
-      window.__contentInstructions = [];
-      window.__contentSpeech = [];
-      window.speakInstruction = (text) => window.__contentInstructions.push(text);
-      window.speak = (text) => window.__contentSpeech.push(text);
+    // Observe before the page's inline initialization. Instructions now start
+    // immediately, so installing a spy after DOMContentLoaded misses the event.
+    await page.route('**/js/app.js', async route => {
+      const response = await route.fetch();
+      await route.fulfill({ response, body: await response.text() + `
+        window.__contentInstructions = []; window.__contentSpeech = []; window.__playedSounds = [];
+        window.speakInstruction = text => { window.__contentInstructions.push(text); return Promise.resolve(); };
+        window.speak = text => window.__contentSpeech.push(text);
+        HTMLMediaElement.prototype.play = function() { window.__playedSounds.push(this.src); return Promise.resolve(); };
+      ` });
     });
+    await page.goto(base + '/learning/animal-sounds.html', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2400);
-    const heard = await page.evaluate(() => ({ instructions: window.__contentInstructions, speech: window.__contentSpeech }));
+    const heard = await page.evaluate(() => ({ instructions: window.__contentInstructions, speech: window.__contentSpeech, sounds: window.__playedSounds.filter(s => s.includes('/audio/sounds/')) }));
     assert.deepEqual(heard.instructions, ['Which animal makes this sound?']);
     assert.equal(heard.speech.some((s) => /^The .+ says,?$/.test(s)), false);
+    assert.equal(heard.sounds.length, 1, 'the question must lead to one animal sound');
     await ctx.close();
   });
 

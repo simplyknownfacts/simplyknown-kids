@@ -87,17 +87,17 @@
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
     let roundTimer = null, roundSettled = false;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(roundTimer)));
 
     function renderMonthRound() {
       const mi = Math.floor(Math.random() * 12);
       const target = (mi + 1) % 12;
       const promptText = `What month comes after ${MONTHS[mi]}?`;
       hint.textContent = promptText;
-      setTimeout(() => {
+      (() => {
         if (typeof speakInstruction === 'function') speakInstruction(promptText);
         else speak(promptText);
-      }, 400);
+      })();
       const row = document.createElement('div'); row.className = 'day-row';
       MONTHS.forEach((m, i) => {
         const tile = document.createElement('div');
@@ -156,10 +156,10 @@
           ? `What day comes after ${DAYS[baseIdx].n}?`
           : `What was the day before ${DAYS[baseIdx].n}?`;
         hint.textContent = promptText;
-        setTimeout(() => {
+        (() => {
           if (typeof speakInstruction === 'function') speakInstruction(promptText);
           else speak(promptText);
-        }, 400);
+        })();
         const row = document.createElement('div'); row.className = 'day-row';
         DAYS.forEach((d, i) => {
           const tile = document.createElement('div');

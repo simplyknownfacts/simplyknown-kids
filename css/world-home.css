@@ -28,9 +28,9 @@ body.world-home { --world-ink: #184d4a; --world-cream: #fff7df; background: #d6e
 .world-paths .path-shadow { stroke: #799e68; stroke-width: 35; opacity: .25; }
 .world-paths .path { stroke: #eee1b1; stroke-width: 27; }
 .world-paths .path-dash { stroke: #fcf0ca; stroke-width: 2; stroke-dasharray: 7 11; }
-.house { position: absolute; --x: 50%; --y: 50%; left: var(--x); top: var(--y); width: clamp(150px, 25%, 256px); height: 43%; min-height: 110px; padding: 0; margin: 0; transform: translate(-50%, -50%); background: transparent; border: 0; outline-offset: -8px !important; cursor: pointer; touch-action: manipulation; z-index: 10; display: flex; align-items: center; flex-direction: column; justify-content: flex-end; -webkit-tap-highlight-color: transparent; }
+.house { position: absolute; --x: 50%; --y: 50%; left: var(--x); top: var(--y); width: clamp(150px, 25%, 256px); height: 43%; max-height: 280px; min-height: 110px; padding: 0; margin: 0; transform: translate(-50%, -50%); background: transparent; border: 0; outline-offset: -8px !important; cursor: pointer; touch-action: manipulation; z-index: 10; display: flex; align-items: center; flex-direction: column; justify-content: flex-end; -webkit-tap-highlight-color: transparent; }
 .house-art { display: flex; flex: 1; min-height: 0; width: 100%; align-items: flex-end; justify-content: center; transition: filter .2s, transform .2s; pointer-events: none; }
-.house-art svg { display: block; height: 100%; max-width: 100%; overflow: visible; }
+.house-art svg { display: block; width: 100%; height: auto; max-height: 100%; overflow: visible; }
 .house-label { display: flex; align-items: center; justify-content: center; gap: 6px; position: relative; background: #fff9e9; padding: 7px 17px; border: 1.5px solid #52866c31; color: #315e51; border-radius: 13px; box-shadow: 0 4px 0 #5b886828; font: 900 17px/1.12 var(--font-ui, system-ui); letter-spacing: -.3px; white-space: nowrap; margin-top: -8px; }
 .house-label::after { content: '›'; color: #7d9b7e; margin-left: 3px; font-size: 21px; line-height: .5; }
 .house-caption { margin-top: 6px; color: #41684e; font: 750 10px/1.15 var(--font-ui, system-ui); letter-spacing: .15px; white-space: nowrap; min-height: 12px; }

@@ -212,11 +212,11 @@
     document.getElementById('quizArea').style.display = 'flex';
 
     let roundTimer = null;
-    window.addEventListener('beforeunload', () => {
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => {
       pageActive = false; soundPromptGen++;
       clearTimeout(roundTimer); clearTimeout(soundTimer);
       if (animalAudio) animalAudio.pause();
-    });
+    }));
 
     const instruction = document.getElementById('instruction');
     const quizStage   = document.getElementById('quizStage');
@@ -243,18 +243,18 @@
       const promptGen = ++soundPromptGen;
       quizStage.innerHTML = '';
       instruction.textContent = promptText;
-      if (opts.replay) setTimeout(() => {
+      if (opts.replay) (() => {
         const promptPlayback = typeof speakInstruction === 'function'
           ? speakInstruction(promptText)
           : speak(promptText);
         Promise.resolve(promptPlayback).then(() => {
           if (!settled && pageActive && promptGen === soundPromptGen) playAnimalSound(items[answerIdx]);
         });
-      }, 400);
-      else setTimeout(() => {
+      })();
+      else (() => {
         if (typeof speakInstruction === 'function') speakInstruction(promptText);
         else speak(promptText);
-      }, 400);
+      })();
       const row = document.createElement('div'); row.className = 'row';
       items.forEach((a, i) => {
         const btn = document.createElement('div'); btn.className = 'choice-btn';

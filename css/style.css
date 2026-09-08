@@ -1271,3 +1271,43 @@ body.world-page .home-btn { background: #8AE0C2; }
   .picker-world .picker-screen { padding-top: 14px; }
   .picker-world .profiles-row { padding-bottom: 70px; }
 }
+
+/* The same illustrated house connects its home landmark and section arrival. */
+.world-page .world-emblem[data-world-house] { width:clamp(96px,23vw,174px); background:none; border:0; box-shadow:none; animation:none; transform:none; }
+.world-page .world-emblem[data-world-house]::after { display:none; }
+.world-emblem[data-world-house] svg { width:100%; height:auto; overflow:visible; }
+
+/* A flex-scrolling hub must never shrink its arrival panel over its copy. */
+.world-page .world-intro { flex: 0 0 auto; }
+.world-page .cards-row { flex-shrink: 0; }
+
+/* Play rooms share the house materials. Canvas geometry and custom themes stay
+   with each activity; the color lesson keeps its full-screen color mechanic. */
+html:not([data-vbtheme]) body[data-play-world="games"] {
+  background: radial-gradient(ellipse at 20% 10%, #297e70, transparent 65%), linear-gradient(155deg, #173e4f, #164f52);
+}
+html:not([data-vbtheme]) body[data-play-world="art"] {
+  background: linear-gradient(140deg, #e4d4f9, #fff6ec 65%, #e8def9);
+}
+html:not([data-vbtheme]) body[data-play-world="learn"]:not([data-play-activity="hello-colors"]) {
+  --text: #184d4a; --text-soft: #496d62; --accent: #aa620e;
+  --chip-bg: #fff9e9; --chip-border: #d4c8a5;
+  color: #184d4a;
+  background: radial-gradient(ellipse at 15% 10%, #fffdf0 0, transparent 50%),
+    radial-gradient(ellipse at 100% 90%, #e0edcf 0, transparent 48%), #f8edcb;
+}
+html:not([data-vbtheme]) body[data-play-world="learn"]:not([data-play-activity="hello-colors"]) :is(.number-big,.thing-label,.eq-row,.answer-box,.letter-big,.spelled-slot,.prompt-big,#hint,.cname) {
+  color: #184d4a; text-shadow: none;
+}
+html:not([data-vbtheme]) body[data-play-world="learn"] :is(.num-btn,.word-card,.letter-tile,.start-tile,.choice-btn,.day-tile,.pager-btn.secondary) {
+  color: #184d4a; background: #fffdf4;
+  border-color: #dfcca0;
+  box-shadow: 0 5px 0 #d9c495, 0 9px 18px #765c1612;
+}
+html:not([data-vbtheme]) body[data-play-world="learn"] :is(.num-btn,.word-card,.letter-tile,.start-tile,.choice-btn,.day-tile).wrong { background: #ffd1c6; }
+html:not([data-vbtheme]) body[data-play-world="learn"] :is(.num-btn.right,.word-card.matched,.day-tile.matched) { background: #bce6cb; }
+html:not([data-vbtheme]) body[data-play-world="learn"] :is(.answer-box,.spelled-slot,.pile) { border-color: #b5b798; }
+html:not([data-vbtheme]) body[data-play-world="learn"] .op { color: #b96a0e; }
+html:not([data-vbtheme]) body[data-play-activity="count-along"] .dot:not(.counted) {
+  background: #fffaf0; border-color: #e6d1a3; box-shadow: 0 5px 0 #ddc694;
+}

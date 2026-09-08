@@ -1,3 +1,5 @@
+// Stop stale callbacks from starting speech after leaving this page.
+var _pageAcceptsSpeech = true;
 // Zoom defense — toddlers triggering pinch/wheel-zoom shouldn't break the
 // layout. Viewport meta user-scalable=no is ignored on modern iOS, and a
 // Chrome PWA on desktop still honors Ctrl+wheel and Ctrl+=. Trap the routes
@@ -55,6 +57,18 @@
   if (!isActivityVisible(profile, activity.id)) goHome();
 })();
 
+// Carry the house palette into registered play screens. Custom parent themes
+// and activity-specific color lessons retain their own visual treatment.
+(function _playWorld() {
+  if (typeof ACTIVITY_FEATURES === 'undefined') return;
+  const file = location.pathname.split('/').pop();
+  const activity = ACTIVITY_FEATURES.find(a => a.file === file);
+  if (activity) {
+    document.body.dataset.playWorld = activity.section;
+    document.body.dataset.playActivity = activity.id;
+  }
+})();
+
 // Idle detection — pauses all <video> elements after 3 min of no input, so the
 // device's screen-off timer can kick in. On Android, an actively-playing video
 // keeps the screen awake; pausing releases that lock.
@@ -109,6 +123,7 @@
 
 // Navigation
 function goTo(path) {
+  _pageAcceptsSpeech = false;
   // Stop page-owned speech before navigation begins. pagehide is the backstop,
   // but cancelling here also covers slow navigations and history transitions.
   if (typeof cancelSpeak === 'function') cancelSpeak();
@@ -429,6 +444,7 @@ function _ensureInstructionReplay() {
 // Optional feedback: the latest tap wins, but it never cuts off an essential
 // instruction and never waits in a queue to play after the moment has passed.
 function speak(text, rate = 0.85, pitch = 1.2) {
+  if (!_pageAcceptsSpeech) return false;
   _showCaption(text);
   if (!_speechEnabledForProfile()) return;
   if (_activeSpeechKind === 'instruction') return false;
@@ -438,6 +454,7 @@ function speak(text, rate = 0.85, pitch = 1.2) {
 // Essential activity guidance gets one protected playback and a persistent,
 // explicit replay control. A newer instruction replaces an obsolete one.
 function speakInstruction(text) {
+  if (!_pageAcceptsSpeech) return false;
   _lastInstructionText = String(text || '');
   if (!_lastInstructionText) return;
   _ensureInstructionReplay();
@@ -447,13 +464,16 @@ function speakInstruction(text) {
 }
 
 function replayInstruction() {
+  if (_activeSpeechKind === 'instruction') return false;
   if (_lastInstructionText) return speakInstruction(_lastInstructionText);
 }
 
 // A page's audio and clip chain must not survive deliberate navigation.
 if (typeof window !== 'undefined') {
-  window.addEventListener('pagehide', cancelSpeak);
-  window.addEventListener('beforeunload', cancelSpeak);
+  const leaveSpeechPage = () => { _pageAcceptsSpeech = false; cancelSpeak(); };
+  window.addEventListener('pagehide', leaveSpeechPage);
+  window.addEventListener('beforeunload', leaveSpeechPage);
+  window.addEventListener('pageshow', () => { _pageAcceptsSpeech = true; });
 }
 
 // Render the nav chrome: a Back + Home pair, top-left. Both are big rounded
