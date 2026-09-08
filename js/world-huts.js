@@ -263,7 +263,7 @@ function addFacade(THREE, group, geo, mats) {
   addBox(THREE, group, geo, mats.step, [1.62, 0.16, 0.45], [0, 0.08, 1.88]);
 }
 
-function addSignFace(THREE, sign, palette, label, width, height, z = 0.17) {
+function addSignFace(THREE, sign, palette, label, width, height, z = 0.21) {
   const faceMaterial = new THREE.MeshStandardMaterial({
     map: labelTexture(THREE, label, palette),
     color: 0xffffff,
