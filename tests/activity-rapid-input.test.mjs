@@ -65,30 +65,23 @@ test('Body Parts accepts the current target once and owns its prompt/transition 
   await page.goto(base + '/learning/body-parts.html', { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#figure .hit');
 
-  const result = await page.evaluate(() => {
-    const calls = [];
-    window.vbProgress = {
-      record: (id) => calls.push(['record', id]),
-      mastery: (id) => calls.push(['mastery', id]),
-    };
+  const point = await page.evaluate(() => {
+    window.bodyCalls = [];
+    window.vbProgress = {record:id=>bodyCalls.push(['record',id]),mastery:id=>bodyCalls.push(['mastery',id])};
     const prompt = document.getElementById('hint').textContent;
-    const names = [...document.querySelectorAll('#figure .hit')].map((el) => el.dataset.name);
-    const plural = { eye:'eyes', ear:'ears', hand:'hands', foot:'feet', arm:'arms', leg:'legs' };
-    const target = names.find((name) => prompt.toLowerCase().includes((plural[name] || name).toLowerCase()));
-    const hit = document.querySelector(`#figure .hit[data-name="${target}"]`);
-    const rect = hit.getBoundingClientRect();
-    const figure = document.getElementById('figure');
-    for (let i = 0; i < 8; i++) {
-      figure.dispatchEvent(new PointerEvent('pointerdown', {
-        pointerId: i + 1,
-        clientX: rect.left + rect.width / 2,
-        clientY: rect.top + rect.height / 2,
-        bubbles: true,
-      }));
-    }
-    const html = figure.innerHTML;
+    const names = [...document.querySelectorAll('#figure .hit')].map(el=>el.dataset.name);
+    const plural = {eye:'eyes',ear:'ears',hand:'hands',foot:'feet',arm:'arms',leg:'legs'};
+    const target = names.find(name=>prompt.toLowerCase().includes((plural[name]||name).toLowerCase()));
+    const r = document.querySelector('#figure .hit[data-name="'+target+'"]').getBoundingClientRect();
+    return {x:r.left+r.width/2,y:r.top+r.height/2};
+  });
+  // This check owns timing/once-only behavior; the visible-art suite supplies
+  // independent picture coordinates for anatomical correctness.
+  for(let i=0;i<8;i++) await page.mouse.click(point.x,point.y);
+  const result = await page.evaluate(()=>{
+    const html=document.getElementById('figure').innerHTML;
     window.dispatchEvent(new PageTransitionEvent('pagehide'));
-    return { calls, html };
+    return {calls:bodyCalls,html};
   });
   assert.equal(result.calls.filter(([kind]) => kind === 'record').length, 1,
     'one Body Parts target recorded more than once');

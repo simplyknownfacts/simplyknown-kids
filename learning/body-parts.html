@@ -12,11 +12,11 @@
     body { background: linear-gradient(160deg, #b89b80, #6e533c); }
     .screen { justify-content: flex-start !important;
               padding-top: calc(70px + env(safe-area-inset-top));
-              padding-bottom: 130px;
+              padding-bottom: 64px;
               overflow-y: auto; }
     .figure {
       position: relative;
-      width: min(440px, 98vw); aspect-ratio: 3/4;
+      width: min(440px, 92vw, calc((100dvh - 230px) * .75)); min-width: 180px; aspect-ratio: 3/4; flex-shrink: 0; touch-action: manipulation;
       margin: 0 auto;
     }
     .body-img {
@@ -33,6 +33,8 @@
       background: transparent; border: none; padding: 0; cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
+    .hit:focus-visible,.hit.help { outline: 3px dashed #eab548; background: #fff0a345; }
+    .picture-retry { position: absolute; inset: 35% 5% auto; padding: 18px; border-radius: 18px; border: 2px solid #47776c; background: #fff9e5; font: 700 18px system-ui; color: #24594d; cursor: pointer; }
     .hit.flash { animation: flash 0.7s ease; }
     .hit.wrong { animation: shake 0.35s; }
     @keyframes flash {
@@ -49,7 +51,7 @@
       color: white; text-shadow: 0 4px 14px rgba(0,0,0,0.4); text-align: center;
     }
     /* Younger ages (tier <= 3): bigger figure so small fingers hit parts. */
-    body.young-icons .figure { width: min(500px, 100vw); }
+    body.young-icons .figure { max-width: 500px; }
     body.young-icons .prompt-big { font-size: clamp(28px, 7vw, 46px); }
   </style>
 </head>
@@ -57,7 +59,7 @@
   <div class="screen" id="stage" style="gap:18px;">
     <div class="title">👤 Body Parts</div>
     <div class="prompt-big" id="hint"></div>
-    <div class="figure" id="figure"></div>
+    <div class="figure" id="figure" role="group" aria-label="Tap a body part on the child"></div>
   </div>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
@@ -72,6 +74,7 @@
   <script src="../js/celebrate.js"></script>
   <script src="../js/progress.js"></script>
   <script src="../js/sync.js"></script>
+  <script src="../js/body-parts-data.js"></script>
   <script>window.VB_ASSET_BASE='../';</script>
   <script>
     (async function() {
@@ -83,148 +86,65 @@
     gameSettings.attach('body-parts');
     if (window.vbProgress) { vbProgress.firstPlay('body-parts'); vbProgress.touchStreak(); }
 
-    // A rotating cast of real, diverse kid figures. Each kid is a chroma-keyed
-    // PNG (transparent) framed head-at-top / feet-at-bottom in a 3:4 box, so the
-    // STANDING kids share one tuned tap-zone template. The wheelchair child is
-    // seated and gets its own zones. Invisible round tap-zones overlay each body
-    // part; a correct tap glows the zone. Positions are % of the figure box.
     const figure = document.getElementById('figure');
-
-    // Wheelchair child (seated) — own ellipse zones {cx,cy,rx,ry} (% of figure;
-    // rx is %width, ry is %height). The standing measure can't model a seated pose,
-    // so these are hand-placed; limbs slightly taller so they're easy to tap.
-    const WHEELCHAIR_ZONES = [
-      {n:'hair',cx:50,cy:28,rx:8,ry:5},
-      {n:'eye',cx:45,cy:33,rx:4,ry:3},{n:'eye',cx:55,cy:33,rx:4,ry:3},
-      {n:'ear',cx:40,cy:34,rx:3,ry:3},{n:'ear',cx:60,cy:34,rx:3,ry:3},
-      {n:'nose',cx:50,cy:36,rx:4,ry:2.5},{n:'mouth',cx:50,cy:39,rx:5,ry:3},
-      {n:'shoulder',cx:39,cy:44,rx:5,ry:3},{n:'shoulder',cx:61,cy:44,rx:5,ry:3},
-      {n:'arm',cx:33,cy:51,rx:5,ry:6},{n:'arm',cx:67,cy:51,rx:5,ry:6},
-      {n:'belly',cx:50,cy:49,rx:8,ry:5},
-      {n:'elbow',cx:34,cy:56,rx:4,ry:3},{n:'elbow',cx:66,cy:56,rx:4,ry:3},
-      {n:'hand',cx:40,cy:58,rx:5,ry:4},{n:'hand',cx:60,cy:58,rx:5,ry:4},
-      {n:'leg',cx:44,cy:64,rx:6,ry:7},{n:'leg',cx:56,cy:64,rx:6,ry:7},
-      {n:'knee',cx:43,cy:69,rx:4,ry:3},{n:'knee',cx:57,cy:69,rx:4,ry:3},
-      {n:'foot',cx:45,cy:73,rx:5,ry:3},{n:'foot',cx:57,cy:73,rx:5,ry:3},
-    ];
-
-    // SELF-CALIBRATING zones (replaces the stale ANCHORS table + standing()): for
-    // each figure we MEASURE its real body box from the PNG's alpha pixels at
-    // runtime — head-top → feet, plus the content centre/width at each height — then
-    // place every zone by body proportion. The AI figures are framed inconsistently
-    // (some fill the 3:4 box, some sit smaller/lower/off-centre), so any fixed or
-    // eye-anchored template drifted ("zones not on the body"). Measuring per figure
-    // can't go stale. _PARTS = [name, vertical fraction head→feet, side offset (×row
-    // width) or 'c' for centred, radius]. The seated wheelchair child keeps its
-    // own hand-tuned zones.
-    // Each part is an ELLIPSE {n,cx,cy,rx,ry} (% of figure) shaped like the part —
-    // arms/legs are TALL so you can tap anywhere along them; face features are small.
-    // _PARTS spec: [name, [region, fraction], side, rxFactor, ryFactor]
-    //   region 'head' → fraction of the detected HEAD (top→chin); 'body' → fraction
-    //   of chin→feet. side: 'c' centred · number = ±(n×headWidth) for paired face
-    //   parts · 'edge' = at the silhouette edge (paired L/R) · 'edgeIn' = just inside
-    //   the edge · 'legs' = the two legs near centre. rx scales with headWidth (face)
-    //   or the row width (body); ry scales with headSpan or bodySpan.
-    const _PARTS = [
-      ['hair',['head',0.20],'c',0.42,0.22],
-      ['eye',['head',0.52],0.20,0.17,0.13], ['ear',['head',0.56],0.47,0.11,0.17],
-      ['nose',['head',0.69],'c',0.15,0.11], ['mouth',['head',0.83],'c',0.27,0.12],
-      ['shoulder',['body',0.06],'edgeIn',0.18,0.06],
-      ['arm',['body',0.28],'edge',0.11,0.17], ['belly',['body',0.22],'c',0.24,0.13],
-      ['elbow',['body',0.40],'edge',0.10,0.07], ['hand',['body',0.51],'edge',0.12,0.09],
-      ['leg',['body',0.76],'legs',0.14,0.20], ['knee',['body',0.87],'legs',0.12,0.07],
-      ['foot',['body',0.975],'legs',0.14,0.05],
-    ];
-    function _zonesFromImg(img) {
-      const W=160, H=213, c=document.createElement('canvas'); c.width=W; c.height=H;
-      const cx=c.getContext('2d',{willReadFrequently:true}); cx.drawImage(img,0,0,W,H);
-      const d=cx.getImageData(0,0,W,H).data, rows=[];
-      for (let y=0;y<H;y++){ let l=W,r=0,cnt=0;
-        for (let x=0;x<W;x++){ if(d[(y*W+x)*4+3]>140){ cnt++; if(x<l)l=x; if(x>r)r=x; } }
-        rows.push({cnt, l:l/W*100, r:r/W*100, cx:(l+r)/2/W*100, w:(r-l)/W*100});
-      }
-      const TH=0.06*W; let hT=0; while(hT<H&&rows[hT].cnt<TH)hT++; let fB=H-1; while(fB>0&&rows[fB].cnt<TH)fB--;
-      const hTp=hT/H*100, fBp=fB/H*100, span=Math.max(1,fBp-hTp);
-      // head bottom (chin) = narrowest row between the head blob and the shoulders
-      let chin=hTp+0.22*span, minW=999;
-      for (let y=Math.round((hTp+0.10*span)/100*H); y<Math.round((hTp+0.42*span)/100*H); y++){ if(rows[y] && rows[y].w<minW){ minW=rows[y].w; chin=y/H*100; } }
-      const headSpan=Math.max(1,chin-hTp), bodySpan=Math.max(1,fBp-chin);
-      let headW=0,cxs=0,nn=0; for(let y=hT;y<Math.round(chin/100*H);y++){ if(rows[y].w>headW)headW=rows[y].w; cxs+=rows[y].cx; nn++; }
-      const headCx=nn?cxs/nn:50;
-      const rowAt=p=>rows[Math.max(0,Math.min(H-1,Math.round(p/100*H)))];
-      const r1=v=>+v.toFixed(1), r2=v=>+v.toFixed(2);
-      const Z=[];
-      for (const [n,where,side,rxF,ryF] of _PARTS) {
-        const head = where[0]==='head';
-        const cy = head ? hTp + where[1]*headSpan : chin + where[1]*bodySpan;
-        const row = rowAt(cy);
-        const rx = r2(rxF * (head ? headW : Math.max(8,row.w)));
-        const ry = r2(ryF * (head ? headSpan : bodySpan));
-        const push=(x)=>Z.push({n, cx:r1(x), cy:r1(cy), rx, ry});
-        if (side==='c') push(head ? headCx : row.cx);
-        else if (typeof side==='number') { push(headCx - side*headW); push(headCx + side*headW); }
-        else if (side==='edge')   { push(row.l + (row.r-row.l)*0.10); push(row.r - (row.r-row.l)*0.10); }
-        else if (side==='edgeIn') { push(row.l + (row.r-row.l)*0.24); push(row.r - (row.r-row.l)*0.24); }
-        else if (side==='legs')   { push(headCx - 0.09*headW - 2); push(headCx + 0.09*headW + 2); }
-      }
-      return Z;
-    }
-    // Used only if a figure PNG fails to load (shouldn't happen — same-origin +
-    // precached). A reasonable centred standing set so the game still works.
-    const FALLBACK_ZONES = [
-      {n:'hair',cx:50,cy:8,rx:11,ry:7},{n:'eye',cx:45,cy:16,rx:4,ry:3},{n:'eye',cx:55,cy:16,rx:4,ry:3},
-      {n:'ear',cx:37,cy:18,rx:3,ry:4},{n:'ear',cx:63,cy:18,rx:3,ry:4},{n:'nose',cx:50,cy:21,rx:4,ry:3},{n:'mouth',cx:50,cy:25,rx:6,ry:3},
-      {n:'shoulder',cx:40,cy:32,rx:6,ry:3},{n:'shoulder',cx:60,cy:32,rx:6,ry:3},{n:'arm',cx:33,cy:42,rx:5,ry:9},{n:'arm',cx:67,cy:42,rx:5,ry:9},
-      {n:'belly',cx:50,cy:44,rx:9,ry:7},{n:'elbow',cx:33,cy:50,rx:4,ry:4},{n:'elbow',cx:67,cy:50,rx:4,ry:4},
-      {n:'hand',cx:32,cy:58,rx:5,ry:5},{n:'hand',cx:68,cy:58,rx:5,ry:5},
-      {n:'leg',cx:44,cy:74,rx:6,ry:11},{n:'leg',cx:56,cy:74,rx:6,ry:11},{n:'knee',cx:44,cy:85,rx:5,ry:4},{n:'knee',cx:56,cy:85,rx:5,ry:4},
-      {n:'foot',cx:45,cy:96,rx:6,ry:3},{n:'foot',cx:55,cy:96,rx:6,ry:3},
-    ];
-    function _loadImg(src){ return new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; }); }
-
-    // 12 kids (body-01..12). #9 (index 8) is the seated wheelchair child.
-    const BODIES = [];
-    for (let n = 1; n <= 12; n++) {
-      BODIES.push({ img: 'img/bodies/body-' + String(n).padStart(2, '0') + '.png', seated: n === 9 });
-    }
-    const _zoneCache = {};
-    async function getZones(idx) {
-      if (_zoneCache[idx]) return _zoneCache[idx];
-      let zones;
-      if (BODIES[idx].seated) zones = WHEELCHAIR_ZONES;
-      else { const img = await _loadImg(BODIES[idx].img); zones = img ? _zonesFromImg(img) : FALLBACK_ZONES; }
-      _zoneCache[idx] = zones;
-      return zones;
-    }
+    const BODIES = window.BodyPartsData.figures;
+    let renderGeneration = 0;
+    let imageTimer = null;
 
     let bodyIdx = Math.floor(Math.random() * BODIES.length);
 
-    // (Re)render the current body's <img> + its tap-zone markers. Tap-testing is
-    // done by ONE figure-level handler (nearest-feature), not per-button — see
-    // handleFigureTap — so the buttons are visual/flash only (pointer-events off).
-    let currentHits = [];   // [{z, el}] for the current body
+    let currentHits = [];
     async function renderBody() {
+      const generation = ++renderGeneration;
       const body = BODIES[bodyIdx];
-      figure.innerHTML = '<img class="body-img" src="' + body.img + '" alt="A child standing">';
-      const zones = await getZones(bodyIdx);
-      currentHits = zones.map(z => {
-        const b = document.createElement('button');
-        b.className = 'hit'; b.dataset.name = z.n;
-        b.setAttribute('aria-label', z.n);
-        // Ellipse: cx/cy centre, rx (%width) / ry (%height) radii → w=2rx, h=2ry.
-        b.style.left = z.cx + '%'; b.style.top = z.cy + '%';
-        b.style.width = (z.rx * 2) + '%'; b.style.height = (z.ry * 2) + '%';
-        b.style.pointerEvents = 'none';   // figure-level size-aware handler hit-tests
-        figure.appendChild(b);
-        return { z, el: b };
+      roundSettled = true;
+      currentHits = [];
+      figure.dataset.bodyId = body.id;
+      hint.textContent = 'Opening your picture…';
+      const img = new Image();
+      img.className = 'body-img';
+      img.alt = body.seated ? 'A child sitting in a wheelchair' : 'A child standing';
+      figure.replaceChildren(img);
+      const loaded = await new Promise(resolve => {
+        clearTimeout(imageTimer);
+        const deadline = setTimeout(() => resolve(false), 5000);
+        imageTimer = deadline;
+        img.onload = () => { clearTimeout(deadline); resolve(true); };
+        img.onerror = () => { clearTimeout(deadline); resolve(false); };
+        img.src = body.img;
       });
+      if (!pageActive || generation !== renderGeneration) return false;
+      if (!loaded) {
+        hint.textContent = 'Let’s try opening the picture again.';
+        const retry = document.createElement('button');
+        retry.className = 'picture-retry';retry.textContent = 'Try picture again';
+        retry.addEventListener('click', async () => { if (await renderBody()) nextRound(); });
+        figure.replaceChildren(retry);
+        return false;
+      }
+      currentHits = body.zones.map(z => {
+        const b = document.createElement('button');
+        b.type = 'button';b.className = 'hit';b.dataset.name = z.n;
+        b.setAttribute('aria-label', z.n);
+        b.style.left = z.cx + '%';b.style.top = z.cy + '%';
+        b.style.width = (z.rx * 2) + '%';b.style.height = (z.ry * 2) + '%';
+        b.style.pointerEvents = 'none';
+        // Keyboard and assistive activation use the same calibrated resolver.
+        b.addEventListener('click', e => {
+          if (e.detail !== 0) return;
+          const r = figure.getBoundingClientRect();
+          handleFigureTap({button:0,isPrimary:true,clientX:r.left+r.width*z.cx/100,clientY:r.top+r.height*z.cy/100});
+        });
+        figure.appendChild(b);
+        return {z,el:b};
+      });
+      return true;
     }
 
     // What's available per tier. With the new tier scheme, tier 4 = Pre-K (3-4y).
     const TODDLER_PARTS = ['eye','nose','mouth','ear','hand','foot'];
     const ALL_PARTS = ['eye','nose','mouth','ear','hand','foot','arm','leg','hair','belly'];
-    // Tier 6+: add the harder joints (zones produced by the measured _PARTS table
-    // for standing figures, and present in WHEELCHAIR_ZONES for the seated child).
+    // Tier 6+: include joints when they are shown in the current drawing.
     const ADV_PARTS = ALL_PARTS.concat(['shoulder','elbow','knee']);
     const allOn = tier >= 4 || getProfileFeature(profile, 'body-parts', 'allParts');
     const advOn = tier >= 6 || getProfileFeature(profile, 'body-parts', 'advParts');
@@ -241,17 +161,23 @@
     let roundGeneration = 0;
     let roundSettled = false;
     let pageActive = true;
+    let wrongCount = 0;
+    let wrongTimer = null;
+    let lastWrongAt = -Infinity;
     let correctCount = 0; // taps since last body switch — rotate every 5
     function disposePage() {
       pageActive = false;
       roundGeneration++;
+      renderGeneration++;
+      clearTimeout(imageTimer);
       clearTimeout(roundTimer);
       clearTimeout(promptTimer);
+      clearTimeout(wrongTimer);
     }
     window.addEventListener('pagehide', disposePage);
     window.addEventListener('beforeunload', disposePage);
     window.addEventListener('pageshow', (event) => {
-      if (event.persisted) { pageActive = true; nextRound(); }
+      if (event.persisted) { pageActive = true; if (currentHits.length) nextRound(); else renderBody().then(ready => { if (ready) nextRound(); }); }
     });
 
     // Shuffled "bag": ask EVERY part once before any repeats (random picking gave
@@ -259,8 +185,10 @@
     // immediate repeat across the refill seam.
     let _bag = [];
     function _drawTarget() {
+      const available = partList.filter(n => currentHits.some(h => h.z.n === n));
+      _bag = _bag.filter(n => available.includes(n));
       if (!_bag.length) {
-        _bag = partList.slice();
+        _bag = available.slice();
         for (let i = _bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = _bag[i]; _bag[i] = _bag[j]; _bag[j] = t; }
         if (_bag.length > 1 && _bag[0] === lastTarget) _bag.push(_bag.shift());
       }
@@ -268,10 +196,13 @@
     }
 
     function nextRound() {
-      if (!pageActive) return;
+      if (!pageActive || !currentHits.length) return;
       clearTimeout(roundTimer);
       clearTimeout(promptTimer);
       roundSettled = false;
+      wrongCount = 0;
+      lastWrongAt = -Infinity;
+      clearTimeout(wrongTimer);
       const round = ++roundGeneration;
       target = _drawTarget();
       lastTarget = target;
@@ -283,36 +214,32 @@
         else speak(prompt);
       }, 400);
       figure.querySelectorAll('.hit').forEach(el => {
-        el.classList.remove('flash','wrong');
+        el.classList.remove('flash','wrong','help');
       });
     }
 
-    // SIZE-AWARE tap resolution: each part is an ELLIPSE (cx,cy,rx,ry). A tap picks
-    // the part with the smallest NORMALISED distance — ((dx/rx)² + (dy/ry)²) — i.e.
-    // the ellipse it's "most inside". This makes a tall arm/leg ellipse catch taps
-    // anywhere along its length, and a small mouth ellipse win over the eye for a
-    // tap on the mouth (the old nearest-CENTRE test mis-fired on clustered faces).
-    // One handler on the figure; the <img> + .hit buttons are pointer-events:none.
+    // Only pictured, calibrated ellipses answer the quiz. A knee is also on
+    // a leg, so accept the requested region when it contains the actual tap.
+    // Other overlaps prefer the smaller anatomical feature, never a distant
+    // nearest guess that could turn background into a successful answer.
     function handleFigureTap(e) {
-      if (!pageActive || roundSettled || !currentHits.length || !target) return;
+      if (e.button !== 0 || !e.isPrimary || !pageActive || roundSettled || !currentHits.length || !target) return;
       const r = figure.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width * 100;   // tap as % of figure (x)
-      const py = (e.clientY - r.top) / r.height * 100;   // and y
-      let best = null, bestD = Infinity;
-      for (const h of currentHits) {
-        const z = h.z;
-        const dx = (px - z.cx) / z.rx, dy = (py - z.cy) / z.ry;
-        const d = dx * dx + dy * dy;       // normalised ellipse distance²
-        if (d < bestD) { bestD = d; best = h; }
-      }
-      if (!best) return;
+      const px = (e.clientX-r.left)/r.width*100, py = (e.clientY-r.top)/r.height*100;
+      const inside = currentHits.map(h => ({...h,d:((px-h.z.cx)/h.z.rx)**2+((py-h.z.cy)/h.z.ry)**2}))
+        .filter(h => h.d <= 1);
+      if (!inside.length) { hint.textContent = 'Tap the child to find the ' + PRONOUN(target) + '.'; return; }
+      inside.sort((a,b) => a.z.rx*a.z.ry-b.z.rx*b.z.ry || a.d-b.d);
+      const best = inside.find(h => h.z.n === target) || inside[0];
       const name = best.z.n;
-      currentHits.forEach(h => h.el.classList.remove('flash', 'wrong'));
+      if (name !== target && performance.now()-lastWrongAt < 160) return;
+      currentHits.forEach(h => h.el.classList.remove('flash', 'wrong', 'help'));
       if (name === target) {
         roundSettled = true;
         clearTimeout(promptTimer);
         const completedRound = roundGeneration;
         best.el.classList.add('flash');
+        hint.textContent = 'Yes! You found the ' + PRONOUN(target) + '!';
         if (typeof haptic === 'function') haptic(25);
         playSuccess();
         if (window.vbProgress) {
@@ -321,18 +248,22 @@
             vbProgress.mastery('body-parts.mastery');
           }
         }
-        speak(`Yes! That's the ${PRONOUN(target)}.`);
+        speak(hint.textContent);
         correctCount++;
         const rotate = correctCount % 5 === 0;
         roundTimer = setTimeout(async () => {
           if (!pageActive || completedRound !== roundGeneration) return;
-          if (rotate) await switchBody();
+          if (rotate && !(await switchBody())) return;
           if (pageActive && completedRound === roundGeneration) nextRound();
         }, 1800);
       } else {
+        lastWrongAt = performance.now();
         best.el.classList.add('wrong');
+        wrongCount++;
+        if (wrongCount >= 2) currentHits.filter(h => h.z.n === target).forEach(h => h.el.classList.add('help'));
         playBoop();
-        setTimeout(() => best.el.classList.remove('wrong'), 350);
+        clearTimeout(wrongTimer);
+        wrongTimer = setTimeout(() => best.el.classList.remove('wrong'), 350);
         hint.textContent = `That's the ${PRONOUN(name)}. Find the ${PRONOUN(target)}.`;
         if (tier <= 3) speak(`That's the ${PRONOUN(name)}.`);
         else speak('Try again!');
@@ -342,15 +273,12 @@
 
     // Pick a DIFFERENT random body and re-render it.
     async function switchBody() {
-      if (BODIES.length < 2) return;
-      let next = bodyIdx;
-      while (next === bodyIdx) next = Math.floor(Math.random() * BODIES.length);
-      bodyIdx = next;
-      await renderBody();
+      if (BODIES.length < 2) return true;
+      bodyIdx = (bodyIdx + 1 + Math.floor(Math.random() * (BODIES.length-1))) % BODIES.length;
+      return renderBody();
     }
 
-    await renderBody();
-    nextRound();
+    if (await renderBody()) nextRound();
     })();
   </script>
 </body>

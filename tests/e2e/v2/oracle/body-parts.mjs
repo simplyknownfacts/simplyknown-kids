@@ -12,14 +12,14 @@ const targetFromHint = (t) => {
   const w = m[1].toLowerCase();
   return PRON[w] || w;
 };
-// Trigger the zone's pointerdown handler directly (bypasses overlap/actionability;
-// behavioral assertion, not a coordinate test).
-const tapZone = (page, name) => page.evaluate((n) => {
-  const el = document.querySelector(`#figure .hit[data-name="${n}"]`);
-  if (!el) return false;
-  el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+// This oracle verifies quiz behavior with physical pointer input. Anatomical
+// correctness uses independent artwork coordinates in body-parts-visible.test.
+const tapZone = async (page, name) => {
+  const box = await page.locator(`#figure .hit[data-name="${name}"]`).first().boundingBox();
+  if (!box) return false;
+  await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
   return true;
-}, name);
+};
 
 export default {
   id: 'body-parts',
@@ -50,7 +50,7 @@ export default {
       const spoke = (await drainCalls(page)).filter((c) => c.fn === 'speak').map((c) => c.args.join(' ')).join(' | ');
       report.add({ id: `${id} wrong-tap-no-false-yes`, pass: !/Yes/i.test(spoke), severity: 'Critical', detail: `spoke="${spoke}"` });
       const hint2 = await page.textContent('#hint');
-      report.add({ id: `${id} wrong-tap-no-advance`, pass: hint2 === hint, severity: 'High', detail: `after="${hint2}"` });
+      report.add({ id: `${id} wrong-tap-no-advance`, pass: /find the/i.test(hint2) && targetFromHint(hint2.split(/find /i).pop()) === target, severity: 'High', detail: `after="${hint2}"` });
     }
 
     // CORRECT tap
