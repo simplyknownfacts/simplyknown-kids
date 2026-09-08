@@ -9,7 +9,7 @@
   const companion = document.getElementById('worldCompanion');
   const species = profile.mascot?.id || 'dog';
   const animal = window.mascot?.available.includes(species) ? species : 'dog';
-  let scene, statusTimer, reactionTimer, leaving = false;
+  let scene, statusTimer, reactionTimer, loadingTimer, leaving = false;
   document.getElementById('pillName').textContent = profile.name || 'Your world';
   document.getElementById('pillAvatar').textContent = MASCOT_EMOJI[animal] || '🐾';
   document.getElementById('hiText').textContent = profile.name ? 'Hello, ' + profile.name + '!' : 'Your little world';
@@ -65,20 +65,33 @@
       });
     });
   }
-  import('./world-scene.js').then(({createWorldScene})=>{
-    if(leaving)return;
-    scene=createWorldScene(host,{activate,announce,placeCompanion(x,y,size){
-      Object.assign(companion.style,{left:x+'px',top:y+'px',width:size+'px',height:(size*1.05)+'px'});
-    }});
-    window.vbWorldScene=scene;
-  }).catch(error=>{
-    host.dataset.state='fallback';
-    announce('Your world could not open. You can still choose a hut.');
-    console.warn('[world] 3D scene unavailable:',error.message);
-  });
-  function cleanup(){clearTimeout(statusTimer);clearTimeout(reactionTimer);scene?.pause();window.mascot?.hide();}
+  function initializeWorld() {
+    clearTimeout(loadingTimer);
+    loadingTimer=setTimeout(()=>{
+      if(scene||leaving)return;
+      host.dataset.state='fallback';
+      announce('Your world is taking a moment. You can choose a hut now.');
+    },3000);
+    import('./world-scene.js').then(({createWorldScene})=>{
+      clearTimeout(loadingTimer);
+      if(leaving||scene)return;
+      clearTimeout(statusTimer);status.textContent='';
+      scene=createWorldScene(host,{activate,announce,placeCompanion(x,y,size){
+        Object.assign(companion.style,{left:x+'px',top:y+'px',width:size+'px',height:(size*1.05)+'px'});
+      }});
+      window.vbWorldScene=scene;
+    }).catch(error=>{
+      clearTimeout(loadingTimer);
+      if(leaving)return;
+      host.dataset.state='fallback';
+      announce('Your world could not open. You can still choose a hut.');
+      console.warn('[world] 3D scene unavailable:',error.message);
+    });
+  }
+  initializeWorld();
+  function cleanup(){clearTimeout(loadingTimer);clearTimeout(statusTimer);clearTimeout(reactionTimer);scene?.pause();window.mascot?.hide();}
   window.addEventListener('pagehide',cleanup);
-  window.addEventListener('pageshow',event=>{if(event.persisted){leaving=false;window.mascot?.show();scene?.resume();}});
+  window.addEventListener('pageshow',event=>{if(event.persisted){leaving=false;window.mascot?.show();if(scene)scene.resume();else initializeWorld();}});
   window.addEventListener('online',availability);window.addEventListener('offline',availability);
   availability();
   if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{});

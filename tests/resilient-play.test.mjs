@@ -159,7 +159,12 @@ test('essential speech survives feedback bursts, exposes replay, and cancels on 
 
 test('award bursts stay in one small corner notice without speech or focus theft',
   { skip: NEEDS_BROWSER }, async () => {
-    const ctx = await contextFor(profile('ribbon', 'count-along', 5), { reducedMotion: 'reduce' });
+    // A returning child already owns the first-play award. Otherwise that
+    // automatic award can join this two-award burst on a slower browser.
+    const returning = profile('ribbon', 'count-along', 5);
+    returning.achievements = { unlocked: {'count-along.first': {at: 1}}, counters: {}, repeats: {},
+      streak: {last: null, current: 0, best: 0}, xp: 0, rank: 'sprout' };
+    const ctx = await contextFor(returning, { reducedMotion: 'reduce' });
     const page = await ctx.newPage();
     await page.goto(BASE + '/learning/count-along.html', { waitUntil: 'load' });
 

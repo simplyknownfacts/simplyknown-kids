@@ -206,7 +206,8 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
     }
     const anchor=project(plaza.clone().setY(.77));
     const scalePoint=project(plaza.clone().add(new THREE.Vector3(1.8,0,0)));
-    placeCompanion(anchor.x,anchor.y,Math.max(84,Math.min(180,Math.abs(scalePoint.x-anchor.x)*1.75)));
+    const size=Math.abs(scalePoint.x-anchor.x)*1.75;
+    placeCompanion(anchor.x,anchor.y,height<330?Math.max(52,Math.min(64,size)):Math.max(84,Math.min(180,size)));
   }
   function resize() {
     const r=host.getBoundingClientRect();if(!r.width||!r.height)return;

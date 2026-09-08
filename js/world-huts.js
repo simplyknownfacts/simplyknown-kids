@@ -155,7 +155,7 @@ function labelTexture(THREE, label, palette) {
     ctx.lineWidth = 24;
     ctx.strokeRect(12, 12, width - 24, height - 24);
     ctx.fillStyle = `#${palette.dark.toString(16).padStart(6, '0')}`;
-    ctx.font = '900 138px "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif';
+    ctx.font = '900 208px "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.shadowColor = 'rgba(24,77,74,0.16)';
@@ -261,7 +261,7 @@ function addRoofSign(THREE, group, geo, mats, palette, kind) {
   // The whole assembly tilts upward so an elevated phone camera sees the face.
   addBox(THREE, sign, geo, mats.signBracket, [0.15, config.post, 0.18], [-1.06, -0.55, -0.08]);
   addBox(THREE, sign, geo, mats.signBracket, [0.15, config.post, 0.18], [1.06, -0.55, -0.08]);
-  addRounded(THREE, sign, mats.sign, [3.28, 0.9, 0.26], [0, 0, 0], 0.18);
+  addRounded(THREE, sign, mats.sign, [3.48, 1.06, 0.26], [0, 0, 0], 0.18);
   const faceMaterial = new THREE.MeshStandardMaterial({
     map: labelTexture(THREE, LABELS[kind], palette),
     color: 0xffffff,
@@ -270,7 +270,7 @@ function addRoofSign(THREE, group, geo, mats, palette, kind) {
     emissive: palette.glow,
     emissiveIntensity: 0.08,
   });
-  addMesh(THREE, sign, new THREE.PlaneGeometry(3.02, 0.66), faceMaterial, [0, 0, 0.17]);
+  addMesh(THREE, sign, new THREE.PlaneGeometry(3.22, 0.84), faceMaterial, [0, 0, 0.34]);
   group.add(sign);
 }
 

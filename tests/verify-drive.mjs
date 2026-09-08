@@ -624,7 +624,7 @@ for (const t of trophyResults) {
   console.log((t.ok ? 'PASS  ' : 'FAIL  ') + t.id.padEnd(26) + t.what + (t.ok ? '' : '\n        ' + t.errs.join('\n        ')));
 }
 
-/* Pass 7 — the illustrated world: real house taps, conditional Listen,
+/* Pass 7 — the live 3D world: real building taps, conditional Listen,
    reduced motion, offline gating and usable fallbacks when media fails. */
 const hubResults = [];
 {
@@ -634,8 +634,17 @@ const hubResults = [];
     const page = await ctx.newPage();
     await page.addInitScript(id => localStorage.setItem('vb_active_id', id), HUB_PROFILE);
     await page.goto(BASE + '/home.html', {waitUntil:'load', timeout:15000});
-    await page.waitForSelector('.house svg');
+    await page.waitForSelector('#worldScene[data-state="ready"]');
+    await page.waitForFunction(() => !!window.vbWorldScene);
     return page;
+  }
+  async function tapHut(page,kind) {
+    const point=await page.evaluate(kind=>{
+      const p=vbWorldScene.snapshot().houses.find(h=>h.kind===kind).point;
+      const r=document.getElementById('worldCanvas').getBoundingClientRect();
+      return {x:r.x+p.x,y:r.y+p.y};
+    },kind);
+    await page.mouse.click(point.x,point.y);
   }
   {
     const page = await openHome();
@@ -647,17 +656,16 @@ const hubResults = [];
       const houses = [...document.querySelectorAll('.house')];
       return {
         chrome: ['#hiText','#avatarPill','#exitBtn','#ribbonLink'].every(visible),
-        houses: ['games','learn','art','watch','listen'].every(id => visible('.house[data-world="'+id+'"] svg')),
+        houses: visible('#worldCanvas') && !!document.getElementById('worldCanvas').getContext('webgl2') && vbWorldScene.snapshot().houses.length === 5 && vbWorldScene.snapshot().triangles > 1000,
         listenDisabled: document.querySelector('[data-world="listen"]')?.getAttribute('aria-disabled') === 'true',
-        motion: houses.length === 5 && houses.every(el => getComputedStyle(el).opacity === '1') &&
-          [...document.querySelectorAll('.house svg [class]')].every(el => {
-            const css = getComputedStyle(el);
-            return css.animationName === 'none' || parseFloat(css.animationDuration) <= .001;
-          }),
+        motion: houses.length === 5 && vbWorldScene.snapshot().reducedMotion,
       };
     });
+    const frame=await page.evaluate(()=>vbWorldScene.snapshot().frames);
+    await page.waitForTimeout(350);
+    result.motion=result.motion && frame===await page.evaluate(()=>vbWorldScene.snapshot().frames);
     add('hub-chrome',result.chrome,'Greeting, child switch, exit and ribbons remain visible','Missing world chrome');
-    add('hub-landmarks-present',result.houses,'Five illustrated house buttons are visible','Missing house illustration or button');
+    add('hub-landmarks-present',result.houses,'Five real 3D buildings render through WebGL','Missing 3D building geometry');
     add('hub-listen-availability',result.listenDisabled,'Disconnected Listening Hut explains its unavailable state','Listen was enabled without a connection');
     add('hub-reduced-motion',result.motion,'Reduced motion keeps houses visible and decorative animation still','Hidden house or running decorative animation');
     await page.close();
@@ -665,7 +673,8 @@ const hubResults = [];
   for (const [id,destination] of [['games','games/index.html'],['learn','learning/index.html'],['art','art/index.html'],['ribbons','achievements.html'],['watch','videos/index.html']]) {
     const page = await openHome(); let error = '';
     try {
-      await page.locator(id === 'ribbons' ? '#ribbonLink' : '.house[data-world="'+id+'"]').click();
+      if(id === 'ribbons') await page.locator('#ribbonLink').click();
+      else await tapHut(page,id);
       await page.waitForURL(u => u.pathname.endsWith('/'+destination), {timeout:5000});
     } catch (e) { error = e.message; }
     add('hub-nav-'+id,!error,'Tapping '+id+' opens '+destination,error);
@@ -678,12 +687,11 @@ const hubResults = [];
       window.dispatchEvent(new Event('offline'));
     });
     const unavailable = await page.locator('[data-world="watch"]').evaluate(el =>
-      el.getAttribute('aria-disabled') === 'true' && /connection/i.test(el.textContent));
-    add('hub-offline-dim',unavailable,'Offline Watch visibly explains that a connection is needed','Watch lacks its offline explanation');
+      el.getAttribute('aria-disabled') === 'true');
+    add('hub-offline-state',unavailable,'Offline Watch exposes its unavailable state','Watch lacks its offline state');
     // A physical tap can activate an explanation even though aria-disabled
     // correctly prevents Playwright's semantic button click from activating it.
-    const box = await page.locator('[data-world="watch"]').boundingBox();
-    await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
+    await tapHut(page,'watch');
     const stays = page.url().endsWith('/home.html') && /connection/i.test(await page.locator('#worldStatus').textContent());
     add('hub-offline-no-nav',stays,'An actual offline Watch tap explains and stays home','Offline tap navigated away or did not explain');
     await page.close();
@@ -693,11 +701,11 @@ const hubResults = [];
     await ctx.addInitScript(profiles => localStorage.setItem('vb_profiles',JSON.stringify(profiles)),TIER_PROFILES);
     await ctx.route('**/mascots/**', route => route.abort());
     const page = await openHome(ctx);
-    const fallback = await page.locator('#companionFallback').isVisible() && await page.locator('.house svg').count() === 5;
-    add('hub-media-fallback',fallback,'Failed companion media leaves a visible buddy fallback and all house art','Fallback or illustrated houses disappeared');
+    const fallback = await page.locator('#companionFallback').isVisible() && await page.evaluate(()=>vbWorldScene.snapshot().houses.length===5);
+    add('hub-media-fallback',fallback,'Failed companion media leaves a visible buddy fallback and all 3D huts','Fallback or 3D huts disappeared');
     let error = '';
     try {
-      await page.locator('[data-world="games"]').click();
+      await tapHut(page,'games');
       await page.waitForURL('**/games/index.html',{timeout:5000});
     } catch (e) { error = e.message; }
     add('hub-media-fallback-tappable',!error,'House navigation works when companion media fails',error);

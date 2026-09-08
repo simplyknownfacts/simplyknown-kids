@@ -18,8 +18,7 @@ service worker, `fetch()` and the sync layer all need an `http://` origin.
 node scripts/serve.mjs
 ```
 
-Serves the repo at `http://localhost:8790`. No dependencies; the repo has no build
-step and no runtime dependencies, and this does not change that.
+Serves the repo at `http://localhost:8790` using Node built-ins. No build step is required. The 3D home uses a pinned, self-hosted Three.js runtime included in the offline shell.
 
 One-time browser install for step 3 (never committed — `node_modules/` is ignored):
 
