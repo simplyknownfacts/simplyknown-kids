@@ -773,6 +773,7 @@ function createActor({ host, id = DEFAULT_MASCOT_ID } = {}) {
   video.loop = true;
   video.autoplay = false;
   video.controls = false;
+  video.hidden = true;
   video.preload = 'auto';
   video.disablePictureInPicture = true;
   video.setAttribute('muted', '');
@@ -789,6 +790,7 @@ function createActor({ host, id = DEFAULT_MASCOT_ID } = {}) {
   let posterReady = false;
   let posterFailed = false;
   let videoFailed = false;
+  let playFailed = false;
   let visible = true;
   let manuallyPaused = false;
   let pageActive = !document.hidden;
@@ -802,7 +804,7 @@ function createActor({ host, id = DEFAULT_MASCOT_ID } = {}) {
   }
 
   function setMedia(value) {
-    canvas.dataset.media = value;
+    if (canvas.dataset.media !== value) canvas.dataset.media = value;
   }
 
   function drawKeyed(source, sourceWidth, sourceHeight) {
@@ -828,6 +830,14 @@ function createActor({ host, id = DEFAULT_MASCOT_ID } = {}) {
     if (disposed || expectedGeneration !== generation || !posterReady || !poster) return false;
     const drawn = drawKeyed(poster, poster.naturalWidth, poster.naturalHeight);
     if (drawn) setMedia('poster');
+    return drawn;
+  }
+
+  function drawVideoStill(expectedGeneration = generation) {
+    if (disposed || expectedGeneration !== generation || video.readyState < 2 || !video.videoWidth) return false;
+    const drawn = drawKeyed(video, video.videoWidth, video.videoHeight);
+    if (drawn) setMedia('poster');
+    try { video.pause(); } catch {}
     return drawn;
   }
 
@@ -866,20 +876,25 @@ function createActor({ host, id = DEFAULT_MASCOT_ID } = {}) {
     try {
       playResult = video.play();
     } catch {
+      playFailed = true;
       stopFrames();
-      drawPoster(expectedGeneration);
+      if (!drawPoster(expectedGeneration) && posterFailed) setMedia('unavailable');
       return;
     }
     Promise.resolve(playResult).then(() => {
-      if (disposed || expectedGeneration !== generation || !canAnimate()) {
+      // A reused video's older play() can settle after setId() has already
+      // started the new source. Stale completions must not pause that source.
+      if (disposed || expectedGeneration !== generation) return;
+      if (!canAnimate()) {
         try { video.pause(); } catch {}
         return;
       }
       startFrames(expectedGeneration);
     }).catch(() => {
       if (disposed || expectedGeneration !== generation) return;
+      playFailed = true;
       stopFrames();
-      drawPoster(expectedGeneration);
+      if (!drawPoster(expectedGeneration) && posterFailed) setMedia('unavailable');
     });
   }
 
@@ -887,7 +902,7 @@ function createActor({ host, id = DEFAULT_MASCOT_ID } = {}) {
     if (disposed) return;
     if (!canAnimate()) {
       stopFrames();
-      if (reducedMotion.matches) drawPoster();
+      if (reducedMotion.matches && !drawPoster()) drawVideoStill();
       return;
     }
     startVideo();
@@ -904,6 +919,7 @@ function createActor({ host, id = DEFAULT_MASCOT_ID } = {}) {
     posterReady = false;
     posterFailed = false;
     videoFailed = false;
+    playFailed = false;
     poster = new Image();
     poster.decoding = 'async';
     poster.onload = () => {
@@ -916,7 +932,7 @@ function createActor({ host, id = DEFAULT_MASCOT_ID } = {}) {
       if (disposed || expectedGeneration !== generation) return;
       posterReady = false;
       posterFailed = true;
-      if (videoFailed) setMedia('unavailable');
+      if (videoFailed || playFailed) setMedia('unavailable');
     };
     poster.src = `${rootPath()}mascots/${currentId}/green/master.png`;
 
