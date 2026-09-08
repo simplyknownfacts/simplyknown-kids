@@ -65,9 +65,13 @@ test('Hide and Seek adapts spot count and supports keyboard play without mouse g
     const {ctx,page}=await open(tier,{features});try{
       assert.equal(await page.locator('.hiding-spot').count(),count);
       const target=await shownSpot(page);
-      await page.waitForFunction(()=>!document.querySelector('#roundAction').disabled);await page.locator('#roundAction').focus();await page.keyboard.press('Enter');await phase(page,'seek');
+      await page.waitForFunction(()=>document.querySelector('#roundAction').getAttribute('aria-disabled')==='false');await page.locator('#roundAction').focus();await page.keyboard.press('Enter');await phase(page,'seek');
       await page.locator('.hiding-spot').nth(target).focus();await page.keyboard.press('Space');await phase(page,'found');
       assert.deepEqual(await page.evaluate(()=>awards),['peek-a-boo']);
+      assert.equal(await page.evaluate(()=>document.activeElement.id),'playAgain','keyboard focus fell out of the game after the answer');
+      await page.waitForFunction(()=>document.querySelector('#playAgain').getAttribute('aria-disabled')==='false');
+      await page.keyboard.press('Enter');await phase(page,'watch');
+      assert.equal(await page.evaluate(()=>document.activeElement.id),'roundAction','next round did not keep keyboard focus on Hide');
     }finally{await ctx.close();}
   });
 });
@@ -149,5 +153,28 @@ test('A slow successful renderer upgrades the playable fallback without rerollin
     assert.equal(await shownSpot(page),target);
     await hide(page);await page.locator('.hiding-spot').nth(target).click();await phase(page,'found');
     assert.deepEqual(await page.evaluate(()=>awards),['peek-a-boo']);
+  }finally{await ctx.close();}
+});
+
+test('The 3D renderer hides the animal immediately without waiting for another animation frame',async()=>{
+  const {ctx,page}=await open();try{
+    await page.emulateMedia({reducedMotion:'no-preference'});
+    const pixelsChanged=await page.evaluate(async()=>{
+      const {createHideSeekScene}=await import('/js/hide-seek-scene.js');
+      const host=document.createElement('div');host.style.cssText='position:fixed;inset:0;width:320px;height:400px';
+      host.innerHTML='<canvas></canvas>';document.body.appendChild(host);
+      const originalRAF=window.requestAnimationFrame;window.requestAnimationFrame=()=>0;
+      let scene;
+      try{
+        scene=createHideSeekScene(host);
+        const canvas=host.querySelector('canvas'),gl=canvas.getContext('webgl2');
+        const grab=()=>{const p=new Uint8Array(canvas.width*canvas.height*4);gl.readPixels(0,0,canvas.width,canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,p);return p;};
+        scene.update({count:2,target:0,phase:'watch',animal:0});const shown=grab();
+        scene.update({count:2,target:0,phase:'seek',animal:0});const hidden=grab();
+        let changed=0;for(let i=0;i<shown.length;i++)if(shown[i]!==hidden[i])changed++;
+        return changed;
+      }finally{scene?.dispose();host.remove();window.requestAnimationFrame=originalRAF;}
+    });
+    assert.ok(pixelsChanged>100,'seek painted the same visible animal while waiting for a frame');
   }finally{await ctx.close();}
 });

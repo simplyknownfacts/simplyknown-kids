@@ -448,6 +448,10 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
       targetGoal();
       animalStage.position.copy(goal);
       poseAnimal(phaseStarted + 1);
+    } else {
+      // Apply visibility now so a late scene load cannot paint the old
+      // watched animal for one frame after the game has entered seek.
+      poseAnimal(performance.now() / 1000);
     }
     placeControls();
     renderOnce();

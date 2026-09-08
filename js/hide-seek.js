@@ -52,39 +52,43 @@
       } else marker?.remove();
     });
     action.style.visibility = phase === 'watch' || phase === 'hiding' ? 'visible' : 'hidden';
-    action.disabled = !active || phase !== 'watch' || performance.now() < readyAt;
+    action.disabled = !active || (phase !== 'watch' && phase !== 'hiding');
+    action.setAttribute('aria-disabled',String(phase !== 'watch' || performance.now() < readyAt));
     action.textContent = phase === 'hiding' ? '🙈 Hiding…' : '🙈 Hide!';
     next.style.visibility = phase === 'found' ? 'visible' : 'hidden';
-    next.disabled = !active || phase !== 'found' || performance.now() < readyAt;
+    next.disabled = !active || phase !== 'found';
+    next.setAttribute('aria-disabled',String(performance.now() < readyAt));
     again.hidden = phase !== 'seek';
     again.disabled = !active;
     renderer?.update({count,target,phase,animal});
   }
-  function show() {
+  function show(focusAction = false) {
     clearTimeout(timer); timer = null; phase = 'watch'; tried.clear();
     readyAt = performance.now() + 350;
     hint.textContent = animals[animal].name + ' is at the ' + places[target].toLowerCase() + '. Remember this spot.';
-    render(); later(render, 360);
+    render(); if (focusAction) action.focus({preventScroll:true}); later(render, 360);
     // Reuse recorded animal names. The new memory instructions stay visible;
     // do not pretend an unrecorded sentence has spoken audio.
     speakInstruction(animals[animal].name);
   }
-  function nextRound() {
+  function nextRound(focusAction = false) {
     generation++;
     target = target < 0 ? Math.floor(Math.random()*count) : (target+1+Math.floor(Math.random()*(count-1)))%count;
     animal = (animal+1)%animals.length;
-    show();
+    show(focusAction);
   }
-  function choose(i) {
+  function choose(i, keyboard = false) {
     if (!active || phase !== 'seek' || tried.has(i)) return;
     if (i !== target) {
       tried.add(i);
       hint.textContent = 'That bush is empty. Try another, or look again.';
-      playBoop(); speak('Try again!'); render(); return;
+      playBoop(); speak('Try again!'); render();
+      if (keyboard) spots.find(spot => !spot.disabled)?.focus({preventScroll:true});
+      return;
     }
     phase = 'found'; readyAt = performance.now()+500;
     hint.textContent = 'You found ' + animals[animal].name + '!';
-    render(); later(render,510);
+    render(); if (keyboard) next.focus({preventScroll:true}); later(render,510);
     playSuccess(); speak('Yes! '+animals[animal].name+'!');
     if (window.vbProgress) vbProgress.record(id);
   }
@@ -93,7 +97,7 @@
     spot.dataset.spot=String(i); spot.setAttribute('aria-label',places[i]);
     spot.style.setProperty('--flower',['#f5a7ce','#ffe071','#95c7ff'][i]);
     spot.innerHTML='<span class="fallback-animal" aria-hidden="true"></span><span class="fallback-bush" aria-hidden="true"></span>';
-    spot.addEventListener('click',event => { if (event.button === 0) choose(i); });
+    spot.addEventListener('click',event => { if (event.button === 0) choose(i, event.detail === 0); });
     stage.appendChild(spot); spots.push(spot);
   }
   action.addEventListener('click',event => {
@@ -103,9 +107,9 @@
     later(() => { phase='seek'; hint.textContent='Where did our friend hide? Tap a bush.';render();spots[0].focus({preventScroll:true}); },450);
   });
   next.addEventListener('click',event=>{
-    if(event.button===0 && active && phase==='found' && performance.now()>=readyAt) nextRound();
+    if(event.button===0 && active && phase==='found' && performance.now()>=readyAt) nextRound(event.detail === 0);
   });
-  again.addEventListener('click',event=>{if(event.button===0 && active && phase==='seek') show();});
+  again.addEventListener('click',event=>{if(event.button===0 && active && phase==='seek') show(event.detail === 0);});
   function useFallback() {
     if (!active) { loadFailed = true; return; }
     clearTimeout(loadTimer); renderer?.dispose(); renderer=null;
