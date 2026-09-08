@@ -208,13 +208,18 @@ nav.side {
 }
 
 .navitem {
+  width: 100%;
   min-height: 44px;
   padding: 10px 11px;
+  border: 0;
   border-radius: 10px;
+  background: transparent;
   color: #365451 !important;
+  font-family: inherit;
   font-size: 0.95rem;
   font-weight: 620;
   line-height: 1.35;
+  text-align: left;
 }
 
 .navitem:hover { background: #f3f7f4; }
@@ -644,6 +649,65 @@ input[type="radio"] {
   box-shadow: 0 0 0 2px var(--parent-teal);
 }
 
+#newMascotPicker {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+  gap: 9px !important;
+}
+
+.add-mascot-choice {
+  width: 100%;
+  min-width: 0 !important;
+  min-height: 76px !important;
+  display: grid;
+  grid-template-rows: auto auto;
+  place-items: center;
+  gap: 5px;
+  padding: 8px 6px !important;
+  text-align: center;
+}
+
+.add-mascot-choice > span:last-child {
+  display: block;
+  color: #365451;
+  font-size: 0.82rem;
+  font-weight: 680;
+  line-height: 1.15;
+}
+
+#newVoicePicker {
+  display: grid !important;
+  grid-template-columns: 1fr;
+  gap: 9px !important;
+}
+
+.add-voice-choice {
+  width: 100%;
+  min-height: 66px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 13px !important;
+  text-align: left;
+}
+
+.add-voice-choice strong {
+  display: block;
+  color: var(--parent-ink);
+  font-size: 1rem;
+  font-weight: 740;
+  line-height: 1.2;
+}
+
+.add-voice-choice > span {
+  display: block;
+  color: var(--parent-muted);
+  font-size: 0.88rem;
+  line-height: 1.3;
+}
+
 .add-more-options {
   margin-top: 18px;
   padding-top: 16px;
@@ -670,6 +734,51 @@ input[type="radio"] {
 
 #mainSettings.adding-child #profilesList,
 #mainSettings.adding-child .children-add-button { display: none !important; }
+
+/* Add-child is a focused task, so temporarily remove the surrounding
+   navigation and repeated child context while keeping the page heading. */
+#mainSettings.adding-child .parent-header {
+  max-width: 720px;
+  margin: 0 auto 14px;
+}
+
+#mainSettings.adding-child .parent-header p,
+#mainSettings.adding-child .kids-bar,
+#mainSettings.adding-child #settingsSaveStatus,
+#mainSettings.adding-child .mobile-settings-nav,
+#mainSettings.adding-child #sideNav,
+#mainSettings.adding-child #addChildButton,
+#mainSettings.adding-child #panel-children > .panel-body > h2 {
+  display: none !important;
+}
+
+#mainSettings.adding-child .shell {
+  display: block;
+  width: min(720px, 100%);
+  margin: 0 auto;
+}
+
+#mainSettings.adding-child .panel-area {
+  min-height: 0;
+  padding: 24px;
+}
+
+#mainSettings.adding-child #addForm > .card {
+  max-width: none;
+  margin: 0 !important;
+  padding: 0;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+#mainSettings.adding-child #addChildTitle { margin: 0 0 12px !important; }
+#mainSettings.adding-child .add-stepper { margin-bottom: 18px; }
+#mainSettings.adding-child .add-step h3 {
+  margin: 0 0 14px;
+  color: var(--parent-ink);
+  font-size: 1.08rem;
+  font-weight: 720;
+}
 
 .app-version-footer { color: #778783 !important; font-size: 0.75rem !important; }
 
@@ -826,7 +935,6 @@ input[type="radio"] {
   .settings-panel .panel-body { padding: 0 !important; border: 0 !important; background: transparent !important; }
   .panel-area h2 { display: flex !important; font-size: 1.35rem !important; }
 
-  .settings-overview-grid { grid-template-columns: 1fr; }
   .overview-card { min-height: 112px; }
   .voices { grid-template-columns: 1fr; }
   .vcard.full { grid-column: auto; }
@@ -840,6 +948,24 @@ input[type="radio"] {
   .add-stepper > *::before { font-size: 0.86rem; }
   .add-form-actions { position: sticky; bottom: 0; margin-inline: -17px; padding: 13px 17px; background: rgba(255,255,255,0.97); }
   .settings-extra-links { grid-template-columns: 1fr; }
+
+  #mainSettings.adding-child { padding-top: 72px; padding-bottom: 20px; }
+  #mainSettings.adding-child .parent-header { margin-bottom: 9px; }
+  #mainSettings.adding-child .parent-header h1 { font-size: 1.55rem !important; }
+  #mainSettings.adding-child .panel-area { padding: 17px 15px; }
+  #mainSettings.adding-child #addChildTitle { font-size: 1.3rem !important; margin-bottom: 8px !important; }
+  #mainSettings.adding-child .add-stepper { margin-bottom: 13px; }
+  #mainSettings.adding-child .add-step h3 { margin-bottom: 10px; font-size: 1rem; }
+  #mainSettings.adding-child .add-form-actions {
+    position: static;
+    margin: 14px 0 0;
+    padding: 12px 0 0;
+    background: transparent;
+  }
+}
+
+@media (max-width: 599px) {
+  .settings-overview-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 430px) {
