@@ -6,7 +6,6 @@
   <title>Parent Settings</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/themes.css">
-  <script>/* apply the active kid's theme before first paint (default storybook = no attribute) */try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook")document.documentElement.setAttribute("data-vbtheme",_t)}catch(e){}</script>
   <style>
     /* Parent Settings is a grown-up utility on a fixed dark base. Pin the night
        palette so text stays light/readable regardless of the time-of-day theme
@@ -108,7 +107,7 @@
       border-color: var(--accent);
       background: rgba(255,255,255,0.08);
     }
-    input::placeholder { color: rgba(255,255,255,0.35); }
+    input::placeholder { color:var(--parent-muted); }
 
     .btn {
       padding: 12px 22px; border-radius: 14px;
@@ -378,8 +377,9 @@
       .vcard.full { grid-column:auto; }
     }
   </style>
+  <link rel="stylesheet" href="../css/parent-settings.css">
 </head>
-<body data-allow-zoom="1" style="position:static;overflow:visible;height:auto;touch-action:auto;">
+<body class="parent-settings" data-allow-zoom="1" style="position:static;overflow:visible;height:auto;touch-action:auto;">
 <script>
   // Belt-and-suspenders unlock for parent settings scroll. The :has() CSS
   // rule in style.css should handle this, but some PWA contexts (older
@@ -413,7 +413,7 @@
     <div class="pin-pad" id="pinPad"></div>
     <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px;align-items:center;">
       <button id="gateSetupBtn" class="btn btn-ghost" onclick="setupMode()" style="display:none;">Set up new PIN</button>
-      <div style="color:rgba(255,255,255,0.7);font-size:12px;text-align:center;max-width:280px;line-height:1.5;margin-top:6px;">
+      <div style="color:var(--parent-muted);font-size:12px;text-align:center;max-width:280px;line-height:1.5;margin-top:6px;">
         Forgot your PIN? Email
         <a href="mailto:simplyknownfacts@gmail.com" style="color:#4ECDC4;font-weight:700;">simplyknownfacts@gmail.com</a>
         for help resetting.
@@ -423,10 +423,12 @@
 
   <!-- Main Settings -->
   <div id="mainSettings" class="settings-screen">
-    <div class="title">⚙️ Parent Settings</div>
+    <header class="parent-header"><h1>Parent settings</h1><p>A few choices to make their world feel like theirs.</p></header>
 
     <!-- Child switcher (populated by buildKidsBar) -->
     <div class="kids-bar" id="kidsBar"></div>
+    <div id="settingsSaveStatus" class="settings-save-status" role="status" aria-live="polite"></div>
+    <div class="mobile-settings-nav"><label for="settingsSectionPicker">What would you like to change?</label><select id="settingsSectionPicker"></select></div>
 
     <div class="shell">
       <!-- Sidebar nav (populated by buildSidebar) -->
@@ -435,25 +437,47 @@
       <!-- Content area: one panel visible at a time -->
       <div class="panel-area">
 
+        <section class="settings-panel" id="panel-overview" data-key="overview" data-icon="⌂" data-title="Overview" data-group="app">
+          <div class="panel-body">
+            <h2>Start here</h2><p class="subtitle">Everyday choices first. You can change these any time.</p>
+            <div class="settings-overview-grid">
+              <button type="button" class="overview-card" data-key="activities" onclick="showPanel('activities')"><span class="overview-icon" aria-hidden="true">🎮</span><strong>Choose activities</strong><span>Pick the games and learning activities they can open.</span></button>
+              <button type="button" class="overview-card" data-key="mascot" onclick="showPanel('mascot')"><span class="overview-icon" aria-hidden="true">🐾</span><strong>Animal companion</strong><span>Choose the buddy waiting in their world.</span></button>
+              <button type="button" class="overview-card" data-key="voice" onclick="showPanel('voice')"><span class="overview-icon" aria-hidden="true">🎙️</span><strong>Voice &amp; sound</strong><span>Listen to a sample and choose their guide's voice.</span></button>
+              <button type="button" class="overview-card" data-key="children" onclick="showPanel('children')"><span class="overview-icon" aria-hidden="true">👨‍👩‍👧</span><strong>Your children</strong><span>Add a child or manage your family's profiles.</span></button>
+            </div>
+            <details class="settings-extras"><summary>More settings</summary><div class="settings-extra-links">
+              <button type="button" class="btn" onclick="showPanel('theme')">World appearance</button>
+              <button type="button" class="btn" onclick="showPanel('features')">Extra game options</button>
+              <button type="button" class="btn" onclick="showPanel('youtube')">Video channels</button>
+              <button type="button" class="btn" onclick="showPanel('coloring')">Coloring pictures</button>
+              <button type="button" class="btn" onclick="showPanel('yoto')">Yoto stories</button>
+              <button type="button" class="btn" onclick="showPanel('offline')">Offline &amp; travel</button>
+              <button type="button" class="btn" onclick="showPanel('sync')">Account &amp; devices</button>
+              <button type="button" class="btn" onclick="showPanel('pin')">Parent PIN</button>
+            </div></details>
+          </div>
+        </section>
+
         <!-- 🎯 Activities Available -->
         <section class="settings-panel" id="panel-activities" data-key="activities" data-icon="🎯" data-title="Activities">
           <div class="acc-title"><span class="ic">🎯</span><span class="acc-label">Activities</span><span class="chev">▾</span></div>
           <div class="panel-body">
-            <h2>🎯 Activities Available <span class="who panel-who"></span></h2>
-            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
-              Pick which games show up on this child's home. Defaults follow their age — younger kids only see age-appropriate games. Override anything here.
+            <h2>Activities <span class="who panel-who"></span></h2>
+            <div class="subtitle" style="margin-bottom:12px;color:var(--parent-muted);font-size:13px;">
+              Choose what your child can open. Age-based choices are already set; changes here save as you go.
             </div>
             <div id="activitiesSection"></div>
           </div>
         </section>
 
         <!-- 🎮 Activity Features -->
-        <section class="settings-panel" id="panel-features" data-key="features" data-icon="🎮" data-title="Activity features">
+        <section class="settings-panel" id="panel-features" data-key="features" data-icon="🎮" data-title="Extra game options">
           <div class="acc-title"><span class="ic">🎮</span><span class="acc-label">Activity features</span><span class="chev">▾</span></div>
           <div class="panel-body">
-            <h2>🎮 Activity Features <span class="who panel-who"></span></h2>
-            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
-              Check to unlock features for this child regardless of age tier.
+            <h2>Extra game options <span class="who panel-who"></span></h2>
+            <div class="subtitle" style="margin-bottom:12px;color:var(--parent-muted);font-size:13px;">
+              Most families can keep the age-based defaults. These switches offer extra options early; they do not turn off options already included for your child's age.
             </div>
             <div class="features-scroll">
               <table class="features-table" id="featuresTable"></table>
@@ -471,7 +495,7 @@
         </section>
 
         <!-- 🎨 Theme -->
-        <section class="settings-panel" id="panel-theme" data-key="theme" data-icon="🎨" data-title="Theme">
+        <section class="settings-panel" id="panel-theme" data-key="theme" data-icon="🎨" data-title="World appearance">
           <div class="acc-title"><span class="ic">🎨</span><span class="acc-label">Theme</span><span class="chev">▾</span></div>
           <div class="panel-body">
             <h2>🎨 Theme <span class="who panel-who"></span></h2>
@@ -480,20 +504,20 @@
                  decide whether to block pinch/double-tap zoom since it was
                  written, but nothing anywhere ever SET it -- the opt-out
                  this comment promised did not exist. -->
-            <label style="display:flex;align-items:center;gap:10px;margin-top:16px;color:white;font-size:14px;cursor:pointer;">
+            <label style="display:flex;align-items:center;gap:10px;margin-top:16px;color:var(--parent-ink);font-size:14px;cursor:pointer;">
               <input type="checkbox" id="allowZoomToggle" style="width:20px;height:20px;">
-              Allow pinch / double-tap zoom (off by default — for accessibility needs)
+              Allow zoom on this device
             </label>
           </div>
         </section>
 
         <!-- 🐾 Mascot Buddy -->
-        <section class="settings-panel" id="panel-mascot" data-key="mascot" data-icon="🐾" data-title="Mascot buddy">
+        <section class="settings-panel" id="panel-mascot" data-key="mascot" data-icon="🐾" data-title="Animal companion">
           <div class="acc-title"><span class="ic">🐾</span><span class="acc-label">Mascot buddy</span><span class="chev">▾</span></div>
           <div class="panel-body">
-            <h2>🐾 Mascot Buddy <span class="who panel-who"></span></h2>
-            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
-              The mascot welcomes the child, introduces each section, and cheers them on. Pick one (or skip).
+            <h2>Animal companion <span class="who panel-who"></span></h2>
+            <div class="subtitle" style="margin-bottom:12px;color:var(--parent-muted);font-size:13px;">
+              Choose the animal waiting in your child's world. Your choice saves immediately.
             </div>
             <div id="mascotSection"></div>
           </div>
@@ -503,8 +527,8 @@
         <section class="settings-panel" id="panel-coloring" data-key="coloring" data-icon="🖍️" data-title="Coloring pages">
           <div class="acc-title"><span class="ic">🖍️</span><span class="acc-label">Coloring pages</span><span class="chev">▾</span></div>
           <div class="panel-body">
-            <h2>🖍️ Coloring Pages <span class="who panel-who"></span></h2>
-            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+            <h2>Family coloring pictures</h2>
+            <div class="subtitle" style="margin-bottom:12px;color:var(--parent-muted);font-size:13px;">
               Upload family photos to turn into coloring pages. The kid sees them in the Art → Color In activity, along with the built-in scenes. Up to 10 photos.
             </div>
             <div id="coloringSection"></div>
@@ -516,7 +540,7 @@
           <div class="acc-title"><span class="ic">📺</span><span class="acc-label">YouTube</span><span class="chev">▾</span></div>
           <div class="panel-body">
             <h2>📺 YouTube Channels <span class="who panel-who"></span></h2>
-            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+            <div class="subtitle" style="margin-bottom:12px;color:var(--parent-muted);font-size:13px;">
               Paste a channel URL (e.g. https://www.youtube.com/@msrachel or .../channel/UC...).
               The child can browse all videos from that channel — no recommendations across channels.
             </div>
@@ -559,7 +583,7 @@
           <div class="acc-title"><span class="ic">🎧</span><span class="acc-label">Yoto</span><span class="chev">▾</span></div>
           <div class="panel-body">
             <h2>🎧 Yoto</h2>
-            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+            <div class="subtitle" style="margin-bottom:12px;color:var(--parent-muted);font-size:13px;">
               Connect your Yoto account to let the child play family recordings (MYO cards) and purchased Yoto stories from the Listen tab.
             </div>
             <div id="yotoSection"></div>
@@ -567,11 +591,11 @@
         </section>
 
         <!-- ☁️ Cloud Sync -->
-        <section class="settings-panel" id="panel-sync" data-key="sync" data-icon="☁️" data-title="Cloud sync" data-group="app">
+        <section class="settings-panel" id="panel-sync" data-key="sync" data-icon="☁️" data-title="Account &amp; devices" data-group="app">
           <div class="acc-title"><span class="ic">☁️</span><span class="acc-label">Cloud sync</span><span class="chev">▾</span></div>
           <div class="panel-body">
-            <h2>☁️ Cloud Sync</h2>
-            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+            <h2>Account &amp; devices</h2>
+            <div class="subtitle" style="margin-bottom:12px;color:var(--parent-muted);font-size:13px;">
               Sign in once with email + password to sync child profiles across tablets.
               Voice picks, mascots, YouTube channels, and feature toggles all sync.
             </div>
@@ -584,7 +608,7 @@
           <div class="acc-title"><span class="ic">📥</span><span class="acc-label">Offline / Travel</span><span class="chev">▾</span></div>
           <div class="panel-body">
             <h2>📥 Offline / Travel</h2>
-            <div class="subtitle" style="margin-bottom:12px;color:rgba(255,255,255,0.7);font-size:13px;">
+            <div class="subtitle" style="margin-bottom:12px;color:var(--parent-muted);font-size:13px;">
               Going somewhere with no internet (a plane, the car, grandma's)? Download your family's games, sounds, and mascots onto THIS device so everything works offline. (YouTube and Yoto still need internet.)
             </div>
             <div id="offlineSection"></div>
@@ -592,13 +616,13 @@
         </section>
 
         <!-- 🔐 Change PIN -->
-        <section class="settings-panel" id="panel-pin" data-key="pin" data-icon="🔐" data-title="Change PIN" data-group="app">
+        <section class="settings-panel" id="panel-pin" data-key="pin" data-icon="🔐" data-title="Parent PIN" data-group="app">
           <div class="acc-title"><span class="ic">🔐</span><span class="acc-label">Change PIN</span><span class="chev">▾</span></div>
           <div class="panel-body">
             <h2>🔐 Change PIN</h2>
             <div class="card">
               <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
-              <div style="color:rgba(255,255,255,0.7);font-size:12px;margin-top:10px;line-height:1.5;">
+              <div style="color:var(--parent-muted);font-size:12px;margin-top:10px;line-height:1.5;">
                 Forgot your PIN? Email
                 <a href="mailto:simplyknownfacts@gmail.com" style="color:#4ECDC4;font-weight:700;">simplyknownfacts@gmail.com</a>
                 for help resetting.
@@ -611,11 +635,10 @@
     </div><!-- /.shell -->
     <!-- App version, per the fleet Deploy & Release Standard PART D6: shown small
          so Scott can open the app and see which release he is looking at. -->
-    <div class="app-version-footer" style="text-align:center;font-size:11px;color:rgba(255,255,255,0.35);padding:14px 0 4px;">v<span id="appVersionText"></span></div>
+    <div class="app-version-footer" style="text-align:center;font-size:11px;color:var(--parent-muted);padding:14px 0 4px;">v<span id="appVersionText"></span></div>
   </div>
 
   <script src="../js/version.js"></script>
-  <script src="../js/atmosphere.js"></script>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>
@@ -812,13 +835,11 @@
       buildYotoSection();
       buildSyncSection();
       buildOfflineSection();
-      // Default panel: Activities if kids exist, else Children (so an empty
-      // app lands the parent straight on "Add child").
-      const startKey = getProfiles().length ? (_activePanel || 'activities') : 'children';
-      showPanel(startKey, false);   // start with the accordion collapsed on narrow screens
+      const startKey = getProfiles().length ? (_activePanel || 'overview') : 'children';
+      showPanel(startKey, false);
       if (new URLSearchParams(window.location.search).get('action') === 'add') {
         showPanel('children');
-        setTimeout(() => showAddForm(), 100);
+        showAddForm();
       }
     }
 
@@ -829,9 +850,8 @@
     let _settingsChildId = null;
     let _activePanel = null;
 
-    // Nav groups → panel keys. Order matches the mockup.
-    const PER_CHILD_PANELS = ['activities', 'features', 'voice', 'mascot', 'coloring', 'youtube'];
-    const APP_PANELS = ['children', 'yoto', 'sync', 'offline', 'pin'];
+    const PER_CHILD_PANELS = ['activities', 'mascot', 'voice', 'theme', 'features', 'youtube'];
+    const APP_PANELS = ['children', 'coloring', 'yoto', 'sync', 'offline', 'pin'];
 
     function _settingsChild() {
       return getProfiles().find(p => p.id === _settingsChildId) || null;
@@ -842,7 +862,8 @@
       const profiles = getProfiles();
       if (!profiles.length) { _settingsChildId = null; return; }
       if (!profiles.some(p => p.id === _settingsChildId)) {
-        _settingsChildId = profiles[0].id;
+        const active = localStorage.getItem('vb_active_id');
+        _settingsChildId = (profiles.find(p => p.id === active) || profiles[0]).id;
       }
     }
 
@@ -860,29 +881,28 @@
 
     function buildKidsBar() {
       const bar = document.getElementById('kidsBar');
-      bar.innerHTML = '';
+      bar.replaceChildren();
       const profiles = getProfiles();
       updatePanelWhoHeaders();
-      profiles.forEach(p => {
-        const pill = document.createElement('div');
-        pill.className = 'kid-pill' + (p.id === _settingsChildId ? ' active' : '');
-        const months = getAgeMonths(p.birthday);
-        const t = tierForAge(months);
-        pill.innerHTML = `
-          <span class="av" style="background:${esc(p.color || 'rgba(255,255,255,0.1)')};">${esc(mascotEmoji(p))}</span>
-          <span><div class="nm">${esc(p.name)}</div><div class="ag">${tierLabel(t)}</div></span>`;
-        pill.addEventListener('click', () => setSettingsChild(p.id));
-        bar.appendChild(pill);
-      });
+      const label = document.createElement('label');
+      label.htmlFor = 'settingsChildSelect'; label.textContent = 'Settings for';
+      const select = document.createElement('select');
+      select.id = 'settingsChildSelect'; select.disabled = !profiles.length;
+      if (!profiles.length) select.add(new Option('Add your first child', ''));
+      profiles.forEach(p => select.add(new Option(`${mascotEmoji(p)} ${p.name}`, p.id, false, p.id === _settingsChildId)));
+      select.addEventListener('change', () => setSettingsChild(select.value));
+      bar.append(label, select);
       const add = document.createElement('button');
-      add.className = 'kid-add';
+      add.type = 'button'; add.className = 'kid-add';
       add.textContent = '+ Add child';
-      add.addEventListener('click', () => { showPanel('children'); showAddForm(); });
+      add.addEventListener('click', openAddChild);
       bar.appendChild(add);
     }
 
     function setSettingsChild(id) {
+      if (!getProfiles().some(p => p.id === id)) return;
       _settingsChildId = id;
+      document.getElementById('settingsSaveStatus').textContent = '';
       buildKidsBar();
       buildSidebar();           // refreshes the "<Name>'s settings" group header
       // re-render only the per-child panels for the newly selected child
@@ -893,67 +913,73 @@
       buildMascotSection();
       buildColoringSection();
       buildYoutubeSection();
+      document.getElementById('settingsChildSelect').focus({preventScroll:true});
     }
 
     function buildSidebar() {
       const nav = document.getElementById('sideNav');
-      nav.innerHTML = '';
+      const picker = document.getElementById('settingsSectionPicker');
+      nav.replaceChildren(); picker.replaceChildren();
+      nav.setAttribute('aria-label', 'Settings sections');
       const child = _settingsChild();
       const panels = Array.from(document.querySelectorAll('.settings-panel'));
       const byKey = {};
       panels.forEach(s => { byKey[s.dataset.key] = s; });
 
-      const mkGroup = (label) => {
+      const mkGroup = (label, keys, needsChild = false) => {
         const g = document.createElement('div');
         g.className = 'grp';
         g.textContent = label;
         nav.appendChild(g);
+        const group = document.createElement('optgroup'); group.label = label;
+        keys.forEach(key => {
+          const sec = byKey[key]; if (!sec) return;
+          const item = document.createElement('button'); item.type = 'button';
+          item.className = 'navitem' + (key === _activePanel ? ' active' : '');
+          item.dataset.key = key; item.disabled = needsChild && !child;
+          item.textContent = sec.dataset.title;
+          if (key === _activePanel) item.setAttribute('aria-current','page');
+          item.addEventListener('click', () => showPanel(key)); nav.appendChild(item);
+          const option = new Option(sec.dataset.title, key, false, key === _activePanel);
+          option.disabled = item.disabled; group.appendChild(option);
+        });
+        picker.appendChild(group);
       };
-      const mkItem = (key) => {
-        const sec = byKey[key];
-        if (!sec) return;
-        const item = document.createElement('div');
-        item.className = 'navitem' + (key === _activePanel ? ' active' : '');
-        item.dataset.key = key;
-        item.innerHTML = `<span class="ic">${esc(sec.dataset.icon)}</span> ${esc(sec.dataset.title)}`;
-        item.addEventListener('click', () => showPanel(key));
-        nav.appendChild(item);
-      };
-
-      mkGroup(child ? `${child.name}'s settings` : 'Child settings');
-      PER_CHILD_PANELS.forEach(mkItem);
-      mkGroup('App');
-      APP_PANELS.forEach(mkItem);
+      mkGroup('Start', ['overview']);
+      mkGroup(child ? `For ${child.name}` : 'Your child', PER_CHILD_PANELS, true);
+      mkGroup('Family & devices', APP_PANELS);
+      picker.onchange = () => showPanel(picker.value);
     }
 
-    // Show one panel, hide the rest (wide screens). On narrow screens the panels
-    // are an accordion (CSS), so showPanel also toggles the open state there.
-    function showPanel(key, openAcc = true) {
+    // One page at every width; navigation is a sidebar or a native mobile picker.
+    function showPanel(key, focusHeading = true) {
+      if (!document.getElementById('panel-' + key)) return;
       _activePanel = key;
-      const isNarrow = window.matchMedia('(max-width: 819px)').matches;
+      _stopVoiceSample();
       document.querySelectorAll('.settings-panel').forEach(sec => {
         const on = sec.dataset.key === key;
         sec.classList.toggle('active', on);
-        // On narrow screens the panels are an accordion. Don't auto-expand on the
-        // initial load (openAcc=false) so settings open fully collapsed.
-        if (isNarrow) sec.classList.toggle('acc-open', on && openAcc);
+        sec.classList.toggle('acc-open', on);
+        sec.hidden = !on; sec.style.display = on ? 'block' : 'none';
       });
       document.querySelectorAll('.navitem').forEach(it => {
         it.classList.toggle('active', it.dataset.key === key);
+        if (it.dataset.key === key) it.setAttribute('aria-current','page');
+        else it.removeAttribute('aria-current');
       });
+      document.getElementById('settingsSectionPicker').value = key;
+      document.getElementById('settingsSaveStatus').textContent = '';
+      document.getElementById('mainSettings').classList.toggle('adding-child', key === 'children' && document.getElementById('addForm').style.display !== 'none');
+      if (focusHeading) {
+        const heading = document.querySelector(`#panel-${key} h2`);
+        if (heading) { heading.tabIndex = -1; heading.focus({preventScroll:true}); heading.scrollIntoView({block:'start'}); }
+      }
     }
 
-    // Accordion: tapping a section title on narrow screens toggles it open.
-    document.addEventListener('click', (e) => {
-      const title = e.target.closest('.acc-title');
-      if (!title) return;
-      if (!window.matchMedia('(max-width: 819px)').matches) return;
-      const sec = title.closest('.settings-panel');
-      const open = sec.classList.contains('acc-open');
-      // accordion: one open at a time
-      document.querySelectorAll('.settings-panel').forEach(s => s.classList.remove('acc-open'));
-      if (!open) { sec.classList.add('acc-open'); _activePanel = sec.dataset.key; }
-    });
+    function showSaved() {
+      const child = _settingsChild();
+      document.getElementById('settingsSaveStatus').textContent = child ? `Saved for ${child.name}` : 'Saved';
+    }
 
     function _parseChannelId(input) {
       const s = (input || '').trim();
@@ -980,15 +1006,15 @@
         const list = (p.youtube || []).map((ch, i) => `
           <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
             <span style="font-size:24px;">${esc(ch.emoji || '📺')}</span>
-            <span style="color:white;font-weight:700;flex:1;">${esc(ch.label)}</span>
+            <span style="color:var(--parent-ink);font-weight:700;flex:1;">${esc(ch.label)}</span>
             <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;"
                     onclick="removeYoutubeChannel('${p.id}', ${i})">Remove</button>
           </div>
-        `).join('') || '<div style="color:rgba(255,255,255,0.4);font-size:13px;padding:8px 0;">No channels yet.</div>';
+        `).join('') || '<div style="color:var(--parent-muted);font-size:13px;padding:8px 0;">No channels yet.</div>';
         card.innerHTML = `
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
             <span style="font-size:24px;">${esc(mascotEmoji(p))}</span>
-            <span style="color:white;font-weight:800;">${esc(p.name)}</span>
+            <span style="color:var(--parent-ink);font-weight:800;">${esc(p.name)}</span>
           </div>
           ${list}
           <div style="margin-top:14px;display:grid;grid-template-columns:60px 1fr;gap:8px;">
@@ -1064,7 +1090,8 @@
         MASCOTS.map(m => `<option value="${m}" ${current === m ? 'selected' : ''}>${LABELS[m] || m}</option>`)
       ).join('');
       card.innerHTML = `
-        <select id="mascot-${p.id}" style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,0.1);color:white;border:2px solid rgba(255,255,255,0.2);font-size:15px;">
+        <label for="mascot-${esc(p.id)}">Animal companion</label>
+        <select id="mascot-${esc(p.id)}" style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,0.1);color:var(--parent-ink);border:2px solid rgba(255,255,255,0.2);font-size:15px;">
           ${opts}
         </select>
         <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:8px 14px;"
@@ -1073,6 +1100,7 @@
       card.querySelector('select').addEventListener('change', (e) => {
         const newId = e.target.value || null;
         updateProfile(p.id, { mascot: newId ? { id: newId } : null });
+        buildKidsBar(); showSaved();
       });
       section.appendChild(card);
     }
@@ -1098,48 +1126,23 @@
         section.innerHTML = '<button class="btn btn-primary" onclick="openAddChild()">＋ Add a child to get started</button>';
         return;
       }
-      const sections = [
-        { id:'games', name:'🎮 Games' },
-        { id:'learn', name:'📚 Learn' },
-        { id:'art',   name:'🎨 Art' },
-      ];
-      let html = '<div class="card" style="overflow-x:auto;">';
-      sections.forEach(sec => {
-        const acts = ACTIVITY_FEATURES.filter(a => a.section === sec.id);
-        if (!acts.length) return;
-        html += `<h3 style="margin:0 0 8px;color:rgba(255,255,255,0.8);font-size:15px;">${sec.name}</h3>`;
-        html += `<table style="width:100%;border-collapse:collapse;margin-bottom:18px;">
-          <thead><tr>
-            <th style="text-align:left;padding:6px 8px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;">Activity</th>
-            <th style="text-align:left;padding:6px 8px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;">Age</th>
-            <th style="text-align:center;padding:6px 8px;color:rgba(255,255,255,0.9);font-size:13px;font-weight:800;">Show</th>
-          </tr></thead><tbody>`;
-        acts.forEach(a => {
-          const ageChip = typeof tierAgeRange === 'function'
-            ? `<span style="display:inline-block;font-size:11px;font-weight:700;background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);padding:1px 8px;border-radius:999px;">${tierFloorLabel(a.minTier)}</span>`
-            : '';
-          const checked = isActivityVisible(p, a.id);
-          html += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
-            <td style="padding:8px;color:white;font-weight:700;font-size:14px;">${a.icon} ${a.name}</td>
-            <td style="padding:8px;">${ageChip}</td>
-            <td style="padding:8px;text-align:center;">
-              <input type="checkbox" class="act-vis" data-pid="${p.id}" data-aid="${a.id}"
-                     ${checked ? 'checked' : ''}
-                     style="width:22px;height:22px;accent-color:#4ECDC4;cursor:pointer;">
-            </td>
-          </tr>`;
-        });
-        html += '</tbody></table>';
-      });
-      html += '</div>';
-      section.innerHTML = html;
-      section.querySelectorAll('.act-vis').forEach(cb => {
-        cb.addEventListener('change', () => {
-          setActivityVisible(cb.dataset.pid, cb.dataset.aid, cb.checked);
-        });
-      });
+      section.replaceChildren();
+      for (const group of [{id:'games',name:'Games'},{id:'learn',name:'Learn'},{id:'art',name:'Art'}]) {
+        const fieldset = document.createElement('fieldset'); fieldset.className = 'activity-group';
+        const legend = document.createElement('legend'); legend.textContent = group.name; fieldset.appendChild(legend);
+        for (const activity of ACTIVITY_FEATURES.filter(a => a.section === group.id)) {
+          const row = document.createElement('label'); row.className = 'activity-option';
+          const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'act-vis';
+          cb.dataset.pid = p.id; cb.dataset.aid = activity.id; cb.checked = isActivityVisible(p, activity.id);
+          cb.setAttribute('aria-label', `Show ${activity.name}`);
+          const name = document.createElement('span'); name.className = 'activity-name'; name.textContent = `${activity.icon} ${activity.name}`;
+          const age = document.createElement('span'); age.className = 'activity-age'; age.textContent = tierFloorLabel(activity.minTier);
+          row.append(cb, name, age); fieldset.appendChild(row);
+          cb.addEventListener('change', () => { setActivityVisible(p.id,activity.id,cb.checked); showSaved(); });
+        }
+        section.appendChild(fieldset);
+      }
     }
-
     // ─── Coloring Pages (upload photos → line-art) ──────────────────────────
     const COLORING_KEY = 'vb_coloring_pages';
     const COLORING_MAX = 10;
@@ -1161,7 +1164,7 @@
               ＋ Upload photo
               <input id="coloringUpload" type="file" accept="image/*" style="display:none;">
             </label>
-            <span style="color:rgba(255,255,255,0.55); font-size:13px; align-self:center;">
+            <span style="color:var(--parent-muted); font-size:13px; align-self:center;">
               ${pages.length}/${COLORING_MAX} pages
             </span>
           </div>
@@ -1298,18 +1301,18 @@
       if (!configured) {
         const savedId = localStorage.getItem('vb_yoto_client_id') || '';
         html += `
-          <div style="color:rgba(255,255,255,0.7);font-size:13px;line-height:1.5;margin-bottom:10px;">
-            <strong style="color:white;">Step 1:</strong> apply at <a href="https://yoto.dev" target="_blank" style="color:#4ECDC4;">yoto.dev</a> for browser-auth API access.<br>
-            <strong style="color:white;">Step 2:</strong> when Yoto sends a <code>client_id</code>, paste it below.
+          <div style="color:var(--parent-muted);font-size:13px;line-height:1.5;margin-bottom:10px;">
+            <strong style="color:var(--parent-ink);">Step 1:</strong> apply at <a href="https://yoto.dev" target="_blank" style="color:#4ECDC4;">yoto.dev</a> for browser-auth API access.<br>
+            <strong style="color:var(--parent-ink);">Step 2:</strong> when Yoto sends a <code>client_id</code>, paste it below.
           </div>
-          <label style="display:block;font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:4px;">Yoto Client ID</label>
+          <label style="display:block;font-size:13px;color:var(--parent-muted);margin-bottom:4px;">Yoto Client ID</label>
           <input type="text" id="yotoClientIdInput" placeholder="paste client_id here" value="${savedId.replace(/"/g, '&quot;')}">
           <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="saveYotoClientId()">Save Client ID</button>
           <div id="yotoMsg" style="color:#FF6B6B;font-size:12px;margin-top:8px;min-height:14px;"></div>
         `;
       } else if (!connected) {
         html += `
-          <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:12px;">
+          <div style="color:var(--parent-muted);font-size:13px;margin-bottom:12px;">
             Client ID configured. Tap below to sign in with your Yoto account.
           </div>
           <button class="btn btn-primary" style="width:100%;" onclick="window.yoto.connect()">🎧 Connect Yoto Account</button>
@@ -1317,8 +1320,8 @@
         `;
       } else {
         html += `
-          <div style="color:#a8e6cf;font-weight:800;margin-bottom:6px;">✓ Connected to Yoto</div>
-          <div style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:12px;">
+          <div style="color:var(--parent-accent);font-weight:800;margin-bottom:6px;">✓ Connected to Yoto</div>
+          <div style="color:var(--parent-muted);font-size:13px;margin-bottom:12px;">
             Family recordings + your Yoto library now appear in the kid's Listen tab.
           </div>
           <button class="btn btn-ghost" style="width:100%;" onclick="disconnectYoto()">Disconnect</button>
@@ -1361,8 +1364,8 @@
         section.innerHTML = `
           <div class="card" style="border:1px solid rgba(255,180,80,0.5);">
             <div style="color:#FFC56B;font-weight:800;margin-bottom:6px;">⚠️ Sync session expired</div>
-            <div class="sync-email" style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:4px;"></div>
-            <div style="color:rgba(255,255,255,0.55);font-size:12px;margin-bottom:14px;line-height:1.5;">
+            <div class="sync-email" style="color:var(--parent-muted);font-size:13px;margin-bottom:4px;"></div>
+            <div style="color:var(--parent-muted);font-size:12px;margin-bottom:14px;line-height:1.5;">
               You were signed out of cloud sync (often because you signed in on
               another device). Your kids on this device are safe. Sign in again
               to reconnect — we'll ask which kids to keep if they differ.
@@ -1388,16 +1391,16 @@
       } else if (s.email && s.syncKey) {
         section.innerHTML = `
           <div class="card">
-            <div style="color:white;font-weight:800;margin-bottom:6px;">✓ Synced automatically</div>
-            <div class="sync-email" style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:4px;"></div>
-            <div style="color:rgba(255,255,255,0.5);font-size:12px;margin-bottom:14px;">
+            <div style="color:var(--parent-ink);font-weight:800;margin-bottom:6px;">✓ Synced automatically</div>
+            <div class="sync-email" style="color:var(--parent-muted);font-size:13px;margin-bottom:4px;"></div>
+            <div style="color:var(--parent-muted);font-size:12px;margin-bottom:14px;">
               Last synced: ${lastSync}<br>
               Saves to cloud automatically (and the moment you close the app). Other devices merge progress on open.
             </div>
             <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" id="syncNowBtn" onclick="syncNow()">🔄 Sync now</button>
             <button class="btn btn-ghost" style="width:100%;font-size:13px;" onclick="syncSignout()">Sign out of cloud sync</button>
             <button class="btn btn-ghost" style="width:100%;font-size:12px;margin-top:4px;color:#FF6B6B;" onclick="syncDeleteAccount()">Delete cloud account &amp; synced data</button>
-            <div id="syncMsg" style="color:#a8e6cf;font-size:12px;margin-top:8px;min-height:14px;"></div>
+            <div id="syncMsg" style="color:var(--parent-accent);font-size:12px;margin-top:8px;min-height:14px;"></div>
           </div>
         `;
       } else {
@@ -1609,13 +1612,13 @@
       const section = document.getElementById('offlineSection');
       if (!section) return;
       if (!('caches' in window)) {
-        section.innerHTML = '<div class="card" style="color:rgba(255,255,255,0.7);font-size:13px;">This browser can\'t store offline downloads. Try Chrome or Safari.</div>';
+        section.innerHTML = '<div class="card" style="color:var(--parent-muted);font-size:13px;">This browser can\'t store offline downloads. Try Chrome or Safari.</div>';
         return;
       }
       let manifest;
       try { manifest = await _loadOfflineManifest(); }
       catch (e) {
-        section.innerHTML = '<div class="card" style="color:#ffb4b4;font-size:13px;">Couldn\'t load the offline list — connect to the internet once to set this up.</div>';
+        section.innerHTML = '<div class="card" style="color:var(--parent-danger);font-size:13px;">Couldn\'t load the offline list — connect to the internet once to set this up.</div>';
         return;
       }
       const mascotIds = _familyMascotIds();
@@ -1637,7 +1640,7 @@
 
       section.innerHTML = `
         <div class="card">
-          <div style="color:white;font-size:14px;line-height:1.7;margin-bottom:12px;">
+          <div style="color:var(--parent-ink);font-size:14px;line-height:1.7;margin-bottom:12px;">
             <div><b>Mascots included:</b> ${esc(mascotNames)}</div>
             <div><b>Download size:</b> ~${_fmtMB(totalBytes)} &nbsp;<span style="opacity:0.55;">(${list.length} files)</span></div>
           </div>
@@ -1645,7 +1648,7 @@
             <div style="height:10px;background:rgba(255,255,255,0.12);border-radius:6px;overflow:hidden;">
               <div id="offlineBar" style="height:100%;width:0%;background:#4ECDC4;transition:width 0.2s;"></div>
             </div>
-            <div id="offlineProgressTxt" style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:6px;">Starting…</div>
+            <div id="offlineProgressTxt" style="font-size:12px;color:var(--parent-muted);margin-top:6px;">Starting…</div>
           </div>
           <div id="offlineStatus" style="font-size:13px;margin-bottom:12px;color:${done ? '#7be0c0' : 'rgba(255,255,255,0.6)'};">
             ${done ? '✓ Downloaded — ready for offline use.' : (have > 0 ? `Partial download (${have}/${list.length} files). Tap to finish.` : 'Not downloaded yet.')}
@@ -1654,7 +1657,7 @@
             <button class="btn btn-primary" id="offlineDownloadBtn">${done ? 'Re-download / update' : 'Download family for offline use'}</button>
             <button class="btn btn-ghost" id="offlineRemoveBtn" style="${have > 0 ? '' : 'display:none;'}">Remove download</button>
           </div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:10px;line-height:1.5;">
+          <div style="font-size:11px;color:var(--parent-muted);margin-top:10px;line-height:1.5;">
             Tip: download on wi-fi before you leave. It survives app updates. YouTube &amp; Yoto still need internet.
           </div>
         </div>`;
@@ -1722,15 +1725,15 @@
       }
       const current = p.voice || 'woman';
       const cards = VOICES.map(v => `
-        <div class="vcard${v.id === current ? ' sel' : ''}${v.full ? ' full' : ''}" data-voice="${v.id}">
+        <button type="button" class="vcard${v.id === current ? ' sel' : ''}${v.full ? ' full' : ''}" data-voice="${v.id}" aria-pressed="${v.id === current}">
           <div class="play">${v.icon}</div>
           <div class="vinfo"><div class="vn">${esc(v.name)}</div><div class="vd">${esc(v.desc)}</div></div>
           <div class="bars"><i></i><i></i><i></i><i></i></div>
           <div class="check">✓</div>
-        </div>`).join('');
+        </button>`).join('');
       section.innerHTML = `
-        <p class="subtitle" style="margin:0 0 16px;color:rgba(255,255,255,0.7);font-size:13.5px;">
-          The voice your mascot speaks in. Tap any voice to hear a short sample, then pick the one you like.
+        <p class="subtitle" style="margin:0 0 16px;color:var(--parent-muted);font-size:13.5px;">
+          Choose a voice to hear a sample. Your choice saves immediately.
         </p>
         <div class="voices">${cards}</div>
         <div class="voice-hint" id="voiceHint"></div>`;
@@ -1744,7 +1747,8 @@
       // 1) select + persist
       updateProfile(profileId, { voice: voiceId });
       const section = document.getElementById('voiceSection');
-      section.querySelectorAll('.vcard').forEach(c => c.classList.toggle('sel', c === card));
+      section.querySelectorAll('.vcard').forEach(c => { c.classList.toggle('sel', c === card); c.setAttribute('aria-pressed', String(c === card)); });
+      showSaved();
       // also reflect on the kids bar age line? no — voice isn't shown there.
       // 2) play sample (stops any prior one first)
       playVoiceSample(profileId, voiceId, card);
@@ -1773,13 +1777,13 @@
       }
       const current = p.theme || 'storybook';
       const cards = THEMES.map(t => `
-        <div class="vcard${t.id === current ? ' sel' : ''}" data-theme-id="${t.id}">
+        <button type="button" class="vcard${t.id === current ? ' sel' : ''}" data-theme-id="${t.id}" aria-pressed="${t.id === current}">
           <div class="play">${t.icon}</div>
           <div class="vinfo"><div class="vn">${esc(t.name)}</div><div class="vd">${esc(t.desc)}</div></div>
           <div class="check">✓</div>
-        </div>`).join('');
+        </button>`).join('');
       section.innerHTML = `
-        <p class="subtitle" style="margin:0 0 16px;color:rgba(255,255,255,0.7);font-size:13.5px;">
+        <p class="subtitle" style="margin:0 0 16px;color:var(--parent-muted);font-size:13.5px;">
           How the home screen and menus look for this child. Day/night skies and greetings work in every theme.
         </p>
         <div class="voices">${cards}</div>`;
@@ -1788,6 +1792,8 @@
           const themeId = card.dataset.themeId;
           updateProfile(p.id, { theme: themeId });
           section.querySelectorAll('.vcard').forEach(c => c.classList.toggle('sel', c === card));
+          section.querySelectorAll('.vcard').forEach(c => c.setAttribute('aria-pressed', String(c === card)));
+          showSaved();
           // Live-apply when editing the ACTIVE kid so the parent sees it instantly.
           try {
             const active = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
@@ -2141,6 +2147,7 @@
       // One row per activity
       const tbody = table.createTBody();
       ACTIVITY_FEATURES.forEach(activity => {
+        if (!activity.features.length) return;
         const row = tbody.insertRow();
         const nameCell = row.insertCell();
         nameCell.textContent = activity.name;
@@ -2154,6 +2161,7 @@
           cb.checked = getProfileFeature(profile, activity.id, feat.key);
           cb.addEventListener('change', () => {
             setProfileFeature(profile.id, activity.id, feat.key, cb.checked);
+            showSaved();
           });
           const span = document.createElement('span');
           span.textContent = feat.label;
@@ -2164,7 +2172,7 @@
             const age = document.createElement('span');
             age.textContent = tierFloorLabel(feat.minTier);
             age.style.cssText = 'display:inline-block;margin-left:8px;font-size:11px;font-weight:700;' +
-              'background:rgba(78,205,196,0.18);color:#a8e6cf;border:1px solid rgba(78,205,196,0.3);' +
+              'background:rgba(78,205,196,0.18);color:var(--parent-accent);border:1px solid rgba(78,205,196,0.3);' +
               'padding:1px 8px;border-radius:999px;vertical-align:middle;';
             lbl.appendChild(age);
           }

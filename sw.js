@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v155';
+const CACHE = 'vb-v156';
+// v156: readable parent settings and guided child setup, available offline.
 // v155: visible, cancellable elapsed-time progress for the parent hold.
 // v154: separate Free Paint brushes and Color In tap-to-fill studios.
 // v148: animated personal world, redesigned rooms, bounded awards and owned play timers.
@@ -155,7 +156,7 @@ const CACHE = 'vb-v155';
 //      missing from the precache list -> those pages broke offline. Both added.
 // Full version history: git log.
 const ASSETS = [
-  './css/world-home.css',
+  './css/parent-settings.css', './css/world-home.css',
   './js/world-home.js',
   './js/world-art.js',
   './js/world-scene.js', './js/world-huts.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
@@ -201,7 +202,7 @@ const ASSETS = [
 // missing a piece the app cannot run without.
 const REQUIRED_SHELL = [
   './js/free-paint.js', './js/color-fill.js',
-  './css/world-home.css', './js/world-home.js', './js/world-art.js',
+  './css/parent-settings.css', './css/world-home.css', './js/world-home.js', './js/world-art.js',
   './js/world-scene.js', './js/world-huts.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
   './js/vendor/three-r180/three.module.min.js', './js/vendor/three-r180/three.core.min.js',
   './', './index.html', './home.html', './redesign-hub-bg.jpg',
