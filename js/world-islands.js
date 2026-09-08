@@ -153,7 +153,7 @@ function buildGames(THREE, island, assets, animators) {
   });
   const blocks = new THREE.Group();
   blocks.name = 'games-toy-blocks';
-  blocks.position.set(0.55, 0.56, -2.16);
+  blocks.position.set(-2.48, 0.56, 1.18);
   island.add(blocks);
   addBlock(THREE, blocks, assets, [-0.42, .3, 0], [.57, .57, .57], 0x5abbd8, [0, .18, 0]);
   addBlock(THREE, blocks, assets, [.28, .24, .05], [.46, .46, .46], 0xffcc4d, [0, -.15, .08]);
@@ -189,7 +189,7 @@ function addLetter(THREE, parent, assets, letter, x, color) {
 function buildLearn(THREE, island, assets, animators) {
   const blocks = new THREE.Group();
   blocks.name = 'learn-abc-blocks';
-  blocks.position.set(-2.44, 0.82, -.15);
+  blocks.position.set(-2.44, 0.82, 1.02);
   island.add(blocks);
   const colors = [0xe95f72, 0x4aaed0, 0xf2b83f];
   ['A', 'B', 'C'].forEach((letter, index) => {
@@ -202,7 +202,7 @@ function buildLearn(THREE, island, assets, animators) {
   });
   const books = new THREE.Group();
   books.name = 'learn-book-stack';
-  books.position.set(.52, .61, -2.16);
+  books.position.set(2.48, .61, 1.08);
   island.add(books);
   [[0, 0, 0, 0x9a76d8], [.03, .2, -.03, 0x4eb6cb], [-.02, .4, .03, 0xf0718d]].forEach(([x, y, z, color], index) => {
     addBlock(THREE, books, assets, [x, y, z], [1.05 - index * .08, .13, .7], color, [0, index % 2 ? -.08 : .07, 0]);
@@ -218,7 +218,7 @@ function buildLearn(THREE, island, assets, animators) {
 function buildArt(THREE, island, assets, animators) {
   const easel = new THREE.Group();
   easel.name = 'art-giant-easel';
-  easel.position.set(2.43, 0.56, -.18);
+  easel.position.set(2.48, 0.56, 1.12);
   easel.rotation.y = -.12;
   island.add(easel);
   const wood = assets.material(0x9a623f, { roughness: .85 });
@@ -233,7 +233,7 @@ function buildArt(THREE, island, assets, animators) {
   });
   const supplies = new THREE.Group();
   supplies.name = 'art-paint-pots';
-  supplies.position.set(-2.47, .56, -.15);
+  supplies.position.set(-2.47, .56, 1.02);
   island.add(supplies);
   [-.27, .27].forEach((x, index) => {
     addMesh(THREE, supplies, assets.geometries.cylinder, assets.material(index ? 0x53b9d2 : 0xf06e91, { roughness: .65 }),
@@ -253,7 +253,7 @@ function buildArt(THREE, island, assets, animators) {
 function buildWatch(THREE, island, assets, animators) {
   const stand = new THREE.Group();
   stand.name = 'watch-popcorn-ticket-stand';
-  stand.position.set(2.47, .56, -.08);
+  stand.position.set(2.47, .56, 1.02);
   island.add(stand);
   addBlock(THREE, stand, assets, [0, .42, 0], [.92, .82, .66], 0xe85e65);
   for (const x of [-.3, 0, .3]) addBlock(THREE, stand, assets, [x, .45, .342], [.13, .73, .035], 0xfff1c2);
@@ -268,7 +268,7 @@ function buildWatch(THREE, island, assets, animators) {
   });
   const ticket = new THREE.Group();
   ticket.name = 'watch-movie-ticket';
-  ticket.position.set(-.45, .8, -2.15);
+  ticket.position.set(-2.58, .8, 1.12);
   ticket.rotation.y = .12;
   island.add(ticket);
   addBlock(THREE, ticket, assets, [0, 0, 0], [1.22, .58, .11], 0x4aaad0);
@@ -299,7 +299,7 @@ function buildListen(THREE, island, assets, animators) {
   [-2.48, 2.48].forEach((x, index) => {
     const speaker = new THREE.Group();
     speaker.name = index ? 'listen-right-speaker' : 'listen-left-speaker';
-    speaker.position.set(x, .56, -.08);
+    speaker.position.set(x, .56, .96);
     speaker.rotation.y = index ? -.07 : .07;
     island.add(speaker);
     addBlock(THREE, speaker, assets, [0, .53, 0], [.72, 1.06, .55], 0x3b466e);
