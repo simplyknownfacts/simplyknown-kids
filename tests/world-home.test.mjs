@@ -12,7 +12,10 @@ async function freePort() {
   const probe = createServer(); probe.listen(0, '127.0.0.1'); await once(probe, 'listening');
   const port = probe.address().port; await new Promise(resolve => probe.close(resolve)); return port;
 }
-test('3D world fits, uses building geometry for taps and keeps its buddy in the plaza', { timeout: 120000 }, async t => {
+// Seven viewport runs and the media/navigation cases share this outer budget.
+// Keep the individual operation deadlines below; software rendering can take
+// more than two minutes in total even while every behavior check passes.
+test('3D world fits, uses building geometry for taps and keeps its buddy in the plaza', { timeout: 180000 }, async t => {
   const port = await freePort();
   const server = spawn(process.execPath, [path.join(ROOT, 'scripts/serve.mjs')], { cwd: ROOT, env: { ...process.env, PORT: String(port) }, stdio: ['ignore','pipe','pipe'] });
   let browser;
