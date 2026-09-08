@@ -32,8 +32,8 @@ function createIrregularDisc(THREE, radii, levels, seed, topScale = 1) {
   const topCenter = positions.length / 3;
   positions.push(0, levels[ringCount - 1][0], 0);
   for (let index = 0; index < segments; index += 1) {
-    indices.push(topCenter, (ringCount - 1) * segments + index,
-      (ringCount - 1) * segments + (index + 1) % segments);
+    indices.push(topCenter, (ringCount - 1) * segments + (index + 1) % segments,
+      (ringCount - 1) * segments + index);
   }
   const topIndexCount = indices.length;
   for (let ring = 0; ring < ringCount - 1; ring += 1) {
@@ -72,7 +72,7 @@ function createAnnulus(THREE, radii, innerScale, outerScale, seed) {
   }
   for (let index = 0; index < segments; index += 1) {
     const next = (index + 1) % segments;
-    indices.push(index, segments + index, segments + next, index, segments + next, next);
+    indices.push(index, segments + next, segments + index, index, next, segments + next);
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
