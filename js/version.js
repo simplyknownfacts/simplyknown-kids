@@ -11,4 +11,4 @@
 // 1.0.0 is Kids' first NUMBERED release (2026-09-02), not a claim the app is
 // finished -- everything before it already shipped via plain `git push` to
 // GitHub Pages, with no version number attached at all.
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';

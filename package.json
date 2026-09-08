@@ -1,6 +1,6 @@
 {
   "name": "simplyknown-kids",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "SimplyKnown Kids — static offline-first PWA. Scripts only: this project has no dependencies and no build step.",
   "scripts": {

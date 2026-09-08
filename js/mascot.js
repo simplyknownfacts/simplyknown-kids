@@ -193,11 +193,13 @@ function _ensureEl() {
   // movement is a TAP (sound + action via _onMascotTap); crossing the drag
   // threshold turns it into a reposition (no tap fires). See _attachDrag.
   // pointerdown beats click on toddler taps (no 300ms delay, no shrink-target miss).
-  _attachDrag(wrap);
-  document.body.appendChild(wrap);
+  const worldHost = document.querySelector('[data-world-companion]');
+  if (worldHost) wrap.dataset.inWorld = '1';
+  else _attachDrag(wrap);
+  (worldHost || document.body).appendChild(wrap);
   _mascotEl = wrap;
   _frontIdx = 0;
-  _restorePosition(wrap);
+  if (!worldHost) _restorePosition(wrap);
   return wrap;
 }
 
@@ -368,7 +370,7 @@ function _settleDrop(wrap) {
 // alone when it's not covering anything (don't needlessly move a fine mascot).
 function _settleIfCovering() {
   const wrap = _mascotEl;
-  if (!wrap || _drag || wrap.style.display === 'none') return;
+  if (!wrap || wrap.dataset.inWorld === '1' || _drag || wrap.style.display === 'none') return;
   const r = wrap.getBoundingClientRect();
   if (r.width === 0 || r.height === 0) return;
   if (!_overlapsAny(r.left, r.top, r.width, r.height, _interactiveRects(wrap))) return;
@@ -431,6 +433,7 @@ function _back()  { const v = _videos(); return v ? v[1 - _frontIdx] : null; }
 // ---------------------------------------------------------------------------
 let _chromaActive = false;   // is the wrap currently in chroma mode?
 let _chromaRaf = null;       // running render-loop handle
+let _lastChromaFrame = 0;
 
 function _setChromaMode(on) {
   const wrap = _mascotEl;
@@ -460,9 +463,13 @@ function _setChromaMode(on) {
   }
 }
 
-function _chromaFrame() {
+function _chromaFrame(now = 0) {
   _chromaRaf = _chromaActive ? requestAnimationFrame(_chromaFrame) : null;
   if (!_chromaActive) return;
+  // The clips are 24/30fps. Re-keying the same frame at display refresh rate
+  // adds pixel work while the child is tapping without improving animation.
+  if (now - _lastChromaFrame < 30) return;
+  _lastChromaFrame = now;
   const vids = _videos(), cvs = _canvases();
   for (let i = 0; i < cvs.length; i++) {
     const v = vids[i], c = cvs[i];
@@ -471,6 +478,9 @@ function _chromaFrame() {
     // but keying both is cheap at this size and keeps the crossfade in-motion.
     if (c.style.opacity === '0' && v !== _back()) continue;
     if (v.readyState < 2 || v.videoWidth === 0) continue;
+    const frameKey = v.currentSrc + ':' + v.currentTime;
+    if (c._frameKey === frameKey) continue;
+    c._frameKey = frameKey;
     const ctx = c._ctx || (c._ctx = c.getContext('2d', { willReadFrequently: true }));
     const w = c.width, h = c.height;
     ctx.clearRect(0, 0, w, h);
@@ -522,6 +532,11 @@ function _crossfadeTo(src, opts) {
   };
   const onReady = () => {
     back.removeEventListener('loadeddata', onReady);
+    if (opts.muted && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      back.pause();
+      startCrossfade();
+      return;
+    }
     back.addEventListener('playing', onPlaying, { once: true });
     back.play().catch(() => {
       // Autoplay blocked or play() rejected — fall back to immediate crossfade
@@ -545,6 +560,7 @@ function _src(mascotId, voice, key) {
 
 function _scheduleNextAction() {
   clearTimeout(_actionTimer);
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   // Random 5-15 seconds before next action gesture interrupts the base
   const delay = 5000 + Math.random() * 10000;
   _actionTimer = setTimeout(_playAction, delay);

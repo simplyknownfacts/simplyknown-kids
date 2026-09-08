@@ -1,0 +1,117 @@
+/* A responsive scene: houses are the buttons and remain stationary while their details move. */
+html:has(.world-home), body.world-home { width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; }
+body.world-home { --world-ink: #184d4a; --world-cream: #fff7df; background: #d6efed; color: var(--world-ink); font-family: var(--font-ui, system-ui), sans-serif; }
+.world-home .atmosphere, .world-home #atmosphere, .world-home .sky-atmosphere { display: none; }
+.world-shell { position: relative; isolation: isolate; height: 100vh; height: 100dvh; width: 100%; overflow: hidden; display: grid; grid-template-columns: minmax(0,1fr); grid-template-rows: auto minmax(0, 1fr) auto; padding: max(16px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left)); background: radial-gradient(ellipse at 50% 20%, #fff8df 0, #f4f6dd 28%, #d9f0e7 60%, #a5d8d0 100%); }
+.world-shell *, .world-shell *::before, .world-shell *::after { box-sizing: border-box; }
+.world-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; z-index: 30; max-width: 1210px; width: 100%; margin: auto; }
+.world-brand { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 17px; letter-spacing: -.7px; }
+.brand-mark { width: 37px; height: 37px; display: grid; place-items: center; background: #23675e; color: #ffedb5; border-radius: 14px 14px 14px 4px; box-shadow: 0 3px 0 #174c46; }
+.brand-mark svg { width: 23px; }
+.world-header-actions { display: flex; align-items: center; gap: 9px; }
+.world-profile, .world-exit, .ribbon-link, .world-hello { appearance: none; border: 1.5px solid #c6d9ba; background: #fffcf0e8; color: #214f49; cursor: pointer; font: 800 13px var(--font-ui, system-ui); display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 46px; padding: 6px 15px; border-radius: 18px; box-shadow: 0 3px 0 #65978024; touch-action: manipulation; }
+.world-profile { max-width: 220px; }
+.world-profile #pillName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
+.world-profile #pillAvatar { font-size: 24px; }
+.world-exit { width: 46px; padding: 10px; border-radius: 50%; }
+.world-exit svg { width: 20px; height: 20px; }
+.world-home button:focus-visible { outline: 4px solid #187c88; outline-offset: 5px; }
+.world-home button:active { filter: brightness(.95); }
+.world-main { min-width: 0; min-height: 0; display: grid; grid-template-rows: auto minmax(0,1fr); position: relative; width: 100%; max-width: 1160px; margin: 0 auto; }
+.world-greeting { text-align: center; z-index: 3; padding-top: clamp(8px, 2.1vh, 22px); pointer-events: none; }
+.world-greeting h1 { margin: 0; max-width:100%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color: #215c51; font: 900 clamp(26px, 4.2vw, 43px)/1.12 var(--font-ui, system-ui); letter-spacing: -1.7px; }
+.world-greeting p { margin: 9px 0 0; font-size: 14px; font-weight: 650; color: #668477; }
+.world-scene { position: relative; min-height: 0; width: 100%; max-width: 1060px; margin: 0 auto; }
+.world-island { position: absolute; inset: 5% 2% 3%; background: radial-gradient(ellipse at 48% 20%, #bfe29a 0, #a7cf87 45%, #83b475 85%); border: 6px solid #cee6a7; border-radius: 48% 51% 46% 44% / 49% 46% 48% 45%; box-shadow: 0 11px 0 #75a77e, 0 22px 0 #5b9277, 0 33px 0 #3e766969, 0 50px 35px #377d681b; transform: rotate(-2deg); }
+.world-island::after { content: ''; position: absolute; inset: 3%; border: 2px dashed #d9edb957; border-radius: inherit; }
+.world-paths { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.world-paths .path-shadow { stroke: #799e68; stroke-width: 35; opacity: .25; }
+.world-paths .path { stroke: #eee1b1; stroke-width: 27; }
+.world-paths .path-dash { stroke: #fcf0ca; stroke-width: 2; stroke-dasharray: 7 11; }
+.house { position: absolute; --x: 50%; --y: 50%; left: var(--x); top: var(--y); width: clamp(150px, 25%, 256px); height: 43%; min-height: 110px; padding: 0; margin: 0; transform: translate(-50%, -50%); background: transparent; border: 0; outline-offset: -8px !important; cursor: pointer; touch-action: manipulation; z-index: 10; display: flex; align-items: center; flex-direction: column; justify-content: flex-end; -webkit-tap-highlight-color: transparent; }
+.house-art { display: flex; flex: 1; min-height: 0; width: 100%; align-items: flex-end; justify-content: center; transition: filter .2s, transform .2s; pointer-events: none; }
+.house-art svg { display: block; height: 100%; max-width: 100%; overflow: visible; }
+.house-label { display: flex; align-items: center; justify-content: center; gap: 6px; position: relative; background: #fff9e9; padding: 7px 17px; border: 1.5px solid #52866c31; color: #315e51; border-radius: 13px; box-shadow: 0 4px 0 #5b886828; font: 900 17px/1.12 var(--font-ui, system-ui); letter-spacing: -.3px; white-space: nowrap; margin-top: -8px; }
+.house-label::after { content: '›'; color: #7d9b7e; margin-left: 3px; font-size: 21px; line-height: .5; }
+.house-caption { margin-top: 6px; color: #41684e; font: 750 10px/1.15 var(--font-ui, system-ui); letter-spacing: .15px; white-space: nowrap; min-height: 12px; }
+.house-games { --x: 21%; --y: 34%; }
+.house-learn { --x: 50%; --y: 25%; }
+.house-artworld { --x: 79%; --y: 34%; }
+.house-watch { --x: 73%; --y: 78%; }
+.house-listen { --x: 27%; --y: 78%; }
+.house[aria-disabled="true"] .house-art { filter: saturate(.65); }
+.house[aria-disabled="true"] .house-caption::before { content: '• '; }
+@media (hover:hover) { .house:hover .house-art { transform: translateY(-5px) rotate(-2deg); filter: brightness(1.06); } .house:hover .house-label { background: #fff; } }
+.house:active .house-art, .house.is-entering .house-art { transform: translateY(2px) scale(.95); }
+.house-building { transform-origin: 50% 85%; }
+.house-flag { transform-origin: 177px 35px; animation: worldFlag 3s ease-in-out infinite; }
+.house-telescope { transform-origin: 177px 66px; }
+.house-spark { animation: worldSpark 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.house-brush { animation: worldPaint 4.8s ease-in-out infinite; transform-origin: 170px 65px; }
+.house-lights { animation: worldLights 1.5s steps(2,end) infinite; }
+.house-note { animation: worldNote 4s ease-in-out infinite; }
+.world-companion { position: absolute; left: 50%; top: 53%; width: 150px; height: 130px; transform: translate(-50%, -50%); z-index: 12; pointer-events: none; transition: left 3.8s ease-in-out, top 3.8s ease-in-out; }
+.companion-shadow { position: absolute; left: 32%; right: 25%; bottom: 2%; height: 12px; background: #51836840; border-radius: 50%; filter: blur(3px); }
+.world-companion #mascotWrap { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; mask: none !important; -webkit-mask: none !important; animation: none !important; pointer-events: none !important; z-index: 1 !important; filter: drop-shadow(0 4px 2px #35685117) !important; }
+.companion-fallback { position: absolute; inset: 20%; display: grid; place-items: center; font-size: 68px; animation: worldBreathe 3s ease-in-out infinite; }
+.world-companion.has-video .companion-fallback { display: none; }
+.companion-bubble { display: none; }
+.world-flower { position: absolute; width: 9px; height: 9px; background: #ffe7a2; border: 2px solid #fff4d3; border-radius: 50%; box-shadow: 8px 4px 0 -1px #f8edd0, -5px 6px 0 -1px #ffdd9f; pointer-events: none; }
+.world-tree { position: absolute; bottom: 11%; left: 5%; height: 92px; width: 48px; pointer-events: none; }
+.world-tree::before { content: ''; width: 9px; height: 54%; position: absolute; bottom: 0; left: 46%; background: #8d8f63; border-radius: 5px; }
+.world-tree::after { content: ''; position: absolute; inset: 0 0 18%; background: #5fa879; border-radius: 50% 50% 43% 43%; box-shadow: inset -9px -5px 0 #478c6a, -4px 4px 0 #5ba377; transform-origin: 50% 95%; animation: worldTree 6s ease-in-out infinite; }
+.world-tree.tree-right { left: auto; right: 4%; bottom: 13%; transform: scale(.8); }
+.world-tree.tree-top { left: 5%; bottom: 66%; transform: scale(.7); }
+.world-cloud { position: absolute; width: 120px; height: 24px; background: #fffdf5b3; border-radius: 50px; pointer-events: none; animation: worldCloud 18s ease-in-out infinite alternate; }
+.world-cloud::before, .world-cloud::after { content: ''; position: absolute; background: inherit; border-radius: 50%; width: 52px; height: 48px; bottom: 3px; left: 17px; }
+.world-cloud::after { width: 39px; height: 32px; left: 60px; }
+.cloud-one { left: 2%; top: 9%; transform: scale(.75); }
+.cloud-two { right: -3%; top: 0; transform: scale(.6); animation-delay: -7s; }
+.world-butterfly { position: absolute; left: 62%; top: 53%; width: 14px; height: 11px; z-index: 14; border-radius: 60% 30%; background: #f4b96d; box-shadow: 8px 0 #fff0a5; pointer-events: none; animation: worldButterfly 12s ease-in-out infinite; }
+.world-footer { z-index: 22; width: 100%; max-width: 1110px; margin: 12px auto 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.ribbon-link svg { width: 23px; height: 27px; }
+.world-hello { border: 0; box-shadow: none; background: transparent; font-size: 12px; color: #446f60; }
+.world-hello svg { width: 19px; }
+.world-status { position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); z-index: 40; max-width: min(340px,90vw); background: #fffdf3; border: 1px solid #bbd6bc; box-shadow: 0 6px 20px #214c4520; padding: 12px 17px; border-radius: 17px; font-size: 13px; font-weight: 700; text-align: center; }
+.world-status:empty { display: none; }
+@keyframes worldFlag { 50% { transform: skewY(-7deg); } }
+@keyframes worldSpark { 50% { transform: scale(.8) rotate(12deg); opacity:.65; } }
+@keyframes worldPaint { 50% { transform: rotate(5deg) translateY(2px); } }
+@keyframes worldLights { 50% { opacity: .4; } }
+@keyframes worldNote { 0%,100% { opacity: .45; transform: translateY(3px); } 50% { opacity:1; transform: translateY(-5px); } }
+@keyframes worldTree { 50% { transform: rotate(4deg); } }
+@keyframes worldCloud { to { translate: 30px 0; } }
+@keyframes worldBreathe { 50% { transform: translateY(-5px) rotate(3deg); } }
+@keyframes worldButterfly { 0%,100% { transform: translate(0,0) rotate(-15deg); } 30% { transform: translate(35px,-25px) rotate(20deg); } 70% { transform: translate(-22px,-42px) rotate(-25deg); } }
+@media(max-width:600px) {
+  .world-shell { padding-left: max(12px,env(safe-area-inset-left)); padding-right:max(12px,env(safe-area-inset-right)); padding-top:max(13px,env(safe-area-inset-top)); padding-bottom:max(10px,env(safe-area-inset-bottom)); }
+  .world-brand { font-size: 13px; letter-spacing: -.4px; gap:7px; } .brand-mark { width:30px; height:32px; border-radius:12px 12px 12px 4px; }
+  .world-profile { padding:4px 9px; max-width:150px; min-height:42px; font-size:12px; gap:5px; } .world-profile #pillName { max-width:80px; } .world-profile #pillAvatar { font-size:21px; }
+  .world-header-actions { gap:6px; } .world-exit { width:42px; min-height:42px; }
+  .world-greeting { padding-top:17px; } .world-greeting h1 { font-size:29px; letter-spacing:-1.3px; } .world-greeting p { font-size:12px; margin-top:7px; }
+  .world-scene { max-width:420px; } .world-island { inset: 5% -5% 3%; border-width:4px; border-radius:49% 50% 47% 43% / 38% 43% 50% 48%; }
+  .house { width:45%; height:31%; min-height: 105px; }
+  .house-games { --x:25%; --y:30%; } .house-learn { --x:71%; --y:20%; } .house-artworld { --x:76%; --y:52%; } .house-watch { --x:69%; --y:85%; } .house-listen { --x:24%; --y:77%; }
+  .house-label { font-size:15px; padding:6px 13px; margin-top:-8px; border-radius:11px; } .house-caption { font-size:9px; margin-top:4px; }
+  .world-companion { width:112px; height:110px; top:49%; left:30%; } .companion-bubble { font-size:9px; padding:5px 7px; bottom:95%; }
+  .world-tree { height:65px; width:36px; left:0; bottom:39%; } .world-tree.tree-top { bottom:76%; left:4%; } .world-tree.tree-right { bottom:12%; right:-2%; }
+  .world-footer { margin-top:14px; gap:5px; } .ribbon-link { font-size:12px; padding:5px 11px; border-radius:15px; min-height:44px; } .world-hello { font-size:11px; padding:5px 3px; gap:5px; }
+  .world-cloud { width:85px; } .cloud-one { left:-20%; top:15%; } .cloud-two { right:-21%; top:40%; }
+}
+@media(max-height:680px) and (max-width:600px) {
+  .world-greeting { padding-top:7px; } .world-greeting h1 { font-size:24px; } .world-greeting p { margin-top:4px; font-size:11px; }
+  .house { height:32%; } .house-caption { display:none; } .house-label { font-size:13px; padding:5px 11px; }
+  .world-companion { width:85px; height:85px; } .companion-bubble { display:none; }
+  .world-footer { margin-top:9px; } .world-island { bottom:4%; }
+}
+@media(max-width:360px) { .world-brand > span:last-child { display:none; } }
+@media(max-height:500px) and (orientation:landscape) {
+  .world-main { grid-template-rows:minmax(0,1fr); } .world-scene { grid-row:1; }
+  .world-shell { padding-top:7px; padding-bottom:7px; } .world-header { max-width:none; } .world-brand { font-size:12px; } .world-profile { min-height:36px; padding:2px 9px; } .world-exit { width:36px; min-height:36px; }
+  .world-greeting { position:absolute; top:-38px; left:28%; right:28%; padding:0; } .world-greeting h1 { font-size:21px; } .world-greeting p { display:none; }
+  .world-scene { max-width:760px; } .house { width:18%; height:64%; min-height:0; } .house-games { --x:12%; --y:46%; } .house-learn { --x:32%; --y:45%; } .house-artworld { --x:52%; --y:47%; } .house-watch { --x:72%; --y:45%; } .house-listen { --x:90%; --y:47%; }
+  .house-label { font-size:13px; padding:5px 11px; } .house-caption { display:none; } .world-island { inset:3% -2% 3%; }
+  .world-companion { width:75px; height:75px; left:48%; top:86%; } .companion-bubble { display:none; } .world-footer { margin-top:7px; } .ribbon-link { min-height:36px; padding:3px 10px; } .world-hello { min-height:36px; }
+  .world-tree, .world-cloud { display:none; }
+}
+@media(prefers-reduced-motion:reduce) { .world-shell *, .world-shell *::before, .world-shell *::after { animation: none !important; transition: none !important; } }

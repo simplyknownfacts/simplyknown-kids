@@ -1,5 +1,5 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v145';
+const CACHE = 'vb-v146';
 // v145 FIX (Codex 0905-1, HIGH): js/pin-lockout.js -- loaded by both
 // home.html's exit dialog and parent/settings.html's PIN gate -- was missing
 // from ASSETS. After an SW update plus an offline launch the file could be
@@ -152,6 +152,9 @@ const CACHE = 'vb-v145';
 //      missing from the precache list -> those pages broke offline. Both added.
 // Full version history: git log.
 const ASSETS = [
+  './css/world-home.css',
+  './js/world-home.js',
+  './js/world-art.js',
   './', './index.html', './home.html', './achievements.html',
   './redesign-hub-bg.jpg',
   './css/style.css', './css/achievements.css', './css/themes.css',
@@ -192,6 +195,7 @@ const ASSETS = [
 // retries install later, rather than a new "ready" service worker quietly
 // missing a piece the app cannot run without.
 const REQUIRED_SHELL = [
+  './css/world-home.css', './js/world-home.js', './js/world-art.js',
   './', './index.html', './home.html', './redesign-hub-bg.jpg',
   './css/style.css', './css/themes.css',
   './js/atmosphere.js', './js/version.js', './js/tiers.js', './js/profiles.js', './js/app.js', './js/mascot.js', './js/sync.js',
