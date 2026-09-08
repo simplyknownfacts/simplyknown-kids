@@ -11,7 +11,7 @@
   <style>
     html,body { margin:0; width:100%; height:100%; overflow:hidden; }
     body.seek-game { color:#184d4a; background:#dff3ee !important; touch-action:manipulation; }
-    .seek-screen { height:100dvh; display:grid; grid-template-rows:auto minmax(0,1fr) auto; padding:calc(88px + env(safe-area-inset-top)) 12px calc(52px + env(safe-area-inset-bottom)); gap:6px; box-sizing:border-box; }
+    .seek-screen { height:100dvh; display:grid; grid-template-rows:auto minmax(0,1fr) auto; padding:calc(88px + env(safe-area-inset-top)) 12px calc(76px + env(safe-area-inset-bottom)); gap:6px; box-sizing:border-box; }
     .seek-heading { text-align:center; z-index:2; color:#184d4a; background:#dff3ee; border-radius:18px; }
     .seek-heading h1 { margin:0 0 6px; font:900 clamp(26px,5vw,44px)/1.1 var(--font-display); color:#184d4a; }
     #hint { margin:0 auto; min-height:2.5em; max-width:500px; font:800 clamp(15px,2.8vw,20px)/1.3 var(--font-ui); }
@@ -52,8 +52,8 @@
     .seek-controls button:focus-visible { outline:3px solid #184d4a; outline-offset:3px; }
     .seek-controls button:active:not(:disabled) { transform:translateY(3px); box-shadow:0 2px 0 #367b683d; }
     [hidden] { display:none !important; }
-    @media(max-height:650px) { .seek-screen { padding-top:82px; gap:2px; padding-bottom:44px; } .seek-heading h1{font-size:26px;margin-bottom:3px} #hint{font-size:14px;min-height:2.5em} .seek-controls{padding-top:5px;gap:8px} .seek-controls button{min-height:48px;padding:7px 12px;font-size:14px} #roundAction{min-width:128px} #stage{border-radius:24px} }
-    @media(orientation:landscape) and (max-height:550px) { .seek-screen { grid-template-columns:210px minmax(0,1fr);grid-template-rows:1fr auto;padding:90px 16px 38px;gap:4px 18px} .seek-heading{grid-column:1;align-self:center} #stage{grid-column:2;grid-row:1/3;height:100%} .seek-controls{grid-column:1;grid-template-columns:1fr;grid-template-rows:44px 44px;gap:7px} #showAgain,#playAgain{grid-column:1;grid-row:2} .seek-controls button{width:100%;min-height:44px;padding:5px 8px} }
+    @media(max-height:650px) { .seek-screen { padding-top:82px; gap:2px; padding-bottom:68px; } .seek-heading h1{font-size:26px;margin-bottom:3px} #hint{font-size:14px;min-height:2.5em} .seek-controls{padding-top:5px;gap:8px} .seek-controls button{min-height:48px;padding:7px 12px;font-size:14px} #roundAction{min-width:128px} #stage{border-radius:24px} }
+    @media(orientation:landscape) and (max-height:550px) { .seek-screen { grid-template-columns:210px minmax(0,1fr);grid-template-rows:1fr auto;padding:90px 16px 58px;gap:4px 18px} .seek-heading{grid-column:1;align-self:center} #stage{grid-column:2;grid-row:1/3;height:100%} .seek-controls{grid-column:1;grid-template-columns:1fr;grid-template-rows:44px 44px;gap:7px} #showAgain,#playAgain{grid-column:1;grid-row:2} .seek-controls button{width:100%;min-height:44px;padding:5px 8px} }
     @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important;transition:none !important; } }
   </style>
 </head>
