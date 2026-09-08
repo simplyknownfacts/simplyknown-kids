@@ -103,15 +103,19 @@ test('Body Parts accepts the current target once and owns its prompt/transition 
   await delayed.ctx.close();
 });
 
-test('Hide and Seek accepts the watched location once under repeated physical taps', async () => {
+test('Hide and Seek accepts the clue location once under repeated physical taps', async () => {
   const { ctx, page } = await activityPage('peek-a-boo', 5);
   try {
     await page.goto(base + '/games/peek-a-boo.html', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('.peek-marker');
-    const target = await page.locator('.peek-marker').evaluate(e => Number(e.closest('button').dataset.spot));
+    await page.waitForSelector('#friendIntro');
+    assert.equal(await page.locator('.peek-marker,.clue-peek,.clue-rustle').count(), 0,
+      'introduction gives away the hiding place');
     await page.evaluate(() => { window.seekCalls = []; window.vbProgress = {record:id=>seekCalls.push(id)}; });
+    await page.waitForFunction(() => document.querySelector('#roundAction').getAttribute('aria-disabled') === 'false');
     await page.locator('#roundAction').click();
     await page.waitForFunction(() => document.querySelector('#stage').dataset.phase === 'seek');
+    await page.locator('#showAgain').click();
+    const target = await page.locator('.clue-peek').evaluate(e => Number(e.dataset.spot));
     const r = await page.locator('.hiding-spot').nth(target).boundingBox();
     for(let i=0;i<10;i++) await page.mouse.click(r.x+r.width/2,r.y+r.height*.7);
     assert.deepEqual(await page.evaluate(()=>seekCalls), ['peek-a-boo']);
