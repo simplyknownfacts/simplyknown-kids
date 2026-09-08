@@ -162,11 +162,11 @@ test('one animated companion actor reuses decoded Bunny, Tabby, and Panda idle a
       assert.equal(await page.locator('.companion-actor-canvas').count(),1,'round added another companion canvas');
       const media=await page.locator('#seekCompanion video').evaluate(video => ({
         src:video.currentSrc||video.src,muted:video.muted,loop:video.loop,controls:video.controls,playsInline:video.playsInline,
-        visible:!!(video.offsetWidth||video.offsetHeight||video.getClientRects().length),
+        hidden:video.hidden,opacity:getComputedStyle(video).opacity,pointerEvents:getComputedStyle(video).pointerEvents,
       }));
       assert.match(media.src,new RegExp(`/mascots/${friend.id}/green/idle/idle_base\\.mp4(?:\\?|$)`));
-      assert.deepEqual({muted:media.muted,loop:media.loop,controls:media.controls,playsInline:media.playsInline,visible:media.visible},
-        {muted:true,loop:true,controls:false,playsInline:true,visible:false},'raw video can expose autoplay UI');
+      assert.deepEqual({muted:media.muted,loop:media.loop,controls:media.controls,playsInline:media.playsInline,hidden:media.hidden,opacity:media.opacity,pointerEvents:media.pointerEvents},
+        {muted:true,loop:true,controls:false,playsInline:true,hidden:true,opacity:'0',pointerEvents:'none'},'raw video can expose autoplay UI');
       const first=await waitForArt(page);
       await page.waitForFunction(previous => {
         const canvas=document.querySelector('.companion-actor-canvas'),data=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
@@ -202,9 +202,9 @@ test('hiding and page lifecycle conceal and pause the single companion without l
     assert.equal(await page.locator('#seekCompanion').isVisible(),false,'rustle clue leaks the full companion');
     const target=await hintedTarget(page);
     assert.equal(await page.locator('#seekCompanion').isVisible(),true,'requested companion peek is invisible');
-    assert.equal(Number(await page.locator('#seekCompanion').evaluate(host=>host.closest('.hiding-spot')?.dataset.spot)),target);
-    const peekState=await page.locator('.companion-actor-canvas').evaluate(canvas=>({pose:canvas.closest('#seekCompanion').dataset.pose,clip:getComputedStyle(canvas).clipPath}));
+    const peekState=await page.locator('#seekCompanion').evaluate(host=>({pose:host.dataset.pose,target:Number(host.dataset.target),clip:getComputedStyle(host).clipPath}));
     assert.equal(peekState.pose,'peek');
+    assert.equal(peekState.target,target,'companion peek is not anchored to the target bush');
     assert.match(peekState.clip,/inset\([^)]*64%/,'partial companion is not clipped to a peek');
     const before=await page.locator('#seekCompanion video').evaluate(video=>video.currentTime);
     await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
