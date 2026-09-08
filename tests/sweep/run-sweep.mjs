@@ -70,9 +70,7 @@ const FEATURES = {
   'money':         [{ key: 'countMode', minTier: 6 }],
   'body-parts':    [{ key: 'allParts', minTier: 4 }],
   'stamp-art':     [{ key: 'stampPalette', minTier: 2 }, { key: 'themeSwitcher', minTier: 4 }],
-  'finger-paint':  [{ key: 'colorPalette', minTier: 2 }, { key: 'eraser', minTier: 4 }],
   'color-splash':  [{ key: 'colorPicker', minTier: 2 }, { key: 'clearButton', minTier: 3 }],
-  'color-in':      [{ key: 'extraPics', minTier: 2 }],
 };
 
 // expected default-visible activities per tier (mirrors profiles.js minTier).
@@ -80,7 +78,7 @@ const FEATURES = {
 const ACTIVITY_MINTIER = {
   'tap-pop': 1, 'shape-match': 1, 'hello-colors': 1, 'animal-sounds': 1,
   'count-along': 2, 'abcs': 2, 'days': 3, 'math': 4, 'spelling': 4, 'money': 4,
-  'body-parts': 2, 'stamp-art': 1, 'finger-paint': 1, 'color-splash': 1, 'color-in': 2,
+  'body-parts': 2, 'stamp-art': 1, 'finger-paint': 1, 'color-splash': 1, 'color-in': 1,
 };
 
 // birthday that computes to a given tier (months: tier1=0-12 ... tier8>=84).

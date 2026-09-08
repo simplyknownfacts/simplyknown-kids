@@ -68,10 +68,7 @@ const ACTIVITY_FEATURES = [
     { key:'stampPalette',  label:'Stamp picker',                            minTier:2 },
     { key:'themeSwitcher', label:'Theme switcher (farm/ocean/space)',       minTier:4 },
   ]},
-  { id:'finger-paint',  name:'Finger Paint',  icon:'🖌️', file:'finger-paint.html', section:'art', minTier:1, features:[
-    { key:'colorPalette',  label:'Color palette',                           minTier:2 },
-    { key:'eraser',        label:'Eraser tool',                             minTier:4 },
-  ]},
+  { id:'finger-paint',  name:'Free Paint',    icon:'🖌️', file:'finger-paint.html', section:'art', minTier:1, features:[] },
   { id:'color-splash',  name:'Color Splash',  icon:'💥',  file:'color-splash.html', section:'art', minTier:1, features:[] },
   { id:'color-in',      name:'Color In',      icon:'🖍️', file:'color-in.html',     section:'art', minTier:1, features:[] },
 ];

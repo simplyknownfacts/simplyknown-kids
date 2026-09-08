@@ -38,7 +38,7 @@
       mastery:{ title:'Time Keeper', hint:'Read a 5-minute time' } },
 
     { id:'stamp-art',    name:'Stamp Art',    icon:'⭐', section:'art', noun:'stamps placed', mastery:null },
-    { id:'finger-paint', name:'Finger Paint', icon:'🖌️', section:'art', noun:'strokes painted', mastery:null },
+    { id:'finger-paint', name:'Free Paint', icon:'🖌️', section:'art', noun:'strokes painted', mastery:null },
     { id:'color-splash', name:'Color Splash', icon:'💥', section:'art', noun:'splashes made', mastery:null },
     { id:'color-in',     name:'Color In',     icon:'🖍️', section:'art', noun:'areas colored', mastery:null }
   ];

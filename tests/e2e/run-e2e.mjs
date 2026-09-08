@@ -42,7 +42,7 @@ const ACTIVITIES = [
   { id: 'spelling', name: 'Spelling Bee', section: 'learn', file: 'learning/spelling.html', minTier: 4 },
   { id: 'money', name: 'Money', section: 'learn', file: 'learning/money.html', minTier: 4 },
   { id: 'stamp-art', name: 'Stamp Art', section: 'art', file: 'art/stamp-art.html', minTier: 1 },
-  { id: 'finger-paint', name: 'Finger Paint', section: 'art', file: 'art/finger-paint.html', minTier: 1 },
+  { id: 'finger-paint', name: 'Free Paint', section: 'art', file: 'art/finger-paint.html', minTier: 1 },
   { id: 'color-splash', name: 'Color Splash', section: 'art', file: 'art/color-splash.html', minTier: 1 },
   { id: 'color-in', name: 'Color In', section: 'art', file: 'art/color-in.html', minTier: 1 },
   { id: 'peek-a-boo', name: 'Hide & Seek', section: 'games', file: 'games/peek-a-boo.html', minTier: 1 },
@@ -64,7 +64,6 @@ const FEATURES = {
   'money': [{ k: 'countMode', t: 6, label: 'Count coin + bill totals' }],
   'body-parts': [{ k: 'allParts', t: 4, label: 'Include extra parts (hair, belly, etc.)' }],
   'stamp-art': [{ k: 'themeSwitcher', t: 4, label: 'Theme switcher (farm/ocean/space)' }],
-  'finger-paint': [{ k: 'colorPalette', t: 2, label: 'Color palette' }, { k: 'eraser', t: 4, label: 'Eraser tool' }],
   'color-splash': [{ k: 'colorPicker', t: 2, label: 'Color picker' }],
 };
 const EXPECT_VISIBLE = { // per tier: games/learn/art (for gating assertion)
