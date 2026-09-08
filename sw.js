@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v157';
+const CACHE = 'vb-v158';
+// v158: separate themed islands and animated ocean, available offline.
 // v157: the parent Add child navigation can use its cached page while offline.
 // v156: readable parent settings and guided child setup, available offline.
 // v155: visible, cancellable elapsed-time progress for the parent hold.
@@ -160,7 +161,7 @@ const ASSETS = [
   './css/parent-settings.css', './css/world-home.css',
   './js/world-home.js',
   './js/world-art.js',
-  './js/world-scene.js', './js/world-huts.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
+  './js/world-scene.js', './js/world-huts.js', './js/world-islands.js', './js/world-ocean.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
   './js/vendor/three-r180/three.module.min.js', './js/vendor/three-r180/three.core.min.js',
   './', './index.html', './home.html', './achievements.html',
   './redesign-hub-bg.jpg',
@@ -204,7 +205,7 @@ const ASSETS = [
 const REQUIRED_SHELL = [
   './js/free-paint.js', './js/color-fill.js',
   './css/parent-settings.css', './css/world-home.css', './js/world-home.js', './js/world-art.js',
-  './js/world-scene.js', './js/world-huts.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
+  './js/world-scene.js', './js/world-huts.js', './js/world-islands.js', './js/world-ocean.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
   './js/vendor/three-r180/three.module.min.js', './js/vendor/three-r180/three.core.min.js',
   './', './index.html', './home.html', './redesign-hub-bg.jpg',
   './css/style.css', './css/themes.css',
