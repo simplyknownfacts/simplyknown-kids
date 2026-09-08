@@ -75,6 +75,22 @@ async function alphaCount(page) {
   });
 }
 
+async function inkBounds(page) {
+  return page.locator('#canvas').evaluate(canvas => {
+    const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    let left = canvas.width;
+    let top = canvas.height;
+    let right = -1;
+    let bottom = -1;
+    for (let y = 0; y < canvas.height; y += 1) for (let x = 0; x < canvas.width; x += 1) {
+      if (!data[(y * canvas.width + x) * 4 + 3]) continue;
+      left = Math.min(left, x); top = Math.min(top, y);
+      right = Math.max(right, x); bottom = Math.max(bottom, y);
+    }
+    return right < 0 ? null : { left, top, width: right - left + 1, height: bottom - top + 1 };
+  });
+}
+
 test('Free Paint gives every tier a blank, bounded studio with reachable tools', async t => {
   for (const viewport of [
     { width: 390, height: 844 },
@@ -180,6 +196,34 @@ test('brushes paint real pixels while pointer ownership, undo, clear, and resize
     });
     assert.ok(await alphaCount(page) > 0, 'sprinkle tap or pagehide finalization failed');
     assert.equal(await page.evaluate(() => paintAwards.length), awardsBeforeNoop + 1);
+    assert.deepEqual(errors, []);
+  } finally { await context.close(); }
+});
+
+test('rotation preserves a round mark, keeps paper below navigation, and retains undo', async () => {
+  const { context, page, errors } = await open({ width: 390, height: 667 });
+  try {
+    await page.evaluate(() => { window.paintAwards = []; window.vbProgress = { record: id => paintAwards.push(id) }; });
+    await page.locator('[data-size="large"]').click();
+    const portraitPaper = await page.locator('#canvas').boundingBox();
+    await page.mouse.click(portraitPaper.x + portraitPaper.width / 2, portraitPaper.y + portraitPaper.height / 2);
+    const before = await inkBounds(page);
+    assert.ok(before && before.width > 20 && Math.abs(before.width / before.height - 1) < 0.12, 'tap was not round before rotation');
+
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForTimeout(100);
+    const after = await inkBounds(page);
+    assert.ok(after && Math.abs(after.width / after.height - 1) < 0.12, 'rotation stretched the round mark');
+    const layout = await page.evaluate(() => {
+      const paper = document.querySelector('#canvas').getBoundingClientRect();
+      const header = document.querySelector('#paintTopbar').getBoundingClientRect();
+      return { paperTop: paper.top, headerBottom: header.bottom };
+    });
+    assert.ok(layout.paperTop >= layout.headerBottom - 1, 'paint paper extends behind navigation');
+
+    await page.locator('#undoButton').click();
+    assert.equal(await alphaCount(page), 0, 'undo after rotation did not restore blank paper');
+    assert.deepEqual(await page.evaluate(() => paintAwards), ['finger-paint']);
     assert.deepEqual(errors, []);
   } finally { await context.close(); }
 });

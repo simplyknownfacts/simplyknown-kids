@@ -28,6 +28,7 @@
     let cssWidth = 1;
     let cssHeight = 1;
     let pixelRatio = 1;
+    let masterArtwork = null;
 
     function brushSize() {
       const shortSide = Math.min(cssWidth, cssHeight);
@@ -50,12 +51,18 @@
       updateButtons();
     }
 
-    function drawSnapshot(snapshot) {
+    function drawSnapshot(snapshot, makeMaster = true) {
       context.save();
       context.setTransform(1, 0, 0, 1, 0, 0);
       context.clearRect(0, 0, canvas.width, canvas.height);
-      context.drawImage(snapshot, 0, 0, snapshot.width, snapshot.height, 0, 0, canvas.width, canvas.height);
+      const scale = Math.min(canvas.width / snapshot.width, canvas.height / snapshot.height);
+      const width = snapshot.width * scale;
+      const height = snapshot.height * scale;
+      const left = (canvas.width - width) / 2;
+      const top = (canvas.height - height) / 2;
+      context.drawImage(snapshot, 0, 0, snapshot.width, snapshot.height, left, top, width, height);
       context.restore();
+      if (makeMaster) masterArtwork = copyCanvas(canvas);
     }
 
     function resize() {
@@ -65,16 +72,18 @@
       const nextHeight = Math.max(1, Math.round(bounds.height));
       const nextRatio = Math.min(window.devicePixelRatio || 1, 2);
       if (nextWidth === cssWidth && nextHeight === cssHeight && nextRatio === pixelRatio && canvas.width > 1) return;
-      const saved = canvas.width > 1 && canvas.height > 1 ? copyCanvas(canvas) : null;
+      if (activePointer !== null) finishStroke();
+      const saved = masterArtwork || (canvas.width > 1 && canvas.height > 1 ? copyCanvas(canvas) : null);
       cssWidth = nextWidth;
       cssHeight = nextHeight;
       pixelRatio = nextRatio;
       canvas.width = Math.max(1, Math.round(cssWidth * pixelRatio));
       canvas.height = Math.max(1, Math.round(cssHeight * pixelRatio));
-      if (saved) drawSnapshot(saved);
+      if (saved) drawSnapshot(saved, false);
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
       context.lineCap = 'round';
       context.lineJoin = 'round';
+      if (!masterArtwork) masterArtwork = copyCanvas(canvas);
     }
 
     function canvasHasInk() {
@@ -175,6 +184,7 @@
         updateButtons();
         return;
       }
+      masterArtwork = copyCanvas(canvas);
       onStroke();
     }
 
@@ -234,6 +244,7 @@
       if (!canvasHasInk()) return false;
       remember();
       context.clearRect(0, 0, cssWidth, cssHeight);
+      masterArtwork = copyCanvas(canvas);
       updateButtons();
       return true;
     }
