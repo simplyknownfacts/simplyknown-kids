@@ -554,25 +554,58 @@
           <div class="panel-body">
             <h2>👨‍👩‍👧 Child Profiles</h2>
             <div id="profilesList"></div>
-            <button class="btn btn-primary" onclick="showAddForm()">＋ Add Child</button>
+            <button class="btn btn-primary" id="addChildButton" onclick="showAddForm()">＋ Add Child</button>
 
-            <div id="addForm" style="display:none;">
+            <div id="addForm" style="display:none;" aria-labelledby="addChildTitle">
               <div class="card" style="margin-top:12px;">
-                <h2 style="margin-top:0;">New Child</h2>
-                <label>Name</label>
-                <input type="text" id="newName" placeholder="Child's name">
-                <label style="margin-top:12px;display:block;">Birthday</label>
-                <input type="date" id="newBirthday">
-                <label style="margin-top:12px;display:block;">Color</label>
-                <div class="row" id="colorPicker" style="flex-wrap:wrap;margin-top:8px;"></div>
-                <label style="margin-top:12px;display:block;">Animal companion</label>
-                <div class="row" id="newMascotPicker" style="flex-wrap:wrap;margin-top:8px;gap:8px;"></div>
-                <label style="margin-top:12px;display:block;">Voice</label>
-                <div class="row" id="newVoicePicker" style="flex-wrap:wrap;margin-top:8px;gap:8px;"></div>
-                <div class="row-between" style="margin-top:16px;">
-                  <button class="btn btn-primary" onclick="saveNewProfile()">Save</button>
-                  <button class="btn btn-ghost" onclick="document.getElementById('addForm').style.display='none'">Cancel</button>
+                <h2 id="addChildTitle" style="margin-top:0;">Add a child</h2>
+                <div class="add-stepper" aria-label="Add child progress">
+                  <span data-step-marker="1" aria-current="step">1 · About</span>
+                  <span data-step-marker="2">2 · Buddy</span>
+                  <span data-step-marker="3">3 · Voice</span>
                 </div>
+
+                <section class="add-step" data-step="1">
+                  <h3>Who is playing?</h3>
+                  <label for="newName">First name</label>
+                  <input type="text" id="newName" placeholder="Child's first name" autocomplete="off" required>
+                  <label for="newBirthday" style="margin-top:12px;display:block;">Birthday</label>
+                  <input type="date" id="newBirthday" required>
+                  <div class="add-form-actions">
+                    <button class="btn btn-ghost" id="cancelAddChild" type="button" onclick="cancelAddForm()">Cancel</button>
+                    <button class="btn btn-primary" id="addNext1" type="button" onclick="setAddStep(2)">Next</button>
+                  </div>
+                </section>
+
+                <section class="add-step" data-step="2" hidden>
+                  <h3>Choose an animal buddy</h3>
+                  <div id="newMascotPicker" role="group" aria-label="Animal companion"></div>
+                  <div class="add-form-actions">
+                    <button class="btn btn-ghost" id="addBack2" type="button" onclick="setAddStep(1)">Back</button>
+                    <button class="btn btn-primary" id="addNext2" type="button" onclick="setAddStep(3)">Next</button>
+                    <button class="btn btn-ghost" type="button" onclick="cancelAddForm()">Cancel</button>
+                  </div>
+                </section>
+
+                <section class="add-step" data-step="3" hidden>
+                  <h3>Choose their voice</h3>
+                  <div id="newVoicePicker" role="group" aria-label="Voice"></div>
+                  <details class="add-more-options">
+                    <summary>More options</summary>
+                    <label style="margin-top:12px;display:block;">Profile color</label>
+                    <div id="colorPicker" role="group" aria-label="Profile color"></div>
+                    <label style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;">
+                      <input type="checkbox" id="offerNameVoice">
+                      <span>Offer a custom spoken name after creation (about 10¢)</span>
+                    </label>
+                  </details>
+                  <div class="add-form-actions">
+                    <button class="btn btn-ghost" id="addBack3" type="button" onclick="setAddStep(2)">Back</button>
+                    <button class="btn btn-primary" id="createChild" type="button" onclick="saveNewProfile()">Create child</button>
+                    <button class="btn btn-ghost" type="button" onclick="cancelAddForm()">Cancel</button>
+                  </div>
+                </section>
+                <div id="addFormStatus" role="status" aria-live="polite"></div>
               </div>
             </div>
           </div>
@@ -1966,13 +1999,23 @@
       const colorPicker = document.getElementById('colorPicker');
       colorPicker.innerHTML = '';
       COLORS.forEach(c => {
-        const dot = document.createElement('div');
-        dot.style.cssText = `width:36px;height:36px;border-radius:50%;background:${c};cursor:pointer;border:3px solid transparent;`;
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'add-color-choice';
+        dot.dataset.color = c;
+        dot.setAttribute('aria-label', `Profile color ${c}`);
+        dot.setAttribute('aria-pressed', String(selectedColor === c));
+        dot.style.cssText = `width:44px;height:44px;min-width:44px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${selectedColor === c ? 'white' : 'transparent'};`;
         dot.addEventListener('click', () => {
           selectedColor = c;
-          document.querySelectorAll('#colorPicker div').forEach(d => d.style.borderColor = 'transparent');
-          dot.style.borderColor = 'white';
+          colorPicker.querySelectorAll('button').forEach(button => {
+            const chosen = button === dot;
+            button.classList.toggle('selected', chosen);
+            button.setAttribute('aria-pressed', String(chosen));
+            button.style.borderColor = chosen ? 'white' : 'transparent';
+          });
         });
+        dot.classList.toggle('selected', selectedColor === c);
         colorPicker.appendChild(dot);
       });
 
@@ -1980,14 +2023,28 @@
       if (mp) {
         mp.innerHTML = '';
         ADD_MASCOTS.forEach(m => {
-          const btn = document.createElement('div');
-          btn.style.cssText = 'font-size:30px;cursor:pointer;padding:6px 8px;border-radius:12px;border:3px solid transparent;line-height:1;';
-          btn.textContent = m.e; btn.title = m.id;
+          const label = m.id === 'tabby' ? 'Tabby cat' : m.id.charAt(0).toUpperCase() + m.id.slice(1);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'add-choice add-mascot-choice';
+          btn.dataset.mascot = m.id;
+          btn.setAttribute('aria-pressed', String(selectedMascot === m.id));
+          btn.setAttribute('aria-label', label);
+          btn.style.cssText = 'min-width:68px;min-height:56px;cursor:pointer;padding:6px 8px;border-radius:12px;border:3px solid transparent;';
+          const emoji = document.createElement('span');
+          emoji.style.fontSize = '30px'; emoji.setAttribute('aria-hidden', 'true'); emoji.textContent = m.e;
+          const name = document.createElement('span');
+          name.textContent = label;
+          btn.append(emoji, name);
           btn.addEventListener('click', () => {
             selectedMascot = m.id;
-            mp.querySelectorAll('div').forEach(d => d.style.borderColor = 'transparent');
-            btn.style.borderColor = '#4ECDC4';
+            mp.querySelectorAll('button').forEach(button => {
+              const chosen = button === btn;
+              button.classList.toggle('selected', chosen);
+              button.setAttribute('aria-pressed', String(chosen));
+            });
           });
+          btn.classList.toggle('selected', selectedMascot === m.id);
           mp.appendChild(btn);
         });
       }
@@ -1996,17 +2053,83 @@
       if (vp) {
         vp.innerHTML = '';
         VOICES.forEach(v => {
-          const btn = document.createElement('div');
-          btn.style.cssText = 'cursor:pointer;padding:8px 12px;border-radius:12px;border:2px solid rgba(255,255,255,0.25);font-size:13px;color:#fff;';
-          btn.textContent = v.name;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'add-choice add-voice-choice';
+          btn.dataset.voice = v.id;
+          btn.setAttribute('aria-pressed', String(selectedVoice === v.id));
+          btn.style.cssText = 'min-height:52px;cursor:pointer;padding:8px 12px;border-radius:12px;border:2px solid rgba(255,255,255,0.25);';
+          const name = document.createElement('strong'); name.textContent = v.name;
+          const description = document.createElement('span'); description.textContent = v.desc;
+          btn.append(name, description);
           btn.addEventListener('click', () => {
             selectedVoice = v.id;
-            vp.querySelectorAll('div').forEach(d => { d.style.borderColor = 'rgba(255,255,255,0.25)'; d.style.background = ''; });
-            btn.style.borderColor = '#4ECDC4'; btn.style.background = 'rgba(78,205,196,0.18)';
+            vp.querySelectorAll('button').forEach(button => {
+              const chosen = button === btn;
+              button.classList.toggle('selected', chosen);
+              button.setAttribute('aria-pressed', String(chosen));
+            });
           });
+          btn.classList.toggle('selected', selectedVoice === v.id);
           vp.appendChild(btn);
         });
       }
+    }
+
+    function _validAddBasics() {
+      const name = document.getElementById('newName');
+      const birthday = document.getElementById('newBirthday');
+      if (!name.value.trim()) { name.focus(); name.reportValidity(); return false; }
+      if (!birthday.value) { birthday.focus(); birthday.reportValidity(); return false; }
+      if (birthday.value > _todayISO()) {
+        alert('That birthday is in the future — please check the year.');
+        birthday.focus();
+        return false;
+      }
+      return true;
+    }
+
+    function setAddStep(step) {
+      const form = document.getElementById('addForm');
+      const current = Number(form.dataset.step || 1);
+      const status = document.getElementById('addFormStatus');
+      status.textContent = '';
+      if (step > current && current === 1 && !_validAddBasics()) return false;
+      if (step > current && step >= 3 && !selectedMascot) {
+        status.textContent = 'Choose an animal buddy to continue.';
+        const first = document.querySelector('#newMascotPicker button');
+        if (first) first.focus();
+        return false;
+      }
+      const next = Math.max(1, Math.min(3, step));
+      form.dataset.step = String(next);
+      document.querySelectorAll('#addForm .add-step').forEach(section => {
+        section.hidden = Number(section.dataset.step) !== next;
+      });
+      document.querySelectorAll('#addForm [data-step-marker]').forEach(marker => {
+        if (Number(marker.dataset.stepMarker) === next) marker.setAttribute('aria-current', 'step');
+        else marker.removeAttribute('aria-current');
+      });
+      const focusTarget = next === 1 ? document.getElementById('newName')
+        : next === 2 ? document.querySelector('#newMascotPicker button')
+        : document.querySelector('#newVoicePicker button');
+      if (focusTarget) requestAnimationFrame(() => focusTarget.focus());
+      return true;
+    }
+
+    function cancelAddForm() {
+      const form = document.getElementById('addForm');
+      form.style.display = 'none';
+      form.dataset.saving = '0';
+      document.getElementById('mainSettings').classList.remove('adding-child');
+      document.getElementById('profilesList').style.display = '';
+      const add = document.getElementById('addChildButton');
+      add.style.display = '';
+      selectedMascot = null; selectedVoice = null; selectedColor = COLORS[0];
+      document.getElementById('newName').value = '';
+      document.getElementById('newBirthday').value = '';
+      document.getElementById('offerNameVoice').checked = false;
+      add.focus();
     }
 
     // Open the add-child form from anywhere in settings (used by the per-panel
@@ -2029,7 +2152,12 @@
     }
 
     function showAddForm() {
-      selectedMascot = null; selectedVoice = null; // force a fresh required pick
+      selectedColor = COLORS[0];
+      selectedMascot = null;
+      selectedVoice = null; // every new child requires an explicit buddy + voice
+      document.getElementById('newName').value = '';
+      document.getElementById('newBirthday').value = '';
+      document.getElementById('offerNameVoice').checked = false;
       buildAddForm();
       // A birthday cannot be in the future. Set here rather than in the markup so
       // it is still today's date tomorrow. saveNewProfile checks it AGAIN: this
@@ -2040,13 +2168,21 @@
       // every activity, which looks like a broken app rather than a typo.
       const bday = document.getElementById('newBirthday');
       if (bday) bday.max = _todayISO();
-      document.getElementById('addForm').style.display = 'block';
+      const form = document.getElementById('addForm');
+      form.dataset.saving = '0';
+      form.style.display = 'block';
+      document.getElementById('mainSettings').classList.add('adding-child');
+      document.getElementById('profilesList').style.display = 'none';
+      document.getElementById('addChildButton').style.display = 'none';
+      setAddStep(1);
     }
 
     function saveNewProfile() {
+      const form = document.getElementById('addForm');
+      if (form.dataset.saving === '1') return;
       const name = document.getElementById('newName').value.trim();
       const birthday = document.getElementById('newBirthday').value;
-      if (!name || !birthday) { alert('Please add a name and birthday.'); return; }
+      if (!_validAddBasics()) { setAddStep(1); return; }
       // The second half of the future-birthday guard (the first is the `max` on
       // the picker, set in showAddForm). A date input always hands back
       // YYYY-MM-DD, so comparing the strings compares the dates, with no
@@ -2055,15 +2191,25 @@
         alert('That birthday is in the future — please check the year.\n\nThe app picks each child\'s activities from their age, so a future date would treat them as a newborn.');
         return;
       }
-      if (!selectedMascot) { alert('Please pick an animal companion.'); return; }
-      if (!selectedVoice)  { alert('Please pick a voice.'); return; }
-      const created = addProfile({ name, birthday, color: selectedColor, voice: selectedVoice, mascot: { id: selectedMascot } });
+      if (!selectedMascot) { alert('Please pick an animal companion.'); setAddStep(2); return; }
+      if (!selectedVoice)  { alert('Please pick a voice.'); setAddStep(3); return; }
+      const wantsNameVoiceOffer = document.getElementById('offerNameVoice').checked;
+      form.dataset.saving = '1';
+      let created;
+      try {
+        created = addProfile({ name, birthday, color: selectedColor, voice: selectedVoice, mascot: { id: selectedMascot } });
+      } catch (e) {
+        form.dataset.saving = '0';
+        alert('We could not create that child profile. Please try again.');
+        return;
+      }
       // "~10¢ real voice" offer (Scott's spec): names WITHOUT a pre-recorded
       // greeting clip get offered instant server-side generation (the sync
       // Worker holds the ElevenLabs key as a secret; ~$0.10/name, all 4 voices).
       // No = current behavior (mascot's generic recorded voice greets instead).
       (function offerNameVoice() {
         try {
+          if (!wantsNameVoiceOffer) return;
           const greetKey = 'Hi ' + created.name + '! Welcome to your play space.';
           const hasStatic = typeof VOICE_MANIFEST !== 'undefined' && VOICE_MANIFEST.phraseHash
             && VOICE_MANIFEST.phraseHash[greetKey] !== undefined;
@@ -2086,6 +2232,9 @@
       document.getElementById('newBirthday').value = '';
       selectedMascot = null; selectedVoice = null;
       document.getElementById('addForm').style.display = 'none';
+      document.getElementById('mainSettings').classList.remove('adding-child');
+      document.getElementById('profilesList').style.display = '';
+      document.getElementById('addChildButton').style.display = '';
       // New child becomes the active settings child so the per-child panels
       // immediately reflect them.
       if (created && created.id) _settingsChildId = created.id;
