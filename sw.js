@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v154';
+const CACHE = 'vb-v155';
+// v155: visible, cancellable elapsed-time progress for the parent hold.
 // v154: separate Free Paint brushes and Color In tap-to-fill studios.
 // v148: animated personal world, redesigned rooms, bounded awards and owned play timers.
 // v145 FIX (Codex 0905-1, HIGH): js/pin-lockout.js -- loaded by both

@@ -512,47 +512,120 @@ function renderBackBtn(dest) {
 // ── Hold-to-activate ────────────────────────────────────────────────────────
 // Guards parent-only doors (Parent Settings, in-game settings gear) so a
 // toddler can't tap straight in. Fires onActivate only after a deliberate
-// ~0.7s press; releasing early cancels. A fill ring animates during the hold so
-// a parent sees it working. (Game Back/Home stay instant — only settings hold.)
+// configured hold (3s on the parent picker; 0.7s for in-game gears). Releasing
+// early cancels. A fill follows elapsed time, including with reduced motion.
+// Game Back/Home stay instant; Enter/Space can hold the focused settings button.
 let _holdStyleInjected = false;
 function _injectHoldStyle() {
   if (_holdStyleInjected) return;
   _holdStyleInjected = true;
   const s = document.createElement('style');
   s.textContent =
-    '@keyframes vbHoldFill{from{box-shadow:0 0 0 0 rgba(78,205,196,0);}' +
-    'to{box-shadow:0 0 0 6px rgba(78,205,196,0.85);}}' +
-    '.vb-holding{animation:vbHoldFill var(--vb-hold,700ms) linear forwards;}';
+    '.vb-hold-control{isolation:isolate;overflow:hidden;}' +
+    '.vb-hold-control,.vb-hold-control:hover,.vb-hold-control:active,.vb-hold-control.vb-press{transform:none!important;}' +
+    '.vb-hold-fill{position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;' +
+    'background:rgba(78,205,196,.62);transform-origin:left center;transform:scaleX(var(--vb-hold-progress,0));' +
+    'transition:none!important;animation:none!important;}';
   document.head.appendChild(s);
 }
 function holdToActivate(el, onActivate, opts) {
   const ms = (opts && opts.ms) || 700;
   _injectHoldStyle();
-  el.style.setProperty('--vb-hold', ms + 'ms');
+  el.classList.add('vb-hold-control');
+  if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+  const fill = document.createElement('span');
+  fill.className = 'vb-hold-fill';
+  fill.setAttribute('aria-hidden', 'true');
+  el.prepend(fill);
+  const hint = el.querySelector('[data-hold-label]');
+  const idleHint = hint && hint.textContent;
   // iOS long-press otherwise pops the native Share/Copy/Download callout instead
   // of registering the hold — suppress it so the press just opens settings.
   el.style.webkitTouchCallout = 'none';
   el.style.userSelect = 'none';
   el.style.webkitUserSelect = 'none';
-  el.style.touchAction = 'manipulation';
+  el.style.touchAction = 'none';
   el.addEventListener('contextmenu', (e) => e.preventDefault());
-  let timer = null, active = false;
-  const start = (e) => {
-    if (active) return;
-    active = true;
-    if (e && e.cancelable) e.preventDefault();
-    el.classList.add('vb-holding');
-    timer = setTimeout(() => { stop(); onActivate(); }, ms);
+  let timer = null, frame = null, owner = null, started = 0, lastSecond = -1;
+  const showProgress = value => {
+    el.style.setProperty('--vb-hold-progress', String(value));
+    if (hint) {
+      const second = Math.ceil((1 - value) * ms / 1000);
+      if (second !== lastSecond) {
+        hint.textContent = value >= 1 ? 'Opening…' : `Keep holding… ${second}`;
+        lastSecond = second;
+      }
+    }
   };
   const stop = () => {
-    active = false;
-    if (timer) { clearTimeout(timer); timer = null; }
+    const previous = owner;
+    owner = null;
+    clearTimeout(timer); timer = null;
+    cancelAnimationFrame(frame); frame = null;
     el.classList.remove('vb-holding');
+    el.style.setProperty('--vb-hold-progress', '0');
+    if (hint) hint.textContent = idleHint;
+    lastSecond = -1;
+    if (previous && previous.kind === 'pointer') {
+      try { if (el.hasPointerCapture(previous.id)) el.releasePointerCapture(previous.id); } catch (_) {}
+    }
   };
-  el.addEventListener('pointerdown', start);
-  el.addEventListener('pointerup', stop);
-  el.addEventListener('pointerleave', stop);
-  el.addEventListener('pointercancel', stop);
+  const update = () => {
+    if (!owner) return;
+    showProgress(Math.min(.999, (performance.now() - started) / ms));
+    frame = requestAnimationFrame(update);
+  };
+  const start = next => {
+    if (owner || el.disabled) return;
+    owner = next;
+    started = performance.now();
+    el.classList.add('vb-holding');
+    showProgress(0);
+    frame = requestAnimationFrame(update);
+    timer = setTimeout(() => {
+      if (!owner || document.hidden || !el.isConnected) { stop(); return; }
+      // Keep ownership until release: repeated keydown/pointerdown cannot fire
+      // twice from a single continuous hold, including non-navigation callbacks.
+      owner.fired = true;
+      cancelAnimationFrame(frame); frame = null; timer = null;
+      showProgress(1);
+      onActivate();
+    }, ms);
+  };
+  el.addEventListener('pointerdown', e => {
+    if (owner || e.isPrimary === false || e.button !== 0) return;
+    e.preventDefault();
+    el.focus({preventScroll:true});
+    start({kind:'pointer',id:e.pointerId,bounds:el.getBoundingClientRect()});
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  const endPointer = e => { if (owner && owner.kind === 'pointer' && owner.id === e.pointerId) stop(); };
+  for (const name of ['pointerup','pointercancel','lostpointercapture']) el.addEventListener(name,endPointer);
+  el.addEventListener('pointermove', e => {
+    if (!owner || owner.kind !== 'pointer' || owner.id !== e.pointerId) return;
+    const b = owner.bounds;
+    if ((e.pointerType === 'mouse' && e.buttons === 0) || e.clientX < b.left || e.clientX > b.right || e.clientY < b.top || e.clientY > b.bottom) stop();
+  });
+  el.addEventListener('pointerleave', e => {
+    if (!el.hasPointerCapture(e.pointerId)) endPointer(e);
+  });
+  const holdKey = e => e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar';
+  el.addEventListener('keydown', e => {
+    if (!holdKey(e)) return;
+    e.preventDefault();
+    if (!e.repeat) start({kind:'key',key:e.key});
+  });
+  el.addEventListener('keyup', e => {
+    if (!holdKey(e)) return;
+    e.preventDefault();
+    if (owner && owner.kind === 'key' && owner.key === e.key) stop();
+  });
+  el.addEventListener('click', e => e.preventDefault());
+  el.addEventListener('blur', stop);
+  window.addEventListener('blur', stop);
+  window.addEventListener('pagehide', stop);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
+  stop();
   return stop;
 }
 

@@ -454,6 +454,8 @@ body.vb-chrome .title { margin-top: clamp(26px, 7vw, 44px); }
 }
 .settings-gear .gear { font-size: 18px; line-height: 1; }
 .settings-gear .gear-label { line-height: 1; }
+.settings-gear .gear-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.settings-gear .hold-hint { min-width: 108px; font-size: 11px; line-height: 1; font-weight: 600; }
 .settings-gear:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
 .settings-gear:active,
 .settings-gear.vb-press { transform: scale(0.96); }
