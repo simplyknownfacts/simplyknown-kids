@@ -2,154 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Color In</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/themes.css">
   <script>/* apply the active kid's theme before first paint (default storybook = no attribute); activity pages also stamp data-tod (shell pages get it from atmosphere.js) so theme tokens resolve */try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook"){document.documentElement.setAttribute("data-vbtheme",_t);var _h=new Date().getHours();document.documentElement.setAttribute("data-tod",_h>=5&&_h<10?"morning":_h>=10&&_h<17?"afternoon":_h>=17&&_h<20?"evening":"night")}}catch(e){}</script>
   <link rel="stylesheet" href="../css/achievements.css">
   <style>
-    body { background: #f4f0e6; }
-    .stage { position: fixed; inset: 0; display: flex; flex-direction: column; }
-    /* Coloring book frame — gives the page a 3D book feel */
-    .book {
-      flex: 1; position: relative;
-      perspective: 1500px;
-      perspective-origin: 50% 50%;
-      padding: 70px 12px 110px;
-      display: flex; align-items: center; justify-content: center;
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+    body { color: #184d4a; background: linear-gradient(145deg,#f3dcff,#ffe9f3 54%,#fff2cf); overscroll-behavior: none; }
+    button { font: inherit; -webkit-tap-highlight-color: transparent; }
+    .stage {
+      position: fixed; inset: 0; height: 100dvh;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      display: grid; grid-template-columns: 64px minmax(0,1fr) 64px;
+      grid-template-rows: 76px minmax(0,1fr) 54px auto;
     }
+    .scene-title {
+      grid-column: 1 / -1; grid-row: 1; align-self: center; justify-self: stretch;
+      margin: 0 12px 0 144px; color: #653e78; font-weight: 900;
+      font-size: clamp(13px,3.4vw,18px); text-align: center; line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+    .scene-title::before { content: 'Color In'; display: block; font-size: 12px; margin-bottom: 4px; color: #31736c; }
+    .book { grid-column: 1 / -1; grid-row: 2; min-width: 0; min-height: 0; padding: 0 12px; }
     .page {
-      position: absolute; top: 70px; bottom: 110px; left: 12px; right: 12px;
-      background: white; border-radius: 6px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.05);
+      position: relative; width: 100%; height: 100%; padding: 12px 12px 34px;
       display: flex; align-items: center; justify-content: center;
-      transform-style: preserve-3d;
-      transform-origin: left center;
-      transition: transform 0.5s cubic-bezier(.55,.1,.25,1), opacity 0.3s;
-      backface-visibility: hidden;
+      background: #fff; border: 4px solid #fff; border-radius: 24px;
+      box-shadow: 0 6px 0 rgba(101,62,120,.13), 0 12px 24px rgba(72,42,87,.12);
     }
-    .page.flipping { z-index: 10; }
-    .page.behind { transform: scale(0.97); opacity: 0.4; }
-    .page svg, .page canvas, .page img { width: 100%; height: 100%; max-height: 100%; }
-    /* Spine line on the left edge */
-    .book::before {
-      content: ''; position: absolute; top: 60px; bottom: 100px; left: 6px;
-      width: 6px; border-radius: 3px;
-      background: linear-gradient(90deg, rgba(0,0,0,0.15), transparent);
-      pointer-events: none; z-index: 11;
-    }
-    /* Coloring layer */
-    .pic-svg { width: 100%; height: 100%; }
-    .region {
-      fill: #fff;  /* white regions so an injected coloring page reads as outlines */
-      stroke: #1a1a2e; stroke-width: 4; stroke-linejoin: round;
-      stroke-linecap: round;
-    }
-    .region:active { filter: brightness(0.92); }
-    .detail {
-      fill: none; stroke: #1a1a2e; stroke-width: 3; stroke-linejoin: round;
-      stroke-linecap: round; pointer-events: none;
-    }
-    .dot { fill: #1a1a2e; pointer-events: none; }
     #colorFillCanvas {
       display: block; width: auto; height: auto; max-width: 100%; max-height: 100%;
       object-fit: contain; touch-action: none; cursor: pointer; background: #fff;
     }
-    .fill-message {
-      position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
-      color: #237f7a; background: rgba(255,255,255,.92); border-radius: 16px;
-      padding: 5px 12px; font-weight: 800; font-size: 13px; white-space: nowrap;
-      pointer-events: none;
-    }
-    .fill-error {
-      position: absolute; inset: 20%; display: grid; place-items: center; text-align: center;
-      color: #237f7a; font-weight: 900; font-size: 18px; padding: 20px;
-      background: #fff8e8; border: 3px dashed #a992d4; border-radius: 24px;
-    }
+    .fill-message { position: absolute; left: 8px; right: 8px; bottom: 7px; color: #31736c; text-align: center; font-weight: 800; font-size: 12px; line-height: 1.15; pointer-events: none; }
+    .fill-error { position: absolute; inset: 12px; display: grid; place-items: center; text-align: center; padding: 16px; background: #fff8e8; color: #184d4a; border: 3px dashed #a992d4; border-radius: 18px; font-weight: 800; }
     .fill-error[hidden] { display: none; }
-
-    #toolbar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      display: flex; align-items: center; justify-content: center;
-      gap: 10px; flex-wrap: wrap;
-      padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
-      background: rgba(55,117,116,0.94); backdrop-filter: blur(8px); z-index: 10;
-    }
-    #colorPalette { display: flex; gap: 6px; align-items: center; justify-content: center; }
-    #colorFillDock { min-width: 44px; min-height: 44px; }
-    @media (orientation: landscape) and (min-width: 768px) and (min-height: 501px) {
-      #toolbar {
-        flex-direction: column; flex-wrap: wrap; align-content: flex-start;
-        top: 0; right: 0; bottom: 0; left: auto;
-        width: auto; max-width: 180px; height: 100vh;
-        padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) 12px;
-        gap: 14px;
-      }
-      .book { padding-right: 200px; padding-bottom: 16px; }
-      .page { right: 200px; bottom: 16px; }
-      #colorPalette { display: grid; grid-template-columns: repeat(2, 46px); }
-    }
-    .pip {
-      width: 46px; height: 46px; border-radius: 50%;
-      border: 4px solid rgba(255,255,255,0.45); cursor: pointer;
-      transition: border-color 0.1s, box-shadow 0.1s;
-      flex: 0 0 46px;
-    }
-    .pip.active { border-color: white; box-shadow: 0 0 0 3px white; }
-    .tool-btn {
-      min-width: 68px; min-height: 46px; padding: 10px 14px; border-radius: 14px;
-      background: rgba(255,255,255,0.18);
-      border: 2px solid rgba(255,255,255,0.3);
-      color: white; font-weight: 800; font-size: 13px; cursor: pointer;
-    }
-    @media (max-width: 400px) {
-      .book { padding-bottom: 126px; }
-      .page { bottom: 126px; }
-      .pip { width: 44px; height: 44px; flex-basis: 44px; }
-      #colorPalette { gap: 5px; }
-    }
-    @media (max-height: 500px) and (orientation: landscape) {
-      .book { padding-bottom: 72px; }
-      .page { bottom: 72px; }
-      #toolbar { flex-wrap: nowrap; }
-    }
-    /* Page nav arrows (sit OUTSIDE the toolbar so kid can flip mid-coloring) */
     .page-nav {
-      position: fixed; top: 50%; transform: translateY(-50%);
-      width: 44px; height: 80px; border-radius: 12px;
-      background: rgba(10,10,40,0.5); color: white;
-      border: 2px solid rgba(255,255,255,0.3);
-      font-size: 24px; font-weight: 900;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; z-index: 8; opacity: 0.6;
+      grid-row: 3; align-self: center; justify-self: center; width: 48px; height: 44px;
+      display: grid; place-items: center; border: 2px solid rgba(24,77,74,.15);
+      border-radius: 14px; background: #fff9eb; color: #184d4a;
+      box-shadow: 0 3px 0 rgba(24,77,74,.16); font-size: 30px; font-weight: 900; cursor: pointer;
     }
-    .page-nav:active { opacity: 1; }
-    .page-nav.prev { left: 4px; }
-    .page-nav.next { right: 4px; }
-    @media (orientation: landscape) and (min-width: 768px) and (min-height: 501px) {
-      .page-nav.next { right: 204px; }
+    .prev { grid-column: 1; } .next { grid-column: 3; }
+    #toolbar {
+      grid-column: 1 / -1; grid-row: 4; display: flex; align-items: center; justify-content: center;
+      gap: 8px; flex-wrap: wrap; padding: 8px; background: #fff9eb;
+      border-top: 2px solid rgba(101,62,120,.14); box-shadow: 0 -6px 24px rgba(78,46,94,.08);
     }
-    .scene-title {
-      position: fixed; top: calc(14px + env(safe-area-inset-top));
-      left: 50%; transform: translateX(-50%);
-      color: #1a1a2e; font-weight: 900; font-size: 16px;
-      background: rgba(255,255,255,0.85); padding: 5px 14px; border-radius: 18px;
-      z-index: 9; pointer-events: none;
-      max-width: calc(100vw - 220px); white-space: nowrap; overflow: hidden;
-      text-overflow: ellipsis;
+    #colorPalette { display: flex; gap: 5px; align-items: center; justify-content: center; }
+    #colorFillDock { width: 48px; height: 48px; }
+    .pip { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 50%; border: 3px solid rgba(24,77,74,.15); cursor: pointer; }
+    .pip.active { border-color: #184d4a; box-shadow: 0 0 0 3px #ffd55a; }
+    .tool-btn { min-width: 76px; height: 44px; padding: 6px 12px; border-radius: 14px; background: #fff; border: 2px solid rgba(24,77,74,.15); color: #184d4a; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: 0 3px 0 rgba(24,77,74,.13); }
+    button:focus-visible { outline: 3px solid #31736c; outline-offset: 3px; }
+    body.vb-chrome:not(.world-page) .nav-chrome { top: calc(7px + env(safe-area-inset-top)); left: calc(8px + env(safe-area-inset-left)); padding: 5px; }
+    body.vb-chrome:not(.world-page) .nav-btn { width: 46px; height: 46px; }
+    @media (orientation: landscape) {
+      .stage { grid-template-columns: minmax(0,1fr) 184px; grid-template-rows: 68px minmax(0,1fr) 52px; }
+      .scene-title { grid-column: 1; margin-right: 12px; }
+      .book { grid-column: 1; padding: 0 10px; }
+      .page { padding: 8px 8px 30px; }
+      .page-nav { grid-column: 1; margin: 0 16px; }
+      .prev { justify-self: start; } .next { justify-self: end; }
+      #toolbar { grid-column: 2; grid-row: 1 / -1; flex-direction: column; flex-wrap: nowrap; gap: 14px; border-top: 0; border-left: 2px solid rgba(101,62,120,.14); }
+      #colorPalette { display: grid; grid-template-columns: repeat(3,44px); gap: 7px; }
     }
-    /* Page-turn animation */
-    @keyframes flipOut {
-      from { transform: rotateY(0deg); }
-      to   { transform: rotateY(-160deg); }
-    }
-    @keyframes flipIn {
-      from { transform: rotateY(160deg); }
-      to   { transform: rotateY(0deg); }
-    }
-    .page.flip-out { animation: flipOut 0.55s ease-in forwards; }
-    .page.flip-in  { animation: flipIn 0.55s ease-out forwards; }
   </style>
 </head>
 <body>
