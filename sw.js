@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v159';
+const CACHE = 'vb-v160';
+// v160: keep Bubble Pop canvas and touch coordinates aligned after HUD reflow.
 // v159: Bubble Pop reserves separate rows for controls, challenge and score.
 // v158: separate themed islands and animated ocean, available offline.
 // v157: the parent Add child navigation can use its cached page while offline.

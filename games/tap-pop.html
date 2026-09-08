@@ -115,10 +115,13 @@
     function fitPlayArea() {
       const controls = [...document.querySelectorAll('.nav-chrome,.vb-replay-instruction')];
       const controlsBottom = Math.max(0, ...controls.map(el => el.getBoundingClientRect().bottom));
-      document.body.style.setProperty('--bubble-controls-bottom', Math.ceil(controlsBottom + 12) + 'px');
-      document.body.style.setProperty('--bubble-play-top', Math.ceil(hud.getBoundingClientRect().bottom + 12) + 'px');
-      const rect = canvas.getBoundingClientRect();
-      const width = Math.max(1, Math.round(rect.width)), height = Math.max(1, Math.round(rect.height));
+      const hudTop = Math.ceil(controlsBottom + 12);
+      const playTop = Math.ceil(hudTop + hud.getBoundingClientRect().height + 12);
+      document.body.style.setProperty('--bubble-controls-bottom', hudTop + 'px');
+      document.body.style.setProperty('--bubble-play-top', playTop + 'px');
+      // CSS and drawing dimensions use the same measurement. Reading a canvas
+      // rectangle mid-observer can otherwise return the preceding layout.
+      const width = Math.max(1, window.innerWidth), height = Math.max(1, window.innerHeight - playTop);
       if (canvas.width !== width) canvas.width = width;
       if (canvas.height !== height) canvas.height = height;
     }
