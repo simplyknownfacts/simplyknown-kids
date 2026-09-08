@@ -14,7 +14,7 @@
   const companionHost = document.getElementById('seekCompanion');
   const companion = window.mascot?.createActor({host:companionHost,id:animals[0].id});
   const anchors = [];
-  let companionId = animals[0].id;
+  let companionId = animals[0].id, mediaUnavailable = false;
   let active = true, generation = 0, timer = null, clueTimer = null, renderer = null, loadTimer = null;
   let rendererFactory = null, loadFailed = false, rendererBroken = false;
   let target = -1, animal = -1, phase = 'watch', clue = 'none', readyAt = 0, hintAt = 0, pinnedHint = false;
@@ -82,8 +82,9 @@
     Object.assign(companionHost.style,{left:x+'px',top:y+'px',width:size+'px',height:size+'px'});
   }
   function render() {
+    const visibleClue = mediaUnavailable && clue === 'peek' ? 'rustle' : clue;
     stage.dataset.phase = phase;
-    stage.dataset.clue = clue;
+    stage.dataset.clue = visibleClue;
     intro.hidden = phase !== 'watch';
     cover.hidden = phase !== 'hiding';
     intro.querySelector('.intro-name').textContent = animals[animal].name;
@@ -91,12 +92,12 @@
       const isClue = phase === 'seek' && i === target;
       spot.disabled = !active || phase !== 'seek' || tried.has(i);
       spot.classList.toggle('empty', phase === 'seek' && tried.has(i));
-      spot.classList.toggle('clue-peek', isClue && clue === 'peek');
-      spot.classList.toggle('clue-rustle', isClue && clue === 'rustle');
-      spot.querySelector('.rustle-clue').hidden = !isClue || clue !== 'rustle';
+      spot.classList.toggle('clue-peek', isClue && visibleClue === 'peek');
+      spot.classList.toggle('clue-rustle', isClue && visibleClue === 'rustle');
+      spot.querySelector('.rustle-clue').hidden = !isClue || visibleClue !== 'rustle';
       // Expose only a clue actually visible now; never leak the future answer.
-      spot.setAttribute('aria-label', places[i] + (isClue && clue !== 'none'
-        ? clue === 'peek' ? ' — little ears peeking out' : ' — leaves rustling'
+      spot.setAttribute('aria-label', places[i] + (isClue && visibleClue !== 'none'
+        ? visibleClue === 'peek' ? ' — little ears peeking out' : ' — leaves rustling'
         : tried.has(i) ? ' — empty' : ''));
     });
     action.style.visibility = phase === 'watch' || phase === 'hiding' ? 'visible' : 'hidden';
@@ -111,9 +112,13 @@
     if (companionId !== animals[animal].id) {
       companionId = animals[animal].id; companion?.setId(companionId);
     }
-    companion?.setVisible(active && !document.hidden && (phase === 'watch' || phase === 'found' || (phase === 'seek' && clue === 'peek')));
+    const showCompanion = active && !document.hidden && !mediaUnavailable
+      && (phase === 'watch' || phase === 'found' || (phase === 'seek' && visibleClue === 'peek'));
+    companionHost.hidden = !showCompanion;
+    companionHost.dataset.target = String(showCompanion && phase !== 'watch' ? target : -1);
+    companion?.setVisible(showCompanion);
     positionCompanion();
-    renderer?.update({count,target,phase,clue});
+    renderer?.update({count,target,phase,clue:visibleClue});
   }
   function pulseClue() {
     if (phase !== 'seek' || !active) return;
@@ -129,7 +134,7 @@
     if (!active || phase !== 'seek' || performance.now() < hintAt) return;
     hintAt = performance.now() + 600;
     pinnedHint = true; clearClues();
-    hint.textContent = 'Look for little ears at the ' + places[target].toLowerCase() + '.';
+    hint.textContent = (mediaUnavailable ? 'Look for rustling leaves at the ' : 'Look for little ears at the ') + places[target].toLowerCase() + '.';
     pulseClue();
   }
   function show(focusAction = false) {
@@ -150,7 +155,7 @@
     if (i !== target) {
       tried.add(i);
       hintAt = 0; help();
-      hint.textContent = 'Nobody there. Look for little ears at the ' + places[target].toLowerCase() + '.';
+      hint.textContent = (mediaUnavailable ? 'Nobody there. Look for rustling leaves at the ' : 'Nobody there. Look for little ears at the ') + places[target].toLowerCase() + '.';
       playBoop(); speak('Try again!'); render();
       if (keyboard) spots.find(spot => !spot.disabled)?.focus({preventScroll:true});
       return;
@@ -175,7 +180,7 @@
     later(() => {
       // Choose only behind the opaque cover, independent of the introduction.
       target=Math.floor(Math.random()*count); phase='seek'; hintAt=0;
-      hint.textContent=tier<=4 ? 'Where is '+animals[animal].name+'? Look for little ears.'
+      hint.textContent=tier<=4 && !mediaUnavailable ? 'Where is '+animals[animal].name+'? Look for little ears.'
         : 'Where is '+animals[animal].name+'? Look for rustling leaves.';
       pulseClue(); spots[0].focus({preventScroll:true});
     },700);
@@ -212,6 +217,13 @@
     if(document.hidden) {clearTimeout(clueTimer);clueTimer=null;companion?.pause();}
     else if(active) {companion?.resume(); if(phase==='seek') pulseClue(); else render();}
   });
+  if (companionHost.querySelector('canvas')) new MutationObserver(() => {
+    const unavailable = companionHost.querySelector('canvas').dataset.media === 'unavailable';
+    if (unavailable === mediaUnavailable) return;
+    mediaUnavailable = unavailable;
+    if (phase === 'seek' && unavailable) hint.textContent = 'Look for rustling leaves at the ' + places[target].toLowerCase() + '.';
+    render();
+  }).observe(companionHost.querySelector('canvas'), {attributes:true,attributeFilter:['data-media']});
   new ResizeObserver(() => {if(!renderer) fallbackPositions(); else positionCompanion();}).observe(stage);
   stage.addEventListener('sceneerror',()=>{rendererBroken=true;useFallback();});
   fallbackPositions(); nextRound();
