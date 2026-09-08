@@ -405,7 +405,7 @@
   <div id="pinGate" class="settings-screen" style="text-align:center;">
     <div class="title" style="margin-bottom:8px;">⚙️ Grown-ups only</div>
     <div class="subtitle" id="pinPrompt">Enter your 4-digit PIN</div>
-    <div id="lockoutBanner" style="display:none;color:#FF6B6B;font-weight:800;margin:10px 0;"></div>
+    <div id="lockoutBanner" style="display:none;color:var(--parent-danger);font-weight:800;margin:10px 0;"></div>
     <div class="pin-display" id="pinDisplay">
       <div class="pin-dot"></div><div class="pin-dot"></div>
       <div class="pin-dot"></div><div class="pin-dot"></div>
@@ -415,7 +415,7 @@
       <button id="gateSetupBtn" class="btn btn-ghost" onclick="setupMode()" style="display:none;">Set up new PIN</button>
       <div style="color:var(--parent-muted);font-size:12px;text-align:center;max-width:280px;line-height:1.5;margin-top:6px;">
         Forgot your PIN? Email
-        <a href="mailto:simplyknownfacts@gmail.com" style="color:#4ECDC4;font-weight:700;">simplyknownfacts@gmail.com</a>
+        <a href="mailto:simplyknownfacts@gmail.com" style="color:var(--parent-accent);font-weight:700;">simplyknownfacts@gmail.com</a>
         for help resetting.
       </div>
     </div>
@@ -657,7 +657,7 @@
               <button class="btn btn-ghost" style="width:100%;" onclick="setupMode()">Change 4-digit PIN</button>
               <div style="color:var(--parent-muted);font-size:12px;margin-top:10px;line-height:1.5;">
                 Forgot your PIN? Email
-                <a href="mailto:simplyknownfacts@gmail.com" style="color:#4ECDC4;font-weight:700;">simplyknownfacts@gmail.com</a>
+                <a href="mailto:simplyknownfacts@gmail.com" style="color:var(--parent-accent);font-weight:700;">simplyknownfacts@gmail.com</a>
                 for help resetting.
               </div>
             </div>
@@ -1056,7 +1056,7 @@
             <input type="text" id="yt-label-${p.id}" placeholder="Label (e.g. Ms Rachel)">
           </div>
           <input type="text" id="yt-url-${p.id}" placeholder="Channel URL or UC... id" style="margin-top:8px;">
-          <div id="yt-msg-${p.id}" style="color:#FF6B6B;font-size:12px;margin-top:6px;min-height:14px;"></div>
+          <div id="yt-msg-${p.id}" style="color:var(--parent-danger);font-size:12px;margin-top:6px;min-height:14px;"></div>
           <button class="btn btn-primary" style="margin-top:10px;width:100%;"
                   onclick="addYoutubeChannel('${p.id}')">+ Add channel</button>
         `;
@@ -1336,13 +1336,13 @@
         const savedId = localStorage.getItem('vb_yoto_client_id') || '';
         html += `
           <div style="color:var(--parent-muted);font-size:13px;line-height:1.5;margin-bottom:10px;">
-            <strong style="color:var(--parent-ink);">Step 1:</strong> apply at <a href="https://yoto.dev" target="_blank" style="color:#4ECDC4;">yoto.dev</a> for browser-auth API access.<br>
+            <strong style="color:var(--parent-ink);">Step 1:</strong> apply at <a href="https://yoto.dev" target="_blank" style="color:var(--parent-accent);">yoto.dev</a> for browser-auth API access.<br>
             <strong style="color:var(--parent-ink);">Step 2:</strong> when Yoto sends a <code>client_id</code>, paste it below.
           </div>
           <label style="display:block;font-size:13px;color:var(--parent-muted);margin-bottom:4px;">Yoto Client ID</label>
           <input type="text" id="yotoClientIdInput" placeholder="paste client_id here" value="${savedId.replace(/"/g, '&quot;')}">
           <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="saveYotoClientId()">Save Client ID</button>
-          <div id="yotoMsg" style="color:#FF6B6B;font-size:12px;margin-top:8px;min-height:14px;"></div>
+          <div id="yotoMsg" style="color:var(--parent-danger);font-size:12px;margin-top:8px;min-height:14px;"></div>
         `;
       } else if (!connected) {
         html += `
@@ -1397,7 +1397,7 @@
         // Show a clear re-sign-in prompt instead of pretending we're synced.
         section.innerHTML = `
           <div class="card" style="border:1px solid rgba(255,180,80,0.5);">
-            <div style="color:#FFC56B;font-weight:800;margin-bottom:6px;">⚠️ Sync session expired</div>
+            <div style="color:var(--parent-warning);font-weight:800;margin-bottom:6px;">⚠️ Sync session expired</div>
             <div class="sync-email" style="color:var(--parent-muted);font-size:13px;margin-bottom:4px;"></div>
             <div style="color:var(--parent-muted);font-size:12px;margin-bottom:14px;line-height:1.5;">
               You were signed out of cloud sync (often because you signed in on
@@ -1418,7 +1418,7 @@
                 <div style="font-size:11px;opacity:.6;margin-top:4px;">New accounts need this. It stops strangers signing up and running up the voice bill.</div>
               </div>
               <button class="btn btn-primary" style="margin-top:10px;width:100%;" id="syncSubmit">Sign in</button>
-              <div id="syncMsg" style="color:#FF6B6B;font-size:12px;margin-top:8px;min-height:14px;"></div>
+              <div id="syncMsg" style="color:var(--parent-danger);font-size:12px;margin-top:8px;min-height:14px;"></div>
             </div>
           </div>
         `;
@@ -1433,7 +1433,7 @@
             </div>
             <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" id="syncNowBtn" onclick="syncNow()">🔄 Sync now</button>
             <button class="btn btn-ghost" style="width:100%;font-size:13px;" onclick="syncSignout()">Sign out of cloud sync</button>
-            <button class="btn btn-ghost" style="width:100%;font-size:12px;margin-top:4px;color:#FF6B6B;" onclick="syncDeleteAccount()">Delete cloud account &amp; synced data</button>
+            <button class="btn btn-ghost" style="width:100%;font-size:12px;margin-top:4px;color:var(--parent-danger);" onclick="syncDeleteAccount()">Delete cloud account &amp; synced data</button>
             <div id="syncMsg" style="color:var(--parent-accent);font-size:12px;margin-top:8px;min-height:14px;"></div>
           </div>
         `;
@@ -1455,7 +1455,7 @@
                 <div style="font-size:11px;opacity:.6;margin-top:4px;">New accounts need this. It stops strangers signing up and running up the voice bill.</div>
               </div>
               <button class="btn btn-primary" style="margin-top:10px;width:100%;" id="syncSubmit">Continue</button>
-              <div id="syncMsg" style="color:#FF6B6B;font-size:12px;margin-top:8px;min-height:14px;"></div>
+              <div id="syncMsg" style="color:var(--parent-danger);font-size:12px;margin-top:8px;min-height:14px;"></div>
             </div>
           </div>
         `;
@@ -1684,7 +1684,7 @@
             </div>
             <div id="offlineProgressTxt" style="font-size:12px;color:var(--parent-muted);margin-top:6px;">Starting…</div>
           </div>
-          <div id="offlineStatus" style="font-size:13px;margin-bottom:12px;color:${done ? '#7be0c0' : 'rgba(255,255,255,0.6)'};">
+          <div id="offlineStatus" style="font-size:13px;margin-bottom:12px;color:${done ? 'var(--parent-accent)' : 'var(--parent-muted)'};">
             ${done ? '✓ Downloaded — ready for offline use.' : (have > 0 ? `Partial download (${have}/${list.length} files). Tap to finish.` : 'Not downloaded yet.')}
           </div>
           <div class="row" style="gap:10px;flex-wrap:wrap;">
