@@ -35,7 +35,17 @@
   }
   function moveSpot(i, rect) {
     if (!spots[i]) return;
-    for (const key of ['left','top','width','height']) spots[i].style[key] = rect[key] * 100 + '%';
+    const bounds = stage.getBoundingClientRect();
+    // A distant bush can project smaller than a finger on short landscape
+    // screens. Expand its input area around the same center, inside the stage.
+    const width = Math.min(1, Math.max(rect.width, 46 / Math.max(1,bounds.width)));
+    const height = Math.min(1, Math.max(rect.height, 46 / Math.max(1,bounds.height)));
+    const box = {
+      width, height,
+      left: Math.max(0, Math.min(1-width, rect.left-(width-rect.width)/2)),
+      top: Math.max(0, Math.min(1-height, rect.top-(height-rect.height)/2)),
+    };
+    for (const key of ['left','top','width','height']) spots[i].style[key] = box[key] * 100 + '%';
   }
   function fallbackPositions() {
     spots.forEach((_,i) => moveSpot(i, count === 2
