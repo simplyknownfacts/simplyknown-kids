@@ -188,15 +188,12 @@ async function play(page, act, tier) {
       return { ok: await bumped(), signal: `clock quiz, tried ${n} times` };
     }
     if (id === 'peek-a-boo') {
-      // v125: every tier taps a curtain now (littles get one big wiggling one).
-      const curtains = page.locator('#stage .curtain-wrap .curtain');
-      const n = await curtains.count();
-      for (let i = 0; i < Math.max(1, n); i++) {
-        await curtains.nth(i).click({ timeout: 4000 }).catch(() => {});
-        await sleep(400);
-        if (await page.locator('#stage .curtain.open').count()) return { ok: true, signal: 'curtain opened' };
-      }
-      return { ok: await bumped(), signal: 'clicked curtains' };
+      await page.waitForSelector('.peek-marker');
+      const target = await page.locator('.peek-marker').evaluate(e => Number(e.closest('button').dataset.spot));
+      await page.locator('#roundAction').click();
+      await page.waitForFunction(() => document.querySelector('#stage').dataset.phase === 'seek');
+      await page.locator('.hiding-spot').nth(target).click();
+      return { ok: await bumped(), signal: 'remembered the visible hiding place' };
     }
     if (id === 'abcs') {
       // ABCs is LETTERS-ONLY since v117 (Spelling Bee owns spelling) and
@@ -473,7 +470,7 @@ async function runTier(browser, tier) {
       const redirected = redirectedToPicker();
       const hasApp = await page.evaluate(() => !!window.vbProgress).catch(() => false);
       let recipe = null;
-      const noSuccessByDesign = (act.id === 'days' && tier <= 4) || (act.id === 'hello-colors' && tier === 1) || (act.id === 'peek-a-boo' && tier <= 2);
+      const noSuccessByDesign = (act.id === 'days' && tier <= 4) || (act.id === 'hello-colors' && tier === 1);
       if (playable && !redirected && hasApp) recipe = await play(page, act, tier);
       await shot(`act-${act.id}`);
       const kind = act.orphan ? 'orphan' : (visible ? 'play' : 'gated-load');

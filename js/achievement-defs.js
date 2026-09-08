@@ -6,7 +6,7 @@
     { id:'tap-pop',      name:'Bubble Pop',   icon:'🫧', section:'games', noun:'bubbles popped', mastery:null },
     { id:'shape-match',  name:'Shape Match',  icon:'🔷', section:'games', noun:'shapes matched',
       mastery:{ title:'Shape Master', hint:'Finish a 6-shape round' } },
-    { id:'peek-a-boo',   name:'Peek-a-Boo',   icon:'👀', section:'games', noun:'peeks', mastery:null },
+    { id:'peek-a-boo',   name:'Hide & Seek',   icon:'👀', section:'games', noun:'finds', mastery:null },
     { id:'magic-touch',  name:'Magic Touch',  icon:'✨', section:'games', noun:'taps', mastery:null },
     { id:'tap-a-tune',   name:'Tap-a-Tune',   icon:'🎹', section:'games', noun:'notes played', mastery:null },
     { id:'surprise-pop', name:'Surprise Pop', icon:'🥚', section:'games', noun:'surprises', mastery:null },

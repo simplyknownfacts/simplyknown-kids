@@ -103,28 +103,23 @@ test('Body Parts accepts the current target once and owns its prompt/transition 
   await delayed.ctx.close();
 });
 
-test('Peek-a-Boo reveals, awards, and advances once under repeated curtain taps', async () => {
+test('Hide and Seek accepts the watched location once under repeated physical taps', async () => {
   const { ctx, page } = await activityPage('peek-a-boo', 5);
-  await page.goto(base + '/games/peek-a-boo.html', { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('.curtain');
-  const result = await page.evaluate(() => {
-    const calls = [];
-    window.vbProgress = { record: (id) => calls.push(id) };
-    let correct;
-    for (const curtain of document.querySelectorAll('.curtain')) {
-      curtain.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      if (calls.length) { correct = curtain; break; }
-    }
-    for (let i = 0; i < 7; i++) correct.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    const html = document.getElementById('stage').innerHTML;
-    window.dispatchEvent(new PageTransitionEvent('pagehide'));
-    return { calls, html };
-  });
-  assert.deepEqual(result.calls, ['peek-a-boo'], 'one curtain reveal recorded more than once');
-  await page.waitForTimeout(3500);
-  assert.equal(await page.locator('#stage').evaluate((el) => el.innerHTML), result.html,
-    'Peek-a-Boo advanced after pagehide');
-  await ctx.close();
+  try {
+    await page.goto(base + '/games/peek-a-boo.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.peek-marker');
+    const target = await page.locator('.peek-marker').evaluate(e => Number(e.closest('button').dataset.spot));
+    await page.evaluate(() => { window.seekCalls = []; window.vbProgress = {record:id=>seekCalls.push(id)}; });
+    await page.locator('#roundAction').click();
+    await page.waitForFunction(() => document.querySelector('#stage').dataset.phase === 'seek');
+    const r = await page.locator('.hiding-spot').nth(target).boundingBox();
+    for(let i=0;i<10;i++) await page.mouse.click(r.x+r.width/2,r.y+r.height*.7);
+    assert.deepEqual(await page.evaluate(()=>seekCalls), ['peek-a-boo']);
+    const html = await page.locator('#stage').innerHTML();
+    await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide')));
+    await page.waitForTimeout(700);
+    assert.equal(await page.locator('#stage').innerHTML(), html, 'game changed after pagehide');
+  } finally { await ctx.close(); }
 });
 
 test('Tap-a-Tune blocks memory input while one replay is pending', async () => {

@@ -19,8 +19,8 @@ function mascotEmoji(profile) {
 // appear by default. Parent can override per-child in Parent Settings.
 const ACTIVITY_FEATURES = [
   { id:'tap-pop',       name:'Bubble Pop',       icon:'🫧', file:'tap-pop.html',     section:'games', minTier:1, features:[] },
-  { id:'peek-a-boo',    name:'Peek-a-boo',       icon:'🙈', file:'peek-a-boo.html', section:'games', minTier:1, features:[
-    { key:'multiChoice',   label:'Multiple-choice mode',                    minTier:5 },
+  { id:'peek-a-boo',    name:'Hide & Seek',       icon:'🙈', file:'peek-a-boo.html', section:'games', minTier:1, features:[
+    { key:'multiChoice',   label:'Three hiding places',                    minTier:5 },
   ]},
   { id:'magic-touch',   name:'Magic Touch',      icon:'✨', file:'magic-touch.html', section:'games', minTier:1, features:[] },
   { id:'tap-a-tune',    name:'Tap-a-Tune',       icon:'🎹', file:'tap-a-tune.html', section:'games', minTier:1, features:[] },
