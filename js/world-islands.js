@@ -1,4 +1,13 @@
-/* Irregular toy islands and animated activity props for the ocean home. */
+/* Irregular toy islands and animated activity props for the ocean home.
+ *
+ * ADDED NOTE (Claude, 2026-09-09 code review): same approach as
+ * world-huts.js next door -- everything here is procedurally-built geometry
+ * (createIrregularDisc wobbles a stack of discs with a per-island seeded
+ * sine wave so each island looks hand-shaped, not a perfect circle), not a
+ * downloaded model. createIsland(THREE, kind) is the export other files
+ * use; 'companion' is a special kind for the small island the child's
+ * mascot stands on, separate from the 5 real activity islands.
+ */
 
 const CACHE = new WeakMap();
 const ACTIVITY_KINDS = new Set(['games', 'learn', 'art', 'watch', 'listen']);

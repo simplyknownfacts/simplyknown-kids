@@ -5,6 +5,25 @@ import { createOcean } from './world-ocean.js';
 
 // The home is a live, lit mesh scene. DOM buttons are keyboard equivalents;
 // physical touches are raycast against each island, building and activity props.
+//
+// ADDED NOTE (Claude, 2026-09-09 code review): this file trades readability
+// for size -- many statements per line, almost no inline comments. That is a
+// real departure from the rest of this codebase's usual verbose/commented
+// style (see e.g. js/sleep-timer.js, js/pin-lockout.js for the house style).
+// It is NOT a correctness problem -- 280/280 tests pass, independently
+// re-run -- just harder to maintain by hand later. The comments below name
+// what each piece of the pipeline does without changing any logic, so a
+// future editor doesn't have to reverse-engineer it from scratch.
+//
+// Big picture, in order: build the scene + lights (below) -> build 5 islands
+// + 5 huts + the ocean (below) -> on every resize, lay huts/islands out for
+// portrait vs. landscape and point the camera so the WHOLE archipelago fits
+// (fitCamera) -> position the invisible DOM <button> overlays exactly on top
+// of each hut's on-screen rectangle so keyboard/screen-reader users get a
+// real focusable target (positionControls) -> a render loop capped at ~30fps
+// (frame) that pauses itself when hidden, backgrounded, or reduced-motion is
+// on -> pointer handlers that raycast a tap against the 3D meshes to decide
+// which hut was actually touched (pick).
 export function createWorldScene(host, { activate, placeCompanion, announce }) {
   const canvas = host.querySelector('canvas');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -59,6 +78,10 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
     for(const x of [box.min.x,box.max.x]) for(const y of [box.min.y,box.max.y]) for(const z of [box.min.z,box.max.z]) result.push(new THREE.Vector3(x,y,z));
     return result;
   }
+  // Zooms the camera OUT (never in) in small steps until every island/hut
+  // corner projects inside the visible frame (with a small margin). Bounded
+  // to 65 tries so a pathological layout can't loop forever -- it just stops
+  // at whatever distance it reached.
   function fitCamera() {
     const target=new THREE.Vector3(0,.9,portrait?-1.1:0);
     const direction=new THREE.Vector3(0,portrait?1.55:1.65,1.38).normalize();
@@ -78,6 +101,12 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
       if(fits)break; distance*=1.045;
     }
   }
+  // The REAL <button data-world="games"> etc. in the DOM (see home.html) are
+  // invisible and CSS pointer-events:none -- mouse/touch taps go straight to
+  // the canvas below and are resolved by pick()/raycasting instead. These
+  // buttons exist so Tab + Enter/Space (keyboard) and a screen reader still
+  // have a normal, focusable target: this function just moves and resizes
+  // each one every frame/resize to sit exactly on top of its 3D hut.
   function positionControls() {
     scene.updateMatrixWorld(true);
     for(const [kind,model] of huts) {
@@ -112,6 +141,10 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
     renderer.setSize(width,height,false);fitCamera();positionControls();
     renderer.shadowMap.needsUpdate=true;renderOnce();
   }
+  // Casts a ray from the tapped screen point through the camera and returns
+  // which hut/island it actually hit (walking up to the ancestor that carries
+  // userData.world, since a hit lands on some sub-mesh of the model, not the
+  // group itself), or null if the tap missed every activity target.
   function pick(clientX,clientY) {
     const r=canvas.getBoundingClientRect();
     pointer.set((clientX-r.left)/r.width*2-1,-(clientY-r.top)/r.height*2+1);
@@ -127,6 +160,11 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
     if(lost)return;
     renderer.render(scene,camera);tick++;
   }
+  // The actual render loop. Capped at ~30fps (skip frames under 33ms apart)
+  // on purpose -- this is a mostly-static scene (bobbing water/props, no fast
+  // action), so 30fps saves battery/GPU on a tablet without looking choppy.
+  // Stops itself entirely (raf=0, nothing rescheduled) when paused, the WebGL
+  // context is lost, the tab is hidden, or the OS has reduced-motion on.
   function frame(now) {
     if(paused||lost||document.hidden||reduced.matches){raf=0;return;}
     raf=requestAnimationFrame(frame);

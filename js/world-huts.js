@@ -1,4 +1,32 @@
-/* Volumetric toy-town activity huts for the Three.js Wonderwood scene. */
+/* Volumetric toy-town activity huts for the Three.js Wonderwood scene.
+ *
+ * ADDED NOTE (Claude, 2026-09-09 code review): every hut is built from
+ * primitive shapes (boxes/cylinders/spheres/cones) at load time -- there are
+ * NO downloaded 3D model files, which is why this file is long: it is the
+ * model. That keeps the offline shell small and avoids a 3rd-party asset
+ * pipeline, at the cost of a lot of geometry-assembly code below.
+ *
+ * Shape, roughly:
+ *   PALETTES/LABELS       -- per-activity colors and roof-sign text
+ *   shared()/materialFactory() -- shared geometry + a per-color material
+ *                                  cache so 5 huts don't allocate 5x the GPU
+ *                                  buffers for the same box/cylinder shape
+ *   roundedGeometry/gableGeometry/starGeometry -- custom shapes Three.js
+ *                                  doesn't ship a primitive for
+ *   addBox/addCylinder/... -- small helpers so buildGames() etc. below read
+ *                              as "place a box here", not raw Three.js calls
+ *   buildGames/buildLearn/buildArt/buildWatch/buildListen -- one function
+ *                              per hut kind, decorating it with props that
+ *                              hint at what the door leads to (a joystick
+ *                              sign for Games, a globe for Learn, etc.)
+ *   createHut(THREE, kind)  -- the actual export: assembles one hut, caps it
+ *                              at 85 draw calls on purpose (throws if a prop
+ *                              pushes it over -- a concrete performance
+ *                              budget, not just a hope), and returns
+ *                              {group, update} where update(t) drives the
+ *                              small idle animations (flags, a telescope,
+ *                              etc.), skipped entirely under reduced-motion.
+ */
 
 const CACHE = new WeakMap();
 

@@ -1,5 +1,18 @@
 // A lit, continuously moving sea. All motion uses the scene's single clock so
 // page visibility, pause, and reduced-motion preferences stop it together.
+//
+// ADDED NOTE (Claude, 2026-09-09 code review): this is the densest file in
+// the new 3D world, for a real reason -- Three.js has no built-in "ocean"
+// material, so the water surface is a flat, low-poly plane whose material
+// gets patched at compile time (onBeforeCompile) with a few lines of raw
+// GLSL (the shader language GPUs run) that: (1) displace each vertex up and
+// down in a wave pattern (the beginnormal_vertex / begin_vertex blocks), and
+// (2) tint the color to fake a moving "crest glimmer" (the color_fragment
+// block). `clock` is a plain {value:0} object the shader reads every frame
+// via the seaTime uniform -- update(t) below just writes the current time
+// into it. The boat()/bird() calls after that are ordinary Three.js meshes
+// (a hull + deck + mast + a flat triangle sail, or two flattened spheres for
+// wings) bobbing along a sine path in update() -- nothing shader-based there.
 export function createOcean(THREE) {
   const group = new THREE.Group();
   const clock = { value: 0 };
