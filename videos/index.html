@@ -262,17 +262,14 @@
         document.getElementById('playerHost').innerHTML = '';
         document.getElementById('playerWrap').classList.remove('active');
       }
-      const _playerBackBtn = document.getElementById('playerBack');
-      _playerBackBtn.addEventListener('pointerdown', closePlayer);
-      // Accessibility (HIGH #8): this is a real <button> already, but its
-      // action is wired to pointerdown, which Enter/Space never fires —
-      // add the keyboard equivalent explicitly.
-      _playerBackBtn.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
-          e.preventDefault();
-          closePlayer();
-        }
-      });
+      // Close on click, NOT pointerdown (Scott's phone, 2026-09-09: "back
+      // button within ms" / "goes to main island page"). Closing the instant
+      // the finger touched down hid this overlay before the finger lifted, so
+      // the tap's click was delivered to whatever sat underneath -- the world
+      // Back button in the same corner, which goes to home.html. A real
+      // <button>'s click also fires for Enter/Space, so no keydown shim is
+      // needed. Locked in by tests/watch-back.test.mjs.
+      document.getElementById('playerBack').addEventListener('click', closePlayer);
     })();
   </script>
   <script src="../js/world-art.js"></script>

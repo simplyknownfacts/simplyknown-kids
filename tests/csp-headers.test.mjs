@@ -37,6 +37,21 @@ test('the CSP covers every external host this app actually talks to', () => {
   }
 });
 
+// A host merely appearing somewhere in the policy is not enough -- it has to be
+// in the directive the browser actually consults. 2026-09-09: www.youtube.com was
+// in frame-src only, so the iframe API <script> was blocked and Watch showed no
+// videos on the Cloudflare Pages dev site; Color In's blob: pictures were blocked
+// the same way. tests/csp-live.test.mjs proves it in a browser; this is the
+// cheap text-level guard.
+test('the hosts sit in the directives that actually need them', () => {
+  const csp = readFileSync(HEADERS_PATH, 'utf8').match(/Content-Security-Policy:\s*(.+)/)[1];
+  const directive = (name) => csp.split(';').map((s) => s.trim()).find((s) => s.startsWith(name + ' ')) || '';
+  assert.match(directive('script-src'), /https:\/\/www\.youtube\.com/, 'the YouTube iframe API is a <script> from www.youtube.com');
+  assert.match(directive('img-src'), / blob:/, 'Color In and the photo upload draw blob: images');
+  assert.match(directive('frame-src'), /www\.youtube-nocookie\.com/, 'the player iframe is served from youtube-nocookie.com');
+  assert.match(directive('connect-src'), /simplyknown-kids-sync\.simplyknownfacts\.workers\.dev/, 'sync + the feed proxy are fetch() calls to the Worker');
+});
+
 test('the CSP blocks object/embed injection and framing by another site', () => {
   const csp = readFileSync(HEADERS_PATH, 'utf8');
   assert.match(csp, /object-src 'none'/);
