@@ -1,10 +1,13 @@
 @echo off
 REM promote-kids.bat - the ONE door to production for Kids.
 REM Scott's rule: dev (kids1) is free, prod requires this button + typing the version number.
+REM Consolidated 2026-09-09 (Scott: "I don't like two separate bats") -- this one button now
+REM ships BOTH the static site AND the sync worker (dev-first, health-checked), in that order.
+REM The old separate "Promote Kids Worker" button is retired; see scripts/deploy-worker.mjs.
 title Promote KIDS to PRODUCTION
 cd /d "%~dp0"
 echo.
-echo   PROMOTE KIDS TO PRODUCTION
+echo   PROMOTE KIDS TO PRODUCTION (site + sync worker, one button)
 echo   You will be shown what is about to ship and asked to type the version.
 echo   Anything else - including just pressing Enter - cancels safely.
 echo.

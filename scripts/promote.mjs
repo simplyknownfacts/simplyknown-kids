@@ -33,8 +33,12 @@
 //     a genuine end-to-end proof, not just a deployment-record read.
 //   - Kids has NO migrations system of any kind (no D1, no schema.sql) for the STATIC SITE this
 //     gate deploys. Said out loud as a notice, never fabricated as a check that could not fail.
-//     The sync Worker (workers/sync/, its own D1) is explicitly OUT OF SCOPE of this gate --
-//     it deploys separately, by hand, `wrangler deploy` from workers/sync/, a Scott-run step.
+//   - ONE DOOR NOW, not two (Scott, 2026-09-09: "I don't like two separate bats, consolidate").
+//     Step 9 below also deploys the sync Worker (workers/sync/, its own D1) -- dev-first,
+//     health-checked, never touching the live worker if dev fails -- right after the static
+//     site is confirmed live, using the SAME typed version as approval. The old standalone
+//     `promote-kids-worker.bat` still exists for a worker-only emergency redeploy, but it is no
+//     longer the normal path and has no Desktop shortcut. See scripts/deploy-worker.mjs.
 //   - Kids' custom domain (kids.simplyknown.co) is STILL served by GitHub Pages as of this
 //     writing, auto-deploying on every push to main -- the Cloudflare Pages project
 //     (simplyknown-kids) this gate deploys to is not yet the thing the public URL points at.
@@ -49,6 +53,7 @@ import path from 'node:path';
 import { PROD_PROJECT } from './deploy-dev1.mjs';
 import { PUBLISH } from './stage-site.mjs';
 import { stageFromGitHead } from './lib/stage-from-git.mjs';
+import { deploySyncWorker } from './deploy-worker.mjs';
 
 const CFG = {
   app: 'Kids',
@@ -290,20 +295,19 @@ process.env.CLOUDFLARE_ACCOUNT_ID = CFG.accountId;
 // ── what is about to ship ────────────────────────────────────────────────────────────────────
 // 5. Migration parity: Kids has NO migrations system at all for the static site this gate
 //    deploys (no D1, no schema.sql here) — said out loud, never faked with a check that could
-//    not fail. The sync Worker DOES have its own D1 (workers/sync/), but that Worker is a
-//    separate, manual, Scott-run deploy (`wrangler deploy` from workers/sync/) — explicitly
-//    OUT OF SCOPE of this gate. If this release needs a sync Worker change, that is a second,
-//    independent step this script does not touch and cannot verify.
+//    not fail. The sync Worker DOES have its own D1 (workers/sync/) and its own schema.sql,
+//    checked in and hand-maintained — this gate still cannot verify a D1 migration ran, only
+//    that the Worker's CODE deployed and answered /health after (step 9 below).
 const subject = sh('git log -1 --format=%s');
 
 say(`${B}About to deploy to PRODUCTION${X}`);
 say(`  Version   ${B}${version}${X}`);
 say(`  Commit    ${headSha} (main, pushed)  ${subject}`);
-say(`  Goes to   Cloudflare Pages project ${B}${CFG.pagesProject}${X}`);
-say(`  Migration ${Y}NOT CHECKED — Kids has no migrations system for the static site (no D1, no`);
-say(`            schema.sql). The sync Worker's own D1 is a SEPARATE, manual, Scott-run deploy`);
-say(`            (\`wrangler deploy\` from workers/sync/) — this gate does not touch it and cannot`);
-say(`            tell you whether this release needs that step too. If in doubt, check by hand.${X}`);
+say(`  Goes to   Cloudflare Pages project ${B}${CFG.pagesProject}${X}, then the sync Worker`);
+say(`            (${B}dev-first, health-checked${X} — see step 9 below)`);
+say(`  Migration ${Y}NOT CHECKED for D1 schema changes — the sync Worker's schema.sql is`);
+say(`            hand-maintained, not auto-applied. If this release needs a schema change,`);
+say(`            apply it by hand (wrangler d1 execute) BEFORE typing the version below.${X}`);
 say(`  Cutover   ${Y}kids.simplyknown.co is STILL served by GitHub Pages as of right now — this`);
 say(`            deploy goes to the Cloudflare Pages project, which is not yet what the public`);
 say(`            domain points at. The custom domain will keep showing the OLD (GitHub Pages)`);
@@ -468,10 +472,31 @@ try {
   say(`  ${Y}could not write ${CFG.releaseLog}: ${e.message}${X}`);
 }
 
+// ── 9. the sync Worker — dev-first, health-checked (Scott, 2026-09-09: one door, not two) ─────
+// The static site above is ALREADY live and irreversible from here, so a worker problem is an
+// ALARM to fix by hand, never a die() — a die() here would falsely claim "nothing was deployed"
+// when the site release Scott just approved is very much out.
+say('');
+step('Deploying the sync Worker (dev-first, health-checked)');
+let workerOk = true, workerError = '';
+try {
+  await deploySyncWorker({ cwd: process.cwd() });
+} catch (e) {
+  workerOk = false; workerError = e.message;
+  say(`\n${R}${B}⚠ ALARM — the sync Worker deploy did not finish cleanly.${X}`);
+  say(`${R}${workerError}${X}`);
+  say(`${Y}The static site release above already shipped and is NOT affected. Fix the worker by`);
+  say(`hand: cd workers/sync && npx --yes wrangler@4.127.1 deploy${X}`);
+}
+
 say(`\n${G}${B}Done. ${CFG.app} ${version} is deployed and Cloudflare confirms it.${X}`);
 if (!liveOk) {
   say(`${Y}Reminder: the live version.js check above did not pass on every address — see the`);
   say(`ALARM note. Kids is public, so open ${CFG.versionCheckHosts[1]} yourself and look.${X}\n`);
 } else {
   say(`${Y}Note:${X} open ${CFG.prodUrl} yourself and check Parent Settings shows ${B}v${version}${X}.\n`);
+}
+if (!workerOk) {
+  say(`${R}${B}The sync Worker did NOT deploy cleanly — see the ALARM above. Fix it by hand.${X}\n`);
+  process.exitCode = 1;
 }

@@ -77,6 +77,14 @@ function makeScratchRepo(opts = {}) {
   const releaseTable = ['| Date | Version | Commit | Notes |', '|---|---|---|---|', ...releaseRows];
   writeFileSync(path.join(dir, 'docs', 'releases.md'), releaseTable.join('\n') + '\n');
   writeFileSync(path.join(dir, 'docs', 'CODEX-TRIAGE.md'), codexTriage);
+  // Codex 0905-3-equivalent (Scott, 2026-09-09: consolidate the two promote bats): promote.mjs
+  // now also deploys the sync Worker as its own step after the site. It just needs a
+  // workers/sync/ directory to run wrangler FROM (see scripts/deploy-worker.mjs) -- content is
+  // irrelevant since every test fakes the wrangler command, but the directory must exist and be
+  // TRACKED (untracked would trip the dirty-tree check) for the one test that reaches that far.
+  mkdirSync(path.join(dir, 'workers', 'sync'), { recursive: true });
+  writeFileSync(path.join(dir, 'workers', 'sync', 'wrangler.toml'), 'name = "scratch-worker"\n');
+  writeFileSync(path.join(dir, 'workers', 'sync', 'wrangler.dev.toml'), 'name = "scratch-worker-dev"\n');
 
   git(dir, ['add', '.']);
   git(dir, ['commit', '-q', '-m', 'initial']);
@@ -376,7 +384,10 @@ test('promote reaches the prompt when everything about the repo is clean (no COD
   assert.equal(res.status, 0, 'a fully clean repo must reach the prompt, not die on an earlier check: ' + res.stdout + res.stderr);
   assert.match(res.stdout, /nothing to triage, which is a pass/i);
   assert.match(res.stdout, /Type the version number to go ahead/);
-  assert.match(res.stdout, /NOT CHECKED — Kids has no migrations system/i);
+  // Scott, 2026-09-09 ("consolidate the two bats"): the notice changed shape when the sync
+  // Worker deploy moved from "separate, manual, Scott-run" into this same gated run.
+  assert.match(res.stdout, /NOT CHECKED for D1 schema changes/i);
+  assert.match(res.stdout, /then the sync Worker/i);
   assert.doesNotMatch(res.stdout + res.stderr, /Staging \(npm run stage\)|Deploying \S+ to/);
 });
 
@@ -397,23 +408,30 @@ test('promote runs the real post-approval path (fake wrangler, mock Cloudflare) 
   // deploy args (Codex named these explicitly: :320-325) get a real runtime assertion, not just
   // the existing static source-guard below. Lives OUTSIDE the scratch repo `dir` on purpose --
   // promote.mjs's very first check refuses on ANY uncommitted file in the repo it runs in, and
-  // this support tooling is not part of what is being promoted.
+  // this support tooling is not part of what is being promoted. APPENDS (not overwrites) --
+  // since Scott's 2026-09-09 consolidation (scripts/deploy-worker.mjs) this ONE fake wrangler
+  // command is invoked 3 times in one promote run (site pages-deploy, worker dev, worker prod).
   const supportDir = mkdtempSync(path.join(tmpdir(), 'kids-promote-support-'));
   scratchDirs.push(supportDir);
-  const argsFile = path.join(supportDir, 'wrangler-args.json');
+  const callsFile = path.join(supportDir, 'wrangler-calls.jsonl');
   const fakeWranglerPath = path.join(supportDir, 'fake-wrangler.mjs');
   writeFileSync(fakeWranglerPath,
-    `import { writeFileSync } from 'node:fs';\n` +
-    `writeFileSync(${JSON.stringify(argsFile)}, JSON.stringify(process.argv.slice(2)));\n` +
+    `import { appendFileSync } from 'node:fs';\n` +
+    `appendFileSync(${JSON.stringify(callsFile)}, JSON.stringify(process.argv.slice(2)) + '\\n');\n` +
     `console.log('fake wrangler: Deployment complete!');\n`);
   const wranglerCmd = `${JSON.stringify(process.execPath)} ${JSON.stringify(fakeWranglerPath)}`;
 
-  // A local mock standing in for BOTH the Cloudflare deployments API and the two live
-  // version.js hosts -- same server, branches on the request path.
+  // A local mock standing in for the Cloudflare deployments API, the two live version.js hosts,
+  // AND both sync-worker /health checks (Scott's consolidation) -- one server, branch on path.
   const server = http.createServer((req, res) => {
     if (req.url.startsWith('/js/version.js')) {
       res.writeHead(200, { 'content-type': 'text/javascript' });
       res.end(`const APP_VERSION = '${version}';\n`);
+      return;
+    }
+    if (req.url.startsWith('/health')) {
+      res.writeHead(200, { 'content-type': 'text/plain' });
+      res.end('ok');
       return;
     }
     res.writeHead(200, { 'content-type': 'application/json' });
@@ -435,7 +453,9 @@ test('promote runs the real post-approval path (fake wrangler, mock Cloudflare) 
         PROMOTE_CF_API_BASE: origin,
         PROMOTE_VERSION_CHECK_HOSTS: `${origin},${origin}`,
         PROMOTE_VERIFY_POLL_MS: '10',
-        // Codex 0905-2: these four overrides now refuse outright without this explicit,
+        PROMOTE_WORKER_DEV_HEALTH_URL: `${origin}/health`,
+        PROMOTE_WORKER_PROD_HEALTH_URL: `${origin}/health`,
+        // Codex 0905-2: these overrides now refuse outright without this explicit,
         // hand-typed opt-in -- this is the one test in the whole suite that deliberately means
         // to fake the deploy/verification targets, so it is the one place this is ever set.
         PROMOTE_ALLOW_OVERRIDES: '1',
@@ -447,19 +467,95 @@ test('promote runs the real post-approval path (fake wrangler, mock Cloudflare) 
     assert.match(res.stdout, /staged \d+ files from commit/);
     assert.match(res.stdout, new RegExp(`Deploying ${version} to simplyknown-kids`));
     assert.match(res.stdout, /fake wrangler: Deployment complete!/, 'the fake wrangler must actually have run: ' + res.stdout);
+    // Scott, 2026-09-09: "consolidate the two bats" -- one promote run must also ship the
+    // worker, dev-first and health-checked, without a second typed-version prompt.
+    assert.match(res.stdout, /Deploying the sync Worker \(dev-first, health-checked\)/, res.stdout);
+    assert.match(res.stdout, /Dev worker OK\./, res.stdout);
+    assert.match(res.stdout, /Live worker OK\./, res.stdout);
+    assert.doesNotMatch(res.stdout, /ALARM.*sync Worker/, 'the worker deploy must not have alarmed: ' + res.stdout);
     assert.match(res.stdout, /Done\. Kids .* is deployed and Cloudflare confirms it\./);
 
-    const calledWith = JSON.parse(readFileSync(argsFile, 'utf8'));
-    assert.ok(calledWith.includes('pages'), calledWith.join(' '));
-    assert.ok(calledWith.includes('deploy'), calledWith.join(' '));
-    assert.ok(calledWith.some((a) => a === '--project-name=simplyknown-kids'), calledWith.join(' '));
-    assert.ok(calledWith.some((a) => a === '--branch=main'), calledWith.join(' '));
-    assert.ok(!calledWith.some((a) => a.includes('--commit-dirty')),
-      'the real wrangler call must never receive --commit-dirty=true: ' + calledWith.join(' '));
+    const calls = readFileSync(callsFile, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+    assert.equal(calls.length, 3, 'expected exactly 3 wrangler invocations (site, worker dev, worker prod): ' + JSON.stringify(calls));
+
+    const siteCall = calls.find((c) => c.includes('pages'));
+    assert.ok(siteCall, 'no site (pages deploy) call found: ' + JSON.stringify(calls));
+    assert.ok(siteCall.includes('deploy'), siteCall.join(' '));
+    assert.ok(siteCall.some((a) => a === '--project-name=simplyknown-kids'), siteCall.join(' '));
+    assert.ok(siteCall.some((a) => a === '--branch=main'), siteCall.join(' '));
+    assert.ok(!siteCall.some((a) => a.includes('--commit-dirty')),
+      'the real site wrangler call must never receive --commit-dirty=true: ' + siteCall.join(' '));
+
+    const workerCalls = calls.filter((c) => !c.includes('pages'));
+    assert.equal(workerCalls.length, 2, 'expected a dev worker deploy and a prod worker deploy: ' + JSON.stringify(workerCalls));
+    assert.ok(workerCalls.some((c) => c.includes('--config') && c.includes('wrangler.dev.toml')),
+      'expected one worker call using wrangler.dev.toml (dev-first): ' + JSON.stringify(workerCalls));
+    assert.ok(workerCalls.some((c) => !c.includes('--config')),
+      'expected one plain worker call (prod, default wrangler.toml): ' + JSON.stringify(workerCalls));
 
     const releaseLog = readFileSync(path.join(dir, 'docs', 'releases.md'), 'utf8');
     assert.match(releaseLog, new RegExp(`\\|\\s*${version}\\s*\\|\\s*${headSha}\\s*\\|`),
       'the release log must gain a row for this exact version and commit: ' + releaseLog);
+  } finally {
+    server.close();
+  }
+});
+
+// Scott, 2026-09-09: "I don't like two separate bats, consolidate" -- if the worker half fails,
+// the static site above already shipped and is irreversible, so this must ALARM loudly (and set
+// a non-zero exit code so an unattended run still surfaces the problem), never silently succeed
+// or falsely claim "nothing was deployed" the way die() would.
+test('promote ALARMs (non-zero exit) but keeps the site release when the sync Worker deploy fails, never claiming nothing shipped', async () => {
+  const { dir, version, headSha } = makeScratchRepo();
+  scratchDirs.push(dir);
+  const fullSha = git(dir, ['rev-parse', 'HEAD']);
+
+  const supportDir = mkdtempSync(path.join(tmpdir(), 'kids-promote-support-'));
+  scratchDirs.push(supportDir);
+  const fakeWranglerPath = path.join(supportDir, 'fake-wrangler.mjs');
+  writeFileSync(fakeWranglerPath, `console.log('fake wrangler: Deployment complete!');\n`);
+  const wranglerCmd = `${JSON.stringify(process.execPath)} ${JSON.stringify(fakeWranglerPath)}`;
+
+  const server = http.createServer((req, res) => {
+    if (req.url.startsWith('/js/version.js')) {
+      res.writeHead(200, { 'content-type': 'text/javascript' });
+      res.end(`const APP_VERSION = '${version}';\n`);
+      return;
+    }
+    if (req.url.startsWith('/health')) { res.writeHead(500); res.end('unhealthy'); return; } // the failure under test
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ result: [{
+      id: 'fake-deployment-id', environment: 'production',
+      deployment_trigger: { metadata: { commit_hash: fullSha } },
+      latest_stage: { name: 'deploy', status: 'success' },
+    }] }));
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${server.address().port}`;
+
+  try {
+    const res = await runPromoteAsync(dir, {
+      input: version,
+      env: {
+        PROMOTE_WRANGLER_CMD: wranglerCmd,
+        PROMOTE_CF_API_BASE: origin,
+        PROMOTE_VERSION_CHECK_HOSTS: `${origin},${origin}`,
+        PROMOTE_VERIFY_POLL_MS: '10',
+        PROMOTE_WORKER_DEV_HEALTH_URL: `${origin}/health`,
+        PROMOTE_WORKER_PROD_HEALTH_URL: `${origin}/health`,
+        PROMOTE_ALLOW_OVERRIDES: '1',
+      },
+    });
+
+    assert.notEqual(res.code, 0, 'a failed worker health check must leave a non-zero exit code so an unattended run still surfaces it');
+    assert.match(res.stdout, /ALARM.*sync Worker/, res.stdout);
+    assert.match(res.stdout, /already shipped and is NOT affected/, res.stdout);
+    assert.match(res.stdout, /Done\. Kids .* is deployed and Cloudflare confirms it\./,
+      'the static site release must still be reported as shipped -- it is real and irreversible, never hidden by the worker alarm');
+
+    const releaseLog = readFileSync(path.join(dir, 'docs', 'releases.md'), 'utf8');
+    assert.match(releaseLog, new RegExp(`\\|\\s*${version}\\s*\\|\\s*${headSha}\\s*\\|`),
+      'the release log must still gain its row -- the site really did ship: ' + releaseLog);
   } finally {
     server.close();
   }
