@@ -53,7 +53,9 @@ function seed() {
     const profile = {
       id: `resilience-t${tier}`, name: `Test${tier}`, birthday,
       color: '#4ECDC4', voice: 'girl', mascot: { id: 'dog' },
-      tierOverrides: { [game]: tier }, features: {}, activitiesVisible: {}, youtube: [],
+      // Explicit visibility keeps the normally hidden Memory Match T1 cell in
+      // scope through the same parent override supported by the product.
+      tierOverrides: { [game]: tier }, features: {}, activitiesVisible: { [game]: true }, youtube: [],
     };
     localStorage.setItem('vb_profiles', JSON.stringify([profile]));
     localStorage.setItem('vb_active_id', profile.id);
@@ -158,6 +160,7 @@ async function runCell(browser, base, viewportName, viewport, tier, game) {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const checks = {};
+  let phase = 'launch';
   try {
     await visit(page, base, game);
     const text = ((await page.locator(game.instruction).first().textContent().catch(() => '')) || '').trim();
@@ -178,17 +181,20 @@ async function runCell(browser, base, viewportName, viewport, tier, game) {
 
     await page.setViewportSize(viewportName === 'phone' ? { width: 844, height: 390 } : { width: 900, height: 1280 });
     await page.waitForTimeout(100);
-    const resized = await geometry(page, game);
+    const resized = await geometry(page, { ...game, ready: game.alive });
     checks.resize_orientation = resized.overflow <= 1 && resized.vital && resized.nav ? pass('viewport/orientation change preserved controls') : fail(`overflow=${resized.overflow} vital=${resized.vital} nav=${resized.nav}`);
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
 
+    phase = 'reload';
     await page.reload({ waitUntil: 'domcontentloaded' }); await page.locator(game.ready).first().waitFor();
     checks.reload_mid_round = await alive(page, game) ? pass('reload restored playable round') : fail('reload did not restore game');
+    phase = 'navigation';
     await negativeInput(page, game); await page.locator('.back-btn').click(); await page.waitForURL(/\/games\/(index\.html)?$/);
     checks.navigation_during_animation = pass('Back during active state reached Games');
     await visit(page, base, game); await page.locator('.back-btn').click(); await page.waitForURL(/\/games\/(index\.html)?$/); await visit(page, base, game);
     checks.repeated_entry_exit = pass('two exit/re-entry cycles restored game');
 
+    phase = 'corrupt-state';
     await page.evaluate(({ tier }) => {
       sessionStorage.setItem('vb_pending_celebration', '{broken-json');
       localStorage.setItem(`vb_sppop_resilience-t${tier}`, '{broken-json');
@@ -200,6 +206,7 @@ async function runCell(browser, base, viewportName, viewport, tier, game) {
     checks.stale_corrupt_synthetic_state = await alive(page, game) ? pass('malformed pending/collection data and invalid stored score did not block launch') : fail('corrupt synthetic state blocked launch');
     checks.empty_min_max_values = tier === 1 || tier === 10 ? pass(`T${tier} age boundary and invalid stored scores remained playable`) : na('age min/max boundary applies to T1/T10');
 
+    phase = 'media-failure';
     await context.route(/\.(mp3|wav|ogg|m4a|mp4|webm)(\?|$)/i, route => route.abort('failed'));
     await page.addInitScript(() => { try { HTMLMediaElement.prototype.play = () => Promise.reject(new DOMException('synthetic media failure')); } catch {} try { speechSynthesis.cancel(); speechSynthesis.speak = () => {}; } catch {} });
     await page.reload({ waitUntil: 'domcontentloaded' }); await page.locator(game.ready).first().waitFor();
@@ -207,6 +214,7 @@ async function runCell(browser, base, viewportName, viewport, tier, game) {
     checks.interrupted_audio = await alive(page, game) ? pass('rejected playback/cancelled speech did not block game') : fail('audio interruption broke game');
     await context.unroute(/\.(mp3|wav|ogg|m4a|mp4|webm)(\?|$)/i);
 
+    phase = 'offline';
     const controlled = await page.evaluate(async () => {
       if (!('serviceWorker' in navigator)) return false;
       await navigator.serviceWorker.register('../sw.js', { updateViaCache: 'none' });
@@ -215,13 +223,22 @@ async function runCell(browser, base, viewportName, viewport, tier, game) {
     }).catch(() => false);
     if (!controlled) await page.reload({ waitUntil: 'domcontentloaded' });
     if (!await page.evaluate(() => !!navigator.serviceWorker.controller)) throw new Error('service worker did not control page');
+    // A controlled online navigation must finish its runtime cache write before
+    // the network is removed; otherwise the test races the service worker.
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.locator(game.ready).first().waitFor();
+    await page.waitForFunction(() => caches.match(location.href).then(Boolean), null, { timeout: 8000 });
     await context.setOffline(true); await page.reload({ waitUntil: 'domcontentloaded' }); await page.locator(game.ready).first().waitFor();
     checks.offline = await alive(page, game) ? pass('controlled offline reload restored game') : fail('offline reload failed');
     await context.setOffline(false);
     checks.timer_expiry = na('wall-clock expiry not accelerated in bounded run');
     checks.long_repeated_play = na('bounded run is not a long-duration soak');
+    if (Object.values(checks).some(result => result.status === 'FAIL')) {
+      const dir = path.join(OUT, 'failures'); mkdirSync(dir, { recursive: true });
+      await page.screenshot({ path: path.join(dir, `${game.id}-T${tier}-${viewportName}.png`), fullPage: true });
+    }
   } catch (error) {
-    checks.runner = fail(`${error.name}: ${error.message}`);
+    checks.runner = fail(`${phase}: ${error.name}: ${error.message}`);
     try { const dir = path.join(OUT, 'failures'); mkdirSync(dir, { recursive: true }); await page.screenshot({ path: path.join(dir, `${game.id}-T${tier}-${viewportName}.png`), fullPage: true }); } catch {}
   } finally {
     await context.setOffline(false).catch(() => {});
