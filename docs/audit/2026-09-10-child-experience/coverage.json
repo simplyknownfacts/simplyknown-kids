@@ -13269,8 +13269,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Spelling T6-T10 phone letter banks clip choices; T10 can hide a required letter; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Spelling repair verified; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -13296,11 +13296,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#spelling-repair-33a26ea"
       ]
     },
     {
@@ -13353,8 +13354,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Spelling T6-T10 phone letter banks clip choices; T10 can hide a required letter; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Spelling repair verified; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -13380,11 +13381,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#spelling-repair-33a26ea"
       ]
     },
     {
@@ -13437,8 +13439,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Spelling T6-T10 phone letter banks clip choices; T10 can hide a required letter; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Spelling repair verified; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -13464,11 +13466,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#spelling-repair-33a26ea"
       ]
     },
     {
@@ -13521,8 +13524,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Spelling T6-T10 phone letter banks clip choices; T10 can hide a required letter; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Spelling repair verified; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -13548,11 +13551,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#spelling-repair-33a26ea"
       ]
     },
     {
@@ -13605,19 +13609,19 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Spelling T6-T10 phone letter banks clip choices; T10 can hide a required letter; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Spelling repair verified; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "FAIL",
+        "input": "PASS",
         "progression": "PASS",
         "score": "NA",
         "rewards": "BLK",
         "restart": "BLK",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "FAIL",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -13632,11 +13636,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#spelling-repair-33a26ea"
       ]
     },
     {
