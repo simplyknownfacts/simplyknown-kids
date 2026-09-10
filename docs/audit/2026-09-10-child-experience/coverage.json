@@ -17054,8 +17054,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Color Splash phone targets verified at 44px; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -17081,11 +17081,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#art-resilience-2b500ff"
+        "baseline-observations.md#art-resilience-2b500ff",
+        "baseline-observations.md#color-splash-repair-9cffb54"
       ]
     },
     {
@@ -17138,8 +17139,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Color Splash phone targets verified at 44px; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -17165,11 +17166,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#art-resilience-2b500ff"
+        "baseline-observations.md#art-resilience-2b500ff",
+        "baseline-observations.md#color-splash-repair-9cffb54"
       ]
     },
     {
@@ -17222,8 +17224,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Color Splash phone targets verified at 44px; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -17249,11 +17251,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#art-resilience-2b500ff"
+        "baseline-observations.md#art-resilience-2b500ff",
+        "baseline-observations.md#color-splash-repair-9cffb54"
       ]
     },
     {
@@ -17306,8 +17309,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Color Splash phone targets verified at 44px; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -17333,11 +17336,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#art-resilience-2b500ff"
+        "baseline-observations.md#art-resilience-2b500ff",
+        "baseline-observations.md#color-splash-repair-9cffb54"
       ]
     },
     {
@@ -17390,8 +17394,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Color Splash phone targets verified at 44px; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -17417,11 +17421,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#art-resilience-2b500ff"
+        "baseline-observations.md#art-resilience-2b500ff",
+        "baseline-observations.md#color-splash-repair-9cffb54"
       ]
     },
     {
@@ -17474,8 +17479,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Color Splash phone targets verified at 44px; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -17501,11 +17506,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#art-resilience-2b500ff"
+        "baseline-observations.md#art-resilience-2b500ff",
+        "baseline-observations.md#color-splash-repair-9cffb54"
       ]
     },
     {
@@ -17558,8 +17564,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Color Splash phone targets verified at 44px; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -17585,11 +17591,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#art-resilience-2b500ff"
+        "baseline-observations.md#art-resilience-2b500ff",
+        "baseline-observations.md#color-splash-repair-9cffb54"
       ]
     },
     {
@@ -17642,8 +17649,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Color Splash phone targets verified at 44px; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -17669,11 +17676,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#art-resilience-2b500ff"
+        "baseline-observations.md#art-resilience-2b500ff",
+        "baseline-observations.md#color-splash-repair-9cffb54"
       ]
     },
     {
@@ -17726,8 +17734,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Color Splash phone targets verified at 44px; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -17753,11 +17761,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#art-resilience-2b500ff"
+        "baseline-observations.md#art-resilience-2b500ff",
+        "baseline-observations.md#color-splash-repair-9cffb54"
       ]
     },
     {
@@ -17810,8 +17819,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience defect: Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor; remaining dimensions are incomplete.",
+      "verdict": "BLK",
+      "reason": "Color Splash phone targets verified at 44px; remaining dimensions are incomplete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -17837,11 +17846,12 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "BLK",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#art-resilience-2b500ff"
+        "baseline-observations.md#art-resilience-2b500ff",
+        "baseline-observations.md#color-splash-repair-9cffb54"
       ]
     },
     {
