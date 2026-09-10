@@ -389,7 +389,9 @@ async function runCell(browser, base, viewportName, viewport, tier, activity) {
     checks.layout_bounds = initial.overflow <= 1 && initial.ready && initial.alive && initial.nav && initial.allControlsInView && initial.safeTargets
       ? pass('studio, navigation and 44px controls are inside the viewport')
       : fail(`overflow=${initial.overflow} ready=${initial.ready} alive=${initial.alive} nav=${initial.nav} controls=${initial.allControlsInView} safeTargets=${initial.safeTargets} unsafe=${JSON.stringify(initial.controls.filter(rect => rect.width < 44 || rect.height < 44))}`);
-    checks.visual_quality = blk('geometry is automated; full visual-quality judgement remains unreviewed');
+    checks.visual_quality = activity.id === 'color-splash' && viewportName === 'phone' && !initial.safeTargets
+      ? fail('Color Splash phone color pips are 42x42px, below the Kids 44px child-target floor')
+      : blk('geometry is automated; full visual-quality judgement remains unreviewed');
     checks.score = na('Art route has no score counter');
     checks.rewards = blk('action recording does not by itself prove award timing or duplication');
 
