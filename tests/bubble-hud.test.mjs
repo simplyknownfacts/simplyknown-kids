@@ -228,21 +228,34 @@ test('Bubble Pop HUD keeps navigation, instructions, score, and playfield separa
       await page.close();
     });
 
-    await t.test('younger Bubble Pop has score only, without a target or instruction replay', async () => {
-      const page = await open(2, [320,568]);
-      assert.equal(await page.locator('#target').isVisible(), false);
-      assert.equal(await page.locator('.vb-replay-instruction').count(), 0);
-      assert.equal(await page.locator('#score').isVisible(), true);
-      assert.equal(await page.locator('#score').evaluate(element => element.parentElement?.id), 'bubbleHud');
-      const positions = await page.evaluate(() => {
-        const hud = document.getElementById('bubbleHud').getBoundingClientRect();
-        const canvas = document.getElementById('canvas').getBoundingClientRect();
-        return { hudBottom:hud.bottom, canvasTop:canvas.top };
-      });
-      assert.ok(positions.canvasTop >= positions.hudBottom);
-      assert.deepEqual(await page.evaluate(() => window.__audioPlays), []);
-      await page.close();
-    });
+    for (const tier of [1,2,3,4]) {
+      for (const [label,viewport] of [['phone',[390,844]],['desktop',[1280,900]]]) {
+        await t.test(`tier ${tier} ${label}: toddler cue is visible, spoken, and replayable`, async () => {
+          const page = await open(tier, viewport);
+          await page.waitForTimeout(50);
+          assert.equal(await page.evaluate(() => window.__audioPlays.length), 1);
+          assert.equal(await page.locator('#target').isVisible(), true);
+          assert.equal((await page.locator('#target').textContent()).trim(), 'Tap the bubbles!');
+          assert.equal(await page.locator('.vb-replay-instruction').count(), 1);
+          assert.equal(await page.locator('#score').isVisible(), true);
+          assert.equal(await page.locator('#score').evaluate(element => element.parentElement?.id), 'bubbleHud');
+          const before = await page.evaluate(() => ({ plays:[...window.__audioPlays], score:document.getElementById('scoreVal').textContent }));
+          await page.locator('.vb-replay-instruction').click();
+          await page.waitForFunction(count => window.__audioPlays.length === count + 1, before.plays.length);
+          const after = await page.evaluate(() => ({ plays:[...window.__audioPlays], score:document.getElementById('scoreVal').textContent }));
+          assert.equal(after.plays.length, 2);
+          assert.equal(after.plays[1], after.plays[0]);
+          assert.equal(after.score, before.score);
+          const positions = await page.evaluate(() => {
+            const hud = document.getElementById('bubbleHud').getBoundingClientRect();
+            const canvas = document.getElementById('canvas').getBoundingClientRect();
+            return { hudBottom:hud.bottom, canvasTop:canvas.top };
+          });
+          assert.ok(positions.canvasTop >= positions.hudBottom);
+          await page.close();
+        });
+      }
+    }
 
     await t.test('physical bubble tap still scores at canvas-local coordinates below the HUD', async () => {
       const page = await open(6, [390,844], true);
