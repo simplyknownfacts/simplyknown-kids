@@ -132,7 +132,6 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/mascot.js"></script>
   <script>
     // Mascot intentionally NOT shown on the section menu (its fixed bottom-left
@@ -165,7 +164,7 @@
       // The channel emoji and label are typed by a grown-up and round-trip through
       // cloud sync, so they are untrusted. Build the nodes and set their TEXT —
       // never innerHTML, or a name containing markup would run as code on this
-      // origin (where the sync key and Yoto tokens live).
+      // origin (where the sync key and other local app state live).
       const cell = (cls, text) => {
         const el = document.createElement('div');
         el.className = cls;

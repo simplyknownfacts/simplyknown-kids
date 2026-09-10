@@ -451,7 +451,6 @@
               <button type="button" class="btn" onclick="showPanel('features')">Extra game options</button>
               <button type="button" class="btn" onclick="showPanel('youtube')">Video channels</button>
               <button type="button" class="btn" onclick="showPanel('coloring')">Coloring pictures</button>
-              <button type="button" class="btn" onclick="showPanel('yoto')">Yoto stories</button>
               <button type="button" class="btn" onclick="showPanel('offline')">Offline &amp; travel</button>
               <button type="button" class="btn" onclick="showPanel('sync')">Account &amp; devices</button>
               <button type="button" class="btn" onclick="showPanel('pin')">Parent PIN</button>
@@ -611,18 +610,6 @@
           </div>
         </section>
 
-        <!-- 🎧 Yoto -->
-        <section class="settings-panel" id="panel-yoto" data-key="yoto" data-icon="🎧" data-title="Yoto" data-group="app">
-          <div class="acc-title"><span class="ic">🎧</span><span class="acc-label">Yoto</span><span class="chev">▾</span></div>
-          <div class="panel-body">
-            <h2>🎧 Yoto</h2>
-            <div class="subtitle" style="margin-bottom:12px;color:var(--parent-muted);font-size:13px;">
-              Connect your Yoto account to let the child play family recordings (MYO cards) and purchased Yoto stories from the Listen tab.
-            </div>
-            <div id="yotoSection"></div>
-          </div>
-        </section>
-
         <!-- ☁️ Cloud Sync -->
         <section class="settings-panel" id="panel-sync" data-key="sync" data-icon="☁️" data-title="Account &amp; devices" data-group="app">
           <div class="acc-title"><span class="ic">☁️</span><span class="acc-label">Cloud sync</span><span class="chev">▾</span></div>
@@ -642,7 +629,7 @@
           <div class="panel-body">
             <h2>📥 Offline / Travel</h2>
             <div class="subtitle" style="margin-bottom:12px;color:var(--parent-muted);font-size:13px;">
-              Going somewhere with no internet (a plane, the car, grandma's)? Download your family's games, sounds, and mascots onto THIS device so everything works offline. (YouTube and Yoto still need internet.)
+              Going somewhere with no internet (a plane, the car, grandma's)? Download your family's games, sounds, and mascots onto THIS device so everything works offline. (YouTube still needs internet.)
             </div>
             <div id="offlineSection"></div>
           </div>
@@ -678,8 +665,6 @@
   <script src="../js/app.js"></script>
   <script src="../js/mascot.js"></script>
   <script src="../js/sync.js"></script>
-  <script src="../js/yoto-config.js"></script>
-  <script src="../js/yoto.js"></script>
   <script src="../js/pin-lockout.js"></script>
   <script>
     const PIN_KEY = 'vb_pin';            // stores JSON {hash,salt} now; legacy = raw 4 digits
@@ -865,7 +850,6 @@
       buildActivitiesSection();
       buildYoutubeSection();
       buildColoringSection();
-      buildYotoSection();
       buildSyncSection();
       buildOfflineSection();
       const startKey = getProfiles().length ? (_activePanel || 'overview') : 'children';
@@ -884,7 +868,7 @@
     let _activePanel = null;
 
     const PER_CHILD_PANELS = ['activities', 'mascot', 'voice', 'theme', 'features', 'youtube'];
-    const APP_PANELS = ['children', 'coloring', 'yoto', 'sync', 'offline', 'pin'];
+    const APP_PANELS = ['children', 'coloring', 'sync', 'offline', 'pin'];
 
     function _settingsChild() {
       return getProfiles().find(p => p.id === _settingsChildId) || null;
@@ -906,7 +890,7 @@
       const child = _settingsChild();
       const who = child ? '· ' + child.name : '';
       document.querySelectorAll('.panel-who').forEach(el => {
-        // App panels (children/yoto/sync/pin) don't carry a .panel-who element,
+        // App panels (children/sync/pin) don't carry a .panel-who element,
         // so this only ever fills the per-child panel headers.
         el.textContent = who;
       });
@@ -1326,67 +1310,6 @@
       return out;
     }
 
-    function buildYotoSection() {
-      const section = document.getElementById('yotoSection');
-      if (!window.yoto) { section.innerHTML = ''; return; }
-      const configured = yoto.isConfigured();
-      const connected = yoto.isConnected();
-      let html = '<div class="card">';
-      if (!configured) {
-        const savedId = localStorage.getItem('vb_yoto_client_id') || '';
-        html += `
-          <div style="color:var(--parent-muted);font-size:13px;line-height:1.5;margin-bottom:10px;">
-            <strong style="color:var(--parent-ink);">Step 1:</strong> apply at <a href="https://yoto.dev" target="_blank" style="color:var(--parent-accent);">yoto.dev</a> for browser-auth API access.<br>
-            <strong style="color:var(--parent-ink);">Step 2:</strong> when Yoto sends a <code>client_id</code>, paste it below.
-          </div>
-          <label style="display:block;font-size:13px;color:var(--parent-muted);margin-bottom:4px;">Yoto Client ID</label>
-          <input type="text" id="yotoClientIdInput" placeholder="paste client_id here" value="${savedId.replace(/"/g, '&quot;')}">
-          <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="saveYotoClientId()">Save Client ID</button>
-          <div id="yotoMsg" style="color:var(--parent-danger);font-size:12px;margin-top:8px;min-height:14px;"></div>
-        `;
-      } else if (!connected) {
-        html += `
-          <div style="color:var(--parent-muted);font-size:13px;margin-bottom:12px;">
-            Client ID configured. Tap below to sign in with your Yoto account.
-          </div>
-          <button class="btn btn-primary" style="width:100%;" onclick="window.yoto.connect()">🎧 Connect Yoto Account</button>
-          <button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:12px;" onclick="clearYotoClientId()">Change client ID</button>
-        `;
-      } else {
-        html += `
-          <div style="color:var(--parent-accent);font-weight:800;margin-bottom:6px;">✓ Connected to Yoto</div>
-          <div style="color:var(--parent-muted);font-size:13px;margin-bottom:12px;">
-            Family recordings + your Yoto library now appear in the kid's Listen tab.
-          </div>
-          <button class="btn btn-ghost" style="width:100%;" onclick="disconnectYoto()">Disconnect</button>
-        `;
-      }
-      html += '</div>';
-      section.innerHTML = html;
-    }
-
-    function saveYotoClientId() {
-      const input = document.getElementById('yotoClientIdInput');
-      const id = input.value.trim();
-      const msg = document.getElementById('yotoMsg');
-      if (!id || id.length < 6) { msg.textContent = 'Client ID looks wrong — paste the value from Yoto.'; return; }
-      localStorage.setItem('vb_yoto_client_id', id);
-      msg.style.color = 'var(--parent-accent)';
-      msg.textContent = '✓ Saved. Reloading…';
-      setTimeout(() => location.reload(), 800);
-    }
-    function clearYotoClientId() {
-      if (!confirm('Clear the Yoto client ID? You can paste a new one after.')) return;
-      localStorage.removeItem('vb_yoto_client_id');
-      yoto.disconnect();
-      location.reload();
-    }
-    function disconnectYoto() {
-      if (!confirm('Disconnect from Yoto? The child will lose access to your Yoto library until you reconnect.')) return;
-      yoto.disconnect();
-      buildYotoSection();
-    }
-
     function buildSyncSection() {
       const section = document.getElementById('syncSection');
       const s = window.cloudSync ? window.cloudSync.status() : { email: null };
@@ -1692,7 +1615,7 @@
             <button class="btn btn-ghost" id="offlineRemoveBtn" style="${have > 0 ? '' : 'display:none;'}">Remove download</button>
           </div>
           <div style="font-size:11px;color:var(--parent-muted);margin-top:10px;line-height:1.5;">
-            Tip: download on wi-fi before you leave. It survives app updates. YouTube &amp; Yoto still need internet.
+            Tip: download on wi-fi before you leave. It survives app updates. YouTube still needs internet.
           </div>
         </div>`;
 

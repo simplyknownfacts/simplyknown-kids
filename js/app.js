@@ -9,6 +9,16 @@ let _activeSpeechKind = null;
 let _lastInstructionText = '';
 let _vbReplayEl = null;
 
+// Retired listening-integration state must not linger on family devices or
+// revive old playback. These keys are no longer read anywhere in the app.
+try {
+  localStorage.removeItem('vb_yoto_tokens');
+  localStorage.removeItem('vb_yoto_client_id');
+  sessionStorage.removeItem('vb_yoto_pkce_verifier');
+  sessionStorage.removeItem('vb_yoto_oauth_state');
+  sessionStorage.removeItem('vb_yoto_now_playing');
+} catch (e) {}
+
 // Zoom defense — toddlers triggering pinch/wheel-zoom shouldn't break the
 // layout. Viewport meta user-scalable=no is ignored on modern iOS, and a
 // Chrome PWA on desktop still honors Ctrl+wheel and Ctrl+=. Trap the routes

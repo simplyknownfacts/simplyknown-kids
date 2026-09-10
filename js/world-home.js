@@ -20,11 +20,10 @@
     clearTimeout(statusTimer);status.textContent = text;
     statusTimer = setTimeout(() => { status.textContent = ''; }, 4500);
   }
-  function connected() { return !!(window.yoto && yoto.isConfigured() && yoto.isConnected()); }
   function availability() {
     for (const button of host.querySelectorAll('[data-world]')) {
       const kind=button.dataset.world;
-      const disabled=((kind==='watch'||kind==='listen')&&!navigator.onLine)||(kind==='listen'&&!connected());
+      const disabled=kind==='watch'&&!navigator.onLine;
       button.setAttribute('aria-disabled',String(disabled));
     }
   }
@@ -36,11 +35,8 @@
   }
   function activate(kind) {
     if(leaving||!Object.hasOwn(routes,kind))return;
-    if((kind==='watch'||kind==='listen')&&!navigator.onLine) {
+    if(kind==='watch'&&!navigator.onLine) {
       announce('This hut needs a connection. Games, Learn and Art are ready.');return;
-    }
-    if(kind==='listen'&&!connected()) {
-      announce('A grown-up can connect your Listening Hut in Parent Settings.');return;
     }
     if(typeof playPop==='function')playPop();navigate(routes[kind]);
   }

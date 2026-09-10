@@ -69,21 +69,23 @@ test('3D world fits, uses building geometry for taps and keeps its buddy in the 
         // Physical browser pointer events, not DOM .click(): each facade must
         // select its own building. Stub only the eventual page transition.
         await page.evaluate(()=>{window.testNav=[];window.goTo=p=>window.testNav.push(p);});
-        for(const kind of ['games','learn','art','watch']){
+        for(const kind of ['games','learn','art','watch','listen']){
           const p=await hutPoint(kind);await page.mouse.click(p.x,p.y);
-          const expected={games:'games/index.html',learn:'learning/index.html',art:'art/index.html',watch:'videos/index.html'}[kind];
+          const expected={games:'games/index.html',learn:'learning/index.html',art:'art/index.html',watch:'videos/index.html',listen:'listen/index.html'}[kind];
           assert.deepEqual(await page.evaluate(()=>window.testNav),[expected]);
           await open();await page.evaluate(()=>{window.testNav=[];window.goTo=p=>window.testNav.push(p);});
         }
       });
     }
-    await t.test('safe profile text, selected companion, unavailable hut, and 30 rapid physical taps',async()=>{
+    await t.test('safe profile text, selected companion, local Listen, and 30 rapid physical taps',async()=>{
       await page.setViewportSize({width:390,height:844});await open();
       assert.equal(await page.locator('#hiText').textContent(),'Hello, <Explorer>!');
       assert.equal(await page.locator('#worldCompanion').getAttribute('data-animal'),'bunny');
       await page.waitForFunction(()=>[...document.querySelectorAll('#mascotWrap video')].some(v=>v.readyState>=2 && v.currentSrc.includes('/bunny/')));
+      await page.evaluate(()=>{window.testNav=[];window.goTo=p=>window.testNav.push(p);});
       const listen=await hutPoint('listen');await page.mouse.click(listen.x,listen.y);
-      assert.match(await page.locator('#worldStatus').textContent(),/grown-up/);assert.ok(page.url().endsWith('/home.html'));
+      assert.deepEqual(await page.evaluate(()=>window.testNav),['listen/index.html']);
+      await open();
       await page.evaluate(()=>{window.testNav=[];window.goTo=p=>window.testNav.push(p);});
       const games=await hutPoint('games');for(let i=0;i<30;i++)await page.mouse.click(games.x,games.y);
       assert.deepEqual(await page.evaluate(()=>window.testNav),['games/index.html']);
@@ -134,9 +136,11 @@ test('3D world fits, uses building geometry for taps and keeps its buddy in the 
       try {
         await page.goto(`http://127.0.0.1:${port}/home.html`,{waitUntil:'domcontentloaded'});
         await page.waitForSelector('#worldScene[data-state="fallback"]',{timeout:6000});
-        const listen=await page.locator('[data-world="listen"]').boundingBox();
-        await page.mouse.click(listen.x+listen.width/2,listen.y+listen.height/2);
-        assert.match(await page.locator('#worldStatus').textContent(),/grown-up/);
+        await page.evaluate(()=>Object.defineProperty(navigator,'onLine',{configurable:true,get:()=>false}));
+        const watch=await page.locator('[data-world="watch"]').boundingBox();
+        await page.mouse.click(watch.x+watch.width/2,watch.y+watch.height/2);
+        assert.match(await page.locator('#worldStatus').textContent(),/needs a connection/);
+        await page.evaluate(()=>Object.defineProperty(navigator,'onLine',{configurable:true,get:()=>true}));
         release();await page.waitForSelector('#worldScene[data-state="ready"]');
         assert.equal(await page.locator('#worldCanvas').isVisible(),true);
         assert.equal(await page.locator('#worldStatus').textContent(),'');

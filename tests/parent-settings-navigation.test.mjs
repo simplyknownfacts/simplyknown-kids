@@ -8,7 +8,7 @@ import path from 'node:path';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const PANEL_KEYS = [
   'overview', 'activities', 'features', 'voice', 'theme', 'mascot',
-  'coloring', 'youtube', 'children', 'yoto', 'sync', 'offline', 'pin',
+  'coloring', 'youtube', 'children', 'sync', 'offline', 'pin',
 ];
 
 const FIRST = {

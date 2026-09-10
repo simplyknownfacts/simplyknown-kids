@@ -2,6 +2,13 @@
 
 Scott's 2026-09-10 instruction via CEO: API access will not be granted; hide/remove every discoverable Yoto feature. Prefer reversible changes; dormant integration may remain only unreachable, inert, unable to request media/network, and outside offline preloads. This is the only authorized application change during the audit.
 
+## Implementation checkpoint
+
+1. Implemented in the commit containing this record; independent fixed-commit review remains pending. Child home and Listen no longer require an account or network, parent controls and public copy are removed, the callback is a script-free local redirect, shared-player imports are gone, stale stored state is erased at startup, and cache `vb-v166` excludes the retired scripts and callback.
+2. Preserved behavior: Listen exposes the visibility-gated Tap-a-Tune route, all five sleep-timer choices remain, and a real browser test proves local DOM audio fades, pauses, restores volume and clears the timer after Listen → Tap-a-Tune navigation.
+3. Red-before-green: `tests/yoto-retired.test.mjs` was 0/4 on the baseline and is 4/4 now. Full local suite: 287/287. Standalone runtime proof: phone 390×844 and desktop 1280×900 child/parent/callback/stale-state checks PASS; forced-offline Listen and Tap-a-Tune PASS from `vb-v166`; zero retired-service requests observed.
+4. Intentionally retained: dormant `js/yoto*.js` source for reversibility and existing `_headers` domain allowances because release/security gate edits were outside scope. No shipped HTML imports those files and the service worker does not preload them.
+
 ## Baseline inventory — c96cdbc
 
 | Surface | Baseline source | Required result |

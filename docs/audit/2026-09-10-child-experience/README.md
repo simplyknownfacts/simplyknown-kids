@@ -1,12 +1,12 @@
 # Comprehensive child-experience audit — 2026-09-10 (codex)
 
-Status: INCOMPLETE; baseline checkpoint saved. Scott subsequently authorized Yoto withdrawal as the only application change. Implementation has not started; four new requirement guards are intentionally red.
+Status: INCOMPLETE full audit; baseline checkpoint saved. The authorized Yoto withdrawal is implemented and locally verified in this checkpoint; independent fixed-commit review is still required before that fix is accepted.
 
 1. Fixed app baseline: `c96cdbc15b1065f89575f6c3fc4c4ff4e0e92946`, matching local `kids/child-experience`; isolated checkout `C:\Users\HomeSeer\.codex\worktrees\e2bb\Kids_App`, audit branch `codex/kids-experience-audit-20260910`. No remote baseline claim.
 2. Charter missing from isolated worktree: read canonical same-project `C:\Users\HomeSeer\OneDrive\Documents\Claude\Projects\Kids_App\CLAUDE.md`; latest project handoff `handoff-2026-09-09-phone-bugs.md`. Its obsolete eight-activity list is not the inventory.
 3. Local preview: `http://localhost:8798`; `/__health.json` identifies Kids and `/version.json` matches baseline. Standard server ignores Cloudflare `_headers`: CSP deployment parity remains a separate check.
 4. Browser: visible Codex in-app Chromium; Chrome creation timed out. Synthetic Explorer profile created through existing localhost-only `preview.html`; no real family state. Desktop 1280×900, phone 390×844 planned. Physical device, audio heard by a human, iOS sensor behavior and external services are separate gaps.
-5. Evidence: screenshots under ignored `docs/verify/shots/audit-20260910/`; text observations and findings here. Do not call old test labels or successful loads behavioral proof.
+5. Evidence: screenshots under ignored `docs/verify/shots/audit-20260910/`; text observations and findings here. Yoto proof now includes 287/287 regression tests plus a standalone phone/desktop/offline browser drive; do not treat that bounded fix proof as completion of the wider activity matrix.
 
 ## Desk-routing screen (Scott.MD 6.4)
 

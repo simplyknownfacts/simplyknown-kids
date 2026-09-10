@@ -1,140 +1,180 @@
-// Verifies the Yoto player UI:
-//  - Launcher FAB shows on home + section hubs ONLY when the active profile has
-//    a Yoto token; hidden when no token; hidden inside an activity page; and it
-//    links to the Listen page.
-//  - Listen now-playing: grid renders, a chapter plays, and ⏮/⏭ move the chapter
-//    with prev disabled at the first chapter and next disabled at the last.
-// Self-contained: own static server, stubbed window.yoto + audio. Run w/ the suite.
-import { chromium } from 'playwright';   // requires the e2e node_modules (run with the suite)
-import { createServer } from 'http';
-import { readFile } from 'fs/promises';
-import { join, extname, dirname } from 'path';
-import { fileURLToPath } from 'url';
+// Standalone browser proof for the retired integration.
+// Runs phone and desktop against the local app only; no external request is allowed.
+import { chromium } from 'playwright';
+import { createServer } from 'node:http';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import path from 'node:path';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const PORT = 8869;
-const MIME = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.json':'application/json',
-  '.png':'image/png', '.svg':'image/svg+xml', '.mp3':'audio/mpeg', '.webm':'video/webm', '.woff2':'font/woff2', '.ico':'image/x-icon' };
-const server = createServer(async (req, res) => {
-  try {
-    let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html';
-    const buf = await readFile(join(ROOT, p));
-    res.writeHead(200, { 'Content-Type': MIME[extname(join(ROOT,p))] || 'application/octet-stream' }); res.end(buf);
-  } catch { res.writeHead(404); res.end('404'); }
+const ROOT = path.resolve(import.meta.dirname, '..', '..');
+
+async function freePort() {
+  const probe = createServer();
+  probe.listen(0, '127.0.0.1');
+  await once(probe, 'listening');
+  const port = probe.address().port;
+  await new Promise(resolve => probe.close(resolve));
+  return port;
+}
+
+const port = await freePort();
+const base = `http://127.0.0.1:${port}`;
+const server = spawn(process.execPath, [path.join(ROOT, 'scripts', 'serve.mjs')], {
+  cwd: ROOT,
+  env: { ...process.env, PORT: String(port) },
+  stdio: ['ignore', 'pipe', 'pipe'],
 });
-await new Promise(r => server.listen(PORT, r));
 
-// Stub yoto.js: served in place of the real module so the Listen page renders a
-// mocked multi-chapter library without a real Yoto login.
-const YOTO_STUB = `window.yoto = {
-  isConfigured: () => true,
-  isConnected: () => true,
-  listContent: async () => ({ ok:true, cards: [
-    { cardId:'c1', metadata:{ title:'Twinkle Tunes' } },
-    { cardId:'c2', title:'Story Time' },
-  ]}),
-  getCard: async (id) => ({ ok:true, card: { metadata:{ title: id==='c1'?'Twinkle Tunes':'Story Time' },
-    content:{ chapters: [
-      { title:'Chapter 1', tracks:[{ trackUrl:'https://example.com/a.mp3' }] },
-      { title:'Chapter 2', tracks:[{ trackUrl:'https://example.com/b.mp3' }] },
-      { title:'Chapter 3', tracks:[{ trackUrl:'https://example.com/c.mp3' }] },
-    ]}}}),
-  getStreamUrl: async (t) => (t && t.trackUrl) || 'https://example.com/x.mp3',
-  connect: ()=>{}, completeAuth: async()=>true, disconnect: ()=>{},
-};`;
-
-const d = new Date(); d.setMonth(d.getMonth() - 30); const bday = d.toISOString().slice(0,10);
-const prof = { id:'A', name:'Aldo', birthday:bday, avatar:'\u{1F98A}', color:'#4ECDC4', voice:'girl', mascot:null,
-  tierOverrides:{}, features:{}, youtube:[], achievements:{ unlocked:{}, counters:{}, repeats:{}, streak:{last:null,current:0,best:0}, xp:0, rank:'sprout' } };
-const seed = `try{localStorage.setItem('vb_profiles',JSON.stringify([${JSON.stringify(prof)}]));localStorage.setItem('vb_active_id','A');}catch(e){}
-try{HTMLMediaElement.prototype.play=function(){return Promise.resolve();};}catch(e){}
-try{if(window.speechSynthesis)speechSynthesis.speak=function(){};}catch(e){}`;
-const tokenScript = `try{localStorage.setItem('vb_yoto_tokens', JSON.stringify({access_token:'t',refresh_token:'r',expires_at:Date.now()+3600000,scope:''}));}catch(e){}`;
+await new Promise((resolve, reject) => {
+  const timeout = setTimeout(() => reject(new Error('local server did not start')), 15000);
+  server.stdout.on('data', data => {
+    if (String(data).includes('localhost:' + port)) {
+      clearTimeout(timeout);
+      resolve();
+    }
+  });
+  server.once('error', error => {
+    clearTimeout(timeout);
+    reject(error);
+  });
+});
 
 const browser = await chromium.launch();
-async function makeCtx(withToken) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
-  await ctx.route('**/js/yoto.js', r => r.fulfill({ contentType: 'text/javascript', body: YOTO_STUB }));
-  await ctx.addInitScript(seed);
-  if (withToken) await ctx.addInitScript(tokenScript);
-  return ctx;
+const results = [];
+let offlineResult = null;
+
+try {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 900 }]) {
+    const context = await browser.newContext({ viewport, serviceWorkers: 'block' });
+    const externalYoto = [];
+    await context.route('**/*', route => {
+      const url = route.request().url();
+      if (url.startsWith(base)) return route.continue();
+      if (/yoto/i.test(url)) externalYoto.push(url);
+      return route.abort();
+    });
+    await context.addInitScript(profile => {
+      localStorage.setItem('vb_profiles', JSON.stringify([profile]));
+      localStorage.setItem('vb_active_id', profile.id);
+      localStorage.setItem('vb_pin', '1234');
+      localStorage.setItem('vb_yoto_tokens', JSON.stringify({ access_token: 'stale' }));
+      localStorage.setItem('vb_yoto_client_id', 'stale-client');
+      sessionStorage.setItem('vb_yoto_now_playing', JSON.stringify({
+        src: 'https://api.yotoplay.com/old.mp3',
+        playing: true,
+        title: 'Old playback',
+      }));
+      sessionStorage.setItem('vb_yoto_pkce_verifier', 'stale-verifier');
+      sessionStorage.setItem('vb_yoto_oauth_state', 'stale-state');
+    }, {
+      id: 'retired-test', name: 'Explorer', birthday: '2020-01-01', color: '#7CC6FF',
+      voice: 'woman', mascot: { id: 'bunny' }, tierOverrides: {}, features: {},
+      activitiesVisible: {}, youtube: [],
+    });
+
+    const page = await context.newPage();
+    page.setDefaultTimeout(12000);
+
+    await page.goto(base + '/home.html', { waitUntil: 'load' });
+    const home = {
+      retiredUi: await page.locator('#yotoMini, #yotoLaunch').count(),
+      retiredText: /yoto/i.test(await page.locator('body').innerText()),
+      staleState: await page.evaluate(() => [
+        localStorage.getItem('vb_yoto_tokens'),
+        localStorage.getItem('vb_yoto_client_id'),
+        sessionStorage.getItem('vb_yoto_now_playing'),
+        sessionStorage.getItem('vb_yoto_pkce_verifier'),
+        sessionStorage.getItem('vb_yoto_oauth_state'),
+      ]),
+    };
+
+    await page.goto(base + '/listen/index.html', { waitUntil: 'load' });
+    const listen = {
+      tuneLink: await page.locator('a[href="../games/tap-a-tune.html"]').count(),
+      timerButtons: await page.locator('.sleep-btn').count(),
+      retiredUi: await page.locator('#yotoMini, #yotoLaunch, #player, .card-tile').count(),
+      retiredText: /yoto/i.test(await page.locator('body').innerText()),
+    };
+
+    await page.goto(base + '/parent/settings.html', { waitUntil: 'load' });
+    for (const digit of ['1', '2', '3', '4']) {
+      await page.locator('#pinPad .pin-key', { hasText: new RegExp(`^${digit}$`) }).click();
+    }
+    await page.locator('#mainSettings').waitFor({ state: 'visible' });
+    const parent = {
+      retiredPanel: await page.locator('[data-key="yoto"], #panel-yoto').count(),
+      retiredText: /yoto/i.test(await page.locator('#mainSettings').innerText()),
+    };
+
+    await page.goto(base + '/yoto-callback.html?code=old&state=old', { waitUntil: 'load' });
+    await page.waitForURL('**/index.html');
+    const callbackSafe = page.url() === base + '/index.html';
+
+    results.push({
+      viewport: `${viewport.width}x${viewport.height}`,
+      home,
+      listen,
+      parent,
+      callbackSafe,
+      externalYoto,
+    });
+    await context.close();
+  }
+
+  const offlineContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    serviceWorkers: 'allow',
+  });
+  await offlineContext.route('**/*', route =>
+    route.request().url().startsWith(base) ? route.continue() : route.abort());
+  await offlineContext.addInitScript(profile => {
+    localStorage.setItem('vb_profiles', JSON.stringify([profile]));
+    localStorage.setItem('vb_active_id', profile.id);
+  }, {
+    id: 'offline-listen', name: 'Offline Explorer', birthday: '2020-01-01', color: '#7CC6FF',
+    voice: 'woman', mascot: { id: 'bunny' }, tierOverrides: {}, features: {},
+    activitiesVisible: {}, youtube: [],
+  });
+  const offlinePage = await offlineContext.newPage();
+  offlinePage.setDefaultTimeout(15000);
+  await offlinePage.goto(base + '/home.html', { waitUntil: 'load' });
+  await offlinePage.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await offlinePage.reload({ waitUntil: 'load' });
+  await offlinePage.waitForFunction(() => !!navigator.serviceWorker.controller);
+  const cacheName = await offlinePage.evaluate(async () =>
+    (await caches.keys()).find(name => name === 'vb-v166') || null);
+
+  await offlineContext.setOffline(true);
+  await offlinePage.goto(base + '/listen/index.html', { waitUntil: 'load' });
+  const listenOffline = await offlinePage.locator('a[href="../games/tap-a-tune.html"]').count() === 1 &&
+    await offlinePage.locator('#yotoMini, #yotoLaunch, #player, .card-tile').count() === 0;
+  await offlinePage.locator('a[href="../games/tap-a-tune.html"]').click();
+  await offlinePage.waitForURL('**/games/tap-a-tune.html');
+  const tuneOffline = await offlinePage.locator('.pad').count() > 0;
+  offlineResult = { cacheName, listenOffline, tuneOffline };
+  await offlineContext.setOffline(false);
+  await offlineContext.close();
+} finally {
+  await browser.close();
+  server.kill();
 }
-const results = {};
-const has = async (page, sel) => (await page.locator(sel).count()) > 0;
 
-// ---- Connected context: launcher visibility across page types + Listen player ----
-const ctxC = await makeCtx(true);
+const pass = results.every(result =>
+  result.home.retiredUi === 0 &&
+  result.home.retiredText === false &&
+  result.home.staleState.every(value => value === null) &&
+  result.listen.tuneLink === 1 &&
+  result.listen.timerButtons === 5 &&
+  result.listen.retiredUi === 0 &&
+  result.listen.retiredText === false &&
+  result.parent.retiredPanel === 0 &&
+  result.parent.retiredText === false &&
+  result.callbackSafe === true &&
+  result.externalYoto.length === 0) &&
+  offlineResult?.cacheName === 'vb-v166' &&
+  offlineResult.listenOffline === true &&
+  offlineResult.tuneOffline === true;
 
-// A) home hub → launcher present
-let page = await ctxC.newPage();
-await page.goto(`http://localhost:${PORT}/home.html`, { waitUntil: 'networkidle' });
-await page.waitForTimeout(300);
-results.launcher_home = await has(page, '#yotoLaunch');
-// launcher links to the Listen page
-await page.locator('#yotoLaunch').dispatchEvent('pointerdown');   // pulse animation makes .click() "unstable"
-await page.waitForURL('**/listen/index.html', { timeout: 8000 }).catch(()=>{});
-results.launcher_navigates_to_listen = page.url().includes('/listen/index.html');
-await page.close();
-
-// B) section hub (games/index.html — does NOT load yoto.js) → launcher present
-page = await ctxC.newPage();
-await page.goto(`http://localhost:${PORT}/games/index.html`, { waitUntil: 'networkidle' });
-await page.waitForTimeout(300);
-results.launcher_section_hub = await has(page, '#yotoLaunch');
-await page.close();
-
-// D) activity page (not a hub) → launcher absent
-page = await ctxC.newPage();
-await page.goto(`http://localhost:${PORT}/games/tap-pop.html`, { waitUntil: 'networkidle' });
-await page.waitForTimeout(300);
-results.launcher_absent_in_activity = !(await has(page, '#yotoLaunch'));
-await page.close();
-
-// E) Listen page: grid + play + prev/next bounds
-page = await ctxC.newPage();
-await page.goto(`http://localhost:${PORT}/listen/index.html`, { waitUntil: 'networkidle' });
-await page.waitForSelector('.card-tile', { timeout: 8000 });
-results.grid_tiles = await page.locator('.card-tile').count();
-await page.locator('.card-tile').first().click();          // open card → chapter picker (3 chapters)
-await page.waitForSelector('.chapters-overlay .chap-row', { timeout: 8000 });
-await page.locator('.chap-row').first().click();           // play chapter 1 (idx 0)
-await page.waitForSelector('#player.active', { timeout: 8000 });
-const dis = (sel) => page.locator(sel).evaluate(el => el.disabled);
-results.player_active = await has(page, '#player.active');
-results.prev_disabled_at_start = await dis('#prevChap');   // true
-results.next_enabled_at_start = !(await dis('#nextChap')); // true
-await page.locator('#nextChap').click();                   // → idx 1
-await page.waitForTimeout(150);
-results.prev_enabled_mid = !(await dis('#prevChap'));      // true
-await page.locator('#nextChap').click();                   // → idx 2 (last)
-await page.waitForTimeout(150);
-results.next_disabled_at_end = await dis('#nextChap');     // true
-await page.close();
-await ctxC.close();
-
-// ---- Disconnected context: no token → launcher hidden on a hub ----
-const ctxD = await makeCtx(false);
-page = await ctxD.newPage();
-await page.goto(`http://localhost:${PORT}/games/index.html`, { waitUntil: 'networkidle' });
-await page.waitForTimeout(300);
-results.launcher_hidden_when_no_token = !(await has(page, '#yotoLaunch'));
-await page.close();
-await ctxD.close();
-
-console.log(JSON.stringify(results, null, 2));
-const pass =
-  results.launcher_home === true &&
-  results.launcher_navigates_to_listen === true &&
-  results.launcher_section_hub === true &&
-  results.launcher_absent_in_activity === true &&
-  results.launcher_hidden_when_no_token === true &&
-  results.grid_tiles === 2 &&
-  results.player_active === true &&
-  results.prev_disabled_at_start === true &&
-  results.next_enabled_at_start === true &&
-  results.prev_enabled_mid === true &&
-  results.next_disabled_at_end === true;
-console.log(`\nVERDICT: ${pass ? 'PASS ✅' : 'FAIL ❌'}`);
-await browser.close();
-server.close();
+console.log(JSON.stringify({ online: results, offline: offlineResult }, null, 2));
+console.log(`VERDICT: ${pass ? 'PASS' : 'FAIL'}`);
 process.exit(pass ? 0 : 1);

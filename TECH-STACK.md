@@ -53,18 +53,17 @@ Three things were deliberately NOT renamed, and must not be "tidied up" later:
 
 1. ⛔ **The `vb_` browser-storage keys, and the `vb-vNNN` service-worker cache name.**
    There are 23 of them, and they hold everything the app knows: child profiles,
-   the parent PIN and recovery phrase, achievements, colouring pages, Yoto tokens,
+   the parent PIN and recovery phrase, achievements, colouring pages,
    per-game high scores, sync state. **Renaming any of them wipes every child's data
    on every device**, because the app would look for a key that has never existed.
    Nobody ever sees these names. There is no benefit and a total-data-loss downside.
    If they ever must change, it needs a migration that copies old keys to new, keeps
    reading both for months, and ships in its own release — not a search-and-replace.
 
-2. **"Valiant Breeze Kids App" in `about.html`, `privacy.html` and `js/yoto-config.js`.**
-   That is the name the app is registered under with **Yoto**, on Yoto's side. Those
-   sentences are statements of fact about an outside service's records. Changing our
-   text would make our own documentation wrong, and renaming the registration itself
-   risks the app verification that the Yoto integration is already blocked on.
+2. **Dormant integration source under `js/yoto*.js`.** The unsupported connection
+   was withdrawn from every app surface on 2026-09-10. These files remain only for
+   reversible history: no shipped page imports them, the service worker does not
+   preload them, and `js/app.js` clears their old browser-storage keys.
 
 3. **`docs/handoff/` and dated specs.** Those are a record of what happened at the time.
    History is not corrected.

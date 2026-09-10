@@ -13,6 +13,7 @@ const ROUTES = {
   art: 'art/index.html',
   games: 'games/index.html',
   learn: 'learning/index.html',
+  listen: 'listen/index.html',
   watch: 'videos/index.html',
 };
 const child = {
@@ -136,12 +137,7 @@ test('ocean archipelago keeps five separated activity islands selectable and its
           await page.evaluate(() => { window.testNav = []; window.goTo = path => testNav.push(path); });
           const point = await shore(kind);
           await page.mouse.click(point.x, point.y);
-          if (kind === 'listen') {
-            assert.deepEqual(await page.evaluate(() => testNav), []);
-            assert.match(await page.locator('#worldStatus').textContent(), /grown-up/);
-          } else {
-            assert.deepEqual(await page.evaluate(() => testNav), [ROUTES[kind]], `${kind} scenery opened the wrong activity`);
-          }
+          assert.deepEqual(await page.evaluate(() => testNav), [ROUTES[kind]], `${kind} scenery opened the wrong activity`);
         }
       });
     }

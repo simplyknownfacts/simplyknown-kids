@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v165';
+const CACHE = 'vb-v166';
+// v166: retire unsupported listening integration; keep local Listen available offline.
 // v165: finalize hidden companion playback, static fallbacks and safe switching.
 // v164: use the existing animated Bunny, Tabby Cat and Panda in Hide & Seek.
 // v163: anchor peeking ears and preserve finger-sized search targets in landscape.
@@ -183,7 +184,6 @@ const ASSETS = [
   './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',
   './js/game-settings.js', './js/paint.js', './js/free-paint.js', './js/color-fill.js', './js/sw-cache-policy.js',
   './js/sleep-timer.js',
-  './js/yoto.js', './js/yoto-config.js', './js/yoto-player.js',
   './games/index.html', './games/tap-pop.html', './games/peek-a-boo.html',
   './games/magic-touch.html', './games/tap-a-tune.html', './games/surprise-pop.html', './games/shape-match.html',
   './games/tilt-drive.html', './games/memory-match.html',
@@ -200,7 +200,6 @@ const ASSETS = [
   './art/finger-paint.html', './art/stamp-art.html', './art/color-in.html',
   './videos/index.html',
   './listen/index.html',
-  './yoto-callback.html',
   './parent/settings.html',
   './icon-192.png', './icon-512.png',
   './offline-manifest.json',

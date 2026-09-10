@@ -1106,7 +1106,7 @@ body.world-page .home-btn { background: #8AE0C2; }
 }
 .world-note strong { color: #184D4A; }
 
-/* Listening hut furniture. Existing Yoto checks and controls stay unchanged. */
+/* Listening Hut furniture for local music-making and the sleep timer. */
 .world-listen .listen-screen { padding-bottom: calc(160px + env(safe-area-inset-bottom)); }
 .world-listen .hut-block {
   width: min(760px, 100%);
