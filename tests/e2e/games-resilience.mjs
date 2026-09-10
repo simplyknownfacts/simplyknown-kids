@@ -124,13 +124,33 @@ async function negativeInput(page, game) {
     const source = page.locator('#shapesRow .shape').first();
     const box = await source.boundingBox();
     if (box) { await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down(); await page.mouse.move(1, 1); await page.mouse.up(); }
+    await page.evaluate(() => {
+      window.__auditShapeRecords = 0;
+      if (!window.vbProgress || window.vbProgress.__auditWrapped) return;
+      const original = window.vbProgress.record;
+      window.vbProgress.record = function (...args) { window.__auditShapeRecords++; return original.apply(this, args); };
+      window.vbProgress.__auditWrapped = true;
+    });
     const choices = page.locator('.num-choice');
     if (await choices.count() > 1) {
-      for (let i = 0; i < await choices.count(); i++) {
-        await choices.nth(i).click();
-        if (await choices.nth(i).evaluate(node => node.classList.contains('bad')).catch(() => false)) return { wrong: true, note: 'wrong quiz answer stayed recoverable; outside drag released' };
-      }
-      return { wrong: false, note: 'no wrong quiz choice could be identified' };
+      const sides = await page.locator('#shapesRow > svg.shape').evaluate(svg => {
+        const polygon = svg.querySelector('polygon');
+        if (polygon) return polygon.points.numberOfItems;
+        return svg.querySelector('rect') ? 4 : 0;
+      });
+      const labels = await choices.allTextContents();
+      const wrongIndex = labels.findIndex(label => Number(label) !== sides);
+      await choices.nth(wrongIndex).click();
+      const rejected = await choices.nth(wrongIndex).evaluate(node => node.classList.contains('bad'));
+      return { wrong: rejected, note: rejected ? 'known wrong side-count answer stayed recoverable; outside drag released' : 'known wrong side-count answer was not rejected' };
+    }
+    const oddItems = page.locator('#shapesRow > .shapes-row > svg.shape');
+    if (await oddItems.count() === 4) {
+      const signatures = await oddItems.evaluateAll(nodes => nodes.map(node => node.innerHTML));
+      const majorityIndex = signatures.findIndex((signature, index) => signatures.some((other, otherIndex) => otherIndex !== index && other === signature));
+      await oddItems.nth(majorityIndex).click();
+      const rejected = await page.evaluate(() => window.__auditShapeRecords === 0);
+      return { wrong: rejected, note: rejected ? 'known majority item did not record progress and round stayed open' : 'known majority item incorrectly recorded progress' };
     }
     return { wrong: null, note: 'outside drag released; current mode has no wrong-answer choice' };
   }
