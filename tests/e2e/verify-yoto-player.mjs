@@ -58,6 +58,7 @@ try {
       localStorage.setItem('vb_active_id', profile.id);
       localStorage.setItem('vb_pin', '1234');
       localStorage.setItem('vb_yoto_tokens', JSON.stringify({ access_token: 'stale' }));
+      localStorage.setItem('vb_yoto_tokens_legacy_child', JSON.stringify({ access_token: 'older-stale', refresh_token: 'older-refresh' }));
       localStorage.setItem('vb_yoto_client_id', 'stale-client');
       sessionStorage.setItem('vb_yoto_now_playing', JSON.stringify({
         src: 'https://api.yotoplay.com/old.mp3',
@@ -81,6 +82,7 @@ try {
       retiredText: /yoto/i.test(await page.locator('body').innerText()),
       staleState: await page.evaluate(() => [
         localStorage.getItem('vb_yoto_tokens'),
+        localStorage.getItem('vb_yoto_tokens_legacy_child'),
         localStorage.getItem('vb_yoto_client_id'),
         sessionStorage.getItem('vb_yoto_now_playing'),
         sessionStorage.getItem('vb_yoto_pkce_verifier'),

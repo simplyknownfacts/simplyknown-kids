@@ -356,6 +356,7 @@ test('retired playback state is erased without creating UI, executing markup, or
   { skip: NEEDS_BROWSER }, async () => {
     const ctx = await openApp({
       vb_yoto_tokens: JSON.stringify({ access_token: 'old-test-token' }),
+      vb_yoto_tokens_legacy_child: JSON.stringify({ access_token: 'older-test-token', refresh_token: 'older-refresh-token' }),
       vb_yoto_client_id: 'old-client',
     });
     const requested = [];
@@ -384,12 +385,13 @@ test('retired playback state is erased without creating UI, executing markup, or
 
     const remaining = await page.evaluate(() => ({
       tokens: localStorage.getItem('vb_yoto_tokens'),
+      legacyTokens: localStorage.getItem('vb_yoto_tokens_legacy_child'),
       client: localStorage.getItem('vb_yoto_client_id'),
       player: sessionStorage.getItem('vb_yoto_now_playing'),
       verifier: sessionStorage.getItem('vb_yoto_pkce_verifier'),
       state: sessionStorage.getItem('vb_yoto_oauth_state'),
     }));
-    assert.deepEqual(remaining, { tokens: null, client: null, player: null, verifier: null, state: null });
+    assert.deepEqual(remaining, { tokens: null, legacyTokens: null, client: null, player: null, verifier: null, state: null });
     assert.deepEqual(requested, [], 'retired state caused a network request');
 
     await page.goto(BASE + '/yoto-callback.html?code=old-code&state=old-state', { waitUntil: 'load' });

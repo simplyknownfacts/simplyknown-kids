@@ -12,7 +12,14 @@ let _vbReplayEl = null;
 // Retired listening-integration state must not linger on family devices or
 // revive old playback. These keys are no longer read anywhere in the app.
 try {
-  localStorage.removeItem('vb_yoto_tokens');
+  // Early versions stored one token record per child; later versions used one
+  // shared family key. Remove both shapes without disturbing unrelated state.
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (key === 'vb_yoto_tokens' || (key && key.startsWith('vb_yoto_tokens_'))) {
+      localStorage.removeItem(key);
+    }
+  }
   localStorage.removeItem('vb_yoto_client_id');
   sessionStorage.removeItem('vb_yoto_pkce_verifier');
   sessionStorage.removeItem('vb_yoto_oauth_state');
