@@ -1313,3 +1313,144 @@ html:not([data-vbtheme]) body[data-play-world="learn"] .op { color: #b96a0e; }
 html:not([data-vbtheme]) body[data-play-activity="count-along"] .dot:not(.counted) {
   background: #fffaf0; border-color: #e6d1a3; box-shadow: 0 5px 0 #ddc694;
 }
+
+/* ---------- Compact child-menu arrival ----------
+   Keep the current Games/Learning/Art choices in the first normal-size view.
+   World menus use the document as their one scroller, so genuinely short
+   screens and future larger activity sets still extend naturally. */
+html:has(body.world-page) {
+  position: static;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+body.world-page {
+  position: static;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+.world-page .hub-screen,
+.world-page .channels-screen,
+.world-page .listen-screen {
+  height: auto !important;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-height: none !important;
+  overflow: visible !important;
+  gap: 12px;
+  padding-top: calc(100px + env(safe-area-inset-top));
+}
+.world-page .world-intro {
+  min-height: 108px;
+  grid-template-columns: 1fr 88px;
+  gap: 10px;
+  padding: 11px 13px 11px 16px;
+  border-width: 3px;
+  border-radius: 25px 25px 31px 20px;
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--world-accent) 48%, #184D4A), 0 14px 28px rgba(24,77,74,0.16);
+}
+.world-page .world-kicker {
+  min-height: 24px;
+  padding: 4px 9px;
+  font-size: 10px;
+}
+.world-page .hub-title {
+  margin: 4px 0 2px;
+  font-size: clamp(27px, 4.4vw, 38px);
+  line-height: 1;
+}
+.world-page .world-intro-text,
+.world-page .hub-subtitle {
+  margin: 2px 0 0;
+  font-size: clamp(12px, 2vw, 14px);
+  line-height: 1.24;
+}
+.world-page .world-emblem[data-world-house] {
+  width: 84px;
+  max-height: 92px;
+}
+.world-page .hub-screen .cards-row {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  padding: 4px 0 10px;
+}
+.world-page .hub-screen .activity-card {
+  min-height: 142px;
+  padding: 11px 9px 10px;
+  border-width: 3px;
+  border-radius: 23px 23px 28px 18px;
+}
+.world-page .hub-screen .activity-card .icon {
+  width: 60px;
+  height: 54px;
+  border-width: 3px;
+  font-size: 32px;
+}
+.world-page .hub-screen .activity-card .label { font-size: 15px; }
+.world-page .hub-screen .activity-card .activity-note { font-size: 11px; line-height: 1.2; }
+.world-page .hub-screen .activity-card .activity-go {
+  top: 7px;
+  right: 7px;
+  width: 25px;
+  height: 25px;
+  font-size: 15px;
+}
+
+@media (max-width: 679px) {
+  .world-page .hub-screen,
+  .world-page .channels-screen,
+  .world-page .listen-screen {
+    padding-top: calc(90px + env(safe-area-inset-top));
+  }
+  .world-page .world-intro {
+    min-height: 104px;
+    grid-template-columns: 1fr 72px;
+    padding: 8px 10px 8px 13px;
+  }
+  .world-page .hub-title { font-size: clamp(22px, 6.6vw, 28px); line-height: 0.98; }
+  .world-page .world-emblem[data-world-house] { width: 70px; max-height: 78px; }
+  .world-page .hub-screen .cards-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .world-page .hub-screen .activity-card {
+    min-height: 82px;
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: center;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 2px;
+    padding: 8px 24px 8px 8px;
+    text-align: left;
+  }
+  .world-page .hub-screen .activity-card .icon {
+    grid-row: 1 / 3;
+    width: 38px;
+    height: 38px;
+    margin: 0;
+    border-width: 2px;
+    font-size: 23px;
+  }
+  .world-page .hub-screen .activity-card .label {
+    align-self: end;
+    font-size: clamp(13px, 3.6vw, 15px);
+    text-align: left;
+  }
+  .world-page .hub-screen .activity-card .activity-note {
+    align-self: start;
+    max-width: none;
+    font-size: clamp(10px, 2.7vw, 11px);
+    line-height: 1.14;
+    text-align: left;
+  }
+  .world-page .hub-screen .activity-card .activity-go {
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
+  }
+}

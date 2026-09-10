@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v166';
+const CACHE = 'vb-v167';
+// v167: compact child-menu arrivals and keep overflow on the natural page scroller.
 // v166: retire unsupported listening integration; keep local Listen available offline.
 // v165: finalize hidden companion playback, static fallbacks and safe switching.
 // v164: use the existing animated Bunny, Tabby Cat and Panda in Hide & Seek.

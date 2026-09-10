@@ -144,7 +144,7 @@ try {
   await offlinePage.reload({ waitUntil: 'load' });
   await offlinePage.waitForFunction(() => !!navigator.serviceWorker.controller);
   const cacheName = await offlinePage.evaluate(async () =>
-    (await caches.keys()).find(name => name === 'vb-v166') || null);
+    (await caches.keys()).find(name => name === 'vb-v167') || null);
 
   await offlineContext.setOffline(true);
   await offlinePage.goto(base + '/listen/index.html', { waitUntil: 'load' });
@@ -173,7 +173,7 @@ const pass = results.every(result =>
   result.parent.retiredText === false &&
   result.callbackSafe === true &&
   result.externalYoto.length === 0) &&
-  offlineResult?.cacheName === 'vb-v166' &&
+  offlineResult?.cacheName === 'vb-v167' &&
   offlineResult.listenOffline === true &&
   offlineResult.tuneOffline === true;
 
