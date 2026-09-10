@@ -4,9 +4,9 @@
 // context per age tier, run concurrently. Implements tests/e2e/MAP.md.
 //
 // Usage:
-//   node run-e2e.mjs                 full run, 8 tiers, BASE=https://kids.simplyknown.co
+//   node run-e2e.mjs                 full run, 10 tiers, desktop viewport
 //   node run-e2e.mjs --tiers=1       single tier (validation)
-//   node run-e2e.mjs --tiers=1,8 --conc=2
+//   node run-e2e.mjs --tiers=1,8 --conc=2 --viewport=phone
 //   BASE=http://localhost:8790 node run-e2e.mjs
 //
 // Anti-hang: per-op timeouts, bounded interaction loops, per-tier result file
@@ -17,25 +17,30 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT = join(__dirname, 'out');
 const BASE = (process.env.BASE || process.env.BASE_URL || 'https://kids.simplyknown.co').replace(/\/$/, '');
 const args = process.argv.slice(2);
 const argVal = (n) => { const a = args.find((x) => x.startsWith(`--${n}=`)); return a ? a.split('=')[1] : null; };
 const TIERS = argVal('tiers') ? argVal('tiers').split(',').map(Number) : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const CONC = Number(argVal('conc') || 4);
-const VIEWPORT = { width: 1280, height: 900 }; // wide => settings sidebar layout
+const VIEWPORT_NAME = argVal('viewport') || 'desktop';
+const VIEWPORTS = { desktop: { width: 1280, height: 900 }, phone: { width: 390, height: 844 } };
+if (!VIEWPORTS[VIEWPORT_NAME]) throw new Error(`Unknown viewport ${VIEWPORT_NAME}; expected desktop or phone`);
+const VIEWPORT = VIEWPORTS[VIEWPORT_NAME];
+const OUT_LABEL = (argVal('out') || VIEWPORT_NAME).replace(/[^a-z0-9_-]/gi, '');
+if (!OUT_LABEL) throw new Error('Output label must contain a letter, number, underscore, or hyphen');
+const OUT = join(__dirname, 'out', OUT_LABEL);
 
 // ── activity catalog; Hide & Seek is reachable through Games ────────────────────
 const SECTION_DIR = { games: 'games', learn: 'learning', art: 'art' };
 const ACTIVITIES = [
-  { id: 'tap-pop', name: 'Tap & Pop', section: 'games', file: 'games/tap-pop.html', minTier: 1 },
+  { id: 'tap-pop', name: 'Bubble Pop', section: 'games', file: 'games/tap-pop.html', minTier: 1 },
   { id: 'shape-match', name: 'Shape Match', section: 'games', file: 'games/shape-match.html', minTier: 1 },
   { id: 'memory-match', name: 'Memory Match', section: 'games', file: 'games/memory-match.html', minTier: 2 },
   { id: 'clock', name: 'Clock Time', section: 'learn', file: 'learning/clock.html', minTier: 6 },
   { id: 'hello-colors', name: 'Hello Colors', section: 'learn', file: 'learning/hello-colors.html', minTier: 1 },
   { id: 'animal-sounds', name: 'Animal Sounds', section: 'learn', file: 'learning/animal-sounds.html', minTier: 1 },
   { id: 'count-along', name: 'Count Along', section: 'learn', file: 'learning/count-along.html', minTier: 2 },
-  { id: 'abcs', name: 'ABCs', section: 'learn', file: 'learning/abcs.html', minTier: 2 },
+  { id: 'abcs', name: 'ABCs', section: 'learn', file: 'learning/abcs.html', minTier: 2, maxTier: 6 },
   { id: 'body-parts', name: 'Body Parts', section: 'learn', file: 'learning/body-parts.html', minTier: 2 },
   { id: 'days', name: 'Days', section: 'learn', file: 'learning/days.html', minTier: 3 },
   { id: 'math', name: 'Math Mountain', section: 'learn', file: 'learning/math.html', minTier: 4 },
@@ -53,18 +58,18 @@ const ACTIVITIES = [
 ];
 // features per activity (key, label text in #featuresTable, minTier)
 const FEATURES = {
+  'peek-a-boo': [{ k: 'multiChoice', t: 5, label: 'Three hiding places' }],
   'shape-match': [{ k: 'dragMode', t: 1, label: 'Drag-to-match mode' }],
   'hello-colors': [{ k: 'colorQuiz', t: 4, label: 'Color quiz mode' }],
   'animal-sounds': [{ k: 'quizMode', t: 4, label: 'Sound quiz mode' }],
   'count-along': [{ k: 'quizMode', t: 4, label: 'How-many quiz mode' }],
-  'abcs': [{ k: 'wordHints', t: 3, label: 'Show "A is for Apple" word hints' }, { k: 'spellMode', t: 6, label: 'Spell short words' }],
+  'abcs': [{ k: 'wordHints', t: 3, label: 'Show "A is for Apple" word hints' }],
   'days': [{ k: 'quizMode', t: 5, label: 'Quiz mode (what comes after Monday?)' }],
-  'math': [{ k: 'subtract', t: 5, label: 'Include subtraction' }, { k: 'multiply', t: 8, label: 'Include multiplication' }],
+  'math': [{ k: 'subtract', t: 5, label: 'Include subtraction' }, { k: 'multiply', t: 8, label: 'Include multiplication' }, { k: 'divide', t: 9, label: 'Include division' }, { k: 'missingNumber', t: 10, label: 'Missing-number problems (7 + _ = 12)' }],
   'spelling': [{ k: 'spellMode', t: 6, label: 'Spell from letter bank' }],
-  'money': [{ k: 'countMode', t: 6, label: 'Count coin + bill totals' }],
+  'money': [{ k: 'countMode', t: 6, label: 'Count coin + bill totals' }, { k: 'makeChange', t: 9, label: 'Make change (pay $1, get back…)' }],
   'body-parts': [{ k: 'allParts', t: 4, label: 'Include extra parts (hair, belly, etc.)' }],
-  'stamp-art': [{ k: 'themeSwitcher', t: 4, label: 'Theme switcher (farm/ocean/space)' }],
-  'color-splash': [{ k: 'colorPicker', t: 2, label: 'Color picker' }],
+  'stamp-art': [{ k: 'stampPalette', t: 2, label: 'Stamp picker' }, { k: 'themeSwitcher', t: 4, label: 'Theme switcher (farm/ocean/space)' }],
 };
 const EXPECT_VISIBLE = { // per tier: games/learn/art (for gating assertion)
   // games: 7 catalog games minTier 1 + Memory Match minTier 2 (v107).
@@ -127,6 +132,38 @@ async function play(page, act, tier) {
   try {
     if (id === 'tap-pop') {
       const box = await page.locator('#canvas').boundingBox();
+      if (tier >= 5) {
+        // Older tiers accept only the named target colour. Read actual canvas
+        // pixels so the probe taps a visible target instead of guessing at a
+        // fast moving mixed-colour field.
+        for (let attempt = 0; attempt < 30 && !(await bumped()); attempt++) {
+          const point = await page.evaluate(() => {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const rgb = (getComputedStyle(document.querySelector('#target .swatch')).backgroundColor.match(/\d+/g) || []).slice(0, 3).map(Number);
+            if (rgb.length !== 3) return null;
+            const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            for (let y = 4; y < canvas.height - 4; y += 4) {
+              let runStart = -1;
+              for (let x = 2; x < canvas.width - 2; x += 2) {
+                const i = (y * canvas.width + x) * 4;
+                const match = Math.abs(pixels[i] - rgb[0]) < 3 && Math.abs(pixels[i + 1] - rgb[1]) < 3 && Math.abs(pixels[i + 2] - rgb[2]) < 3 && pixels[i + 3] > 240;
+                if (match && runStart < 0) runStart = x;
+                if (!match && runStart >= 0) {
+                  if (x - runStart >= 24) return { x: (runStart + x - 2) / 2, y, width: canvas.width, height: canvas.height };
+                  runStart = -1;
+                }
+              }
+            }
+            return null;
+          });
+          if (point) {
+            await page.mouse.click(box.x + point.x * box.width / point.width, box.y + point.y * box.height / point.height);
+          }
+          await sleep(60);
+        }
+        return { ok: await bumped(), signal: 'score/counter +1 via visible target-colour bubble' };
+      }
       for (let i = 0; i < 70 && !(await bumped()); i++) {
         await page.mouse.move(box.x + box.width * rnd(0.15, 0.85), box.y + box.height * rnd(0.4, 0.95));
         await page.mouse.down(); await page.mouse.up(); await sleep(100);
@@ -327,7 +364,11 @@ async function play(page, act, tier) {
     if (id === 'spelling') {
       if (tier >= 6 || await page.locator('.spelled-slot').count()) {
         const slots = await page.locator('.spelled-slot').evaluateAll((els) => els.map((e) => e.dataset.target));
-        for (const ch of slots) { await page.locator('.letter-tile', { hasText: new RegExp(`^${ch}$`, 'i') }).first().click({ timeout: 3000 }).catch(() => {}); await sleep(150); }
+        for (const ch of slots) {
+          const beforeFilled = await page.locator('.spelled-slot.filled').count();
+          await page.locator('.letter-tile', { hasText: new RegExp(`^${ch}$`, 'i') }).first().dispatchEvent('pointerdown').catch(() => {});
+          await page.waitForFunction(count => document.querySelectorAll('.spelled-slot.filled').length > count, beforeFilled, { timeout: 1500 }).catch(() => {});
+        }
         return { ok: await bumped(), signal: `spell "${slots.join('')}"` };
       }
       const cards = page.locator('.word-choices .word-card'); const m = await cards.count();
@@ -409,7 +450,8 @@ function classify({ loaded, redirected, recipe, errs, noSuccessByDesign, loadOnl
 async function runTier(browser, tier) {
   const cells = [];
   const tdir = join(OUT, `t${tier}`); mkdirSync(tdir, { recursive: true });
-  const ctx = await browser.newContext({ viewport: VIEWPORT, reducedMotion: 'reduce' });
+  const phone = VIEWPORT_NAME === 'phone';
+  const ctx = await browser.newContext({ viewport: VIEWPORT, reducedMotion: 'reduce', isMobile: phone, hasTouch: phone });
   ctx.setDefaultTimeout(15000);
   const baseProfile = makeProfile(tier, 'e2e-base', `Test${tier}`);
   await ctx.addInitScript(initScript(baseProfile));
@@ -434,7 +476,7 @@ async function runTier(browser, tier) {
   };
   const selectSettingsSection = async (key) => {
     const picker = page.locator('#settingsSectionPicker');
-    if (await picker.count()) {
+    if (await picker.isVisible().catch(() => false)) {
       await picker.selectOption(key);
       return true;
     }
@@ -482,7 +524,7 @@ async function runTier(browser, tier) {
 
   // ── STEP 3: activities ──
   for (const act of ACTIVITIES) {
-    const visible = !act.orphan && tier >= act.minTier;
+    const visible = !act.orphan && tier >= act.minTier && tier <= (act.maxTier || 10);
     const playable = visible || act.orphan; // orphan games still played via direct load
     try {
       let loaded, viaTile = false;
@@ -508,10 +550,12 @@ async function runTier(browser, tier) {
       if (playable && !redirected && hasApp) recipe = await play(page, act, tier);
       await shot(`act-${act.id}`);
       const kind = act.orphan ? 'orphan' : (visible ? 'play' : 'gated-load');
-      const status = classify({ loaded, redirected, recipe, errs: snapErrors(errs), noSuccessByDesign, loadOnly: !visible && !act.orphan });
+      const cellErrors = snapErrors(errs);
+      const status = classify({ loaded, redirected, recipe, errs: cellErrors, noSuccessByDesign, loadOnly: !visible && !act.orphan });
       record(act.name, kind, redirected ? 'FAIL' : status, {
         signal: recipe ? recipe.signal : 'load-only',
         note: [act.orphan ? 'not in catalog — unreachable by kids via nav' : '', visible && !viaTile ? 'nav: direct (tile slow under load)' : '', recipe && recipe.note ? recipe.note : '', redirected ? 'redirected to picker' : ''].filter(Boolean).join('; ') || undefined,
+        ...cellErrors,
       });
     } catch (e) { await shot(`act-${act.id}-ERR`); record(act.name, act.orphan ? 'orphan' : (visible ? 'play' : 'gated-load'), 'FAIL', { note: String(e.message || e).slice(0, 140), ...snapErrors(errs) }); }
   }
@@ -596,7 +640,7 @@ async function runTier(browser, tier) {
 (async () => {
   const started = Date.now();
   mkdirSync(OUT, { recursive: true });
-  console.log(`[e2e] base=${BASE} tiers=${TIERS.join(',')} conc=${CONC}`);
+  console.log(`[e2e] base=${BASE} tiers=${TIERS.join(',')} viewport=${VIEWPORT_NAME} conc=${CONC}`);
   const browser = await chromium.launch();
   const results = [];
   const queue = [...TIERS];
@@ -606,16 +650,16 @@ async function runTier(browser, tier) {
 
   results.sort((a, b) => a.tier - b.tier);
   const all = results.flatMap((r) => r.cells);
-  const summary = { base: BASE, generatedAt: new Date().toISOString(), durationSec: Math.round((Date.now() - started) / 1000), counts: { total: all.length, pass: all.filter((c) => c.status === 'PASS').length, warn: all.filter((c) => c.status === 'WARN').length, fail: all.filter((c) => c.status === 'FAIL').length }, results };
+  const summary = { base: BASE, viewport: VIEWPORT_NAME, viewportSize: VIEWPORT, generatedAt: new Date().toISOString(), durationSec: Math.round((Date.now() - started) / 1000), counts: { total: all.length, pass: all.filter((c) => c.status === 'PASS').length, warn: all.filter((c) => c.status === 'WARN').length, fail: all.filter((c) => c.status === 'FAIL').length }, results };
   writeFileSync(join(OUT, 'report.json'), JSON.stringify(summary, null, 2));
   writeFileSync(join(OUT, 'report.md'), renderMd(summary));
   console.log(`\n[e2e] DONE: ${summary.counts.pass} PASS / ${summary.counts.warn} WARN / ${summary.counts.fail} FAIL of ${summary.counts.total} in ${summary.durationSec}s`);
-  console.log(`[e2e] report: tests/e2e/out/report.md`);
+  console.log(`[e2e] report: tests/e2e/out/${OUT_LABEL}/report.md`);
 })().catch((e) => { console.error('[e2e] FATAL', e); process.exit(1); });
 
 function renderMd(s) {
   const L = [];
-  L.push('# Full E2E Report', '', `- Base: ${s.base}`, `- Generated: ${s.generatedAt}`, `- Duration: ${s.durationSec}s`, `- **${s.counts.pass} PASS / ${s.counts.warn} WARN / ${s.counts.fail} FAIL** of ${s.counts.total}`, '');
+  L.push('# Full E2E Report', '', `- Base: ${s.base}`, `- Viewport: ${s.viewport} (${s.viewportSize.width}x${s.viewportSize.height})`, `- Generated: ${s.generatedAt}`, `- Duration: ${s.durationSec}s`, `- **${s.counts.pass} PASS / ${s.counts.warn} WARN / ${s.counts.fail} FAIL** of ${s.counts.total}`, '');
   // activity x tier matrix (play + gated-load cells)
   const acts = ACTIVITIES.map((a) => a.id);
   const tiers = s.results.map((r) => r.tier);

@@ -1,12 +1,12 @@
 # Comprehensive child-experience audit — 2026-09-10 (codex)
 
-Status: INCOMPLETE full audit; baseline checkpoint saved. The authorized Yoto withdrawal is implemented and locally verified in this checkpoint; independent fixed-commit review is still required before that fix is accepted.
+Status: INCOMPLETE full audit; baseline checkpoint saved. The authorized Yoto withdrawal is accepted at `df25aec3ba72b33e698d16a40fac7004e8f2171e` after independent fixed-commit review in a separate checkout.
 
-1. Fixed app baseline: `c96cdbc15b1065f89575f6c3fc4c4ff4e0e92946`, matching local `kids/child-experience`; isolated checkout `C:\Users\HomeSeer\.codex\worktrees\e2bb\Kids_App`, audit branch `codex/kids-experience-audit-20260910`. No remote baseline claim.
+1. Audit starting baseline: `c96cdbc15b1065f89575f6c3fc4c4ff4e0e92946`, matching local `kids/child-experience`; accepted post-withdrawal app state `df25aec3ba72b33e698d16a40fac7004e8f2171e`; isolated checkout `C:\Users\HomeSeer\.codex\worktrees\e2bb\Kids_App`, audit branch `codex/kids-experience-audit-20260910`. No remote baseline claim.
 2. Charter missing from isolated worktree: read canonical same-project `C:\Users\HomeSeer\OneDrive\Documents\Claude\Projects\Kids_App\CLAUDE.md`; latest project handoff `handoff-2026-09-09-phone-bugs.md`. Its obsolete eight-activity list is not the inventory.
-3. Local preview: `http://localhost:8798`; `/__health.json` identifies Kids and `/version.json` matches baseline. Standard server ignores Cloudflare `_headers`: CSP deployment parity remains a separate check.
-4. Browser: visible Codex in-app Chromium; Chrome creation timed out. Synthetic Explorer profile created through existing localhost-only `preview.html`; no real family state. Desktop 1280×900, phone 390×844 planned. Physical device, audio heard by a human, iOS sensor behavior and external services are separate gaps.
-5. Evidence: screenshots under ignored `docs/verify/shots/audit-20260910/`; text observations and findings here. Yoto proof now includes 287/287 regression tests plus a standalone phone/desktop/offline browser drive; do not treat that bounded fix proof as completion of the wider activity matrix.
+3. Local preview: `http://localhost:8798`; `/__health.json` identifies Kids and `/version.json` names `df25aec`. Standard server ignores Cloudflare `_headers`: CSP deployment parity remains a separate check.
+4. Browser: initial spot checks used visible Codex in-app Chromium after Chrome creation timed out; the bounded cross-tier run used local Playwright Chromium with isolated synthetic profiles and no real family state. Desktop 1280×900 and touch-phone 390×844 are now partially exercised. Physical devices, audio heard by a human, iOS sensor behavior and external services remain separate gaps.
+5. Evidence: screenshots under ignored `docs/verify/shots/audit-20260910/`; text observations and findings here. Yoto proof includes 287/287 regression tests plus a standalone phone/desktop/offline browser drive. Independent review first found the legacy per-profile token cleanup gap at `998852f`; red-before-green repair `df25aec` then passed re-review. Do not treat that bounded fix proof as completion of the wider activity matrix.
 
 ## Desk-routing screen (Scott.MD 6.4)
 
@@ -24,7 +24,7 @@ Status: INCOMPLETE full audit; baseline checkpoint saved. The authorized Yoto wi
 
 1. Matrix rows are all 22 registered activities (8 Games, 10 Learn, 4 Art), plus shared child paths; reconcile against actual menu routes and on-disk pages.
 2. Expanded requirement: every activity × T1–T10 × desktop/phone, with default-hidden tiers retained for visibility/parent-override checks. `coverage.json` is the canonical ledger: 440 activity plus 220 shared combinations, with 25 behavioral/negative/visual dimensions each.
-3. Verdicts are PASS/FAIL/BLK/NA; unfinished BLK rows separately say NOT_RUN or PARTIAL, so queued work cannot be mistaken for a product failure. NA needs an explicit reason. Zero entire combinations complete; four activity combinations and five shared combinations only partially exercised.
+3. Verdicts are PASS/FAIL/BLK/NA; unfinished BLK rows separately say NOT_RUN or PARTIAL, so queued work cannot be mistaken for a product failure. NA needs an explicit reason. After the bounded core real-click pass, all 440 activity combinations and 122/220 shared combinations are PARTIAL; zero entire combinations are complete and 98 shared combinations remain NOT_RUN.
 
 ## Findings
 
