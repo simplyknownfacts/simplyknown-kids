@@ -151,7 +151,10 @@ async function geometry(page, activity) {
     const aliveNode = [...document.querySelectorAll(aliveSelector)].find(visible);
     const controls = [...document.querySelectorAll(controlSelector)].filter(visible).map(node => {
       const rect = node.getBoundingClientRect();
-      return { width: rect.width, height: rect.height, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+      return {
+        name: node.getAttribute('aria-label') || node.getAttribute('title') || node.className || node.id || node.tagName,
+        width: rect.width, height: rect.height, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom,
+      };
     });
     return {
       overflow: document.documentElement.scrollWidth - innerWidth,
@@ -299,15 +302,17 @@ async function pointerOutsideRecovery(page, selector) {
 
 async function colorInDragRejected(page) {
   const beforeRecords = await page.evaluate(() => window.__artRecords.length);
-  const before = await colorInPixel(page, 165, 180);
+  // Use the known top sun ray, not an eye/face point that may already share
+  // the filled face component at a particular rendered scale.
+  const before = await colorInPixel(page, 200, 45);
   await page.locator('#colorFillCanvas').evaluate(canvas => {
     const box = canvas.getBoundingClientRect();
-    const start = { pointerId: 81, pointerType: 'touch', isPrimary: true, button: 0, buttons: 1, clientX: box.left + box.width * .41, clientY: box.top + box.height * .45, bubbles: true };
+    const start = { pointerId: 81, pointerType: 'touch', isPrimary: true, button: 0, buttons: 1, clientX: box.left + box.width * .5, clientY: box.top + box.height * .1125, bubbles: true };
     canvas.dispatchEvent(new PointerEvent('pointerdown', start));
     canvas.dispatchEvent(new PointerEvent('pointerup', { ...start, buttons: 0, clientX: start.clientX + 50 }));
   });
-  const after = await colorInPixel(page, 165, 180);
-  await tapColorInSource(page, 165, 180);
+  const after = await colorInPixel(page, 200, 45);
+  await tapColorInSource(page, 200, 45);
   return JSON.stringify(before) === JSON.stringify(after) && await page.evaluate(count => window.__artRecords.length > count, beforeRecords);
 }
 
@@ -383,7 +388,7 @@ async function runCell(browser, base, viewportName, viewport, tier, activity) {
     const initial = await geometry(page, activity);
     checks.layout_bounds = initial.overflow <= 1 && initial.ready && initial.alive && initial.nav && initial.allControlsInView && initial.safeTargets
       ? pass('studio, navigation and 44px controls are inside the viewport')
-      : fail(`overflow=${initial.overflow} ready=${initial.ready} alive=${initial.alive} nav=${initial.nav} controls=${initial.allControlsInView} safeTargets=${initial.safeTargets}`);
+      : fail(`overflow=${initial.overflow} ready=${initial.ready} alive=${initial.alive} nav=${initial.nav} controls=${initial.allControlsInView} safeTargets=${initial.safeTargets} unsafe=${JSON.stringify(initial.controls.filter(rect => rect.width < 44 || rect.height < 44))}`);
     checks.visual_quality = blk('geometry is automated; full visual-quality judgement remains unreviewed');
     checks.score = na('Art route has no score counter');
     checks.rewards = blk('action recording does not by itself prove award timing or duplication');
