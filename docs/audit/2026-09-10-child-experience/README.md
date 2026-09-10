@@ -24,8 +24,8 @@ Status: INCOMPLETE full audit; baseline checkpoint saved. The authorized Yoto wi
 
 1. Matrix rows are all 22 registered activities (8 Games, 10 Learn, 4 Art), plus shared child paths; reconcile against actual menu routes and on-disk pages.
 2. Expanded requirement: every activity × T1–T10 × desktop/phone, with default-hidden tiers retained for visibility/parent-override checks. `coverage.json` is the canonical ledger: 440 activity plus 220 shared combinations, with 25 behavioral/negative/visual dimensions each.
-3. Verdicts are PASS/FAIL/BLK/NA; unfinished BLK rows separately say NOT_RUN or PARTIAL, so queued work cannot be mistaken for a product failure. NA needs an explicit reason. After the bounded core real-click pass, all 440 activity combinations and 122/220 shared combinations are PARTIAL; zero entire combinations are complete and 98 shared combinations remain NOT_RUN.
+3. Verdicts are PASS/FAIL/BLK/NA; unfinished BLK rows separately say NOT_RUN or PARTIAL, so queued work cannot be mistaken for a product failure. NA needs an explicit reason. After the Games and Learning resilience batches, all 440 activity combinations and 122/220 shared combinations are PARTIAL; 98 shared combinations remain NOT_RUN. Current dimensions: 5,878 PASS / 23 FAIL / 8,933 BLK / 1,666 NA; 21 rows have verdict FAIL and 639 remain BLK.
 
 ## Findings
 
-See `baseline-observations.md` for exact partial interactions and gaps; `yoto-inventory.md` for Scott's authorized requirement and implementation direction; `matrix.md` for the original route inventory. No behavioral defect is yet confirmed; this is not a clean audit verdict.
+See `baseline-observations.md` for exact partial interactions and gaps; `yoto-inventory.md` for Scott's authorized requirement and implementation direction; `matrix.md` for the original route inventory. Confirmed P2s are Bubble Pop T1-T4 missing play guidance, Animal Sounds T1-T4 missing play guidance, and clipped Spelling phone letter banks at T6-T10 with a required T10 letter unreachable. This remains an incomplete full audit, not a clean verdict.
