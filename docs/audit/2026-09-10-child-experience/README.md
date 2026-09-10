@@ -1,6 +1,6 @@
 # Comprehensive child-experience audit — 2026-09-10 (codex)
 
-Status: INCOMPLETE full audit; baseline checkpoint saved. The authorized Yoto withdrawal is accepted at `df25aec3ba72b33e698d16a40fac7004e8f2171e` after independent fixed-commit review in a separate checkout.
+Status: INCOMPLETE full audit; baseline checkpoint saved. The current accepted product baseline is the Watch lifecycle repair `3683e2028044ba1812a1c44202725ffbb1858d5b`, independently reviewed in a separate checkout with no P1/P2 finding.
 
 1. Audit starting baseline: `c96cdbc15b1065f89575f6c3fc4c4ff4e0e92946`, matching local `kids/child-experience`; accepted post-withdrawal app state `df25aec3ba72b33e698d16a40fac7004e8f2171e`; isolated checkout `C:\Users\HomeSeer\.codex\worktrees\e2bb\Kids_App`, audit branch `codex/kids-experience-audit-20260910`. No remote baseline claim.
 2. Charter missing from isolated worktree: read canonical same-project `C:\Users\HomeSeer\OneDrive\Documents\Claude\Projects\Kids_App\CLAUDE.md`; latest project handoff `handoff-2026-09-09-phone-bugs.md`. Its obsolete eight-activity list is not the inventory.
@@ -24,8 +24,8 @@ Status: INCOMPLETE full audit; baseline checkpoint saved. The authorized Yoto wi
 
 1. Matrix rows are all 22 registered activities (8 Games, 10 Learn, 4 Art), plus shared child paths; reconcile against actual menu routes and on-disk pages.
 2. Expanded requirement: every activity × T1–T10 × desktop/phone, with default-hidden tiers retained for visibility/parent-override checks. `coverage.json` is the canonical ledger: 440 activity plus 220 shared combinations, with 25 behavioral/negative/visual dimensions each.
-3. Verdicts are PASS/FAIL/BLK/NA; unfinished BLK rows separately say NOT_RUN or PARTIAL, so queued work cannot be mistaken for a product failure. NA needs an explicit reason. Current ledger after the Video/About/Privacy and shared visual/soak batches: 8,887 PASS / 36 FAIL / 4,203 BLK / 3,374 NA; row verdicts are 40 PASS / 36 FAIL / 584 BLK, with 40 COMPLETE / 620 PARTIAL / 0 NOT_RUN. The full audit is still incomplete.
+3. Verdicts are PASS/FAIL/BLK/NA; unfinished BLK rows separately say NOT_RUN or PARTIAL, so queued work cannot be mistaken for a product failure. NA needs an explicit reason. Current ledger after the Watch lifecycle repair and section-hub visual/repeated-rendering batch: 9,027 PASS / 16 FAIL / 4,083 BLK / 3,374 NA; row verdicts are 40 PASS / 16 FAIL / 604 BLK, with 40 COMPLETE / 620 PARTIAL / 0 NOT_RUN. The full audit is still incomplete.
 
 ## Findings
 
-See `baseline-observations.md` for exact partial interactions and gaps; `yoto-inventory.md` for Scott's authorized requirement and implementation direction; `matrix.md` for the original route inventory. Remaining confirmed failures are Bubble Pop T1-T4 missing play guidance, Animal Sounds T1-T4 missing play guidance, and Watch closing during a pending feed then constructing an unowned hidden autoplay player. The Spelling and Color Splash failures were repaired and independently accepted. This remains an incomplete full audit, not a clean verdict.
+See `baseline-observations.md` for exact partial interactions and gaps; `yoto-inventory.md` for Scott's authorized requirement and implementation direction; `matrix.md` for the original route inventory. Remaining confirmed failures are Bubble Pop T1-T4 missing play guidance and Animal Sounds T1-T4 missing play guidance. The Watch pending-feed lifecycle leak, Spelling clipping and Color Splash target-size failures were repaired and independently accepted. This remains an incomplete full audit, not a clean verdict.

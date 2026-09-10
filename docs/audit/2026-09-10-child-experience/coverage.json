@@ -20429,11 +20429,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20470,11 +20471,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20511,11 +20513,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20552,11 +20555,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20593,11 +20597,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20634,11 +20639,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20675,11 +20681,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20716,11 +20723,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20757,11 +20765,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20798,11 +20807,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20839,12 +20849,13 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md",
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20881,12 +20892,13 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md",
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20923,11 +20935,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -20964,11 +20977,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21005,11 +21019,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21046,11 +21061,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21087,11 +21103,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21128,11 +21145,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21169,11 +21187,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21210,11 +21229,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21251,11 +21271,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21292,11 +21313,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21333,11 +21355,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21374,11 +21397,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21415,11 +21439,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21456,11 +21481,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21497,11 +21523,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21538,11 +21565,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21579,11 +21607,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21620,11 +21649,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21661,11 +21691,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21702,11 +21733,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21743,11 +21775,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21784,11 +21817,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21825,11 +21859,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21866,11 +21901,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21907,11 +21943,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21948,11 +21985,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -21989,11 +22027,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22030,11 +22069,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22071,11 +22111,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22112,11 +22153,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22153,11 +22195,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22194,11 +22237,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22235,11 +22279,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22276,11 +22321,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22317,11 +22363,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22358,11 +22405,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22399,11 +22447,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22440,11 +22489,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22481,11 +22531,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22522,11 +22573,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22563,11 +22615,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22604,11 +22657,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22645,11 +22699,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22686,11 +22741,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22727,11 +22783,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22768,11 +22825,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22809,11 +22867,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -22850,11 +22909,12 @@
         "empty_min_max_values": "BLK",
         "timer_expiry": "BLK",
         "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#core-e2e-df25aec"
+        "baseline-observations.md#core-e2e-df25aec",
+        "baseline-observations.md#section-hub-visual-soak-75f5"
       ]
     },
     {
@@ -24586,8 +24646,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -24602,7 +24662,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -24616,7 +24676,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -24627,8 +24688,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -24643,7 +24704,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -24657,7 +24718,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -24668,8 +24730,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -24684,7 +24746,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -24698,7 +24760,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -24709,8 +24772,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -24725,7 +24788,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -24739,7 +24802,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -24750,8 +24814,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -24766,7 +24830,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -24780,7 +24844,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -24791,8 +24856,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -24807,7 +24872,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -24821,7 +24886,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -24832,8 +24898,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -24848,7 +24914,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -24862,7 +24928,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -24873,8 +24940,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -24889,7 +24956,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -24903,7 +24970,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -24914,8 +24982,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -24930,7 +24998,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -24944,7 +25012,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -24955,8 +25024,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -24971,7 +25040,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -24985,7 +25054,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -24996,8 +25066,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -25012,7 +25082,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -25026,7 +25096,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -25037,8 +25108,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -25053,7 +25124,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -25067,7 +25138,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -25078,8 +25150,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -25094,7 +25166,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -25108,7 +25180,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -25119,8 +25192,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -25135,7 +25208,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -25149,7 +25222,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -25160,8 +25234,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -25176,7 +25250,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -25190,7 +25264,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -25201,8 +25276,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -25217,7 +25292,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -25231,7 +25306,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -25242,8 +25318,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -25258,7 +25334,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -25272,7 +25348,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -25283,8 +25360,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -25299,7 +25376,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -25313,7 +25390,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -25324,8 +25402,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -25340,7 +25418,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -25354,7 +25432,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
@@ -25365,8 +25444,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "PARTIAL",
-      "verdict": "FAIL",
-      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
+      "verdict": "BLK",
+      "reason": "Watch pending-feed Back lifecycle repair is verified with synthetic player stubs. Real remote stream endurance, visible player output and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -25381,7 +25460,7 @@
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
-        "navigation_during_animation": "FAIL",
+        "navigation_during_animation": "PASS",
         "reload_mid_round": "PASS",
         "resize_orientation": "PASS",
         "repeated_entry_exit": "PASS",
@@ -25395,7 +25474,8 @@
         "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#video-info-resilience-61eb"
+        "baseline-observations.md#video-info-resilience-61eb",
+        "baseline-observations.md#watch-lifecycle-repair-3683e20"
       ]
     },
     {
