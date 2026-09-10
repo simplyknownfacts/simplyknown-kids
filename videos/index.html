@@ -209,6 +209,7 @@
       let _player = null;
       let _queue = [];
       let _idx = 0;
+      let _openGeneration = 0;
 
       function _tryNext() {
         _idx++;
@@ -222,6 +223,7 @@
       }
 
       async function openChannel(ch) {
+        const generation = ++_openGeneration;
         const wrap = document.getElementById('playerWrap');
         const host = document.getElementById('playerHost');
         host.innerHTML = '<div id="ytTarget" style="width:100%;height:100%;"></div>';
@@ -238,12 +240,14 @@
             ids = data.videos.map(v => v.id);
           }
         } catch (e) {}
+        if (generation !== _openGeneration || !wrap.classList.contains('active')) return;
         if (!ids.length) {
           host.innerHTML = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:24px;font-size:18px;">Couldn\'t load shows right now. Tap ← and try again.</div>';
           return;
         }
         _queue = ids; _idx = 0;
         await ytApiReady;
+        if (generation !== _openGeneration || !wrap.classList.contains('active')) return;
         if (_player) { try { _player.destroy(); } catch {} _player = null; }
         _player = new YT.Player('ytTarget', {
           host: 'https://www.youtube-nocookie.com',
@@ -257,6 +261,7 @@
       }
 
       function closePlayer() {
+        _openGeneration++;
         if (_player) { try { _player.stopVideo(); _player.destroy(); } catch {} _player = null; }
         document.getElementById('playerHost').innerHTML = '';
         document.getElementById('playerWrap').classList.remove('active');
