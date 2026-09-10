@@ -1,0 +1,31 @@
+# Baseline observations — 2026-09-10 (codex)
+
+1. Baseline `c96cdbc`, visible in-app Chromium, local port 8798, synthetic Explorer birthday 2021-01-01 (T6 on audit date). Viewports verified 1280×900 and 390×844. A screenshot taken immediately after resize showed an intermediate compositor frame; the following screenshot/DOM viewport was correct. Do not report that transient tool capture as an app defect.
+2. **Coverage remains incomplete:** 22 activities inventoried; 2 activities partially exercised in 4 T6/device combinations; 5 shared T6/device combinations partially exercised. Zero combinations have completed the full requested checklist. `coverage.json` tracks 440 activity combinations plus 220 shared combinations, each with 25 check dimensions. Of the 440 activity rows, 392 are visible by default; 48 are default-hidden and still require visibility/override/direct-route checks. `BLK` with `NOT_RUN` or `PARTIAL` is explicitly unfinished work, not a discovered product blocker. No activity-level PASS yet.
+
+## Observed interactions
+
+| Route / device | Actual actions and result | Still unproven |
+|---|---|---|
+| `/home.html`, T6 desktop | Existing localhost preview seeds Explorer; home draws five islands and bunny. Click Games → `/games/index.html`. Listen is aria-disabled without Yoto connection. | Other ages, keyboard, phone home, all other controls, offline, long play |
+| `/games/index.html`, T6 desktop + phone | All eight registered game buttons appear; desktop Bubble Pop launch and phone Hide & Seek launch work. Phone return from Bubble Pop succeeds. | Ribbons interactions, home button, all remaining games, every other tier |
+| `/games/tap-pop.html`, T6 desktop + phone | Canvas animates colored bubbles; instruction `Pop only Orange!`, score 0, back/home/Again/settings visible. One desktop click and three repeated phone clicks attempted at last-observed bubble coordinates; score stayed 0. Moving targets may have moved before clicks. Back returns to Games; First Bubble Pop ribbon exists (source calls `firstPlay` on entry). | No confirmed scoring defect. Correct target hit, wrong-color hit, successful progression and duplicate reward protection are NOT proven. No keyboard/offline/restart/long-play proof |
+| `/games/peek-a-boo.html`, T6 phone | Find Rabbit → No peeking → three bushes. Pink bush clicked twice → `Nobody there. Look for little ears at the blue flower bush.` Pink becomes disabled. Blue clicked twice → `You found Rabbit!`; other guesses disabled. Caption and rabbit reveal visible. | Reward count was not independently inspected; two taps alone do not prove all rapid-input cases; hints, reload, offline, all other tiers |
+| `/games/peek-a-boo.html`, T6 desktop | Resize completed round to desktop; Play again → new Cat introduction and Find Cat button. No clipping visible in sampled screenshots. | Full desktop round, keyboard, every other negative case |
+| `/listen/index.html`, T6 desktop | Direct local entry renders Yoto cards / Not connected to Yoto / Parent Settings → Yoto, sleep timer, Tap-a-Tune link and Coming soon content. No Yoto account/state was supplied. | No library/API call or account flow attempted. Sleep timer and adjacent audio not yet exercised |
+| `/parent/settings.html`, T6 desktop | Direct entry shows first-time PIN setup, confirming this synthetic origin has no configured parent PIN. | Parent Yoto panel was inventoried in source, NOT visually opened; no real or synthetic PIN was entered through the browser |
+
+## Findings classification
+
+1. **Confirmed product requirement YOTO-REMOVE:** Scott requires every Yoto surface absent. Baseline visible evidence confirms unsupported connection prompts are still offered. This is authorized implementation, not a taste question. See `yoto-inventory.md`.
+2. **Confirmed behavioral defects:** none yet reproduced to sufficient certainty. This is not a clean audit verdict; coverage is mostly unrun.
+3. **Design-quality findings:** none finalized. Two game screenshots are insufficient to grade the whole product or age fit.
+4. **Subjective taste calls:** none finalized.
+5. **Blocked/unfinished checks:** initial test environment lacked Playwright; standard local server does not apply Cloudflare CSP; physical devices/sensors, heard audio, offline and external-service failures remain untested. Chrome creation timed out once; in-app Chromium worked. No user-facing browser errors/warnings returned by the final local-tab log query (only that query's available buffer, not comprehensive console proof).
+
+## Evidence and health check
+
+1. Ignored screenshot directory: `docs/verify/shots/audit-20260910/`. Files: `home-desktop.png`, `games-desktop.png`, `games-phone.png`, `bubble-phone.png`, `seek-phone-wrong.png`, `seek-phone-found.png`, `seek-desktop-restart.png`, `yoto-before-listen-desktop.png`, `parent-before-pin-gate.png`.
+2. Initial `npm test`: 199 tests reported; 155 pass, 17 fail, 27 skipped; missing Playwright caused setup failures. This is not app regression evidence. Full output `health-initial.txt` in ignored evidence directory. Created ignored worktree `node_modules` junction to existing canonical Kids dependency directory; installed Playwright there reports 1.62.1. No package mutation/install; tests not rerun after junction yet.
+3. Added `tests/yoto-retired.test.mjs`: four requirement guards, **0 pass / 4 fail**, exit 1 against unchanged app baseline. Compact red result `yoto-red.txt`; raw output `yoto-red-full.txt` in ignored evidence directory. These guards are expected red until implementation. They are not sufficient runtime proof by themselves.
+4. No app implementation, production access, deploy, promotion, merge, push, gate edit, external API call, paid service or real family data used in this task.
