@@ -32,6 +32,7 @@ const selectedGames = process.env.GAMES ? process.env.GAMES.split(',') : GAMES.m
 const pass = note => ({ status: 'PASS', note });
 const fail = note => ({ status: 'FAIL', note });
 const na = note => ({ status: 'NA', note });
+const blk = note => ({ status: 'BLK', note });
 
 async function freePort() {
   const probe = createServer();
@@ -188,7 +189,8 @@ async function runCell(browser, base, viewportName, viewport, tier, game) {
     checks.instructions = visible && text ? pass(`visible instruction: ${text.slice(0, 80)}`) : fail('no visible on-screen instruction');
     checks.back_home = await page.locator('.back-btn').isVisible() && await page.locator('.home-btn').isVisible() ? pass('Back and Home visible') : fail('Back or Home missing');
     const initial = await geometry(page, game);
-    checks.visual_quality = initial.overflow <= 1 && initial.vital && initial.nav ? pass('primary surface/navigation visible; no horizontal overflow') : fail(`overflow=${initial.overflow} vital=${initial.vital} nav=${initial.nav}`);
+    checks.layout_bounds = initial.overflow <= 1 && initial.vital && initial.nav ? pass('primary surface/navigation visible; no horizontal overflow') : fail(`overflow=${initial.overflow} vital=${initial.vital} nav=${initial.nav}`);
+    checks.visual_quality = blk('geometry is automated; full visual-quality judgement remains unreviewed');
 
     const negative = await negativeInput(page, game);
     await page.keyboard.press('Escape'); await page.keyboard.press('Tab'); await page.keyboard.press('KeyQ');
@@ -197,7 +199,13 @@ async function runCell(browser, base, viewportName, viewport, tier, game) {
     checks.boundary_taps = responsive ? pass('edge input left game alive') : fail('edge input broke game');
     checks.keyboard_misuse = responsive ? pass('unrelated keys did not exit or complete game') : fail('keyboard misuse broke game');
     checks.drag_outside = game.id === 'shape-match' ? (responsive ? pass('outside drag released without breaking game') : fail('outside drag broke game')) : na('no required drag-to-target mechanic');
-    checks.wrong_answers = negative.wrong == null ? na(negative.note) : negative.wrong ? pass(negative.note) : fail(negative.note);
+    if (negative.wrong != null) checks.wrong_answers = negative.wrong ? pass(negative.note) : fail(negative.note);
+    else {
+      const hasUntestedWrongPath = (game.id === 'tap-pop' && tier >= 5)
+        || (game.id === 'tap-a-tune' && tier >= 3)
+        || (game.id === 'shape-match' && tier >= 3);
+      checks.wrong_answers = hasUntestedWrongPath ? blk(`${negative.note}; applicable wrong-answer path remains unforced`) : na(negative.note);
+    }
 
     await page.setViewportSize(viewportName === 'phone' ? { width: 844, height: 390 } : { width: 900, height: 1280 });
     await page.waitForTimeout(100);
@@ -227,11 +235,17 @@ async function runCell(browser, base, viewportName, viewport, tier, game) {
     checks.empty_min_max_values = tier === 1 || tier === 10 ? pass(`T${tier} age boundary and invalid stored scores remained playable`) : na('age min/max boundary applies to T1/T10');
 
     phase = 'media-failure';
-    await context.route(/\.(mp3|wav|ogg|m4a|mp4|webm)(\?|$)/i, route => route.abort('failed'));
-    await page.addInitScript(() => { try { HTMLMediaElement.prototype.play = () => Promise.reject(new DOMException('synthetic media failure')); } catch {} try { speechSynthesis.cancel(); speechSynthesis.speak = () => {}; } catch {} });
+    let blockedMediaRequests = 0;
+    await context.route(/\.(mp3|wav|ogg|m4a|mp4|webm)(\?|$)/i, route => { blockedMediaRequests++; return route.abort('failed'); });
+    await page.addInitScript(() => {
+      window.__auditMediaPlay = 0; window.__auditSpeech = 0;
+      try { HTMLMediaElement.prototype.play = () => { window.__auditMediaPlay++; return Promise.reject(new DOMException('synthetic media failure')); }; } catch {}
+      try { speechSynthesis.cancel(); speechSynthesis.speak = () => { window.__auditSpeech++; }; } catch {}
+    });
     await page.reload({ waitUntil: 'domcontentloaded' }); await page.locator(game.ready).first().waitFor();
-    checks.failed_media_network = await alive(page, game) ? pass('blocked media requests did not block game') : fail('blocked media broke game');
-    checks.interrupted_audio = await alive(page, game) ? pass('rejected playback/cancelled speech did not block game') : fail('audio interruption broke game');
+    const audioAttempts = await page.evaluate(() => ({ media: window.__auditMediaPlay || 0, speech: window.__auditSpeech || 0 }));
+    checks.failed_media_network = blockedMediaRequests ? (await alive(page, game) ? pass(`${blockedMediaRequests} blocked media requests did not block game`) : fail('blocked media broke game')) : na('this route made no media request during the probe');
+    checks.interrupted_audio = audioAttempts.media || audioAttempts.speech ? (await alive(page, game) ? pass(`recovered from ${audioAttempts.media} rejected media plays and ${audioAttempts.speech} interrupted speech calls`) : fail('audio interruption broke game')) : na('this route made no audio call during the probe');
     await context.unroute(/\.(mp3|wav|ogg|m4a|mp4|webm)(\?|$)/i);
 
     phase = 'offline';
@@ -252,7 +266,11 @@ async function runCell(browser, base, viewportName, viewport, tier, game) {
     checks.offline = await alive(page, game) ? pass('controlled offline reload restored game') : fail('offline reload failed');
     await context.setOffline(false);
     checks.timer_expiry = na('wall-clock expiry not accelerated in bounded run');
-    checks.long_repeated_play = na('bounded run is not a long-duration soak');
+    checks.long_repeated_play = blk('bounded run is not a long-duration soak');
+    if (game.id === 'tap-pop') {
+      const dir = path.join(OUT, 'samples'); mkdirSync(dir, { recursive: true });
+      await page.screenshot({ path: path.join(dir, `${game.id}-T${tier}-${viewportName}.png`), fullPage: true });
+    }
     if (Object.values(checks).some(result => result.status === 'FAIL')) {
       const dir = path.join(OUT, 'failures'); mkdirSync(dir, { recursive: true });
       await page.screenshot({ path: path.join(dir, `${game.id}-T${tier}-${viewportName}.png`), fullPage: true });
@@ -294,7 +312,7 @@ try {
   server.kill();
 }
 rows.sort((a, b) => a.id.localeCompare(b.id));
-const counts = { rows: rows.length, pass: 0, fail: 0, na: 0 };
+const counts = { rows: rows.length, pass: 0, fail: 0, na: 0, blk: 0 };
 for (const row of rows) for (const result of Object.values(row.checks)) counts[result.status.toLowerCase()]++;
 const report = { baseline: 'd6687a38b2a466e13de00f9553efeb23e9f84d8f', base, generatedAt: new Date().toISOString(), durationSec: Math.round((Date.now() - started) / 1000), counts, rows };
 writeFileSync(path.join(OUT, 'report.json'), JSON.stringify(report, null, 2) + '\n');
