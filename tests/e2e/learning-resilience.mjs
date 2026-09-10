@@ -221,7 +221,7 @@ function parseMoney(text) {
 
 async function wrongAnswerRecovery(page, lesson, tier) {
   if (lesson.id === 'abcs' || (lesson.id === 'hello-colors' && tier <= 3)
-    || (lesson.id === 'animal-sounds' && tier <= 3) || (lesson.id === 'count-along' && tier <= 4)
+    || (lesson.id === 'animal-sounds' && tier <= 4) || (lesson.id === 'count-along' && tier <= 4)
     || (lesson.id === 'days' && tier <= 4)) return na('this age/mode has no wrong-answer mechanic');
 
   if (lesson.id === 'hello-colors') {
