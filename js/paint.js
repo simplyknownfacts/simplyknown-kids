@@ -42,7 +42,7 @@
       '#vbPaintDock{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;flex-wrap:wrap;' +
       'align-items:center;justify-content:center;gap:8px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));' +
       'background:rgba(0,0,0,0.42);backdrop-filter:blur(8px);}' +
-      '.vb-sw{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,0.4);flex-shrink:0;cursor:pointer;}' +
+      '.vb-sw{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,0.4);flex-shrink:0;cursor:pointer;}' +
       '.vb-sw.active{border-color:#fff;box-shadow:0 0 0 3px #4ECDC4;}' +
       '.vb-tool{min-width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,0.14);' +
       'border:2px solid rgba(255,255,255,0.3);color:#fff;font-size:20px;font-weight:800;cursor:pointer;' +
