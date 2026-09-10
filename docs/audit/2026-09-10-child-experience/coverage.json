@@ -18728,12 +18728,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -18770,12 +18771,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -18812,12 +18814,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -18854,12 +18857,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -18896,12 +18900,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -18938,12 +18943,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -18980,12 +18986,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19022,12 +19029,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19064,12 +19072,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19106,12 +19115,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19148,12 +19158,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19190,12 +19201,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19232,12 +19244,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19274,12 +19287,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19316,12 +19330,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19358,12 +19373,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19400,12 +19416,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19442,12 +19459,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19484,12 +19502,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19526,12 +19545,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19568,11 +19588,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19609,11 +19630,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19650,11 +19672,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19691,11 +19714,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19732,11 +19756,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19773,11 +19798,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19814,11 +19840,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19855,11 +19882,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19896,11 +19924,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19937,11 +19966,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -19978,12 +20008,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -20020,11 +20051,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -20061,11 +20093,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -20102,11 +20135,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -20143,11 +20177,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -20184,11 +20219,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -20225,11 +20261,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -20266,11 +20303,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -20307,11 +20345,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -20348,11 +20387,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -22851,12 +22891,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -22893,12 +22934,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -22935,12 +22977,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -22977,12 +23020,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23019,12 +23063,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23061,12 +23106,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23103,12 +23149,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23145,12 +23192,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23187,12 +23235,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23229,12 +23278,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23271,12 +23321,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23313,12 +23364,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23355,12 +23407,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23397,12 +23450,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23439,12 +23493,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23481,12 +23536,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23523,12 +23579,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23565,12 +23622,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23607,12 +23665,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23649,12 +23708,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23691,12 +23751,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23733,12 +23794,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23775,12 +23837,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23817,12 +23880,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23859,12 +23923,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23901,12 +23966,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23943,12 +24009,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -23985,12 +24052,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24027,12 +24095,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24069,12 +24138,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24111,13 +24181,14 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md",
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24154,12 +24225,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24196,12 +24268,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24238,12 +24311,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24280,12 +24354,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24322,12 +24397,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24364,12 +24440,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24406,12 +24483,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24448,12 +24526,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24490,12 +24569,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -24505,37 +24585,39 @@
       "tier": 1,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T1:phone",
@@ -24544,37 +24626,39 @@
       "tier": 1,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T2:desktop",
@@ -24583,37 +24667,39 @@
       "tier": 2,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T2:phone",
@@ -24622,37 +24708,39 @@
       "tier": 2,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T3:desktop",
@@ -24661,37 +24749,39 @@
       "tier": 3,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T3:phone",
@@ -24700,37 +24790,39 @@
       "tier": 3,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T4:desktop",
@@ -24739,37 +24831,39 @@
       "tier": 4,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T4:phone",
@@ -24778,37 +24872,39 @@
       "tier": 4,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T5:desktop",
@@ -24817,37 +24913,39 @@
       "tier": 5,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T5:phone",
@@ -24856,37 +24954,39 @@
       "tier": 5,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T6:desktop",
@@ -24895,37 +24995,39 @@
       "tier": 6,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T6:phone",
@@ -24934,37 +25036,39 @@
       "tier": 6,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T7:desktop",
@@ -24973,37 +25077,39 @@
       "tier": 7,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T7:phone",
@@ -25012,37 +25118,39 @@
       "tier": 7,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T8:desktop",
@@ -25051,37 +25159,39 @@
       "tier": 8,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T8:phone",
@@ -25090,37 +25200,39 @@
       "tier": 8,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T9:desktop",
@@ -25129,37 +25241,39 @@
       "tier": 9,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T9:phone",
@@ -25168,37 +25282,39 @@
       "tier": 9,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T10:desktop",
@@ -25207,37 +25323,39 @@
       "tier": 10,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "videos/index.html:T10:phone",
@@ -25246,37 +25364,39 @@
       "tier": 10,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "PARTIAL",
+      "verdict": "FAIL",
+      "reason": "Watch has a confirmed pending-feed close lifecycle failure. Real remote stream endurance and audible interruption remain blocked because synthetic media cannot prove audiovisual quality.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "PASS",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "FAIL",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "PASS",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "PASS",
+        "empty_min_max_values": "PASS",
+        "timer_expiry": "NA",
         "interrupted_audio": "BLK",
         "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "listen/index.html:T1:desktop",
@@ -25312,11 +25432,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25353,11 +25474,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25394,11 +25516,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25435,11 +25558,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25476,11 +25600,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25517,11 +25642,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25558,11 +25684,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25599,11 +25726,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25640,11 +25768,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25681,11 +25810,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25722,12 +25852,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md",
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25764,11 +25895,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25805,11 +25937,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25846,11 +25979,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25887,11 +26021,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25928,11 +26063,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -25969,11 +26105,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -26010,11 +26147,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -26051,11 +26189,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -26092,11 +26231,12 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "PASS",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
-        "baseline-observations.md#shared-resilience-955b701"
+        "baseline-observations.md#shared-resilience-955b701",
+        "baseline-observations.md#shared-visual-soak-61eb"
       ]
     },
     {
@@ -26106,37 +26246,39 @@
       "tier": 1,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T1:phone",
@@ -26145,37 +26287,39 @@
       "tier": 1,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T2:desktop",
@@ -26184,37 +26328,39 @@
       "tier": 2,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T2:phone",
@@ -26223,37 +26369,39 @@
       "tier": 2,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T3:desktop",
@@ -26262,37 +26410,39 @@
       "tier": 3,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T3:phone",
@@ -26301,37 +26451,39 @@
       "tier": 3,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T4:desktop",
@@ -26340,37 +26492,39 @@
       "tier": 4,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T4:phone",
@@ -26379,37 +26533,39 @@
       "tier": 4,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T5:desktop",
@@ -26418,37 +26574,39 @@
       "tier": 5,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T5:phone",
@@ -26457,37 +26615,39 @@
       "tier": 5,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T6:desktop",
@@ -26496,37 +26656,39 @@
       "tier": 6,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T6:phone",
@@ -26535,37 +26697,39 @@
       "tier": 6,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T7:desktop",
@@ -26574,37 +26738,39 @@
       "tier": 7,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T7:phone",
@@ -26613,37 +26779,39 @@
       "tier": 7,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T8:desktop",
@@ -26652,37 +26820,39 @@
       "tier": 8,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T8:phone",
@@ -26691,37 +26861,39 @@
       "tier": 8,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T9:desktop",
@@ -26730,37 +26902,39 @@
       "tier": 9,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T9:phone",
@@ -26769,37 +26943,39 @@
       "tier": 9,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T10:desktop",
@@ -26808,37 +26984,39 @@
       "tier": 10,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "about.html:T10:phone",
@@ -26847,37 +27025,39 @@
       "tier": 10,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "PASS",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T1:desktop",
@@ -26886,37 +27066,39 @@
       "tier": 1,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T1:phone",
@@ -26925,37 +27107,39 @@
       "tier": 1,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T2:desktop",
@@ -26964,37 +27148,39 @@
       "tier": 2,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T2:phone",
@@ -27003,37 +27189,39 @@
       "tier": 2,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T3:desktop",
@@ -27042,37 +27230,39 @@
       "tier": 3,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T3:phone",
@@ -27081,37 +27271,39 @@
       "tier": 3,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T4:desktop",
@@ -27120,37 +27312,39 @@
       "tier": 4,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T4:phone",
@@ -27159,37 +27353,39 @@
       "tier": 4,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T5:desktop",
@@ -27198,37 +27394,39 @@
       "tier": 5,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T5:phone",
@@ -27237,37 +27435,39 @@
       "tier": 5,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T6:desktop",
@@ -27276,37 +27476,39 @@
       "tier": 6,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T6:phone",
@@ -27315,37 +27517,39 @@
       "tier": 6,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T7:desktop",
@@ -27354,37 +27558,39 @@
       "tier": 7,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T7:phone",
@@ -27393,37 +27599,39 @@
       "tier": 7,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T8:desktop",
@@ -27432,37 +27640,39 @@
       "tier": 8,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T8:phone",
@@ -27471,37 +27681,39 @@
       "tier": 8,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T9:desktop",
@@ -27510,37 +27722,39 @@
       "tier": 9,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T9:phone",
@@ -27549,37 +27763,39 @@
       "tier": 9,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T10:desktop",
@@ -27588,37 +27804,39 @@
       "tier": 10,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     },
     {
       "id": "privacy.html:T10:phone",
@@ -27627,37 +27845,39 @@
       "tier": 10,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "NOT_RUN",
-      "verdict": "BLK",
-      "reason": "Pending audit execution; no behavioral verdict yet",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Local informational-page behavior, navigation, reload, resize, installed-app offline recovery and visual review complete; game/media dimensions are explicitly not applicable.",
       "checks": {
-        "launch": "BLK",
-        "instructions": "BLK",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
-        "back_home": "BLK",
-        "rapid_double_input": "BLK",
-        "wrong_answers": "BLK",
-        "boundary_taps": "BLK",
-        "drag_outside": "BLK",
-        "keyboard_misuse": "BLK",
-        "navigation_during_animation": "BLK",
-        "reload_mid_round": "BLK",
-        "resize_orientation": "BLK",
-        "repeated_entry_exit": "BLK",
-        "failed_media_network": "BLK",
-        "offline": "BLK",
-        "stale_corrupt_synthetic_state": "BLK",
-        "empty_min_max_values": "BLK",
-        "timer_expiry": "BLK",
-        "interrupted_audio": "BLK",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "launch": "PASS",
+        "instructions": "PASS",
+        "input": "PASS",
+        "progression": "NA",
+        "score": "NA",
+        "rewards": "NA",
+        "restart": "PASS",
+        "back_home": "PASS",
+        "rapid_double_input": "NA",
+        "wrong_answers": "NA",
+        "boundary_taps": "NA",
+        "drag_outside": "NA",
+        "keyboard_misuse": "PASS",
+        "navigation_during_animation": "NA",
+        "reload_mid_round": "PASS",
+        "resize_orientation": "PASS",
+        "repeated_entry_exit": "PASS",
+        "failed_media_network": "NA",
+        "offline": "PASS",
+        "stale_corrupt_synthetic_state": "NA",
+        "empty_min_max_values": "NA",
+        "timer_expiry": "NA",
+        "interrupted_audio": "NA",
+        "long_repeated_play": "NA",
+        "visual_quality": "PASS"
       },
-      "evidence": []
+      "evidence": [
+        "baseline-observations.md#video-info-resilience-61eb"
+      ]
     }
   ]
 }
