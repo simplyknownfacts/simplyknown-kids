@@ -8,7 +8,7 @@ const SCRIPT = path.join(ROOT, 'scripts', 'generate-voices.mjs');
 const TEXT = 'Tap the bubbles!';
 
 function plan(...extra) {
-  return spawnSync(process.execPath, [SCRIPT, '--dry', '--text', TEXT, ...extra], {
+  return spawnSync(process.execPath, [SCRIPT, '--dry', '--dry-include-existing', '--text', TEXT, ...extra], {
     cwd: ROOT,
     encoding: 'utf8',
     env: { ...process.env, ELEVENLABS_API_KEY: '' },

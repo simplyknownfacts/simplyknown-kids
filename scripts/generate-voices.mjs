@@ -106,6 +106,11 @@ if (voicesToRun.some(voice => !Object.hasOwn(VOICES, voice))) {
 const requestedText = option('--text');
 const maxRequests = integerOption('--max-requests');
 const maxChars = integerOption('--max-chars');
+const includeExistingInDryPlan = args.includes('--dry-include-existing');
+if (includeExistingInDryPlan && !isDry) {
+  console.error('--dry-include-existing is allowed only with --dry.');
+  process.exit(1);
+}
 
 if (requestedText && !VOICE_MANIFEST.allClips.includes(requestedText)) {
   console.error(`Requested text is not in the voice manifest: ${requestedText}`);
@@ -136,7 +141,7 @@ let sfxToGenerate = 0;
 if (!requestedText) {
   for (const a of animals) {
     const filepath = path.join(SFX_DIR, `${a.id}.mp3`);
-    if (fs.existsSync(filepath) && fs.statSync(filepath).size > 100) continue;
+    if (!includeExistingInDryPlan && fs.existsSync(filepath) && fs.statSync(filepath).size > 100) continue;
     toGenerate.push({ kind: 'sfx', animal: a, filepath });
     sfxToGenerate++;
   }
