@@ -4,9 +4,21 @@
   const profile = getActiveProfile();
   if (!profile) { goProfiles(); return; }
   const id = 'peek-a-boo', tier = getActivityTier(profile, id);
-  const count = tier >= 5 || getProfileFeature(profile, id, 'multiChoice') ? 3 : 2;
-  const animals = [{name:'Rabbit',id:'bunny'}, {name:'Cat',id:'tabby'}, {name:'Panda',id:'panda',spokenName:'Bear'}];
-  const places = ['Pink flower bush', 'Yellow flower bush', 'Blue flower bush'];
+  const tierCounts = [4,4,6,6,8,8,10,10,12,12];
+  const count = Math.max(tierCounts[tier-1] || 4,
+    getProfileFeature(profile, id, 'multiChoice') ? 8 : 0);
+  const animals = [
+    {name:'Rabbit',id:'bunny',emoji:'🐰',fur:'#eee9df',inner:'#f2a9b8'},
+    {name:'Cat',id:'tabby',emoji:'🐱',fur:'#d88c4a',inner:'#f7c5a0'},
+    {name:'Panda',id:'panda',spokenName:'Bear',emoji:'🐼',fur:'#30363f',inner:'#f5f1e8'},
+  ];
+  const places = [
+    'Lower far-left bush','Lower left bush','Lower right bush','Lower far-right bush',
+    'Middle far-left bush','Middle left bush','Middle right bush','Middle far-right bush',
+    'Upper far-left bush','Upper left bush','Upper right bush','Upper far-right bush',
+  ];
+  const peekParts = ['ears','face','paw','tail'];
+  const peekPartLabels = {ears:'little ears',face:'part of a face',paw:'a little paw',tail:'a little tail'};
   const stage = document.getElementById('stage'), hint = document.getElementById('hint');
   const action = document.getElementById('roundAction'), again = document.getElementById('showAgain');
   const next = document.getElementById('playAgain'), intro = document.getElementById('friendIntro');
@@ -17,11 +29,34 @@
   let companionId = animals[0].id, mediaUnavailable = false;
   let active = true, generation = 0, timer = null, clueTimer = null, renderer = null, loadTimer = null;
   let rendererFactory = null, loadFailed = false, rendererBroken = false;
-  let target = -1, animal = -1, phase = 'watch', clue = 'none', readyAt = 0, hintAt = 0, pinnedHint = false;
+  let target = -1, lastTarget = -1, animal = -1, phase = 'watch', clue = 'none', peekPart = 'ears', lastPeekPart = '';
+  let readyAt = 0, hintAt = 0, pinnedHint = false, targetBag = [], peekBag = [];
   const tried = new Set(), spots = [];
   renderBackBtn('index.html');
   gameSettings.attach(id);
   if (window.vbProgress) { vbProgress.firstPlay(id); vbProgress.touchStreak(); }
+
+  function refillBag(values, last) {
+    const bag = values.slice();
+    for (let index=bag.length-1;index>0;index--) {
+      const swap=Math.floor(Math.random()*(index+1));
+      [bag[index],bag[swap]]=[bag[swap],bag[index]];
+    }
+    if (bag.length>1 && bag[0]===last) [bag[0],bag[1]]=[bag[1],bag[0]];
+    return bag;
+  }
+  function drawTarget() {
+    if (!targetBag.length) targetBag=refillBag(Array.from({length:count},(_,index)=>index),lastTarget);
+    lastTarget=targetBag.shift(); return lastTarget;
+  }
+  function drawPeekPart() {
+    if (!peekBag.length) peekBag=refillBag(peekParts,lastPeekPart);
+    lastPeekPart=peekBag.shift(); return lastPeekPart;
+  }
+  function setHint(visible, accessible=visible) {
+    hint.textContent=visible;
+    hint.setAttribute('aria-label',accessible);
+  }
 
   function later(fn, delay) {
     clearTimeout(timer);
@@ -40,6 +75,10 @@
   function moveSpot(i, rect, anchor) {
     if (!spots[i]) return;
     const bounds = stage.getBoundingClientRect();
+    if (count >= 10) {
+      const landscape=bounds.width/bounds.height>=1.05, column=i%4, visualRow=2-Math.floor(i/4);
+      rect={left:.012+column*.247,top:(landscape?.34:.36)+visualRow*(landscape?.19:.18),width:.223,height:landscape?.175:.165};
+    }
     // A distant bush can project smaller than a finger on short landscape
     // screens. Expand its input area around the same center, inside the stage.
     const width = Math.min(1, Math.max(rect.width, 46 / Math.max(1,bounds.width)));
@@ -57,10 +96,13 @@
     positionCompanion();
   }
   function fallbackPositions() {
-    spots.forEach((_,i) => moveSpot(i, count === 2
-      ? {left:i*.5+.035,top:.15,width:.43,height:.74}
-      : i === 2 ? {left:.33,top:.01,width:.34,height:.47}
-        : {left:i*.54+.035,top:.48,width:.39,height:.49}));
+    const columns=count<=4?2:count<=9?3:4, rows=Math.ceil(count/columns), gap=.018;
+    const width=(1-gap*(columns+1))/columns, height=(1-gap*(rows+1))/rows;
+    spots.forEach((_,i) => moveSpot(i, {
+      left:gap+(i%columns)*(width+gap),
+      top:gap+Math.floor(i/columns)*(height+gap),
+      width,height,
+    }));
   }
   function positionCompanion() {
     if (phase === 'watch') {
@@ -85,6 +127,7 @@
     const visibleClue = mediaUnavailable && clue === 'peek' ? 'rustle' : clue;
     stage.dataset.phase = phase;
     stage.dataset.clue = visibleClue;
+    stage.dataset.peekPart = phase === 'seek' ? peekPart : '';
     intro.hidden = phase !== 'watch';
     cover.hidden = phase !== 'hiding';
     intro.querySelector('.intro-name').textContent = animals[animal].name;
@@ -94,10 +137,19 @@
       spot.classList.toggle('empty', phase === 'seek' && tried.has(i));
       spot.classList.toggle('clue-peek', isClue && visibleClue === 'peek');
       spot.classList.toggle('clue-rustle', isClue && visibleClue === 'rustle');
+      spot.classList.toggle('clue-glow', isClue && visibleClue === 'glow');
+      spot.classList.toggle('has-peek', isClue);
       spot.querySelector('.rustle-clue').hidden = !isClue || visibleClue !== 'rustle';
+      const piece=spot.querySelector('.peek-piece'), friend=animals[animal];
+      piece.dataset.part=peekPart;
+      piece.dataset.animal=friend.id;
+      piece.textContent=peekPart==='face'?friend.emoji:peekPart==='paw'?'🐾':'';
+      piece.style.setProperty('--peek-fur',friend.fur);
+      piece.style.setProperty('--peek-inner',friend.inner);
+      piece.style.setProperty('--peek-x',(35+((generation*29+i*17)%31))+'%');
       // Expose only a clue actually visible now; never leak the future answer.
-      spot.setAttribute('aria-label', places[i] + (isClue && visibleClue !== 'none'
-        ? visibleClue === 'peek' ? ' — little ears peeking out' : ' — leaves rustling'
+      spot.setAttribute('aria-label', places[i] + (isClue
+        ? ' — '+peekPartLabels[peekPart]+' peeking out'+(visibleClue === 'rustle' ? '; leaves rustling' : '')
         : tried.has(i) ? ' — empty' : ''));
     });
     action.style.visibility = phase === 'watch' || phase === 'hiding' ? 'visible' : 'hidden';
@@ -113,7 +165,7 @@
       companionId = animals[animal].id; companion?.setId(companionId);
     }
     const showCompanion = active && !document.hidden && !mediaUnavailable
-      && (phase === 'watch' || phase === 'found' || (phase === 'seek' && visibleClue === 'peek'));
+      && (phase === 'watch' || phase === 'found');
     companionHost.hidden = !showCompanion;
     companionHost.dataset.target = String(showCompanion && phase !== 'watch' ? target : -1);
     companion?.setVisible(showCompanion);
@@ -122,9 +174,9 @@
   }
   function pulseClue() {
     if (phase !== 'seek' || !active) return;
-    clue = tier <= 4 || pinnedHint ? 'peek' : 'rustle';
+    clue = tier<=2?'glow':tier<=4?'peek':pinnedHint?(tier<=8?'peek':'rustle'):tier<=6?'rustle':'none';
     render();
-    if (tier <= 2 || pinnedHint) return;
+    if (tier <= 4 || pinnedHint || clue === 'none') return;
     clueLater(() => {
       clue = 'none'; render();
       clueLater(pulseClue, tier <= 4 ? 1700 : 2100);
@@ -134,14 +186,17 @@
     if (!active || phase !== 'seek' || performance.now() < hintAt) return;
     hintAt = performance.now() + 600;
     pinnedHint = true; clearClues();
-    hint.textContent = (mediaUnavailable ? 'Look for rustling leaves at the ' : 'Look for little ears at the ') + places[target].toLowerCase() + '.';
+    if (tier<=2) setHint('✨ '+animals[animal].emoji+' 🔎','Look for the glowing bush.');
+    else if (tier<=8 && !mediaUnavailable) setHint('A tiny part is peeking out.','Look for '+peekPartLabels[peekPart]+'.');
+    else setHint('Watch for a tiny movement.','Watch for a tiny movement in the leaves.');
     pulseClue();
   }
   function show(focusAction = false) {
     clearTimeout(timer); timer = null; clearClues();
     phase = 'watch'; target = -1; tried.clear(); pinnedHint = false;
     readyAt = performance.now() + 350;
-    hint.textContent = animals[animal].name + ' wants to play hide-and-seek!';
+    if (tier<=2) setHint(animals[animal].emoji+' 🙈 🔎',animals[animal].name+' wants to play hide-and-seek.');
+    else setHint(animals[animal].name + ' wants to play hide-and-seek!');
     render(); if (focusAction) action.focus({preventScroll:true}); later(render, 360);
     // Panda uses the existing recorded species name, Bear; the visual label
     // stays specific. Do not request a missing paid voice clip.
@@ -155,13 +210,16 @@
     if (i !== target) {
       tried.add(i);
       hintAt = 0; help();
-      hint.textContent = (mediaUnavailable ? 'Nobody there. Look for rustling leaves at the ' : 'Nobody there. Look for little ears at the ') + places[target].toLowerCase() + '.';
+      if (tier<=2) setHint('↩️ ✨ '+animals[animal].emoji,'Nobody there. Look for the glowing bush.');
+      else if (mediaUnavailable || tier>=9) setHint('Nobody there. Watch for a tiny movement.');
+      else setHint('Nobody there. Look for '+peekPartLabels[peekPart]+'.');
       playBoop(); speak('Try again!'); render();
       if (keyboard) spots.find(spot => !spot.disabled)?.focus({preventScroll:true});
       return;
     }
     clearClues(); phase = 'found'; readyAt = performance.now()+500;
-    hint.textContent = 'You found ' + animals[animal].name + '!';
+    if (tier<=2) setHint('🎉 '+animals[animal].emoji,'You found '+animals[animal].name+'!');
+    else setHint('You found ' + animals[animal].name + '!');
     render(); if (keyboard) next.focus({preventScroll:true}); later(render,510);
     playSuccess(); speak('Yes! '+(animals[animal].spokenName || animals[animal].name)+'!');
     if (window.vbProgress) vbProgress.record(id);
@@ -169,19 +227,24 @@
   for (let i=0;i<count;i++) {
     const spot = document.createElement('button'); spot.type='button'; spot.className='hiding-spot';
     spot.dataset.spot=String(i); spot.setAttribute('aria-label',places[i]);
-    spot.style.setProperty('--flower',['#f5a7ce','#ffe071','#95c7ff'][i]);
-    spot.innerHTML='<span class="fallback-bush" aria-hidden="true"></span><span class="rustle-clue" aria-hidden="true" hidden>🍃</span>';
+    spot.style.setProperty('--flower',['#f5a7ce','#ffe071','#95c7ff','#d8a6ff'][i%4]);
+    spot.innerHTML='<span class="peek-piece" aria-hidden="true"></span><span class="fallback-bush" aria-hidden="true"></span><span class="rustle-clue" aria-hidden="true" hidden>🍃</span>';
     spot.addEventListener('click',event => { if (event.button === 0) choose(i, event.detail === 0); });
     stage.appendChild(spot); spots.push(spot);
   }
   action.addEventListener('click',event => {
     if (event.button !== 0 || !active || phase !== 'watch' || performance.now()<readyAt) return;
-    phase='hiding'; hint.textContent='No peeking… our friend is finding a spot.'; render();
+    phase='hiding';
+    if (tier<=2) setHint('🙈 …','No peeking. Our friend is finding a spot.');
+    else setHint('No peeking… our friend is finding a spot.');
+    render();
     later(() => {
       // Choose only behind the opaque cover, independent of the introduction.
-      target=Math.floor(Math.random()*count); phase='seek'; hintAt=0;
-      hint.textContent=tier<=4 && !mediaUnavailable ? 'Where is '+animals[animal].name+'? Look for little ears.'
-        : 'Where is '+animals[animal].name+'? Look for rustling leaves.';
+      target=drawTarget(); peekPart=drawPeekPart(); phase='seek'; hintAt=0;
+      if (tier<=2) setHint('✨ '+animals[animal].emoji+' 🔎','Where is '+animals[animal].name+'? Look for the glowing bush.');
+      else if (tier<=4 && !mediaUnavailable) setHint('Where is '+animals[animal].name+'? Look for '+peekPartLabels[peekPart]+'.');
+      else if (tier<=6) setHint('Where is '+animals[animal].name+'? Watch for moving leaves.');
+      else setHint('Where is '+animals[animal].name+'? Look carefully.');
       pulseClue(); spots[0].focus({preventScroll:true});
     },700);
   });
@@ -221,7 +284,7 @@
     const unavailable = companionHost.querySelector('canvas').dataset.media === 'unavailable';
     if (unavailable === mediaUnavailable) return;
     mediaUnavailable = unavailable;
-    if (phase === 'seek' && unavailable) hint.textContent = 'Look for rustling leaves at the ' + places[target].toLowerCase() + '.';
+    if (phase === 'seek' && unavailable) setHint(tier<=2?'✨ 🔎':'Watch for moving leaves.',tier<=2?'Look for the glowing bush.':'Watch for moving leaves.');
     render();
   }).observe(companionHost.querySelector('canvas'), {attributes:true,attributeFilter:['data-media']});
   new ResizeObserver(() => {if(!renderer) fallbackPositions(); else positionCompanion();}).observe(stage);

@@ -201,11 +201,11 @@ test('hiding and page lifecycle conceal and pause the single companion without l
     await phase(page,'seek');
     assert.equal(await page.locator('#seekCompanion').isVisible(),false,'rustle clue leaks the full companion');
     const target=await hintedTarget(page);
-    assert.equal(await page.locator('#seekCompanion').isVisible(),true,'requested companion peek is invisible');
-    const peekState=await page.locator('#seekCompanion').evaluate(host=>({pose:host.dataset.pose,target:Number(host.dataset.target),clip:getComputedStyle(host).clipPath}));
-    assert.equal(peekState.pose,'peek');
-    assert.equal(peekState.target,target,'companion peek is not anchored to the target bush');
-    assert.match(peekState.clip,/inset\([^)]*64%/,'partial companion is not clipped to a peek');
+    assert.equal(await page.locator('#seekCompanion').isVisible(),false,'requested clue exposes the full companion');
+    const peekState=await page.locator('.hiding-spot').nth(target).evaluate(spot=>{const piece=spot.querySelector('.peek-piece');return{visible:getComputedStyle(piece).display!=='none',part:piece.dataset.part,stagePart:document.querySelector('#stage').dataset.peekPart}});
+    assert.equal(peekState.visible,true,'requested partial-animal clue is invisible');
+    assert.ok(['ears','face','paw','tail'].includes(peekState.part),'requested clue has no supported animal part');
+    assert.equal(peekState.part,peekState.stagePart,'partial-animal clue is attached to the wrong round');
     const before=await page.locator('#seekCompanion video').evaluate(video=>video.currentTime);
     await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
     await page.waitForTimeout(350);

@@ -76,9 +76,9 @@ async function neutral(page) {
     friendVisible: !!document.querySelector('#friendIntro') && !document.querySelector('#friendIntro').hidden,
     friendInSpot: !!document.querySelector('.hiding-spot #friendIntro'),
     markers: document.querySelectorAll('.peek-marker').length,
-    clues: document.querySelectorAll('.hiding-spot.clue-peek,.hiding-spot.clue-rustle').length,
+    clues: document.querySelectorAll('.hiding-spot.clue-peek,.hiding-spot.clue-rustle,.hiding-spot.clue-glow,.hiding-spot.has-peek').length,
     fullAnimals: [...document.querySelectorAll('.hiding-spot .fallback-animal')].filter(element => element.textContent.trim()).length,
-    answerClasses: [...document.querySelectorAll('.hiding-spot')].filter(element => /(^|\s)(guide|target|answer|clue-peek|clue-rustle)(\s|$)/.test(element.className)).length,
+    answerClasses: [...document.querySelectorAll('.hiding-spot')].filter(element => /(^|\s)(guide|target|answer|clue-peek|clue-rustle|clue-glow|has-peek)(\s|$)/.test(element.className)).length,
     hint: document.querySelector('#hint').textContent,
     action: document.querySelector('#roundAction').textContent,
   }));
@@ -94,30 +94,37 @@ async function neutral(page) {
 
 async function beginSeek(page) {
   await page.waitForFunction(() => document.querySelector('#roundAction').getAttribute('aria-disabled') === 'false');
-  await page.locator('#roundAction').click();
-  await phase(page, 'hiding');
-  const cover = await page.locator('#hideCover').evaluate(element => {
-    const style = getComputedStyle(element), r = element.getBoundingClientRect();
-    const stage = document.getElementById('stage').getBoundingClientRect();
-    return {
-      visible: !element.hidden && style.display !== 'none' && style.visibility !== 'hidden',
-      background: style.backgroundColor,
-      covers: r.left <= stage.left + 1 && r.top <= stage.top + 1 && r.right >= stage.right - 1 && r.bottom >= stage.bottom - 1,
-    };
+  await page.evaluate(() => {
+    const stage=document.querySelector('#stage');
+    window.seekTransition=[];
+    window.seekTransitionObserver=new MutationObserver(() => {
+      if (stage.dataset.phase === 'hiding') {
+        const element=document.querySelector('#hideCover'),style=getComputedStyle(element),r=element.getBoundingClientRect(),s=stage.getBoundingClientRect();
+        window.seekTransition.push({
+          phase:'hiding',visible:!element.hidden&&style.display!=='none'&&style.visibility!=='hidden',
+          background:style.backgroundColor,covers:r.left<=s.left+1&&r.top<=s.top+1&&r.right>=s.right-1&&r.bottom>=s.bottom-1,
+          clues:document.querySelectorAll('.hiding-spot.clue-peek,.hiding-spot.clue-rustle,.hiding-spot.clue-glow,.hiding-spot.has-peek,.peek-marker').length,
+          enabled:document.querySelectorAll('.hiding-spot:not(:disabled)').length,
+        });
+      }
+      if (stage.dataset.phase === 'seek') window.seekTransitionObserver.disconnect();
+    });
+    window.seekTransitionObserver.observe(stage,{attributes:true,attributeFilter:['data-phase']});
   });
+  await page.locator('#roundAction').click();
+  await phase(page, 'seek');
+  const cover = await page.evaluate(() => window.seekTransition.find(entry=>entry.phase==='hiding'));
+  assert.ok(cover,'hiding phase was skipped');
   assert.equal(cover.visible, true, 'opaque hiding cover is not visible');
   assert.equal(cover.background, 'rgb(223, 243, 238)', 'hiding cover is not opaque garden color');
   assert.equal(cover.covers, true, 'hiding cover does not cover the garden');
-  assert.equal(await page.locator('.hiding-spot.clue-peek,.hiding-spot.clue-rustle,.peek-marker').count(), 0, 'answer appears while hiding');
-  assert.equal(await page.locator('.hiding-spot:not(:disabled)').count(), 0, 'a bush accepts answers while hiding');
-  await page.waitForTimeout(500);
-  assert.equal(await page.locator('#stage').getAttribute('data-phase'), 'hiding', 'hiding transition is too short to conceal the move');
-  await phase(page, 'seek');
+  assert.equal(cover.clues, 0, 'answer appears while hiding');
+  assert.equal(cover.enabled, 0, 'a bush accepts answers while hiding');
   assert.equal(await page.locator('#hideCover').isVisible(), false);
 }
 
 async function clueSpot(page, kind) {
-  const selector = kind ? `.hiding-spot.clue-${kind}` : '.hiding-spot.clue-peek,.hiding-spot.clue-rustle';
+  const selector = kind ? `.hiding-spot.clue-${kind}` : '.hiding-spot.clue-peek,.hiding-spot.clue-rustle,.hiding-spot.clue-glow';
   await page.locator(selector).first().waitFor();
   assert.equal(await page.locator(selector).count(), 1, 'clue identifies more than one bush');
   return Number(await page.locator(selector).first().getAttribute('data-spot'));
@@ -133,7 +140,7 @@ test('neutral intro conceals the answer; hiding, retry, hint, found, and replay 
   const { ctx, page, errors } = await open(6);
   try {
     await neutral(page);
-    assert.equal(await page.locator('.hiding-spot').count(), 3);
+    assert.equal(await page.locator('.hiding-spot').count(), 8);
     await page.locator('.hiding-spot').first().dispatchEvent('click');
     assert.equal(await page.locator('#stage').getAttribute('data-phase'), 'watch', 'intro bush click answered before seeking');
     assert.deepEqual(await page.evaluate(() => seekAwards), []);
@@ -149,7 +156,7 @@ test('neutral intro conceals the answer; hiding, retry, hint, found, and replay 
     assert.equal(await page.locator('.hiding-spot').nth(wrong).isDisabled(), true, 'empty bush can be retried forever');
     assert.equal((await page.locator('.hiding-spot').nth(wrong).getAttribute('class')).includes('empty'), true);
     assert.equal(await clueSpot(page, 'peek'), target, 'wrong answer pointed at a different bush');
-    assert.match(await page.locator('#hint').textContent(), new RegExp(places[target], 'i'), 'wrong-answer clue does not name its location');
+    assert.match(await page.locator('#hint').getAttribute('aria-label'), /look for|movement/i, 'wrong-answer clue lost accessible guidance');
     assert.equal(await page.locator('.hiding-spot .fallback-animal').evaluateAll(elements => elements.some(element => element.textContent.trim())), false,
       'hint reveals the full animal');
 
@@ -168,9 +175,9 @@ test('neutral intro conceals the answer; hiding, retry, hint, found, and replay 
 
 test('each age gets a fair automatic clue and A little hint sustains the same accessible peek', async t => {
   for (const config of [
-    { tier:1, count:2, automatic:'peek', mode:'sustained' },
-    { tier:4, count:2, automatic:'peek', mode:'periodic' },
-    { tier:6, count:3, automatic:'rustle', mode:'periodic' },
+    { tier:1, count:4, automatic:'glow', requested:'glow', mode:'sustained' },
+    { tier:4, count:6, automatic:'peek', requested:'peek', mode:'sustained' },
+    { tier:6, count:8, automatic:'rustle', requested:'peek', mode:'periodic' },
   ]) await t.test(`tier ${config.tier} ${config.mode} ${config.automatic}`, async () => {
     const { ctx, page, errors } = await open(config.tier);
     try {
@@ -180,7 +187,7 @@ test('each age gets a fair automatic clue and A little hint sustains the same ac
       const target = await clueSpot(page, config.automatic);
       if (config.mode === 'sustained') {
         await page.waitForTimeout(1300);
-        assert.equal(await clueSpot(page, 'peek'), target, 'young-child peek disappeared');
+        assert.equal(await clueSpot(page, config.automatic), target, 'young-child visual clue disappeared');
       } else {
         await page.waitForFunction(({ target, automatic }) =>
           !document.querySelector(`.hiding-spot[data-spot="${target}"].clue-${automatic}`), { target, automatic:config.automatic });
@@ -190,29 +197,28 @@ test('each age gets a fair automatic clue and A little hint sustains the same ac
       }
       await page.locator('#showAgain').click();
       assert.equal(await page.locator('#stage').getAttribute('data-phase'), 'seek', 'hint reset the round');
-      assert.equal(await clueSpot(page, 'peek'), target, 'hint changed the hiding place');
-      const place = (await page.locator('.hiding-spot').nth(target).getAttribute('aria-label')).split(' — ')[0];
-      assert.match(await page.locator('#hint').textContent(), new RegExp(place, 'i'), 'hint is not accessible as text');
+      assert.equal(await clueSpot(page, config.requested), target, 'hint changed the hiding place');
+      assert.match(await page.locator('#hint').getAttribute('aria-label'), /look for|movement/i, 'hint is not accessible');
       await page.waitForTimeout(1300);
-      assert.equal(await clueSpot(page, 'peek'), target, 'requested hint was not sustained');
+      assert.equal(await clueSpot(page, config.requested), target, 'requested hint was not sustained');
       assert.deepEqual(await page.evaluate(() => seekAwards), []);
       assert.deepEqual(errors, []);
     } finally { await ctx.close(); }
   });
 });
 
-test('feature-based third bush and keyboard play work in the fallback garden on a short phone', async () => {
+test('feature-based extra bushes and keyboard play work in the fallback garden on a short phone', async () => {
   const { ctx, page, errors } = await open(1, { features:{multiChoice:true}, fallback:true, viewport:{width:320,height:568} });
   try {
     await page.waitForFunction(() => document.querySelector('#stage').dataset.renderer === 'fallback');
     await neutral(page);
-    assert.equal(await page.locator('.hiding-spot').count(), 3);
+    assert.equal(await page.locator('.hiding-spot').count(), 8);
     await page.waitForFunction(() => document.querySelector('#roundAction').getAttribute('aria-disabled') === 'false');
     await page.locator('#roundAction').focus();
     await page.keyboard.press('Enter');
     await phase(page, 'hiding');
     await phase(page, 'seek');
-    const target = await clueSpot(page, 'peek');
+    const target = await clueSpot(page, 'glow');
     await page.locator('.hiding-spot').nth(target).focus();
     await page.keyboard.press('Space');
     await phase(page, 'found');

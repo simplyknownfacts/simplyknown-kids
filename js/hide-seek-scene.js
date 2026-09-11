@@ -1,8 +1,8 @@
 import * as THREE from './vendor/three-r180/three.module.min.js';
 
 const PHASES = new Set(['watch', 'hiding', 'seek', 'found']);
-const CLUES = new Set(['none', 'peek', 'rustle']);
-const FLOWER_COLORS = ['#f28daf', '#f4ca55', '#68aee8'];
+const CLUES = new Set(['none', 'peek', 'rustle', 'glow']);
+const FLOWER_COLORS = ['#f28daf', '#f4ca55', '#68aee8', '#b890e8'];
 
 function unsupportedWebGL(cause) {
   const error = new Error('unsupportedWebGL');
@@ -118,22 +118,25 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     [0, 0.31, 1.25], [1, 0.08, 1], [Math.PI / 2, 0, 0]);
   path.castShadow = false;
 
-  const places = [0, 1, 2].map(index => {
+  const bushGeo = rememberGeometry(new THREE.IcosahedronGeometry(0.72, 2));
+  const bushShapes = [
+    [[-0.56,0.73,0.02,0.9,0.86],[0.03,0.92,-0.03,1.08,1.02],[0.63,0.7,0.07,0.82,0.8]],
+    [[-0.64,0.68,0.04,0.78,0.82],[-0.04,0.86,-0.05,1.16,0.9],[0.6,0.75,0.02,0.92,0.9]],
+    [[-0.5,0.72,0.02,0.88,0.96],[0.02,1.02,-0.08,0.96,1.16],[0.54,0.7,0.05,0.82,0.86]],
+    [[-0.7,0.7,0.03,0.76,0.82],[-0.14,0.91,-0.04,1.02,1],[0.53,0.88,0.03,1.04,0.94]],
+  ];
+  const places = Array.from({ length: 12 }, (_, index) => {
     const group = new THREE.Group();
     group.name = `hide-place-${index}`;
     scene.add(group);
     const foliage = [];
-    const shapes = index === 0
-      ? [[-0.58, 0.78, 0.02, 0.88, 0.88], [0.1, 0.93, -0.02, 1.08, 1], [0.7, 0.72, 0.08, 0.82, 0.8]]
-      : index === 1
-        ? [[-0.7, 0.74, 0.03, 0.9, 0.78], [0, 0.91, -0.04, 1.15, 0.92], [0.72, 0.76, 0.04, 0.94, 0.8]]
-        : [[-0.52, 0.78, 0.03, 0.82, 0.9], [0, 1.12, -0.1, 1.02, 1.18], [0.58, 0.8, 0.02, 0.86, 0.9]];
-    const bushGeo = rememberGeometry(new THREE.IcosahedronGeometry(0.82, 2));
+    const shapes = bushShapes[index % bushShapes.length];
     shapes.forEach(([x, y, z, sx, sy], part) => {
-      foliage.push(mesh(group, bushGeo, [darkLeaf, midLeaf, lightLeaf][(index + part) % 3], [x, y, z], [sx, sy, 0.9]));
+      const scale=0.82+(index%3)*0.045;
+      foliage.push(mesh(group, bushGeo, [darkLeaf, midLeaf, lightLeaf][(index + part) % 3], [x, y, z], [sx*scale, sy*scale, 0.82]));
     });
-    mesh(group, rememberGeometry(new THREE.CylinderGeometry(0.22, 0.31, 1.12, 8)), trunk, [0, 0.47, -0.28]);
-    const rim = mesh(group, rememberGeometry(new THREE.TorusGeometry(1.06, 0.075, 7, 30)), stone, [0, 0.31, 0.08], [1.15, 1, 0.78], [Math.PI / 2, 0, 0]);
+    mesh(group, rememberGeometry(new THREE.CylinderGeometry(0.16, 0.24, 0.92, 8)), trunk, [0, 0.4, -0.24]);
+    const rim = mesh(group, rememberGeometry(new THREE.TorusGeometry(0.92, 0.06, 7, 26)), stone, [0, 0.27, 0.07], [1.13, 1, 0.76], [Math.PI / 2, 0, 0]);
     rim.castShadow = false;
     return { group, foliage };
   });
@@ -147,7 +150,7 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   const centerMaterial = makeMaterial('#fff0a4', { roughness: 0.68 });
   const flowerOffsets = [[-1.05, 0.72], [-0.72, 1.02], [0.7, 1.05], [1.03, 0.67]];
   places.forEach((place, index) => {
-    const flowerMaterial = makeMaterial(FLOWER_COLORS[index], { roughness: 0.7 });
+    const flowerMaterial = makeMaterial(FLOWER_COLORS[index % FLOWER_COLORS.length], { roughness: 0.7 });
     const stems = new THREE.InstancedMesh(stemGeo, stemMaterial, flowerOffsets.length);
     const centers = new THREE.InstancedMesh(centerGeo, centerMaterial, flowerOffsets.length);
     const petals = new THREE.InstancedMesh(petalGeo, flowerMaterial, flowerOffsets.length * 5);
@@ -222,7 +225,7 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
   rustleMarker.visible = false;
   scene.add(rustleMarker);
 
-  let state = { count: 2, target: -1, phase: 'watch', clue: 'none' };
+  let state = { count: 4, target: -1, phase: 'watch', clue: 'none' };
   let width = 1;
   let height = 1;
   let portrait = true;
@@ -236,8 +239,8 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
 
   function placeLayout() {
     const layout = portrait
-      ? [[-2.32, 0, 1.7], [2.32, 0, 1.7], [0, 0, -3.05]]
-      : [[-3.55, 0, 1.05], [3.55, 0, 1.05], [0, 0, -2.95]];
+      ? [[-4.05,0,2.8],[-1.35,0,2.8],[1.35,0,2.8],[4.05,0,2.8],[-4.15,0,.1],[-1.38,0,.1],[1.38,0,.1],[4.15,0,.1],[-3.95,0,-2.6],[-1.32,0,-2.6],[1.32,0,-2.6],[3.95,0,-2.6]]
+      : [[-4.7,0,2.35],[-1.58,0,2.35],[1.58,0,2.35],[4.7,0,2.35],[-4.75,0,-.25],[-1.6,0,-.25],[1.6,0,-.25],[4.75,0,-.25],[-4.45,0,-2.85],[-1.48,0,-2.85],[1.48,0,-2.85],[4.45,0,-2.85]];
     places.forEach((place, index) => place.group.position.set(...layout[index]));
   }
 
@@ -247,8 +250,7 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
     rustleMarker.visible = staticRustle;
     if (staticRustle) {
       const place = places[state.target].group.position;
-      const markerHeights = [2.02, 2.02, 2.34];
-      rustleMarker.position.set(place.x, markerHeights[state.target], place.z + 0.04);
+      rustleMarker.position.set(place.x, 1.86 + (state.target % 4) * .035, place.z + 0.04);
     }
   }
 
@@ -282,10 +284,10 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
       const p = places[index].group.position;
       // Artwork follows projected world anchors, independently of enlarged
       // touch targets on small landscape screens.
-      const peek = project(p.x, [1.65, 1.66, 1.98][index], p.z - 0.28);
-      const found = project(p.x, 0.1, p.z + 1.3);
-      const left = project(p.x - 1.3, 1.2, p.z);
-      const right = project(p.x + 1.3, 1.2, p.z);
+      const peek = project(p.x, 1.58 + (index % 4) * .035, p.z - 0.2);
+      const found = project(p.x, 0.08, p.z + 1.05);
+      const left = project(p.x - 1.08, 1.08, p.z);
+      const right = project(p.x + 1.08, 1.08, p.z);
       onPlace(index, rect, {peek, found, width: right.x - left.x});
     });
   }
@@ -364,7 +366,8 @@ export function createHideSeekScene(host, { onPlace = () => {} } = {}) {
 
   function update(next = {}) {
     if (disposed) return;
-    const nextCount = Number(next.count) === 3 ? 3 : 2;
+    const requestedCount = Math.round(Number(next.count));
+    const nextCount = Number.isFinite(requestedCount) ? clamp(requestedCount, 4, 12) : 4;
     const requestedTarget = Number.isInteger(next.target) ? next.target : state.target;
     const nextTarget = requestedTarget >= 0 && requestedTarget < nextCount ? requestedTarget : -1;
     const nextPhase = PHASES.has(next.phase) ? next.phase : state.phase;

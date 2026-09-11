@@ -26,7 +26,6 @@
     #seekCompanion { pointer-events:none; flex:none; width:min(230px,50vw,40dvh); aspect-ratio:1; }
     #seekCompanion .companion-actor-canvas { display:block; width:100%; height:100%; }
     #stage > #seekCompanion { position:absolute; z-index:3; }
-    #seekCompanion[data-pose="peek"] { clip-path:inset(0 0 64% 0); }
     #seekCompanion[data-pose="found"] { filter:drop-shadow(0 5px 3px #304e4430); }
     @media(orientation:landscape) and (max-height:550px) { #friendIntro{gap:2px} #friendIntro #seekCompanion{width:min(130px,28dvh)} #friendIntro .intro-name{font-size:18px} #friendIntro .intro-message{font-size:12px} }
     .intro-name { font:900 clamp(22px,4vw,36px) var(--font-display); color:#184d4a; }
@@ -37,6 +36,20 @@
     #stage:not([data-renderer="webgl"]) .rustle-clue { display:block; }
     .clue-rustle .fallback-bush { animation:seek-rustle .24s ease-in-out infinite alternate; }
     @keyframes seek-rustle { from{transform:rotate(-3deg)} to{transform:rotate(3deg)} }
+    .clue-glow { border-color:#ffd84f; box-shadow:0 0 0 7px #fff3a3aa,0 0 30px 15px #ffd84faa; animation:seek-glow .8s ease-in-out infinite alternate; }
+    @keyframes seek-glow { from{filter:brightness(1)} to{filter:brightness(1.18)} }
+    .peek-piece { display:none; position:absolute; z-index:-1; left:var(--peek-x,50%); transform:translateX(-50%); pointer-events:none; filter:drop-shadow(0 3px 2px #173f3638); }
+    .has-peek .peek-piece { display:block; }
+    .peek-piece[data-part="ears"] { top:10%; width:56px; height:70px; }
+    .peek-piece[data-part="ears"]::before,.peek-piece[data-part="ears"]::after { content:''; position:absolute; top:0; width:21px; height:66px; border:4px solid #ffffffcc; border-radius:70% 70% 42% 42%; background:linear-gradient(90deg,var(--peek-fur),var(--peek-inner)); }
+    .peek-piece[data-part="ears"]::before { left:4px; transform:rotate(-11deg); }
+    .peek-piece[data-part="ears"]::after { right:4px; transform:rotate(11deg); }
+    .peek-piece[data-part="ears"][data-animal="panda"]::before,.peek-piece[data-part="ears"][data-animal="panda"]::after { top:28px; width:24px; height:24px; border-radius:50%; background:#30363f; border-color:#f5f1e8; }
+    .peek-piece[data-part="ears"][data-animal="tabby"]::before,.peek-piece[data-part="ears"][data-animal="tabby"]::after { top:24px; width:25px; height:30px; border-radius:70% 15% 55% 35%; }
+    .peek-piece[data-part="face"] { top:13%; font-size:clamp(40px,8vw,66px); line-height:1; }
+    .peek-piece[data-part="paw"] { top:25%; font-size:clamp(34px,7vw,56px); line-height:1; transform:translateX(-50%) rotate(-16deg); }
+    .peek-piece[data-part="tail"] { top:30%; width:30px; height:30px; border:3px solid #ffffffc7; border-radius:50%; background:radial-gradient(circle at 35% 30%,var(--peek-inner),var(--peek-fur) 68%); }
+    .peek-piece[data-part="tail"][data-animal="tabby"] { width:50px; height:22px; border-radius:80% 42% 42% 80%; transform:translateX(-50%) rotate(-24deg); }
     .fallback-bush { display:none; position:absolute; inset:35% 4% 12%; border-radius:48% 54% 35% 40%; background:radial-gradient(ellipse at 40% 15%,#9aca69,#468659 70%); box-shadow:inset -9px -10px 0 #25614150,0 9px 0 #2b60472b; }
     .fallback-bush::after { content:'✿'; position:absolute; right:12%; top:25%; color:var(--flower); font-size:35px; }
     #stage:not([data-renderer="webgl"]) > canvas { display:none; }
@@ -77,7 +90,7 @@
       .vb-celebrate .cele-title { font-size:10px; }
       .vb-celebrate .cele-hint { margin-top:2px; font-size:9px; }
     }
-    @media(max-height:650px) { .seek-screen { padding-top:82px; gap:2px; padding-bottom:68px; } .seek-heading h1{font-size:26px;margin-bottom:3px} #hint{font-size:14px;min-height:2.5em} .seek-controls{padding-top:5px;gap:8px} .seek-controls button{min-height:48px;padding:7px 12px;font-size:14px} #roundAction{min-width:128px} #stage{border-radius:24px} }
+    @media(max-height:650px) { .seek-screen { padding-top:82px; gap:2px; padding-bottom:68px; } .seek-heading h1{font-size:26px;margin-bottom:3px} #hint{font-size:14px;min-height:2.5em} .seek-controls{padding-top:5px;gap:8px} .seek-controls button{min-height:48px;padding:7px 12px;font-size:14px} #roundAction{min-width:128px} #stage{border-radius:24px} .peek-piece[data-part="ears"]{transform:translateX(-50%) scale(.72);transform-origin:bottom center}.peek-piece[data-part="face"],.peek-piece[data-part="paw"]{font-size:34px}.peek-piece[data-part="tail"]{width:24px;height:24px}.peek-piece[data-part="tail"][data-animal="tabby"]{width:42px;height:18px} }
     @media(orientation:landscape) and (max-height:550px) { .seek-screen { grid-template-columns:210px minmax(0,1fr);grid-template-rows:1fr auto;padding:90px 16px 58px;gap:4px 18px} .seek-heading{grid-column:1;align-self:center} #stage{grid-column:2;grid-row:1/3;height:100%} .seek-controls{grid-column:1;grid-template-columns:1fr;grid-template-rows:44px 44px;gap:7px} #showAgain,#playAgain{grid-column:1;grid-row:2} .seek-controls button{width:100%;min-height:44px;padding:5px 8px} }
     @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important;transition:none !important; } }
   </style>
