@@ -11,7 +11,7 @@ import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const OUT = path.join(import.meta.dirname, 'out', 'clock-visual-play');
-const AUDIT_START = '48fed5da63794cc0bb44cdc7a960f021489d9591';
+const AUDIT_START = 'a1e215ebedc22b1d16562f51f490e413414f06da';
 const VIEWPORTS = {
   desktop: { width: 1280, height: 900, isMobile: false, hasTouch: false },
   phone: { width: 390, height: 844, isMobile: true, hasTouch: true },
@@ -27,6 +27,16 @@ const RUN_PROBES = process.env.PROBES !== '0';
 const ROUND_COUNT = 12;
 const allowedMinutes = tier => tier <= 7 ? [0] : tier === 8 ? [0,30] : tier === 9 ? [0,15,30,45] : [0,5,10,15,20,25,30,35,40,45,50,55];
 const sha256 = file => createHash('sha256').update(readFileSync(file)).digest('hex');
+const clockSource = readFileSync(path.join(ROOT, 'learning', 'clock.html'), 'utf8');
+const sourceLine = needle => {
+  const index = clockSource.indexOf(needle);
+  if (index < 0 || clockSource.indexOf(needle, index + 1) >= 0) throw new Error(`Clock audit callsite changed: ${needle}`);
+  return clockSource.slice(0, index).split('\n').length;
+};
+const problemLines = {
+  hour: sourceLine('h = 1 + Math.floor(Math.random() * 12);'),
+  minute: sourceLine('m = MINUTE_CHOICES[Math.floor(Math.random() * MINUTE_CHOICES.length)];'),
+};
 
 async function freePort() {
   const probe = createServer();
@@ -51,7 +61,7 @@ function birthday(tier) {
   return date.toISOString().slice(0, 10);
 }
 
-function init({ tier, bday, counter = 119 }) {
+function init({ tier, bday, problemLines, counter = 119 }) {
   const profile = {
     id: `clock-t${tier}`,
     name: 'Clock Test',
@@ -89,8 +99,8 @@ function init({ tier, bday, counter = 119 }) {
   const seeded = () => ((randomState = (Math.imul(randomState, 1664525) + 1013904223) >>> 0) / 0x100000000);
   Math.random = () => {
     const stack = String(new Error().stack || '');
-    if (/clock\.html:125:\d+/.test(stack) && window.__clockHourValues.length) return window.__clockHourValues.shift();
-    if (/clock\.html:126:\d+/.test(stack) && window.__clockMinuteValues.length) return window.__clockMinuteValues.shift();
+    if (stack.includes(`clock.html:${problemLines.hour}:`) && window.__clockHourValues.length) return window.__clockHourValues.shift();
+    if (stack.includes(`clock.html:${problemLines.minute}:`) && window.__clockMinuteValues.length) return window.__clockMinuteValues.shift();
     return seeded();
   };
   const realTimeout = window.setTimeout.bind(window);
@@ -185,6 +195,10 @@ async function verifySettings(page, tier) {
   await gear.dispatchEvent('pointerdown', { pointerId:1, pointerType:'mouse', isPrimary:true, button:0, buttons:1 });
   await page.locator('#gameSettingsOverlay').waitFor({ timeout:2000 });
   await gear.dispatchEvent('pointerup', { pointerId:1, pointerType:'mouse', isPrimary:true, button:0, buttons:0 });
+  for (const digit of ['0','0','0','0']) await page.locator(`.gs-key[data-k="${digit}"]`).click();
+  await page.locator('#gsMsg').filter({ hasText:'Wrong PIN' }).waitFor({ timeout:1500 });
+  const wrongPinStayedLocked = await page.locator('select.gs-tier-sel').count() === 0;
+  await page.waitForTimeout(250);
   for (const digit of ['1','2','3','4']) await page.locator(`.gs-key[data-k="${digit}"]`).click();
   const selector = page.locator('select.gs-tier-sel');
   await selector.waitFor({ timeout:1500 });
@@ -195,7 +209,7 @@ async function verifySettings(page, tier) {
   await page.locator('#gsClose').click();
   await page.waitForLoadState('load');
   const after = await state(page);
-  return initial === String(tier) && persistedBeforeClose && after.tierOverride === tier && after.pin === '1234';
+  return wrongPinStayedLocked && initial === String(tier) && persistedBeforeClose && after.tierOverride === tier && after.pin === '1234';
 }
 
 async function solveRound(page, rapid) {
@@ -206,13 +220,20 @@ async function solveRound(page, rapid) {
   const wrong = labels.findIndex(label => label !== time.key);
   if (correct < 0 || wrong < 0) throw new Error(`cannot solve ${JSON.stringify({ time, labels })}`);
   const before = (await state(page)).counter;
-  await choices.nth(wrong).dispatchEvent('pointerdown');
-  const wrongRecovered = await choices.nth(wrong).evaluate(element => element.classList.contains('wrong'));
+  const wrongRecovered = await choices.nth(wrong).evaluate(element => {
+    element.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0, buttons: 1 }));
+    return element.classList.contains('wrong');
+  });
   const wrongDidNotProgress = (await state(page)).counter === before;
   const oldClock = await page.locator('#clockWrap svg').elementHandle();
-  await choices.nth(correct).dispatchEvent('pointerdown');
-  const rightMarked = await choices.nth(correct).evaluate(element => element.classList.contains('right'));
-  const teaching = (await page.locator('#hint').textContent()).includes(time.key);
+  const correctState = await choices.nth(correct).evaluate((element, key) => {
+    element.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0, buttons: 1 }));
+    return {
+      rightMarked: element.classList.contains('right'),
+      teaching: document.getElementById('hint')?.textContent.includes(key) === true,
+    };
+  }, time.key);
+  const { rightMarked, teaching } = correctState;
   if (rapid) {
     await choices.nth(correct).dispatchEvent('pointerdown');
     await choices.nth(wrong).dispatchEvent('pointerdown');
@@ -258,7 +279,7 @@ async function runCell(browser,base,viewportName,viewport,tier,allScreenshots) {
   const rowId=`clock:T${tier}:${viewportName}`;
   const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},isMobile:viewport.isMobile,hasTouch:viewport.hasTouch,reducedMotion:'no-preference',serviceWorkers:'block'});
   await context.route('**/*',route=>new URL(route.request().url()).origin===base?route.continue():route.abort('blockedbyclient'));
-  await context.addInitScript(init,{tier,bday:birthday(tier),counter:119});
+  await context.addInitScript(init,{tier,bday:birthday(tier),problemLines,counter:119});
   const page=await context.newPage(),screenshots=[],rounds=[],geometrySamples=[],pageErrors=[],failedLocalRequests=[];
   page.on('pageerror',error=>pageErrors.push(error.message));
   page.on('requestfailed',request=>{if(request.url().startsWith(base)&&request.resourceType()!=='media')failedLocalRequests.push(`${request.url()} ${request.failure()?.errorText||''}`)});
@@ -290,7 +311,7 @@ async function runCell(browser,base,viewportName,viewport,tier,allScreenshots) {
   finally{allScreenshots.push(...screenshots.map(item=>({...item,viewport:viewportName,tier})));await context.close()}
   const observed=[...new Set(rounds.map(round=>round.minute))].sort((a,b)=>a-b),expected=allowedMinutes(tier);
   const modesPass=JSON.stringify(observed)===JSON.stringify(expected);
-  const geometryPass=geometrySamples.length>=6&&geometrySamples.every(sample=>sample.minTarget>=44&&sample.targetsReachable&&sample.minNavTarget>=44&&sample.horizontalOverflow<=1&&!sample.navClipped);
+  const geometryPass=geometrySamples.length>=6&&geometrySamples.every(sample=>sample.minTarget>=64&&sample.targetsReachable&&sample.minNavTarget>=44&&sample.horizontalOverflow<=1&&!sample.navClipped);
   const rewardPass=reward?.title&&reward.hint==='Saved in your gallery'&&reward.inViewport&&repeatAfter===1;
   return{id:rowId,activityId:'clock',route:'/learning/clock.html',tier,viewport:viewportName,checks:{
     input:!fatal&&settingsPass&&rounds.length===ROUND_COUNT&&rounds.every(round=>round.wrongRecovered&&round.wrongDidNotProgress&&round.exactIncrement&&round.rightMarked&&round.teaching)?'PASS':'FAIL',
@@ -305,10 +326,10 @@ async function runCell(browser,base,viewportName,viewport,tier,allScreenshots) {
 async function runProbe(browser,base,viewportName,viewport,tier,allScreenshots) {
   const rowId=`clock-probe:T${tier}:${viewportName}`,context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},isMobile:viewport.isMobile,hasTouch:viewport.hasTouch,serviceWorkers:'block'});
   await context.route('**/*',route=>new URL(route.request().url()).origin===base?route.continue():route.abort('blockedbyclient'));
-  await context.addInitScript(init,{tier,bday:birthday(tier),counter:119});
+  await context.addInitScript(init,{tier,bday:birthday(tier),problemLines,counter:119});
   const page=await context.newPage(),screenshots=[],rounds=[],geometrySamples=[];let reward=null,fatal=null;
   try{await page.goto(base+'/learning/clock.html',{waitUntil:'load'});for(let index=0;index<3;index++){geometrySamples.push(await geometry(page));await saveShot(page,rowId,`round-${index+1}`,screenshots);const round=await solveRound(page,index===0);rounds.push({minute:round.minute,exactIncrement:round.exactIncrement,wrongRecovered:round.wrongRecovered,wrongDidNotProgress:round.wrongDidNotProgress});if(index===0)reward=await inspectReward(page,rowId,screenshots);await waitNext(page,round.oldClock)}}catch(error){fatal=`${error.name}: ${error.message}`;try{await saveShot(page,rowId,'failure',screenshots)}catch{}}finally{allScreenshots.push(...screenshots.map(item=>({...item,viewport:viewportName,tier})));await context.close()}
-  const behaviorPass=!fatal&&geometrySamples.length===3&&geometrySamples.every(sample=>sample.minTarget>=44&&sample.targetsReachable&&sample.minNavTarget>=44&&sample.horizontalOverflow<=1&&!sample.navClipped)&&rounds.length===3&&rounds.every(round=>round.exactIncrement&&round.wrongRecovered&&round.wrongDidNotProgress)&&reward?.inViewport;
+  const behaviorPass=!fatal&&geometrySamples.length===3&&geometrySamples.every(sample=>sample.minTarget>=64&&sample.targetsReachable&&sample.minNavTarget>=44&&sample.horizontalOverflow<=1&&!sample.navClipped)&&rounds.length===3&&rounds.every(round=>round.exactIncrement&&round.wrongRecovered&&round.wrongDidNotProgress)&&reward?.inViewport;
   return{id:rowId,tier,viewport:viewportName,behaviorPass,reward,rounds,geometrySamples,screenshotCount:screenshots.length,fatal};
 }
 

@@ -380,3 +380,24 @@
 6. All 192 renders and four contact sheets were inspected. Clock source SHA-256 is `5c9dcee9fc9fcc5aab986d785d018d791cf3a3160b99604feaf34d273a1a2616`; report SHA-256 is `d4329e7ed2a24dd66a9f3d1f2cf58fb1b72f06383f02c571afe886f9c18cd5cc`.
 7. The guarded importer repairs only the eight accepted Math visual cells, then adjudicates Clock as 92 BLK-to-PASS cells and eight phone visual BLK-to-FAIL cells; its second run changes zero. Totals become **10,161 PASS / 44 FAIL / 2,721 BLK / 3,574 NA**; row verdicts become 272 PASS / 44 FAIL / 344 BLK, with 300 COMPLETE / 360 PARTIAL.
 8. Browser emulation does not prove physical child touch. No Clock repair, production/main, push, merge, deploy/promote, secrets, PII, provider, paid, gate/security, remote-data, task archival or worktree deletion action occurred.
+
+## Clock layout repair `a1e215e`
+
+1. Red-first focused proof reproduced 12 failures: all eight T3-T10 390x844 reward/title states, the T4 320x568 reward state, and three sampled short-phone gear/answer collisions; six wider or unaffected controls passed.
+2. Product commit `a1e215ebedc22b1d16562f51f490e413414f06da` gives Clock the activity-safe compact phone notice, keeps the replay prompt hidden until the notice DOM is removed, and reserves a narrow short-phone gear lane without shrinking the 64px answer targets.
+3. Focused final proof passes 18/18. The final full Clock run passes all 20 T1-T10 phone/desktop rows and all eight short-phone/tablet probes with 100 PASS / 0 FAIL / 20 reviewed visual placeholders, 240 correct answers, 192 renders, and zero reward or responsive overlap.
+4. Real PIN settings, all tier minute modes, wrong-answer recovery, rapid exact-once input, persistence, navigation, reload, repeated play and T1-T2 hub reward deferral remain intact. All four final contact sheets were inspected.
+5. Clock source SHA-256 is `a6d03cee0aaf8a9648314db05b2acedd612c180627f711c257a9d7bb2ad45687`; final report SHA-256 is `b9b6fb551212ef52973d2ee876b19bf9c982ace74c10536666609beff881d777`.
+6. Independent exact-product review found no product P1/P2 and independently passed the focused 18/18 proof plus all 20 tier/viewport rows and all 50 required minute rounds. It identified a stale source-line hook and loaded-run transient wrong/right feedback races in the audit harness; the final runner derives callsites from source and reads both transient outcomes atomically before producing the clean matrix above.
+7. Only the eight prior Clock phone `visual_quality` FAIL cells change to PASS.
+
+## Spelling remaining dimensions audit `a1e215e`
+
+1. This is report-only Spelling work. The accepted responsive repair at `33a26ea4851dc70d74d6bb8b51f2a577e5251de6` remains distinct evidence; this run adjudicates the still-open input, progression, rewards, restart, long repeated play and visual dimensions across forced T1-T10 phone/desktop routes.
+2. All 20 rows complete real wrong-to-correct recovery, rapid exact-once input, exact progress, real wrong/correct PIN settings, repeated words and duplicate letters, 3-to-8-letter words, navigation, reload, persistence and repeated play. The run records 128 correct answers and 172 renders.
+3. **Confirmed report-only P2, T3-T10 phone:** the `Spelling Star` notice visibly obscures the centered `Spelling Bee` title. T1-T2 deferred hub rewards and all desktop rewards are clear. Smallest separate repair: use the activity-safe compact phone notice while retaining hub deferral and shared dismissal.
+4. **Confirmed report-only P2, T8/T10 at 320x568:** the fixed settings gear covers a bottom-right letter tile in all three sampled rounds for each tier. T4/T6 short-phone and all tablet probes are clear. Smallest separate repair: reserve a short-phone gear lane without shrinking the 64.5px choices.
+5. The final 20-row report is 112 PASS / 8 FAIL across the six adjudicated dimensions. Six of eight responsive probes pass; the two failures are the T8/T10 collision above. There are zero page errors, failed local requests or horizontal overflow. All four contact sheets were inspected with no additional finding.
+6. Spelling source SHA-256 is `904277a7888d85182d79d56b3f28a593ab4bca11e1849690db2b13f47ae7741d`; report SHA-256 is `9d6f3501e8e940c5bffa94ca8ec1c1311a0169cb28e13063faea761aa414a1c0`.
+7. The guarded importer changes 100 cells across Clock and Spelling, then zero on repeat. Totals become **10,248 PASS / 44 FAIL / 2,634 BLK / 3,574 NA**; row verdicts become 292 PASS / 44 FAIL / 324 BLK, with 320 COMPLETE / 340 PARTIAL.
+8. Browser-driven pointer/touch emulation and silent local media handling do not prove physical child touch or human-audible quality. No Spelling product source, production/main, push, merge, deploy/promote, secrets, PII, provider, paid, gate/security, remote-data, task archival or worktree deletion action changed.

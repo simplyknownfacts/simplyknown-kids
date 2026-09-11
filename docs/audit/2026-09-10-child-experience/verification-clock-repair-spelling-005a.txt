@@ -1,0 +1,22 @@
+Clock repair and Spelling remaining-dimensions audit verification (codex), 2026-09-11
+
+Product commit: a1e215ebedc22b1d16562f51f490e413414f06da
+Clock focused regression: 18/18 pass.
+Clock full matrix: 20/20 rows, 100 PASS / 0 FAIL / 20 inspected visual placeholders, 8/8 probes, 240 correct answers, 192 renders, zero reward/responsive overlaps.
+Clock source SHA-256: a6d03cee0aaf8a9648314db05b2acedd612c180627f711c257a9d7bb2ad45687
+Clock report SHA-256: b9b6fb551212ef52973d2ee876b19bf9c982ace74c10536666609beff881d777
+Clock runner SHA-256: 72d9ab12b3fe4748b07f94542b7d0b8cac1a7af4c46751204c261fd786483f9b
+
+Spelling full matrix: 20/20 rows, 112 PASS / 8 FAIL, 128 correct answers, 172 renders; 6/8 responsive probes pass.
+Spelling findings: T3-T10 phone reward/title overlap; T8/T10 320x568 settings-gear/letter-tile collision.
+Spelling source SHA-256: 904277a7888d85182d79d56b3f28a593ab4bca11e1849690db2b13f47ae7741d
+Spelling report SHA-256: 9d6f3501e8e940c5bffa94ca8ec1c1311a0169cb28e13063faea761aa414a1c0
+Spelling runner SHA-256: 988807cb701acf2f4eed94b65f417d4451b24f95498ac2079d6a445227465e32
+Prior responsive repair kept separate: 33a26ea4851dc70d74d6bb8b51f2a577e5251de6
+
+Ledger importer: 100 intended cell changes on first run, 0 on repeat.
+Ledger totals: 10,248 PASS / 44 FAIL / 2,634 BLK / 3,574 NA; rows 292 PASS / 44 FAIL / 324 BLK; 320 COMPLETE / 340 PARTIAL.
+Full project suite: 498 tests, 489 pass, 9 known Bubble Pop guidance failures, 0 skipped.
+Independent exact-product review: PASS, no Clock product P1/P2; focused 18/18 and all required minute modes passed. Reviewer caught stale-callsite and transient wrong/right-state harness defects; the final runner derives callsites from source, reads both outcomes atomically and the full matrix above passed.
+
+Limits: browser emulation is not physical child-touch proof; silent media handling is not human-audible quality proof. No production/main, push, merge, deploy/promote, secrets, PII, provider, paid, gate/security, remote-data, task archival, worktree deletion or guarded dependency cleanup occurred.
