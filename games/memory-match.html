@@ -51,6 +51,11 @@
     .mm-card.wrong .mm-inner { animation: mmShake 0.3s; }
     @keyframes mmShake {0%,100%{transform:rotateY(180deg) translateX(0)}25%{transform:rotateY(180deg) translateX(-6px)}75%{transform:rotateY(180deg) translateX(6px)}}
     @media (prefers-reduced-motion: reduce) { .mm-inner { transition: none; } }
+    /* Memory Match's centered phone title occupies the shared notice's usual
+       top offset. Keep this activity's notice in the otherwise-empty corner. */
+    @media (max-width: 600px) {
+      .vb-celebrate { top: calc(4px + env(safe-area-inset-top)); }
+    }
   </style>
 </head>
 <body>
@@ -110,15 +115,33 @@
       const afford = Math.floor((width + gap) / (MIN_CARD_PX + gap));
       return Math.max(2, Math.min(COLS, afford));
     }
+    // A memory board works best when every location is visible together. On a
+    // normal desktop, cap card width against the available stage height while
+    // keeping the same pairs and columns. Short viewports and phones retain the
+    // natural vertical scroller instead of shrinking finger targets.
+    function layoutBoard() {
+      board.style.width = '';
+      board.style.gridTemplateColumns = `repeat(${fitCols()}, 1fr)`;
+      const cols = fitCols();
+      const gap = parseFloat(getComputedStyle(board).rowGap) || 10;
+      if (window.innerWidth >= 768 && window.innerHeight >= 700) {
+        const rows = Math.ceil(PAIRS * 2 / cols);
+        const heightBudget = window.innerHeight - board.getBoundingClientRect().top - 56;
+        const heightFitCard = ((heightBudget - gap * (rows - 1)) / rows) * 3 / 4;
+        if (heightFitCard >= MIN_CARD_PX) {
+          const heightFitWidth = Math.floor(heightFitCard) * cols + gap * (cols - 1);
+          if (heightFitWidth < board.clientWidth) board.style.width = `${heightFitWidth}px`;
+        }
+      }
+      board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    }
     // Turning the tablet sideways changes what fits. Re-shape the grid without
     // rebuilding it, so a game in progress is not thrown away.
-    window.addEventListener('resize', () => {
-      board.style.gridTemplateColumns = `repeat(${fitCols()}, 1fr)`;
-    });
+    window.addEventListener('resize', layoutBoard);
 
     function buildBoard() {
       board.innerHTML = ''; first = null; lock = false; matched = 0;
-      board.style.gridTemplateColumns = `repeat(${fitCols()}, 1fr)`;
+      layoutBoard();
       const faces = [...EMOJI].sort(() => Math.random() - 0.5).slice(0, PAIRS);
       const deck = [...faces, ...faces].sort(() => Math.random() - 0.5);
       deck.forEach(emoji => {
