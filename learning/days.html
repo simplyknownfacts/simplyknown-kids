@@ -28,6 +28,15 @@
     .day-tile.matched{ border-color: #a8e6cf; background: rgba(168,230,207,0.25); }
     .day-tile.wrong  { animation: shake 0.3s; }
     .day-emoji { font-size: 38px; line-height: 1; }
+    /* Keep this page's wide centered title clear of the shared reward notice
+       on compact layouts. Desktop retains the shared placement. */
+    @media (max-width: 900px) {
+      .vb-celebrate { top: calc(12px + env(safe-area-inset-top)); }
+      body:has(.vb-celebrate.in) .vb-replay-instruction {
+        visibility: hidden;
+        pointer-events: none;
+      }
+    }
     @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
   </style>
 </head>
