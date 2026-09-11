@@ -96,6 +96,11 @@ for (const expected of CASES) {
             return owned;
           });
         })(),
+        allCentersOwned: [...document.querySelectorAll('.hiding-spot')].every(spot => {
+          const box = spot.getBoundingClientRect();
+          const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+          return top?.closest('.hiding-spot') === spot || top?.classList.contains('peek-piece');
+        }),
         part: document.querySelector('#stage').dataset.peekPart,
       }));
       assert.ok(['ears', 'face', 'paw', 'tail'].includes(state.part), `missing varied peek part: ${state.part}`);
@@ -105,6 +110,7 @@ for (const expected of CASES) {
       assert.equal(state.visibleParts, 1, 'round does not expose exactly one small animal part');
       assert.equal(state.peekOwnsPoint, true, 'another bush steals taps from the visible animal part');
       assert.equal(state.allPeekPointsOwned, true, 'a possible hiding place cannot own taps on its animal part');
+      assert.equal(state.allCentersOwned, true, 'overlapping bush regions steal a neighboring bush center');
       if (expected.automatic === 'none') assert.equal(state.glow + state.peek + state.rustle, 0);
       if (!expected.words) {
         assert.doesNotMatch(state.hint, /[a-z]/i, 'youngest visual prompt still requires reading');
@@ -115,6 +121,45 @@ for (const expected of CASES) {
     }
   });
 }
+
+test('T10 short-phone visible parts own their taps at every bush', async () => {
+  const { context, page } = await open(10, { width: 320, height: 568 });
+  try {
+    await page.locator('#roundAction').click();
+    await page.waitForFunction(() => document.querySelector('#stage')?.dataset.phase === 'seek');
+    const failures = await page.evaluate(() => {
+      const active = document.querySelector('.hiding-spot.has-peek');
+      const stage = document.querySelector('#stage').getBoundingClientRect();
+      const failures = [];
+      for (const [index, spot] of [...document.querySelectorAll('.hiding-spot')].entries()) {
+        const spotBox = spot.getBoundingClientRect();
+        const centerElement = document.elementFromPoint(spotBox.left + spotBox.width / 2, spotBox.top + spotBox.height / 2);
+        if (centerElement?.closest('.hiding-spot') !== spot && !centerElement?.classList.contains('peek-piece')) {
+          failures.push({ index, part: 'center', owner: centerElement?.closest('.hiding-spot')?.dataset.spot || null, top: centerElement?.className || centerElement?.tagName || null });
+        }
+        for (const part of ['ears', 'face', 'paw', 'tail']) {
+          active?.classList.remove('has-peek');
+          spot.classList.add('has-peek');
+          const piece = spot.querySelector('.peek-piece');
+          piece.dataset.part = part;
+          piece.textContent = part === 'face' ? '🐰' : part === 'paw' ? '🐾' : '';
+          const box = piece.getBoundingClientRect();
+          if (box.left < stage.left - 1 || box.top < stage.top - 1 || box.right > stage.right + 1 || box.bottom > stage.bottom + 1) {
+            failures.push({ index, part, owner: 'outside-stage' });
+          }
+          const owner = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)?.closest('.hiding-spot');
+          if (owner !== spot) failures.push({ index, part, owner: owner?.dataset.spot || null });
+          spot.classList.remove('has-peek');
+          active?.classList.add('has-peek');
+        }
+      }
+      return failures;
+    });
+    assert.deepEqual(failures, []);
+  } finally {
+    await context.close();
+  }
+});
 
 test('Hide & Seek changes hiding place and peek part across repeated young-child rounds', { timeout: 30000 }, async () => {
   const { context, page } = await open(1);

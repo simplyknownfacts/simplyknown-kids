@@ -75,9 +75,14 @@
   function moveSpot(i, rect, anchor) {
     if (!spots[i]) return;
     const bounds = stage.getBoundingClientRect();
+    const landscape=bounds.width/bounds.height>=1.05, column=i%4, visualRow=2-Math.floor(i/4);
+    const minimumHeight=46/Math.max(1,bounds.height);
     if (count >= 10) {
-      const landscape=bounds.width/bounds.height>=1.05, column=i%4, visualRow=2-Math.floor(i/4);
-      rect={left:.012+column*.247,top:(landscape?.34:.36)+visualRow*(landscape?.19:.18),width:.223,height:landscape?.175:.165};
+      const rowHeight=Math.max(landscape?.175:.165,minimumHeight);
+      rect={left:.012+column*.247,top:(landscape?.34:.36)+visualRow*rowHeight,width:.223,height:rowHeight};
+    } else {
+      const rowHeight=Math.max(landscape?.175:.13,minimumHeight);
+      rect={left:.012+column*.247,top:landscape?.34+visualRow*rowHeight:.55-(2-visualRow)*rowHeight,width:.223,height:visualRow===2&&!landscape?Math.max(.19,minimumHeight):rowHeight};
     }
     // A distant bush can project smaller than a finger on short landscape
     // screens. Expand its input area around the same center, inside the stage.
@@ -147,6 +152,9 @@
       piece.style.setProperty('--peek-fur',friend.fur);
       piece.style.setProperty('--peek-inner',friend.inner);
       piece.style.setProperty('--peek-x',(35+((generation*29+i*17)%31))+'%');
+      const stageHeight=stage.getBoundingClientRect().height,visualRow=2-Math.floor(i/4);
+      const peekShift=count>=10?(visualRow===2?-Math.min(55,stageHeight*.13):visualRow===1?-Math.min(24,stageHeight*.06):0):0;
+      piece.style.setProperty('--peek-shift',peekShift+'px');
       // Expose only a clue actually visible now; never leak the future answer.
       spot.setAttribute('aria-label', places[i] + (isClue
         ? ' — '+peekPartLabels[peekPart]+' peeking out'+(visibleClue === 'rustle' ? '; leaves rustling' : '')
