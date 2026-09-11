@@ -246,15 +246,13 @@ async function play(page, act, tier) {
       return { ok: neutral && hintKeptTarget && wrongStayedOpen && await bumped(), signal: 'neutral intro, partial clue, wrong retry, then found friend' };
     }
     if (id === 'abcs') {
-      // ABCs is LETTERS-ONLY since v117 (Spelling Bee owns spelling) and
-      // auto-hides ≥T7 — only use the spell path if slots actually exist.
-      if (await page.locator('.spelled-slot').count()) {
-        const slots = await page.locator('.spelled-slot').evaluateAll((els) => els.map((e) => e.dataset.target));
-        for (const ch of slots) { await page.locator(`.letter-grid .letter-tile`, { hasText: new RegExp(`^${ch}$`, 'i') }).first().click({ timeout: 3000 }).catch(() => {}); await sleep(150); }
-        return { ok: await bumped(), signal: `spell "${slots.join('')}"` };
+      const choices = page.locator('.abc-choice[data-answer="true"]');
+      const count = await choices.count();
+      for (let index = 0; index < count; index++) {
+        await choices.nth(index).click({ timeout: 3000 }).catch(() => {});
+        await sleep(120);
       }
-      await page.locator('.nav-row .pager-btn:not(.secondary)').first().click({ timeout: 4000 }).catch(() => {});
-      return { ok: await bumped(), signal: 'clicked Next (default mode)' };
+      return { ok: await bumped(), signal: `ABC Quest, solved ${count} correct choice${count === 1 ? '' : 's'}` };
     }
     if (id === 'animal-sounds') {
       const garden = await page.locator('#garden .animal-float').count();

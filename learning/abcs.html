@@ -9,72 +9,106 @@
   <script>/* apply the active kid's theme before first paint (default storybook = no attribute); activity pages also stamp data-tod (shell pages get it from atmosphere.js) so theme tokens resolve */try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook"){document.documentElement.setAttribute("data-vbtheme",_t);var _h=new Date().getHours();document.documentElement.setAttribute("data-tod",_h>=5&&_h<10?"morning":_h>=10&&_h<17?"afternoon":_h>=17&&_h<20?"evening":"night")}}catch(e){}</script>
   <link rel="stylesheet" href="../css/achievements.css">
   <style>
-    body { background: linear-gradient(160deg, #6a4c93, #3a2c5e); }
     .screen {
       justify-content: flex-start !important;
       padding-top: calc(70px + env(safe-area-inset-top));
-      padding-bottom: 200px; gap: 16px;
+      padding-bottom: 150px; gap: 14px;
       overflow-y: auto;
     }
-    .letter-big {
-      font-size: clamp(140px, 32vw, 240px); font-weight: 900;
-      color: white; line-height: 1; text-shadow: 0 6px 24px rgba(0,0,0,0.4);
+    .game-title { color:#184d4a; text-shadow:none; }
+    .abc-hud {
+      display:flex; flex-wrap:wrap; justify-content:center; gap:8px;
+      position:relative; z-index:2;
     }
-    .starts-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 14px; max-width: 480px; width: 100%;
+    .hud-pill {
+      min-height:38px; padding:8px 14px; box-sizing:border-box;
+      display:flex; align-items:center; justify-content:center;
+      border:2px solid #dfcca0; border-radius:999px;
+      background:rgba(255,253,246,0.9); color:#184d4a;
+      font-size:14px; font-weight:900;
     }
-    .start-tile {
-      padding: 14px 10px; border-radius: 18px;
-      background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.25);
-      color: white; cursor: pointer; transition: transform 0.12s;
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    .abc-game {
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+      width:min(720px,100%); position:relative; z-index:2;
     }
-    .start-tile:active { transform: scale(0.94); }
-    .start-emoji { font-size: clamp(50px, 12vw, 80px); line-height: 1; }
-    .start-name  { font-size: 16px; font-weight: 900; text-align: center; }
-    .nav-row { display: flex; gap: 14px; justify-content: center; margin-top: 4px; }
-    .pager-btn {
-      padding: 14px 24px; border-radius: 18px;
-      background: #4ECDC4; color: #1a1a2e;
-      border: 3px solid white; font-size: 18px; font-weight: 900;
-      cursor: pointer; min-width: 130px;
+    .abc-prompt {
+      color:#184d4a; font-size:clamp(23px,5.5vw,38px); font-weight:900;
+      line-height:1.15; text-align:center; min-height:44px;
     }
-    .pager-btn:active { transform: scale(0.94); }
-    .pager-btn.secondary { background: rgba(255,255,255,0.18); color: white; border-color: rgba(255,255,255,0.3); }
-    /* Spell mode */
-    .letter-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
-      gap: 10px; width: 100%; max-width: 540px; padding: 16px;
+    .abc-clue {
+      min-height:76px; display:flex; align-items:center; justify-content:center; gap:12px;
+      color:#184d4a; font-size:clamp(24px,7vw,48px); font-weight:900;
+      text-align:center;
     }
-    .letter-tile {
-      aspect-ratio: 1; min-height: 56px; border-radius: 14px;
-      background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.25);
-      color: white; font-size: 26px; font-weight: 900;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: transform 0.1s;
+    .clue-letter { font-size:clamp(70px,18vw,130px); line-height:0.8; color:#aa620e; }
+    .clue-emoji { font-size:clamp(64px,15vw,104px); line-height:1; }
+    .clue-word { letter-spacing:2px; }
+    .choice-grid {
+      --cols:3; display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr));
+      gap:12px; width:min(650px,100%);
     }
-    .letter-tile:active { transform: scale(0.9); }
-    .letter-tile.wrong { animation: shake 0.3s; }
-    .spelled-slot {
-      width: 56px; height: 68px; border-radius: 12px;
-      border: 3px dashed rgba(255,255,255,0.4);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 32px; font-weight: 900; color: white;
+    .abc-choice {
+      min-width:0; min-height:104px; padding:10px 8px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+      border:3px solid #dfcca0; border-radius:22px;
+      background:#fffdf4; color:#184d4a;
+      box-shadow:0 5px 0 #d9c495,0 9px 18px #765c1612;
+      font:inherit; cursor:pointer; transition:transform .12s,background .15s,border-color .15s;
     }
-    .spelled-slot.filled { border-style: solid; background: rgba(168,230,207,0.3); }
+    .abc-choice:active { transform:scale(.93); }
+    .abc-choice:focus-visible { outline:4px solid #4ecdc4; outline-offset:3px; }
+    .abc-choice.letter-choice,.abc-choice.case-choice {
+      min-height:112px; font-size:clamp(48px,13vw,78px); font-weight:900;
+    }
+    .choice-emoji { font-size:clamp(44px,10vw,68px); line-height:1; }
+    .choice-name { font-size:14px; font-weight:900; text-align:center; }
+    .abc-choice.right { background:#c5efd4; border-color:#53b97a; box-shadow:0 5px 0 #74bd8d; }
+    .abc-choice.picked { opacity:.72; }
+    .abc-choice.wrong { background:#ffd8cf; border-color:#ef7969; animation:shake .3s; }
+    .abc-feedback {
+      min-height:32px; color:#496d62; font-size:clamp(17px,4vw,22px);
+      font-weight:900; text-align:center;
+    }
+    .abc-feedback.good { color:#26764b; }
+    .abc-feedback.try { color:#9b4d38; }
     @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
-
-    /* Younger ages (tier <= 3): bigger "starts-with" emoji + more spacing. */
-    body.young-icons .start-emoji { font-size: clamp(72px, 18vw, 110px); }
-    body.young-icons .start-name { font-size: 18px; }
-    body.young-icons .starts-grid { gap: 22px; }
+    body.young-icons .abc-choice { min-height:126px; }
+    body.young-icons .choice-emoji { font-size:clamp(62px,17vw,92px); }
+    body:has(.vb-celebrate.in) :is(.game-title,.abc-hud,#prompt,#clue,#choices,#feedback) { visibility:hidden; }
+    @media (max-width:360px), (max-height:620px) {
+      .screen { padding-bottom:104px; gap:9px; }
+      .game-title { font-size:30px; margin-top:0 !important; }
+      .abc-hud { gap:5px; }
+      .hud-pill { min-height:32px; padding:5px 9px; font-size:12px; }
+      .abc-game { gap:9px; }
+      .abc-prompt { min-height:34px; font-size:20px; }
+      .abc-clue { min-height:54px; }
+      .clue-letter { font-size:62px; }
+      .clue-emoji { font-size:56px; }
+      .choice-grid { gap:8px; }
+      .abc-choice,.abc-choice.letter-choice,.abc-choice.case-choice { min-height:78px; padding:6px 4px; border-radius:17px; }
+      body.young-icons .abc-choice { min-height:88px; }
+      .abc-choice.letter-choice,.abc-choice.case-choice { font-size:44px; }
+      .choice-emoji,body.young-icons .choice-emoji { font-size:44px; }
+      .choice-name { font-size:11px; }
+      .abc-feedback { min-height:24px; font-size:15px; }
+    }
   </style>
 </head>
 <body>
   <div class="screen" id="stage">
-    <div class="title">🔤 ABCs</div>
-    <div id="body" class="col" style="gap:18px; width:100%; align-items:center;"></div>
+    <div class="title game-title">🔤 ABC Quest</div>
+    <div class="abc-hud" aria-label="Game progress">
+      <span class="hud-pill" id="roundProgress">⭐ 1 / 5</span>
+      <span class="hud-pill" id="score">Score 0</span>
+      <span class="hud-pill" id="streak">🔥 0</span>
+    </div>
+    <div id="body" class="abc-game" data-mode="" data-round="0">
+      <div class="abc-prompt" id="prompt" role="status" aria-live="polite"></div>
+      <div class="abc-clue" id="clue"></div>
+      <div class="choice-grid" id="choices"></div>
+      <div class="abc-feedback" id="feedback" role="status" aria-live="polite"></div>
+    </div>
   </div>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
@@ -99,9 +133,9 @@
     gameSettings.attach('abcs');
     if (window.vbProgress) { vbProgress.firstPlay('abcs'); vbProgress.touchStreak(); }
 
-    const wordHintsOn = tier >= 3 || getProfileFeature(profile, 'abcs', 'wordHints');
-    // Spelling moved entirely to the Spelling Bee activity (no duplicate here);
-    // ABCs stays focused on letters + "starts with" and hides for kids past T6.
+    const wordHintsOn = tier >= 4 || getProfileFeature(profile, 'abcs', 'wordHints');
+    // ABC Quest stays focused on letter shapes and beginning sounds. Spelling
+    // Bee remains the separate place for constructing whole words.
 
     const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     // 4 kid-recognizable starts-with items per letter
@@ -134,52 +168,253 @@
       Z: [{w:'Zebra',e:'🦓'},{w:'Zipper',e:'🤐'},{w:'Zero',e:'0️⃣'},{w:'Zoo',e:'🦁'}],
     };
     const bodyEl = document.getElementById('body');
-    let idx = 0;
+    const promptEl = document.getElementById('prompt');
+    const clueEl = document.getElementById('clue');
+    const choicesEl = document.getElementById('choices');
+    const feedbackEl = document.getElementById('feedback');
+    const roundProgressEl = document.getElementById('roundProgress');
+    const scoreEl = document.getElementById('score');
+    const streakEl = document.getElementById('streak');
+    const ROUND_GOAL = 5;
+    const EARLY_LETTERS = 'ABCMSTPFD'.split('');
+    let score = 0;
+    let streak = 0;
+    let completedRounds = 0;
+    let roundId = 0;
+    let roundSettled = false;
+    let transitionTimer = null;
+    let letterBag = [];
+
+    function shuffle(values) {
+      const result = [...values];
+      for (let index = result.length - 1; index > 0; index--) {
+        const swap = Math.floor(Math.random() * (index + 1));
+        [result[index], result[swap]] = [result[swap], result[index]];
+      }
+      return result;
+    }
+
+    function updateHud() {
+      roundProgressEl.textContent = `⭐ ${(completedRounds % ROUND_GOAL) + 1} / ${ROUND_GOAL}`;
+      scoreEl.textContent = `Score ${score}`;
+      streakEl.textContent = `🔥 ${streak}`;
+    }
+
+    function setFeedback(text, kind = '') {
+      feedbackEl.textContent = text;
+      feedbackEl.className = `abc-feedback${kind ? ` ${kind}` : ''}`;
+    }
+
+    function nextLetter(allowed = ALPHABET) {
+      if (!letterBag.length || letterBag.some(letter => !allowed.includes(letter))) letterBag = shuffle(allowed);
+      return letterBag.pop();
+    }
+
+    function otherLetters(target, count, allowed = ALPHABET) {
+      return shuffle(allowed.filter(letter => letter !== target)).slice(0, count);
+    }
+
+    function randomItem(letter) {
+      const items = STARTS[letter];
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function roundMode() {
+      if (tier <= 2) return 'find-letter';
+      if (tier <= 4) return 'starts-with';
+      if (tier === 5) return 'first-letter';
+      if (tier <= 7) return 'sound-sort';
+      return ['sound-sort','first-letter','match-case'][completedRounds % 3];
+    }
+
+    function setGridColumns(count) {
+      const columns = count <= 3 ? count : count <= 6 ? 3 : 4;
+      choicesEl.style.setProperty('--cols', String(columns));
+    }
+
+    function makeChoice({ className = '', text = '', emoji = '', name = '', letter = '', answer = false, ariaLabel, onPick }) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `abc-choice ${className}`.trim();
+      button.dataset.answer = String(answer);
+      if (letter) button.dataset.letter = letter;
+      button.setAttribute('aria-label', ariaLabel || name || text);
+      if (emoji) {
+        const picture = document.createElement('span');
+        picture.className = 'choice-emoji';
+        picture.textContent = emoji;
+        button.appendChild(picture);
+      }
+      if (text) {
+        const copy = document.createElement('span');
+        copy.textContent = text;
+        button.appendChild(copy);
+      }
+      if (name && wordHintsOn) {
+        const label = document.createElement('span');
+        label.className = 'choice-name';
+        label.textContent = name;
+        button.appendChild(label);
+      }
+      const activate = event => {
+        if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        onPick(button);
+      };
+      button.addEventListener('pointerdown', activate);
+      button.addEventListener('keydown', activate);
+      choicesEl.appendChild(button);
+      return button;
+    }
+
+    function wrongChoice(button, teaching) {
+      if (roundSettled || button.classList.contains('right')) return;
+      playBoop();
+      streak = 0;
+      updateHud();
+      setFeedback(teaching, 'try');
+      button.classList.remove('wrong');
+      void button.offsetWidth;
+      button.classList.add('wrong');
+      setTimeout(() => button.classList.remove('wrong'), 420);
+      speak(teaching);
+    }
+
+    function completeRound(message) {
+      if (roundSettled) return;
+      roundSettled = true;
+      completedRounds++;
+      streak++;
+      score += 10 + Math.min(streak, 5) * 2;
+      updateHud();
+      setFeedback(message, 'good');
+      playSuccess();
+      if (window.vbProgress) {
+        vbProgress.record('abcs');
+        if (completedRounds >= ROUND_GOAL) vbProgress.mastery('abcs.mastery');
+      }
+      speak(message);
+      const token = roundId;
+      transitionTimer = setTimeout(() => { if (token === roundId) nextRound(); }, 1100);
+    }
+
+    function showPrompt(promptText) {
+      promptEl.textContent = promptText;
+      if (typeof speakInstruction === 'function') speakInstruction(promptText);
+      else speak(promptText);
+    }
+
+    function findLetterRound() {
+      const letter = nextLetter(EARLY_LETTERS);
+      const choiceCount = tier <= 1 ? 2 : 3;
+      const letters = shuffle([letter, ...otherLetters(letter, choiceCount - 1, EARLY_LETTERS)]);
+      const example = randomItem(letter);
+      showPrompt(`Find the letter ${letter}!`);
+      clueEl.innerHTML = `<span class="clue-emoji">${example.e}</span><span>${letter} is for ${example.w}</span>`;
+      setGridColumns(choiceCount);
+      letters.forEach(choice => makeChoice({
+        className:'letter-choice', text:choice, letter:choice, answer:choice === letter,
+        ariaLabel:`Letter ${choice}`,
+        onPick:button => choice === letter
+          ? (button.classList.add('right'), completeRound(`Yes! That is ${letter}!`))
+          : wrongChoice(button, `That is ${choice}. Find ${letter}.`),
+      }));
+    }
+
+    function startsWithRound() {
+      const letter = nextLetter(ALPHABET);
+      const choiceCount = tier === 3 ? 3 : 4;
+      const answer = randomItem(letter);
+      const lineup = [{ letter, item:answer, answer:true }, ...otherLetters(letter, choiceCount - 1).map(other => ({ letter:other, item:randomItem(other), answer:false }))];
+      showPrompt(`Which one starts with ${letter}?`);
+      clueEl.innerHTML = `<span class="clue-letter">${letter}</span>`;
+      setGridColumns(choiceCount);
+      shuffle(lineup).forEach(slot => makeChoice({
+        className:'object-choice', emoji:slot.item.e, name:slot.item.w, letter:slot.letter, answer:slot.answer,
+        ariaLabel:slot.item.w,
+        onPick:button => slot.answer
+          ? (button.classList.add('right'), completeRound(`${slot.item.w} starts with ${letter}!`))
+          : wrongChoice(button, `${slot.item.w} starts with ${slot.letter}. Find ${letter}.`),
+      }));
+    }
+
+    function firstLetterRound() {
+      const letter = nextLetter(ALPHABET);
+      const item = randomItem(letter);
+      const choiceCount = tier >= 10 ? 6 : tier >= 8 ? 5 : 4;
+      const letters = shuffle([letter, ...otherLetters(letter, choiceCount - 1)]);
+      showPrompt(`What letter starts ${item.w}?`);
+      clueEl.innerHTML = `<span class="clue-emoji">${item.e}</span><span class="clue-word">_${item.w.slice(1)}</span>`;
+      setGridColumns(choiceCount);
+      letters.forEach(choice => makeChoice({
+        className:'letter-choice', text:choice, letter:choice, answer:choice === letter,
+        ariaLabel:`Letter ${choice}`,
+        onPick:button => choice === letter
+          ? (button.classList.add('right'), completeRound(`${letter}! ${item.w} starts with ${letter}!`))
+          : wrongChoice(button, `${item.w} does not start with ${choice}. Try again.`),
+      }));
+    }
+
+    function soundSortRound() {
+      const sortable = ALPHABET.filter(letter => STARTS[letter].length >= 3);
+      const letter = nextLetter(sortable);
+      const rightItems = shuffle(STARTS[letter]).slice(0, 3).map(item => ({ letter, item, answer:true }));
+      const choiceCount = tier >= 8 ? 8 : tier === 7 ? 7 : 6;
+      const wrongItems = otherLetters(letter, choiceCount - 3).map(other => ({ letter:other, item:randomItem(other), answer:false }));
+      let found = 0;
+      showPrompt(`Tap all 3 things that start with ${letter}!`);
+      clueEl.innerHTML = `<span class="clue-letter">${letter}</span>`;
+      setGridColumns(choiceCount);
+      shuffle([...rightItems, ...wrongItems]).forEach(slot => makeChoice({
+        className:'object-choice', emoji:slot.item.e, name:slot.item.w, letter:slot.letter, answer:slot.answer,
+        ariaLabel:slot.item.w,
+        onPick:button => {
+          if (!slot.answer) return wrongChoice(button, `${slot.item.w} starts with ${slot.letter}, not ${letter}.`);
+          if (button.classList.contains('right') || roundSettled) return;
+          button.classList.add('right', 'picked');
+          button.setAttribute('aria-pressed', 'true');
+          found++;
+          if (found === 3) completeRound(`Great sorting! All three start with ${letter}!`);
+          else { setFeedback(`${found} of 3 found!`, 'good'); playChime(); speak(`${slot.item.w} starts with ${letter}.`); }
+        },
+      }));
+    }
+
+    function matchCaseRound() {
+      const letter = nextLetter(ALPHABET);
+      const choiceCount = tier >= 10 ? 8 : tier === 9 ? 7 : 6;
+      const letters = shuffle([letter, ...otherLetters(letter, choiceCount - 1)]);
+      showPrompt(`Find little ${letter.toLowerCase()}!`);
+      clueEl.innerHTML = `<span class="clue-letter">${letter}</span>`;
+      setGridColumns(choiceCount);
+      letters.forEach(choice => makeChoice({
+        className:'case-choice', text:choice.toLowerCase(), letter:choice, answer:choice === letter,
+        ariaLabel:`Lowercase ${choice}`,
+        onPick:button => choice === letter
+          ? (button.classList.add('right'), completeRound(`${letter} matches ${letter.toLowerCase()}!`))
+          : wrongChoice(button, `That is little ${choice.toLowerCase()}. Find little ${letter.toLowerCase()}.`),
+      }));
+    }
 
     function nextRound() {
-      bodyEl.innerHTML = '';
-
-      // Letter pages: big letter + 4 starts-with tiles + Back/Next
-      const letter = ALPHABET[idx % 26];
-      const items = STARTS[letter];
-
-      const big = document.createElement('div');
-      big.className = 'letter-big'; big.textContent = letter;
-      big.style.cursor = 'pointer';
-      big.addEventListener('pointerdown', () => speak(letter));
-      bodyEl.appendChild(big);
-
-      const subtitle = document.createElement('div'); subtitle.className = 'subtitle';
-      subtitle.textContent = `${letter} is for...`;
-      bodyEl.appendChild(subtitle);
-
-      const grid = document.createElement('div'); grid.className = 'starts-grid';
-      items.forEach(item => {
-        const tile = document.createElement('div'); tile.className = 'start-tile';
-        tile.innerHTML = wordHintsOn
-          ? `<span class="start-emoji">${item.e}</span><span class="start-name">${item.w}</span>`
-          : `<span class="start-emoji">${item.e}</span>`;
-        tile.addEventListener('pointerdown', () => {
-          speak(item.w);
-          playChime();
-        });
-        grid.appendChild(tile);
-      });
-      bodyEl.appendChild(grid);
-
-      const nav = document.createElement('div'); nav.className = 'nav-row';
-      const prev = document.createElement('button');
-      prev.className = 'pager-btn secondary'; prev.textContent = '← Back';
-      prev.addEventListener('pointerdown', () => { idx = (idx + 25) % 26; nextRound(); });
-      const next = document.createElement('button');
-      next.className = 'pager-btn'; next.textContent = 'Next →';
-      next.addEventListener('pointerdown', () => { if (window.vbProgress) vbProgress.record('abcs'); idx = (idx + 1) % 26; nextRound(); });
-      nav.appendChild(prev); nav.appendChild(next);
-      bodyEl.appendChild(nav);
-
-      // Say the letter on landing — no auto-advance
-      speak(letter);
+      clearTimeout(transitionTimer);
+      roundSettled = false;
+      roundId++;
+      bodyEl.dataset.round = String(roundId);
+      choicesEl.innerHTML = '';
+      clueEl.innerHTML = '';
+      setFeedback('');
+      const mode = roundMode();
+      bodyEl.dataset.mode = mode;
+      updateHud();
+      if (mode === 'find-letter') return findLetterRound();
+      if (mode === 'starts-with') return startsWithRound();
+      if (mode === 'first-letter') return firstLetterRound();
+      if (mode === 'match-case') return matchCaseRound();
+      return soundSortRound();
     }
+
+    window.addEventListener('pagehide', () => { roundId++; clearTimeout(transitionTimer); });
     nextRound();
     })();
   </script>

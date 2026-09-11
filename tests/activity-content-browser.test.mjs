@@ -38,7 +38,7 @@ async function activityPage(id, tier, features = {}, viewport = { width: 390, he
     localStorage.setItem('vb_profiles', JSON.stringify([{
       id: 'content-kid', name: 'Test Kid', birthday: '2020-01-01', color: '#4ECDC4',
       voice: 'girl', mascot: { id: 'dog' }, tierOverrides: { [id]: tier },
-      features: { [id]: features }, activitiesVisible: {}, youtube: [], theme,
+      features: { [id]: features }, activitiesVisible: { [id]: true }, youtube: [], theme,
     }]));
     localStorage.setItem('vb_active_id', 'content-kid');
     HTMLMediaElement.prototype.play = () => Promise.resolve();
@@ -182,6 +182,65 @@ test('changed activity behavior survives real pointer input', async (t) => {
       assert.equal(themed.theme, theme);
       assert.match(themed.background, /gradient/, `${theme} theme background should remain visible`);
       assert.equal(themed.overlay, '', `${theme} theme must not be covered by a round color`);
+      await ctx.close();
+    }
+
+    const { ctx, page } = await activityPage('abcs', 2);
+    await page.goto(base + '/learning/abcs.html', { waitUntil: 'domcontentloaded' });
+    for (let round = 0; round < 5; round++) {
+      const roundId = await page.locator('#body').getAttribute('data-round');
+      await page.locator('.abc-choice[data-answer="false"]').first().dispatchEvent('pointerdown', { pointerId:100 + round });
+      const right = page.locator('.abc-choice[data-answer="true"]');
+      for (let index = 0; index < await right.count(); index++) {
+        await right.nth(index).dispatchEvent('pointerdown', { pointerId:200 + round * 10 + index });
+      }
+      if (round < 4) await page.waitForFunction(previous => document.querySelector('#body')?.dataset.round !== previous, roundId, { timeout:3000 });
+    }
+    assert.equal(await page.evaluate(() => !!vbProgress.getState().unlocked['abcs.mastery']), true, 'five completed challenges earn mastery even when wrong retries teach the child');
+    assert.equal(await page.evaluate(() => vbProgress.getState().counters.abcs), 5, 'each recovered challenge records once');
+    await ctx.close();
+  });
+
+  await t.test('ABCs turns letter play into scaled right-and-wrong challenges', async () => {
+    const expected = new Map([
+      [2, { mode:'find-letter', choices:3, answers:1 }],
+      [3, { mode:'starts-with', choices:3, answers:1 }],
+      [4, { mode:'starts-with', choices:4, answers:1 }],
+      [5, { mode:'first-letter', choices:4, answers:1 }],
+      [6, { mode:'sound-sort', choices:6, answers:3 }],
+    ]);
+
+    for (const [tier, want] of expected) {
+      const { ctx, page } = await activityPage('abcs', tier);
+      await page.goto(base + '/learning/abcs.html', { waitUntil: 'domcontentloaded' });
+      const round = await page.evaluate(() => ({
+        mode: document.querySelector('#body').dataset.mode,
+        choices: document.querySelectorAll('.abc-choice').length,
+        answers: document.querySelectorAll('.abc-choice[data-answer="true"]').length,
+        pager: document.querySelectorAll('.pager-btn').length,
+        prompt: document.querySelector('#prompt')?.textContent.trim() || '',
+      }));
+      assert.deepEqual(round, { ...want, pager:0, prompt:round.prompt });
+      assert.notEqual(round.prompt, '', `T${tier} needs a visible challenge`);
+
+      const before = await page.evaluate(() => vbProgress.getState().counters.abcs || 0);
+      const wrong = page.locator('.abc-choice[data-answer="false"]').first();
+      await wrong.dispatchEvent('pointerdown', { pointerId:tier * 10 });
+      assert.equal(await wrong.evaluate(choice => choice.classList.contains('wrong')), true, `T${tier} wrong answer teaches retry`);
+      assert.equal(await page.evaluate(() => vbProgress.getState().counters.abcs || 0), before, `T${tier} wrong answer does not score`);
+
+      const firstRound = await page.locator('#body').getAttribute('data-round');
+      const right = page.locator('.abc-choice[data-answer="true"]');
+      for (let index = 0; index < await right.count(); index++) {
+        await right.nth(index).dispatchEvent('pointerdown', { pointerId:tier * 10 + index + 1 });
+        if (index === 0) {
+          await right.nth(index).dispatchEvent('pointerdown', { pointerId:tier * 10 + 8 });
+          await right.nth(index).dispatchEvent('pointerdown', { pointerId:tier * 10 + 9 });
+        }
+      }
+      assert.equal(await page.evaluate(() => vbProgress.getState().counters.abcs || 0), before + 1, `T${tier} challenge scores exactly once`);
+      await page.waitForFunction(round => document.querySelector('#body')?.dataset.round !== round, firstRound, { timeout:3000 });
+      assert.match(await page.locator('#roundProgress').textContent(), /2\s*\/\s*5/, `T${tier} advances automatically`);
       await ctx.close();
     }
   });

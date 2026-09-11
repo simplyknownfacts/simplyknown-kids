@@ -19,7 +19,7 @@ const LESSONS = [
   { id: 'hello-colors', route: '/learning/hello-colors.html', ready: '.thing-card', alive: '#screen', instruction: '#quizLabel, #colorLabel' },
   { id: 'animal-sounds', route: '/learning/animal-sounds.html', ready: '#garden .animal-float, #quizStage .choice-btn', alive: '#garden, #quizArea', instruction: '#instruction' },
   { id: 'count-along', route: '/learning/count-along.html', ready: '#stage .dot, #stage .num-btn', alive: '#stage', instruction: '#instruction' },
-  { id: 'abcs', route: '/learning/abcs.html', ready: '#body .letter-big', alive: '#stage', instruction: '#body .subtitle' },
+  { id: 'abcs', route: '/learning/abcs.html', ready: '#body .abc-choice', alive: '#stage', instruction: '#prompt' },
   { id: 'days', route: '/learning/days.html', ready: '#body .day-tile', alive: '#stage', instruction: '#hint' },
   { id: 'math', route: '/learning/math.html', ready: '#body .num-btn', alive: '#stage', instruction: '#hint' },
   { id: 'clock', route: '/learning/clock.html', ready: '#choices .num-btn', alive: '#stage', instruction: '#hint' },
@@ -220,7 +220,24 @@ function parseMoney(text) {
 }
 
 async function wrongAnswerRecovery(page, lesson, tier) {
-  if (lesson.id === 'abcs' || (lesson.id === 'hello-colors' && tier === 1)
+  if (lesson.id === 'abcs') {
+    const prompt = (await page.locator('#prompt').textContent() || '').trim();
+    const wrong = page.locator('.abc-choice[data-answer="false"]').first();
+    const answers = page.locator('.abc-choice[data-answer="true"]');
+    const before = await counter(page, lesson.id);
+    await wrong.click({ timeout: 4000 });
+    await page.waitForTimeout(80);
+    const rejected = await wrongFeedback(wrong) && await counter(page, lesson.id) === before;
+    for (let index = 0; index < await answers.count(); index++) await answers.nth(index).click({ timeout: 4000 });
+    const recovered = await page.waitForFunction(({ id, beforeCount }) => {
+      return !!window.vbProgress && (vbProgress.getState().counters[id] || 0) === beforeCount + 1;
+    }, { id: lesson.id, beforeCount: before }, { timeout: 1800 }).then(() => true).catch(() => false);
+    if (!rejected) return fail(`ABC Quest prompt "${prompt}" did not visibly reject a known wrong choice`);
+    if (!recovered) return fail(`ABC Quest prompt "${prompt}" did not record the correct retry exactly once`);
+    return pass(`ABC Quest prompt "${prompt}" rejected a wrong choice and recorded the correct retry`);
+  }
+
+  if ((lesson.id === 'hello-colors' && tier === 1)
     || (lesson.id === 'animal-sounds' && tier <= 4) || (lesson.id === 'count-along' && tier <= 4)
     || (lesson.id === 'days' && tier <= 4)) return na('this age/mode has no wrong-answer mechanic');
 

@@ -23,7 +23,7 @@
     { id:'count-along',  name:'Count Along',  icon:'🔢', section:'learn', noun:'things counted',
       mastery:{ title:'Counting Champ', hint:'Win the how-many quiz' } },
     { id:'abcs',         name:'ABCs',         icon:'🔤', section:'learn', noun:'letters',
-      mastery:{ title:'Word Builder', hint:'Spell a short word' } },
+      mastery:{ title:'Alphabet Ace', hint:'Win five ABC challenges' } },
     { id:'days',         name:'Days',         icon:'📅', section:'learn', noun:'days right',
       mastery:{ title:'Calendar Kid', hint:'Win the days quiz' } },
     { id:'math',         name:'Math Mountain',icon:'➕', section:'learn', noun:'problems solved',

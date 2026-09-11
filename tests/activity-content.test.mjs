@@ -61,3 +61,12 @@ test('Hello Colors avoids ambiguous examples and scales toddler color choices', 
   assert.match(colors, /dataset\.color/, 'color choices need explicit color identity');
   assert.doesNotMatch(colors, /bg\.style\.background\s*=/, 'rounds must not repaint the normal app background');
 });
+
+test('ABCs is an age-scaled answer game instead of manual flashcards', () => {
+  const abcs = read('learning/abcs.html');
+  assert.doesNotMatch(abcs, /pager-btn|Next →|← Back/, 'ABCs must advance from play, not a manual pager');
+  assert.match(abcs, /data-mode/, 'each ABC challenge needs an inspectable game mode');
+  assert.match(abcs, /speakInstruction\(promptText\)/, 'each challenge needs protected spoken instructions');
+  assert.match(abcs, /vbProgress\.mastery\('abcs\.mastery'\)/, 'the advertised ABC mastery must be reachable');
+  assert.match(abcs, /roundSettled/, 'a completed challenge must close before rapid repeat input');
+});
