@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v168';
+const CACHE = 'vb-v169';
+// v169: cache the recorded four-voice Bubble Pop instruction.
 // v168: add whole Ribbons and My Room houses; cache the child-safe room offline.
 // v167: compact child-menu arrivals and keep overflow on the natural page scroller.
 // v166: retire unsupported listening integration; keep local Listen available offline.

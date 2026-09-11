@@ -128,7 +128,7 @@ for (const voice of voicesToRun) {
   for (const text of clips) {
     const filename = VOICE_MANIFEST.hash(text) + '.mp3';
     const filepath = path.join(voiceDir, filename);
-    if (fs.existsSync(filepath) && fs.statSync(filepath).size > 100) continue;
+    if (!includeExistingInDryPlan && fs.existsSync(filepath) && fs.statSync(filepath).size > 100) continue;
     toGenerate.push({ kind: 'tts', voice, text, filepath });
     charsToGenerate += text.length;
   }
