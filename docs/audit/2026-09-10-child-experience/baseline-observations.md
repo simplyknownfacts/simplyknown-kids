@@ -231,3 +231,15 @@
 7. Main report SHA-256 is `c0ad367673135738e9d6faa545f4a91cefb5751c23ef5155b5d0c6169da7a5bb`; responsive report SHA-256 is `99361c7c587c2730e9953cbbc9c5a6760a39fbd45993c9ebcc176bd60c450c6c`.
 8. The guarded importer changes 95 BLK dimensions to PASS, one T10 phone visual dimension to FAIL and 40 to NA; its second run changes zero.
 9. Previously accepted Games resilience cells were not repeated or re-credited. Silent local stubs and synthetic profiles make no audible, provider or physical-device claim.
+
+## Tap-a-Tune target repair at `45edc17`
+
+1. Red-first browser proof reproduced the exact 320x568 defect: four of six piano keys measured 43.328125px wide, below the 44px child-target floor; no clipping or overflow was present.
+2. Product commit `45edc17709d5624213bae49ec568615b31acc028` changes only the short-phone key gap from 8px to 7px. The six-note set, musical order, song data, memory rules, rewards, progression and wider layouts are unchanged.
+3. The permanent focused browser regression passes 15/15: T1-T10 short phone, T10 phone/tablet/desktop, six-note left-to-right glissando and a one-note tap. Short-phone keys now measure 44.15625px with no overlap, clipping or horizontal overflow.
+4. Full repair evidence passes 40/40 T1-T10 rows across 320x568, 390x844, 820x1180 and 1280x900, with 120 PASS / 0 FAIL / 80 explicit NA / 40 pre-review visual placeholders and 200 actual renders. Every available guided-song and memory mode, rapid memory input, repeat reward, reload and free play remained correct.
+5. All four contact sheets and 200 renders were inspected. The repaired keys, labels, controls, reward states and modes remain readable and coherent at every tested tier and size; no new visual finding was observed. Report SHA-256 is `55c81f709634ac7a51afface41ff9363b36326af2451ab20118fcfc1c34dced3`.
+6. Independent exact-commit Engineering/Audit review passed with no P1/P2 finding. The reviewer repeated the 40-row matrix and 200-render inspection, and independently observed the six original frequencies in row order plus one frequency from a tap. Reviewer checkout and claim were released.
+7. Full project suite is intentionally not green: 417 tests, 408 pass / 9 known Bubble Pop failures / 0 skip. Historical Math/Shape cadence assertions were not changed or used to claim a green suite.
+8. Only the one Tap-a-Tune T10 phone `visual_quality` FAIL cell changes to PASS because that ledger row carries the 320x568 responsive finding. Totals become **9,437 PASS / 16 FAIL / 3,513 BLK / 3,534 NA**; row verdicts become 140 PASS / 16 FAIL / 504 BLK, with 140 COMPLETE / 520 PARTIAL.
+9. Physical-device touch and human-audible quality remain unclaimed; no provider, production, push, merge, deploy or promote action occurred.

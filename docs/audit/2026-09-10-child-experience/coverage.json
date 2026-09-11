@@ -3602,8 +3602,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tap-a-Tune play is complete; the 320x568 piano pads remain below the 44px child-target floor.",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete, including the repaired 320x568 target floor.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -3629,12 +3629,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d",
+        "baseline-observations.md#tap-a-tune-target-repair-at-45edc17"
       ]
     },
     {
