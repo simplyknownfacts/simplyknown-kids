@@ -17,7 +17,15 @@
     .figure {
       position: relative;
       width: min(440px, 92vw, calc((100dvh - 230px) * .75)); min-width: 180px; aspect-ratio: 3/4; flex-shrink: 0; touch-action: manipulation;
-      margin: 0 auto;
+      margin: 0 auto; overflow: hidden; border-radius: 24px;
+    }
+    .figure.face-mode {
+      --face-size: min(500px, 92vw, calc(100dvh - 245px));
+      width: var(--face-size); height: var(--face-size); aspect-ratio: auto;
+      background: rgba(255,255,255,.08);
+    }
+    @media (max-height: 650px) {
+      .figure.face-mode { --face-size: min(500px, 92vw, calc(100dvh - 320px)); }
     }
     .body-img {
       width: 100%; height: 100%; object-fit: contain; display: block;
@@ -25,22 +33,22 @@
       filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
       pointer-events: none; -webkit-user-drag: none; user-select: none;
     }
-    /* Invisible round tap-zone over each body part. aspect-ratio:1 keeps it a
-       circle; width is a % of the figure width, left/top set per part. */
+    .figure.face-mode .body-img {
+      position: absolute; left: -33.333%; top: 0;
+      width: 166.667%; height: 222.222%; max-width: none;
+      object-fit: fill; border-radius: 0;
+    }
+    /* Invisible calibrated ellipse over each visible body part. */
     .hit {
       position: absolute; transform: translate(-50%,-50%);
-      aspect-ratio: 1; border-radius: 50%;
+      border-radius: 50%;
       background: transparent; border: none; padding: 0; cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
-    .hit:focus-visible,.hit.help { outline: 3px dashed #eab548; background: #fff0a345; }
+    .hit:focus-visible { outline: 4px solid #4ecdc4; background: #4ecdc42b; }
+    .hit.help { outline: 4px solid #4ecdc4; background: #4ecdc438; }
     .picture-retry { position: absolute; inset: 35% 5% auto; padding: 18px; border-radius: 18px; border: 2px solid #47776c; background: #fff9e5; font: 700 18px system-ui; color: #24594d; cursor: pointer; }
-    .hit.flash { animation: flash 0.7s ease; }
     .hit.wrong { animation: shake 0.35s; }
-    @keyframes flash {
-      0%,100% { box-shadow: 0 0 0 0 rgba(255,217,61,0); }
-      40%     { box-shadow: 0 0 0 6px rgba(255,217,61,0.95), 0 0 26px 10px rgba(255,217,61,0.7); }
-    }
     @keyframes shake {
       0%,100%{transform:translate(-50%,-50%)}
       25%{transform:translate(calc(-50% - 6px),-50%)}
@@ -92,12 +100,54 @@
 
     let bodyIdx = Math.floor(Math.random() * BODIES.length);
 
+    const FACE_PARTS = ['eye','ear','nose','mouth','hair'];
+    let bodyZones = [];
     let currentHits = [];
+
+    function displayZone(zone, faceMode) {
+      if (!faceMode) return {...zone};
+      return {
+        ...zone,
+        cx:(zone.cx-20)/60*100,
+        cy:zone.cy/45*100,
+        rx:Math.max(zone.rx/60*100, 9.3),
+        ry:Math.max(zone.ry/45*100, 9.3),
+      };
+    }
+
+    function installHits(faceMode) {
+      figure.classList.toggle('face-mode', faceMode);
+      figure.dataset.view = faceMode ? 'face' : 'body';
+      figure.querySelectorAll('.hit').forEach(hit => hit.remove());
+      const visibleZones = faceMode ? bodyZones.filter(zone => FACE_PARTS.includes(zone.n)) : bodyZones;
+      currentHits = visibleZones.map(sourceZone => {
+        const z = displayZone(sourceZone, faceMode);
+        const b = document.createElement('button');
+        b.type = 'button';b.className = 'hit';b.dataset.name = z.n;
+        b.dataset.sourceX = sourceZone.cx;b.dataset.sourceY = sourceZone.cy;
+        b.setAttribute('aria-label', z.n);
+        b.style.left = z.cx + '%';b.style.top = z.cy + '%';
+        b.style.width = (z.rx * 2) + '%';b.style.height = (z.ry * 2) + '%';
+        b.style.pointerEvents = 'none';
+        // Keyboard and assistive activation use the same transformed resolver.
+        b.addEventListener('click', e => {
+          if (e.detail !== 0) return;
+          const r = figure.getBoundingClientRect();
+          handleFigureTap({button:0,isPrimary:true,clientX:r.left+r.width*z.cx/100,clientY:r.top+r.height*z.cy/100});
+        });
+        figure.appendChild(b);
+        return {z,el:b};
+      });
+    }
+
     async function renderBody() {
       const generation = ++renderGeneration;
       const body = BODIES[bodyIdx];
       roundSettled = true;
+      bodyZones = [];
       currentHits = [];
+      figure.classList.remove('face-mode');
+      figure.dataset.view = 'body';
       figure.dataset.bodyId = body.id;
       hint.textContent = 'Opening your picture…';
       const img = new Image();
@@ -121,22 +171,8 @@
         figure.replaceChildren(retry);
         return false;
       }
-      currentHits = body.zones.map(z => {
-        const b = document.createElement('button');
-        b.type = 'button';b.className = 'hit';b.dataset.name = z.n;
-        b.setAttribute('aria-label', z.n);
-        b.style.left = z.cx + '%';b.style.top = z.cy + '%';
-        b.style.width = (z.rx * 2) + '%';b.style.height = (z.ry * 2) + '%';
-        b.style.pointerEvents = 'none';
-        // Keyboard and assistive activation use the same calibrated resolver.
-        b.addEventListener('click', e => {
-          if (e.detail !== 0) return;
-          const r = figure.getBoundingClientRect();
-          handleFigureTap({button:0,isPrimary:true,clientX:r.left+r.width*z.cx/100,clientY:r.top+r.height*z.cy/100});
-        });
-        figure.appendChild(b);
-        return {z,el:b};
-      });
+      bodyZones = body.zones;
+      installHits(false);
       return true;
     }
 
@@ -176,7 +212,7 @@
     window.addEventListener('pagehide', disposePage);
     window.addEventListener('beforeunload', disposePage);
     window.addEventListener('pageshow', (event) => {
-      if (event.persisted) { pageActive = true; if (currentHits.length) nextRound(); else renderBody().then(ready => { if (ready) nextRound(); }); }
+      if (event.persisted) { pageActive = true; if (bodyZones.length) nextRound(); else renderBody().then(ready => { if (ready) nextRound(); }); }
     });
 
     // Shuffled "bag": ask EVERY part once before any repeats (random picking gave
@@ -184,7 +220,7 @@
     // immediate repeat across the refill seam.
     let _bag = [];
     function _drawTarget() {
-      const available = partList.filter(n => currentHits.some(h => h.z.n === n));
+      const available = partList.filter(n => bodyZones.some(zone => zone.n === n));
       _bag = _bag.filter(n => available.includes(n));
       if (!_bag.length) {
         _bag = available.slice();
@@ -195,7 +231,7 @@
     }
 
     function nextRound() {
-      if (!pageActive || !currentHits.length) return;
+      if (!pageActive || !bodyZones.length) return;
       clearTimeout(roundTimer);
       clearTimeout(promptTimer);
       roundSettled = false;
@@ -205,6 +241,7 @@
       const round = ++roundGeneration;
       target = _drawTarget();
       lastTarget = target;
+      installHits(FACE_PARTS.includes(target));
       const prompt = tier <= 2 ? `Where's the ${target}?` : `Tap the ${PRONOUN(target)}!`;
       hint.textContent = prompt;
       promptTimer = setTimeout(() => {
@@ -213,14 +250,13 @@
         else speak(prompt);
       }, 400);
       figure.querySelectorAll('.hit').forEach(el => {
-        el.classList.remove('flash','wrong','help');
+        el.classList.remove('wrong','help');
       });
     }
 
-    // Only pictured, calibrated ellipses answer the quiz. A knee is also on
-    // a leg, so accept the requested region when it contains the actual tap.
-    // Other overlaps prefer the smaller anatomical feature, never a distant
-    // nearest guess that could turn background into a successful answer.
+    // Only pictured, calibrated ellipses answer the quiz. Enlarged touch zones
+    // may overlap, so the nearest zone centre owns the tap; the requested word
+    // must never turn a different visible feature into a correct answer.
     function handleFigureTap(e) {
       if (e.button !== 0 || !e.isPrimary || !pageActive || roundSettled || !currentHits.length || !target) return;
       const r = figure.getBoundingClientRect();
@@ -228,16 +264,15 @@
       const inside = currentHits.map(h => ({...h,d:((px-h.z.cx)/h.z.rx)**2+((py-h.z.cy)/h.z.ry)**2}))
         .filter(h => h.d <= 1);
       if (!inside.length) { hint.textContent = 'Tap the child to find the ' + PRONOUN(target) + '.'; return; }
-      inside.sort((a,b) => a.z.rx*a.z.ry-b.z.rx*b.z.ry || a.d-b.d);
-      const best = inside.find(h => h.z.n === target) || inside[0];
+      inside.sort((a,b) => a.d-b.d || a.z.rx*a.z.ry-b.z.rx*b.z.ry);
+      const best = inside[0];
       const name = best.z.n;
       if (name !== target && performance.now()-lastWrongAt < 160) return;
-      currentHits.forEach(h => h.el.classList.remove('flash', 'wrong', 'help'));
+      currentHits.forEach(h => h.el.classList.remove('wrong', 'help'));
       if (name === target) {
         roundSettled = true;
         clearTimeout(promptTimer);
         const completedRound = roundGeneration;
-        best.el.classList.add('flash');
         hint.textContent = 'Yes! You found the ' + PRONOUN(target) + '!';
         if (typeof haptic === 'function') haptic(25);
         playSuccess();

@@ -1,5 +1,5 @@
 // Oracle: Body Parts (today's v97 fix + highest-risk). Asserts the CORRECTNESS
-// of tap feedback, not just "no crash": correct zone → flash + "Yes"; wrong zone
+// of tap feedback, not just "no crash": correct zone → no artwork-covering marker + "Yes"; wrong zone
 // → shake + (tier<=3) names the tapped part + NO false "Yes" + no advance.
 // Visual hit-accuracy (zone sits on the right body part) is covered by the
 // screenshot review + Method B; here we assert the wiring by data-name.
@@ -58,7 +58,7 @@ export default {
     await tapZone(page, target);
     await page.waitForTimeout(250);
     const tgtCls = await page.getAttribute(`#figure .hit[data-name="${target}"]`, 'class');
-    report.add({ id: `${id} correct-tap-flashes`, pass: /\bflash\b/.test(tgtCls || ''), severity: 'Critical', detail: `class="${tgtCls}"` });
+    report.add({ id: `${id} correct-tap-no-marker`, pass: !/\bflash\b/.test(tgtCls || ''), severity: 'Critical', detail: `class="${tgtCls}"` });
     const yes = (await drainCalls(page)).filter((c) => c.fn === 'speak').map((c) => c.args.join(' ')).join(' | ');
     report.add({ id: `${id} correct-tap-says-yes`, pass: /Yes/i.test(yes), severity: 'High', detail: `spoke="${yes}"` });
 

@@ -35,11 +35,19 @@ async function fixture(id='10',target='knee',size={width:756,height:1270},blockI
  });
  if(blockImage)await page.route('**/img/bodies/*.png',r=>r.abort());
  await page.goto(base+'/learning/body-parts.html');await page.waitForSelector(blockImage?'.picture-retry':'#figure .hit');
+ await page.evaluate(()=>document.fonts?.ready);
  await page.evaluate(()=>{window.completed=[];window.vbProgress={record:id=>completed.push(id),mastery:()=>{}};});
  return {ctx,page};
 }
 async function tapArt(page,x,y){
- const r=await page.locator('#figure').boundingBox();await page.mouse.click(r.x+r.width*x/100,r.y+r.height*y/100);
+ const figure=page.locator('#figure'),face=await figure.evaluate(el=>el.classList.contains('face-mode'));
+ const r=await figure.boundingBox();
+ const px=face?(x-20)/60*100:x,py=face?y/45*100:y;
+ await page.mouse.click(r.x+r.width*px/100,r.y+r.height*py/100);
+}
+async function tapHitCenter(page,name,index=0){
+ const r=await page.locator(`.hit[data-name="${name}"]`).nth(index).boundingBox();
+ await page.mouse.click(r.x+r.width/2,r.y+r.height/2);
 }
 test('visible knee on the reported dress figure is accepted on phone and tall screen',async()=>{
  // Read from the DRAWING: knees below the dress, above the ankles. These
@@ -48,7 +56,8 @@ test('visible knee on the reported dress figure is accepted on phone and tall sc
   const {ctx,page}=await fixture('10','knee',size);
   await tapArt(page,45.5,80);
   assert.deepEqual(await page.evaluate(()=>completed),['body-parts']);
-  assert.equal(await page.locator('.hit.flash').getAttribute('data-name'),'knee');
+  assert.equal(await page.locator('.hit.flash').count(),0,'successful taps must not cover the artwork with a marker');
+  assert.match(await page.locator('#hint').textContent(),/Yes! You found the knee!/);
   await ctx.close();
  }
 });
@@ -56,6 +65,42 @@ test('blank space beside the drawing must never answer a question',async()=>{
  const {ctx,page}=await fixture('10','foot');await tapArt(page,2,97);
  assert.deepEqual(await page.evaluate(()=>completed),[],'empty background awarded a body part');
  assert.equal(await page.locator('.hit.flash').count(),0);await ctx.close();
+});
+
+test('face questions enlarge the artwork and keep distinct phone targets aligned',async()=>{
+ for(const size of [{width:390,height:844},{width:320,height:568}]){
+  const {ctx,page}=await fixture('10','eye',size);
+  const layout=await page.locator('#figure').evaluate(figure=>{
+   const box=figure.getBoundingClientRect();
+   const read=el=>{const r=el.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2,width:r.width,height:r.height,left:r.left,top:r.top,right:r.right,bottom:r.bottom}};
+   const eyes=[...figure.querySelectorAll('.hit[data-name="eye"]')].map(read);
+   const ears=[...figure.querySelectorAll('.hit[data-name="ear"]')].map(read);
+   const rect=el=>{const r=el?.getBoundingClientRect();return r&&{left:r.left,top:r.top,right:r.right,bottom:r.bottom}};
+   return{face:figure.classList.contains('face-mode'),box:{left:box.left,top:box.top,right:box.right,bottom:box.bottom,width:box.width,height:box.height},gear:rect(document.querySelector('#gameSettingsGear')),back:rect(document.querySelector('.back-btn')),eyes,ears};
+  });
+  assert.equal(layout.face,true,`${size.width}x${size.height} kept the whole body for an eye question`);
+  assert.ok(layout.box.width>=240,`face close-up is ${layout.box.width}px wide at ${size.width}x${size.height}`);
+  assert.ok(Math.abs(layout.eyes[0].x-layout.eyes[1].x)>=60,`eyes remain too close to distinguish at ${size.width}x${size.height}`);
+  assert.ok([...layout.eyes,...layout.ears].every(hit=>Math.min(hit.width,hit.height)>=44),`face target fell below 44px at ${size.width}x${size.height}`);
+  assert.ok([...layout.eyes,...layout.ears].every(hit=>hit.left>=layout.box.left-1&&hit.top>=layout.box.top-1&&hit.right<=layout.box.right+1&&hit.bottom<=layout.box.bottom+1),'face target escaped the visible crop');
+  const clear=control=>!control||layout.box.right<=control.left-8||layout.box.bottom<=control.top-8||layout.box.left>=control.right+8||layout.box.top>=control.bottom+8;
+  assert.ok(clear(layout.gear),`settings control covers the face crop at ${size.width}x${size.height}: ${JSON.stringify({figure:layout.box,gear:layout.gear})}`);
+  assert.ok(clear(layout.back),`back control covers the face crop at ${size.width}x${size.height}`);
+  await page.evaluate(()=>document.querySelector('#figure').addEventListener('pointerdown',event=>{const r=event.currentTarget.getBoundingClientRect();window.__tapPoint={clientX:event.clientX,clientY:event.clientY,px:(event.clientX-r.left)/r.width*100,py:(event.clientY-r.top)/r.height*100};},{capture:true,once:true}));
+  await tapArt(page,42,20.5);
+  const outcome=await page.evaluate(()=>({completed,hint:document.querySelector('#hint').textContent,tap:window.__tapPoint,hits:[...document.querySelectorAll('.hit')].map(hit=>({name:hit.dataset.name,left:hit.style.left,top:hit.style.top,width:hit.style.width,height:hit.style.height}))}));
+  assert.deepEqual(outcome.completed,['body-parts'],`the enlarged visible eye did not own its tap: ${JSON.stringify(outcome)}`);
+  await ctx.close();
+ }
+});
+
+test('successful taps do not draw the old yellow circle over the child',async()=>{
+ const {ctx,page}=await fixture('10','knee',{width:390,height:844});
+ await tapArt(page,45.5,80);
+ await page.waitForTimeout(250);
+ assert.equal(await page.locator('.hit.flash').count(),0,'a successful tap still adds the yellow circle marker');
+ assert.match(await page.locator('#hint').textContent(),/Yes! You found the knee!/);
+ await ctx.close();
 });
 
 // Additional points selected from the artwork, independent of the app's zones.
@@ -73,6 +118,26 @@ const ART_POINTS={
  '11':{eye:[57,22],hand:[32,66],knee:[56,79.5]},
  '12':{eye:[42.5,20.5],hand:[68,66],knee:[56,80]},
 };
+test('overlapping face zones keep wrong feature centers wrong on every picture',{timeout:90000},async t=>{
+ for(const id of Object.keys(ART_POINTS)) await t.test('picture '+id,async()=>{
+  for(const [target,wrong] of [['nose','mouth'],['mouth','nose']]){
+   const {ctx,page}=await fixture(id,target,{width:320,height:568});
+   await tapHitCenter(page,wrong);
+   assert.deepEqual(await page.evaluate(()=>completed),[],`${id}: ${wrong} center was accepted as ${target}`);
+   assert.match(await page.locator('#hint').textContent(),new RegExp(wrong),`${id}: wrong ${wrong} tap was not identified`);
+   await page.waitForTimeout(170);
+   await tapHitCenter(page,target);
+   assert.deepEqual(await page.evaluate(()=>completed),['body-parts'],`${id}: ${target} center was not accepted`);
+   await ctx.close();
+  }
+  if(id==='02'){
+   const {ctx,page}=await fixture(id,'hair',{width:320,height:568});
+   await tapHitCenter(page,'ear');
+   assert.deepEqual(await page.evaluate(()=>completed),[],`${id}: ear center was accepted as hair`);
+   await ctx.close();
+  }
+ });
+});
 test('real pointer taps recognize visible features across every usable picture',{timeout:90000},async t=>{
  for(const [id,parts] of Object.entries(ART_POINTS)) await t.test('picture '+id,async()=>{
   for(const [part,point] of Object.entries(parts)) {
