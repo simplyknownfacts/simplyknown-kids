@@ -50,6 +50,12 @@
     .num-choice:active { transform: scale(0.92); }
     .num-choice.ok  { background: rgba(168,230,207,0.55); border-color: #a8e6cf; }
     .num-choice.bad { background: rgba(255,107,107,0.45); }
+    /* Shape Match's centered phone title occupies the shared notice's usual
+       top offset. Use the otherwise-empty corner above this activity only;
+       shared reward placement remains unchanged for every other page. */
+    @media (max-width: 600px) {
+      .vb-celebrate { top: calc(12px + env(safe-area-inset-top)); }
+    }
   </style>
 </head>
 <body>
