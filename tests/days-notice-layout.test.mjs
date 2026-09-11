@@ -157,7 +157,35 @@ test('Days reward notice stays clear of title, controls, and play', { timeout: 1
           const center = { x: geometry.notice.left + geometry.notice.width / 2, y: geometry.notice.top + geometry.notice.height / 2 };
           assert.equal(await page.evaluate(point => document.elementFromPoint(point.x, point.y)?.closest('.vb-celebrate')?.classList.contains('vb-celebrate'), center), true,
             'reward notice cannot be tapped to dismiss');
-          await page.mouse.click(center.x, center.y);
+          if (entry.tier === 3 && entry.name === 'phone') {
+            const fading = await page.evaluate(() => new Promise(resolve => {
+              const notice = document.querySelector('.vb-celebrate');
+              const capture = () => resolve({
+                noticeAttached: notice.isConnected,
+                noticeOpacity: Number(getComputedStyle(notice).opacity),
+                replayVisible: getComputedStyle(document.querySelector('.vb-replay-instruction')).visibility !== 'hidden',
+                timedOut: false,
+              });
+              if (!notice.classList.contains('in')) return capture();
+              const observer = new MutationObserver(() => {
+                if (!notice.classList.contains('in')) {
+                  observer.disconnect();
+                  capture();
+                }
+              });
+              observer.observe(notice, { attributes: true, attributeFilter: ['class'] });
+              setTimeout(() => {
+                observer.disconnect();
+                resolve({ timedOut: true });
+              }, 4000);
+            }));
+            assert.equal(fading.timedOut, false, 'automatic dismissal did not begin');
+            assert.equal(fading.noticeAttached, true, 'automatic dismissal skipped the notice transition');
+            assert.ok(fading.noticeOpacity > 0, 'automatic dismissal transition was not visible');
+            assert.equal(fading.replayVisible, false, 'replay control returned before the automatic reward transition ended');
+          } else {
+            await page.mouse.click(center.x, center.y);
+          }
           await page.locator('.vb-celebrate').waitFor({ state: 'detached', timeout: 1000 });
           await page.locator('.vb-replay-instruction').waitFor({ state: 'visible', timeout: 1000 });
         } finally {
