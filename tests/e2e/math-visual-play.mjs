@@ -11,7 +11,7 @@ import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const OUT = path.join(import.meta.dirname, 'out', 'math-visual-play');
-const AUDIT_START = 'a23a0ea4ef49c2ddb79e62fbfb382fd98b1efde7';
+const AUDIT_START = 'ddb34d883107b3762347eb9ae6c4b988560e4757';
 const VIEWPORTS = {
   desktop: { width: 1280, height: 900, isMobile: false, hasTouch: false },
   phone: { width: 390, height: 844, isMobile: true, hasTouch: true },
@@ -168,7 +168,7 @@ async function geometry(page) {
   await page.locator('#stage').evaluate(element => { element.scrollTop = 0; });
   return page.evaluate(targets => {
     const rect = selector => {
-      const element = document.querySelector(selector);
+      const element = typeof selector === 'string' ? document.querySelector(selector) : selector;
       if (!element || getComputedStyle(element).display === 'none' || getComputedStyle(element).visibility === 'hidden') return null;
       const value = element.getBoundingClientRect();
       return { left:value.left, top:value.top, right:value.right, bottom:value.bottom, width:value.width, height:value.height };
@@ -178,7 +178,8 @@ async function geometry(page) {
       return { name:element.id || [...element.classList].join('.'), left:value.left, top:value.top, right:value.right, bottom:value.bottom, width:value.width, height:value.height };
     });
     const title = rect('.title'), hint = rect('#hint'), eq = rect('.eq-row'), row = rect('.num-row');
-    const content = [{ name:'title', box:title }, { name:'hint', box:hint }, { name:'equation', box:eq }, { name:'choices', box:row }];
+    const answers = [...document.querySelectorAll('.num-btn')].map((element, index) => ({ name:`answer-${index + 1}`, box:rect(element) }));
+    const content = [{ name:'title', box:title }, { name:'hint', box:hint }, { name:'equation', box:eq }, ...answers];
     const overlap = (a,b) => !!a && !!b && Math.min(a.right,b.right)-Math.max(a.left,b.left)>1 && Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1;
     const navContentOverlaps = nav.flatMap(navBox => content.filter(item => overlap(navBox,item.box)).map(item => ({ nav:navBox.name, content:item.name })));
     return {
@@ -192,6 +193,7 @@ async function geometry(page) {
       navContentOverlaps,
       equation: eq,
       choices: row,
+      answers: answers.map(item => item.box),
       scrollHeight: document.querySelector('#stage')?.scrollHeight || 0,
       clientHeight: document.querySelector('#stage')?.clientHeight || 0,
     };
