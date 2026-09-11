@@ -21,6 +21,7 @@
     .hiding-spot:disabled { cursor:default; opacity:1; }
     .hiding-spot:focus-visible { outline:5px solid #fff5a4; outline-offset:-3px; box-shadow:0 0 0 3px #255552; }
     .hiding-spot.empty::after { content:'Nobody here'; position:absolute; bottom:12%; left:0; right:0; padding:6px 2px; border-radius:20px; background:#fff9e9ed; font:800 13px var(--font-ui); }
+    .hiding-spot.has-peek { z-index:3; }
     #friendIntro,#hideCover { position:absolute; inset:0; z-index:4; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center; pointer-events:none; }
     #friendIntro { background:#edf9f1e8; }
     #seekCompanion { pointer-events:none; flex:none; width:min(230px,50vw,40dvh); aspect-ratio:1; }

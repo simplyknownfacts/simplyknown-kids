@@ -79,6 +79,23 @@ for (const expected of CASES) {
         rustle: document.querySelectorAll('.hiding-spot.clue-rustle').length,
         visibleParts: [...document.querySelectorAll('.hiding-spot .peek-piece')]
           .filter(piece => getComputedStyle(piece).display !== 'none').length,
+        peekOwnsPoint: (() => {
+          const spot = document.querySelector('.hiding-spot.has-peek');
+          const box = spot?.querySelector('.peek-piece')?.getBoundingClientRect();
+          return !!box && document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)?.closest('.hiding-spot') === spot;
+        })(),
+        allPeekPointsOwned: (() => {
+          const active = document.querySelector('.hiding-spot.has-peek');
+          return [...document.querySelectorAll('.hiding-spot')].every(spot => {
+            active?.classList.remove('has-peek');
+            spot.classList.add('has-peek');
+            const box = spot.querySelector('.peek-piece').getBoundingClientRect();
+            const owned = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)?.closest('.hiding-spot') === spot;
+            spot.classList.remove('has-peek');
+            active?.classList.add('has-peek');
+            return owned;
+          });
+        })(),
         part: document.querySelector('#stage').dataset.peekPart,
       }));
       assert.ok(['ears', 'face', 'paw', 'tail'].includes(state.part), `missing varied peek part: ${state.part}`);
@@ -86,6 +103,8 @@ for (const expected of CASES) {
       assert.equal(state.peek, expected.automatic === 'peek' ? 1 : 0);
       assert.equal(state.rustle, expected.automatic === 'rustle' ? 1 : 0);
       assert.equal(state.visibleParts, 1, 'round does not expose exactly one small animal part');
+      assert.equal(state.peekOwnsPoint, true, 'another bush steals taps from the visible animal part');
+      assert.equal(state.allPeekPointsOwned, true, 'a possible hiding place cannot own taps on its animal part');
       if (expected.automatic === 'none') assert.equal(state.glow + state.peek + state.rustle, 0);
       if (!expected.words) {
         assert.doesNotMatch(state.hint, /[a-z]/i, 'youngest visual prompt still requires reading');
