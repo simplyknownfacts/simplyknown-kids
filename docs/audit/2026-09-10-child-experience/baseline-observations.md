@@ -219,4 +219,15 @@
 5. Full regression is 402 tests: 393 pass / 9 known Bubble Pop failures / 0 skip. No Bubble or Animal finding was changed.
 6. Independent separate-checkout review is PASS with no P1/P2 at exact `e16d1f9`; all ten T6-T10 phone/desktop rows independently passed the 44px target, geometry, wrong/incomplete input, exactly-once shape, reward threshold, rapid input, mode reset/re-entry, ordinary-burst and rocket-accounting checks. Reviewer did not claim physical-device or human-audible proof.
 7. The guarded importer changes only the ten T6-T10 phone/desktop progression FAIL cells and ten visual-quality FAIL cells to PASS, then changes zero on rerun.
+
+## Tap-a-Tune visual/play audit at `289191d`
+
+1. Tap-a-Tune was the next eligible Games activity in registry order. No product source was changed.
+2. T1-T10 at 1280x900 desktop and 390x844 touch phone completed 20/20 rows, 100 full renders, reward threshold and dismissal, eight repeated free-play notes, reload recovery, every age-available mode, and exact progress accounting.
+3. T3-T10 completed a deterministic seven-note guided song after a wrong-to-correct input; T7-T10 also rejected eight inputs during memory playback, recovered from a wrong note, completed the one-note memory round, and reset the mode. These bonus records are intentional mode-completion accounting, distinct from the repaired Magic Touch duplicate decoration.
+4. T1-T2 rewards deferred to the Games hub; T3-T10 rewards appeared in game. No score or explicit restart mechanic applies.
+5. All 100 phone/desktop renders and both contact sheets were inspected. Main phone/desktop controls remain visible and clear, with minimum targets of 45-48px and no clipping or horizontal overflow.
+6. **Confirmed P2 child-target defect: at 320x568, four of six piano pads are 43.328px wide against the Kids 44px floor.** There is no clipping or overflow, and the 820x1180 tablet row passes. This is report-only; no Tap-a-Tune product repair was authorized or made.
+7. Main report SHA-256 is `c0ad367673135738e9d6faa545f4a91cefb5751c23ef5155b5d0c6169da7a5bb`; responsive report SHA-256 is `99361c7c587c2730e9953cbbc9c5a6760a39fbd45993c9ebcc176bd60c450c6c`.
+8. The guarded importer changes 95 BLK dimensions to PASS, one T10 phone visual dimension to FAIL and 40 to NA; its second run changes zero.
 9. Previously accepted Games resilience cells were not repeated or re-credited. Silent local stubs and synthetic profiles make no audible, provider or physical-device claim.

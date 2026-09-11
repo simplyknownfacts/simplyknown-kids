@@ -2784,17 +2784,17 @@
       "tier": 1,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2811,12 +2811,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -2826,17 +2827,17 @@
       "tier": 1,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2853,12 +2854,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -2868,17 +2870,17 @@
       "tier": 2,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2895,12 +2897,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -2910,17 +2913,17 @@
       "tier": 2,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2937,12 +2940,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -2952,20 +2956,20 @@
       "tier": 3,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -2979,12 +2983,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -2994,20 +2999,20 @@
       "tier": 3,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3021,12 +3026,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3036,20 +3042,20 @@
       "tier": 4,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3063,12 +3069,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3078,20 +3085,20 @@
       "tier": 4,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3105,12 +3112,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3120,20 +3128,20 @@
       "tier": 5,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3147,12 +3155,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3162,20 +3171,20 @@
       "tier": 5,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3189,12 +3198,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3204,20 +3214,20 @@
       "tier": 6,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3231,12 +3241,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3246,20 +3257,20 @@
       "tier": 6,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3273,12 +3284,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3288,20 +3300,20 @@
       "tier": 7,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3315,12 +3327,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3330,20 +3343,20 @@
       "tier": 7,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3357,12 +3370,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3372,20 +3386,20 @@
       "tier": 8,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3399,12 +3413,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3414,20 +3429,20 @@
       "tier": 8,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3441,12 +3456,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3456,20 +3472,20 @@
       "tier": 9,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3483,12 +3499,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3498,20 +3515,20 @@
       "tier": 9,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3525,12 +3542,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3540,20 +3558,20 @@
       "tier": 10,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Tap-a-Tune play, mode, reward and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3567,12 +3585,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
@@ -3582,20 +3601,20 @@
       "tier": 10,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Tap-a-Tune play is complete; the 320x568 piano pads remain below the 44px child-target floor.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
-        "wrong_answers": "BLK",
+        "wrong_answers": "PASS",
         "boundary_taps": "PASS",
         "drag_outside": "NA",
         "keyboard_misuse": "PASS",
@@ -3609,12 +3628,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#tap-a-tune-visualplay-audit-at-289191d"
       ]
     },
     {
