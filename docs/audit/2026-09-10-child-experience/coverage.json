@@ -6115,8 +6115,8 @@
       "viewport": "desktop",
       "defaultVisible": false,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6142,12 +6142,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6159,7 +6160,7 @@
       "defaultVisible": false,
       "execution": "COMPLETE",
       "verdict": "PASS",
-      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete.",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6190,7 +6191,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6201,8 +6203,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6228,12 +6230,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6245,7 +6248,7 @@
       "defaultVisible": true,
       "execution": "COMPLETE",
       "verdict": "PASS",
-      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete.",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6276,7 +6279,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6288,7 +6292,7 @@
       "defaultVisible": true,
       "execution": "COMPLETE",
       "verdict": "PASS",
-      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete.",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6319,7 +6323,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6330,8 +6335,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6357,12 +6362,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6374,7 +6380,7 @@
       "defaultVisible": true,
       "execution": "COMPLETE",
       "verdict": "PASS",
-      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete.",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6405,7 +6411,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6416,8 +6423,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6443,12 +6450,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6459,8 +6467,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6486,12 +6494,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6502,8 +6511,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6529,12 +6538,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6545,8 +6555,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6572,12 +6582,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6588,8 +6599,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6615,12 +6626,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6631,8 +6643,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6658,12 +6670,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6674,8 +6687,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6701,12 +6714,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6717,8 +6731,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6744,12 +6758,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6760,8 +6775,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6787,12 +6802,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6803,8 +6819,8 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6830,12 +6846,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6846,8 +6863,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6873,12 +6890,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6890,7 +6908,7 @@
       "defaultVisible": true,
       "execution": "COMPLETE",
       "verdict": "PASS",
-      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete.",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6921,7 +6939,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
@@ -6932,8 +6951,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete after the independently reviewed layout repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -6959,12 +6978,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#memory-match-visual-play-d404038"
+        "baseline-observations.md#memory-match-visual-play-d404038",
+        "baseline-observations.md#memory-match-layout-repair-3cb61a6"
       ]
     },
     {
