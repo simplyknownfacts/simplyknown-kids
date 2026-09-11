@@ -2345,13 +2345,13 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
+      "verdict": "PASS",
+      "reason": "All applicable Magic Touch behavior, repeated play, reward persistence and reviewed visual states complete after the independently reviewed single-progress and 44px-target repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "FAIL",
+        "progression": "PASS",
         "score": "NA",
         "rewards": "PASS",
         "restart": "NA",
@@ -2372,12 +2372,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f",
+        "baseline-observations.md#magic-touch-repair-e16d1f9"
       ]
     },
     {
@@ -2388,13 +2389,13 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
+      "verdict": "PASS",
+      "reason": "All applicable Magic Touch behavior, repeated play, reward persistence and reviewed visual states complete after the independently reviewed single-progress and 44px-target repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "FAIL",
+        "progression": "PASS",
         "score": "NA",
         "rewards": "PASS",
         "restart": "NA",
@@ -2415,12 +2416,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f",
+        "baseline-observations.md#magic-touch-repair-e16d1f9"
       ]
     },
     {
@@ -2431,13 +2433,13 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
+      "verdict": "PASS",
+      "reason": "All applicable Magic Touch behavior, repeated play, reward persistence and reviewed visual states complete after the independently reviewed single-progress and 44px-target repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "FAIL",
+        "progression": "PASS",
         "score": "NA",
         "rewards": "PASS",
         "restart": "NA",
@@ -2458,12 +2460,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f",
+        "baseline-observations.md#magic-touch-repair-e16d1f9"
       ]
     },
     {
@@ -2474,13 +2477,13 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
+      "verdict": "PASS",
+      "reason": "All applicable Magic Touch behavior, repeated play, reward persistence and reviewed visual states complete after the independently reviewed single-progress and 44px-target repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "FAIL",
+        "progression": "PASS",
         "score": "NA",
         "rewards": "PASS",
         "restart": "NA",
@@ -2501,12 +2504,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f",
+        "baseline-observations.md#magic-touch-repair-e16d1f9"
       ]
     },
     {
@@ -2517,13 +2521,13 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
+      "verdict": "PASS",
+      "reason": "All applicable Magic Touch behavior, repeated play, reward persistence and reviewed visual states complete after the independently reviewed single-progress and 44px-target repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "FAIL",
+        "progression": "PASS",
         "score": "NA",
         "rewards": "PASS",
         "restart": "NA",
@@ -2544,12 +2548,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f",
+        "baseline-observations.md#magic-touch-repair-e16d1f9"
       ]
     },
     {
@@ -2560,13 +2565,13 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
+      "verdict": "PASS",
+      "reason": "All applicable Magic Touch behavior, repeated play, reward persistence and reviewed visual states complete after the independently reviewed single-progress and 44px-target repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "FAIL",
+        "progression": "PASS",
         "score": "NA",
         "rewards": "PASS",
         "restart": "NA",
@@ -2587,12 +2592,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f",
+        "baseline-observations.md#magic-touch-repair-e16d1f9"
       ]
     },
     {
@@ -2603,13 +2609,13 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
+      "verdict": "PASS",
+      "reason": "All applicable Magic Touch behavior, repeated play, reward persistence and reviewed visual states complete after the independently reviewed single-progress and 44px-target repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "FAIL",
+        "progression": "PASS",
         "score": "NA",
         "rewards": "PASS",
         "restart": "NA",
@@ -2630,12 +2636,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f",
+        "baseline-observations.md#magic-touch-repair-e16d1f9"
       ]
     },
     {
@@ -2646,13 +2653,13 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
+      "verdict": "PASS",
+      "reason": "All applicable Magic Touch behavior, repeated play, reward persistence and reviewed visual states complete after the independently reviewed single-progress and 44px-target repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "FAIL",
+        "progression": "PASS",
         "score": "NA",
         "rewards": "PASS",
         "restart": "NA",
@@ -2673,12 +2680,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f",
+        "baseline-observations.md#magic-touch-repair-e16d1f9"
       ]
     },
     {
@@ -2689,13 +2697,13 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
+      "verdict": "PASS",
+      "reason": "All applicable Magic Touch behavior, repeated play, reward persistence and reviewed visual states complete after the independently reviewed single-progress and 44px-target repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "FAIL",
+        "progression": "PASS",
         "score": "NA",
         "rewards": "PASS",
         "restart": "NA",
@@ -2716,12 +2724,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f",
+        "baseline-observations.md#magic-touch-repair-e16d1f9"
       ]
     },
     {
@@ -2732,13 +2741,13 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
+      "verdict": "PASS",
+      "reason": "All applicable Magic Touch behavior, repeated play, reward persistence and reviewed visual states complete after the independently reviewed single-progress and 44px-target repair.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "FAIL",
+        "progression": "PASS",
         "score": "NA",
         "rewards": "PASS",
         "restart": "NA",
@@ -2759,12 +2768,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f",
+        "baseline-observations.md#magic-touch-repair-e16d1f9"
       ]
     },
     {

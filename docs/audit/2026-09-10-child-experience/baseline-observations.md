@@ -209,4 +209,14 @@
 6. All 100 full renders and both contact sheets were inspected. Bursts, trails, rewards and five connected shapes remain legible against the night sky; the goal shape, hint, toggle and navigation do not collide. T1-T5 visual-quality cells pass; T6-T10 visual-quality cells fail only for the measured 42px toggle.
 7. Final report: **50 PASS / 10 progression FAIL / 40 explicit score-or-restart NA / 20 pre-inspection visual BLK**, with no fatal row. Report SHA-256 is `0efc4747cab50c56737a3598b826ff945dca7540946c94865e8790a4b3d4c079`; source SHA-256 is `ed665c21f5b33c1ebb2ff020dbfb89a77091b4e6b53500a9a0f1ba238709d86c`.
 8. The guarded importer changes 60 BLK dimensions to PASS, 20 to FAIL and 40 to NA; its second run changes zero. Magic Touch now has ten PASS and ten FAIL rows, all 20 COMPLETE. Ledger totals become **9,321 PASS / 36 FAIL / 3,649 BLK / 3,494 NA**; row verdicts become 110 PASS / 26 FAIL / 524 BLK, with 120 COMPLETE / 540 PARTIAL.
+
+## Magic Touch repair `e16d1f9`
+
+1. Red-first browser regression reproduced both authorized defects at T6 and T10 on phone and desktop: the mode control measured 187x42px in all four samples and every completed connected shape produced two progress records.
+2. Product commit `e16d1f950c6ec8955087ebf5b44f5b912029b8a4` adds only a 44px minimum height to the mode control and lets the decorative gold completion burst skip its second record. Ordinary free-play bursts and rocket explosions keep their existing record path.
+3. Focused repair coverage passes 14/14 across phone, desktop, 320x568 short phone and 820x1180 tablet. It verifies exactly one record, rapid completion resistance, mode reset/re-entry and the 44px floor.
+4. Full Magic Touch play passes 20/20 T1-T10 phone/desktop rows: 60 PASS / 0 FAIL / 40 NA / 20 reviewed visual placeholders, 100 inspected renders, all rewards and reload recovery, and 30 wrong-to-correct shapes at exactly one record each. Report SHA-256 is `008ed0e2c3649978f222d5669084197e1f67b5b7c445a64ec3dc1bd745aab317`.
+5. Full regression is 402 tests: 393 pass / 9 known Bubble Pop failures / 0 skip. No Bubble or Animal finding was changed.
+6. Independent separate-checkout review is PASS with no P1/P2 at exact `e16d1f9`; all ten T6-T10 phone/desktop rows independently passed the 44px target, geometry, wrong/incomplete input, exactly-once shape, reward threshold, rapid input, mode reset/re-entry, ordinary-burst and rocket-accounting checks. Reviewer did not claim physical-device or human-audible proof.
+7. The guarded importer changes only the ten T6-T10 phone/desktop progression FAIL cells and ten visual-quality FAIL cells to PASS, then changes zero on rerun.
 9. Previously accepted Games resilience cells were not repeated or re-credited. Silent local stubs and synthetic profiles make no audible, provider or physical-device claim.
