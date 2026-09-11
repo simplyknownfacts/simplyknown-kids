@@ -91,7 +91,10 @@ function init({ tier, bday }) {
       return;
     }
     class SyntheticDeviceOrientationEvent extends Event {
-      static requestPermission() { return Promise.resolve(window.__tiltPermission); }
+      static requestPermission() {
+        if (window.__tiltPermission === 'rejected') return Promise.reject(new Error('permission prompt failed'));
+        return Promise.resolve(window.__tiltPermission);
+      }
     }
     Object.defineProperty(window, 'DeviceOrientationEvent', { configurable: true, writable: true, value: SyntheticDeviceOrientationEvent });
     window.__tiltPermission = mode;
@@ -284,9 +287,9 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
   page.on('requestfailed', request => {
     if (request.url().startsWith(base)) failedLocalRequests.push(`${request.url()} ${request.failure()?.errorText || ''}`);
   });
-  let completedRounds = 0, unavailableCaption = '', deniedCaption = '', grantedCaption = '';
-  let unavailableFallback = false, deniedFallback = false, validSensor = false;
-  let invalidSensorPoisoned = false, invalidSensorFallbackRecovered = null, reloadRecovered = false;
+  let completedRounds = 0, unavailableCaption = '', deniedCaption = '', rejectedCaption = '', grantedCaption = '';
+  let unavailableFallback = false, deniedFallback = false, rejectedFallback = false, validSensor = false;
+  let invalidFirstIgnored = false, invalidSensorPoisoned = false, invalidSensorFallbackRecovered = null, reloadRecovered = false;
   let rewardResult = null, scoreResults = [], counterBefore = null, counterAfter = null, fatal = null;
   try {
     await page.goto(base + '/games/tilt-drive.html', { waitUntil: 'load' });
@@ -308,7 +311,7 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     }, null, { timeout: 3000 }).then(() => true).catch(() => false);
     await canvas.dispatchEvent('pointermove', { pointerId: 12, pointerType: 'touch', clientX: box.x + box.width / 2, clientY: box.y + box.height * 0.8, bubbles: true });
     await saveShot(page, rowId, 'unavailable-fallback', screenshots);
-    scoreResults.push({ theme: 'road', ...(await waitForCrash(page)) });
+    scoreResults.push({ theme: 'road-unavailable', ...(await waitForCrash(page)) });
     completedRounds++;
     rewardResult = await reward(page, tier, base, rowId, screenshots);
 
@@ -317,18 +320,27 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     await page.keyboard.press('ArrowRight');
     deniedFallback = await page.waitForFunction(() => window.__carTrace.filter(item => Number.isFinite(item.x)).length > 3, null, { timeout: 3000 }).then(() => true).catch(() => false);
     await saveShot(page, rowId, 'denied-fallback', screenshots);
-    scoreResults.push({ theme: 'river', ...(await waitForCrash(page)) });
+    scoreResults.push({ theme: 'river-denied', ...(await waitForCrash(page)) });
+    completedRounds++;
+
+    rejectedCaption = await chooseTheme(page, 'road', 'rejected');
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowRight');
+    rejectedFallback = await page.waitForFunction(() => window.__carTrace.filter(item => Number.isFinite(item.x)).length > 3, null, { timeout: 3000 }).then(() => true).catch(() => false);
+    scoreResults.push({ theme: 'road-rejected', ...(await waitForCrash(page)) });
     completedRounds++;
 
     grantedCaption = await chooseTheme(page, 'space', 'granted');
-    await emitGamma(page, null);
+    for (const value of [null, NaN, Infinity, -Infinity]) await emitGamma(page, value);
+    await page.waitForTimeout(60);
+    invalidFirstIgnored = await page.evaluate(() => window.__carTrace.length > 2 && window.__carTrace.every(item => Number.isFinite(item.x)));
     await emitGamma(page, 0);
     await emitGamma(page, 1000);
     const movedRight = await page.waitForFunction(() => {
       const xs = window.__carTrace.map(item => item.x).filter(Number.isFinite);
       return xs.length && xs.at(-1) > innerWidth * 0.58;
     }, null, { timeout: 3000 }).then(() => true).catch(() => false);
-    await emitGamma(page, -Infinity);
+    await emitGamma(page, -1000);
     const movedLeft = await page.waitForFunction(() => {
       const xs = window.__carTrace.map(item => item.x).filter(Number.isFinite);
       return xs.length && xs.at(-1) < innerWidth * 0.42;
@@ -337,14 +349,15 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     await emitGamma(page, 0);
     await canvas.dispatchEvent('pointermove', { pointerId: 13, pointerType: 'touch', clientX: box.x + box.width / 2, clientY: box.y + box.height * 0.8, bubbles: true });
     await saveShot(page, rowId, 'granted-extremes', screenshots);
-    scoreResults.push({ theme: 'space', ...(await waitForCrash(page)) });
+    scoreResults.push({ theme: 'space-granted', ...(await waitForCrash(page)) });
     completedRounds++;
 
     await page.locator('#againBtn').click();
     await page.waitForFunction(() => getComputedStyle(document.querySelector('#hud')).display !== 'none');
     await emitGamma(page, 0);
-    await emitGamma(page, NaN);
-    invalidSensorPoisoned = await page.waitForFunction(() => window.__carTrace.some(item => !Number.isFinite(item.x)), null, { timeout: 3000 }).then(() => true).catch(() => false);
+    for (const value of [NaN, Infinity, -Infinity, null]) await emitGamma(page, value);
+    await page.waitForTimeout(60);
+    invalidSensorPoisoned = await page.evaluate(() => window.__carTrace.some(item => !Number.isFinite(item.x)));
     const traceMarker = await page.evaluate(() => window.__carTrace.length);
     await canvas.dispatchEvent('pointermove', { pointerId: 14, pointerType: 'touch', clientX: box.x + box.width / 2, clientY: box.y + box.height * 0.8, bubbles: true });
     await page.keyboard.press('ArrowRight');
@@ -380,11 +393,11 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     await context.close();
   }
   const unavailableInstructionCorrect = /drag left/i.test(unavailableCaption);
-  const permissionFallbacks = unavailableFallback && deniedFallback;
-  const progressPass = !fatal && completedRounds === 4 && counterAfter > counterBefore;
-  const scorePass = !fatal && scoreResults.length === 4 && scoreResults.every(item => item.meters > 0 && /You drove \d+ m/.test(item.text));
+  const permissionFallbacks = unavailableFallback && deniedFallback && rejectedFallback;
+  const progressPass = !fatal && completedRounds === 5 && counterAfter > counterBefore;
+  const scorePass = !fatal && scoreResults.length === 5 && scoreResults.every(item => item.meters > 0 && /You drove \d+ m/.test(item.text));
   const rewardPass = !fatal && rewardResult?.title && rewardResult.hint === 'Saved in your gallery' && rewardResult.inViewport && rewardResult.dismissMs < 500;
-  const restartPass = !fatal && reloadRecovered && new Set(scoreResults.map(item => item.theme)).size === 4;
+  const restartPass = !fatal && reloadRecovered && new Set(scoreResults.map(item => item.theme)).size === 5;
   const repeatedPass = !fatal && progressPass && permissionFallbacks && validSensor && reloadRecovered;
   return {
     id: rowId,
@@ -394,7 +407,7 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     viewport: viewportName,
     checks: {
       instructions: unavailableInstructionCorrect ? pass('Unavailable motion sensor produced an honest drag instruction.') : fail(`Unavailable motion sensor still announced "${unavailableCaption}" instead of the working drag fallback.`),
-      input: invalidSensorPoisoned && !invalidSensorFallbackRecovered ? fail('Synthetic invalid gamma poisoned the car position; touch and keyboard fallback could not recover until reload.') : pass('Permission, tilt and fallback inputs remained recoverable.'),
+      input: invalidFirstIgnored && !invalidSensorPoisoned && invalidSensorFallbackRecovered ? pass('Finite tilt and pointer/keyboard fallback remained recoverable after invalid first and later sensor events.') : fail('Invalid sensor input was not safely ignored or fallback steering did not recover.'),
       progression: progressPass ? pass(`${completedRounds} crashes recorded exact cumulative meters.`) : fail(fatal || 'distance progression incomplete'),
       score: scorePass ? pass('Every completed run showed a positive distance and persisted per-ride best state.') : fail(fatal || 'distance/best score incomplete'),
       rewards: rewardPass ? pass(`Threshold reward persisted once ${tier <= 2 ? 'and deferred to the Games hub' : 'in the activity'}.`) : fail(fatal || 'reward incomplete'),
@@ -405,10 +418,13 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     completedRounds,
     unavailableCaption,
     deniedCaption,
+    rejectedCaption,
     grantedCaption,
     unavailableFallback,
     deniedFallback,
+    rejectedFallback,
     validSensor,
+    invalidFirstIgnored,
     invalidSensorPoisoned,
     invalidSensorFallbackRecovered,
     reloadRecovered,
@@ -473,4 +489,4 @@ const report = {
 writeFileSync(path.join(OUT, 'report.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(JSON.stringify({ ...counts, screenshots: screenshots.length }));
 if (rows.length !== SELECTED_TIERS.length * SELECTED_VIEWPORTS.length
-  || rows.some(row => row.fatal || row.completedRounds !== 4 || row.pageErrors.length || row.failedLocalRequests.length)) process.exitCode = 1;
+  || rows.some(row => row.fatal || row.completedRounds !== 5 || row.pageErrors.length || row.failedLocalRequests.length)) process.exitCode = 1;
