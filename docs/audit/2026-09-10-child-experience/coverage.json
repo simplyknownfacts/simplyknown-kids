@@ -1260,8 +1260,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Hide & Seek title and instruction on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "Reviewed 2aae9f7e2c1ddb33eb195ba60ca7b7c9a22b47ad: all Hide & Seek behavior and visual states pass; the phone reward temporarily replaces and then restores Again while staying clear of heading, navigation and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -1287,12 +1287,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6"
+        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6",
+        "baseline-observations.md#hide--seek-phone-notice-repair-at-2aae9f7"
       ]
     },
     {
@@ -1346,8 +1347,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Hide & Seek title and instruction on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "Reviewed 2aae9f7e2c1ddb33eb195ba60ca7b7c9a22b47ad: all Hide & Seek behavior and visual states pass; the phone reward temporarily replaces and then restores Again while staying clear of heading, navigation and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -1373,12 +1374,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6"
+        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6",
+        "baseline-observations.md#hide--seek-phone-notice-repair-at-2aae9f7"
       ]
     },
     {
@@ -1432,8 +1434,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Hide & Seek title and instruction on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "Reviewed 2aae9f7e2c1ddb33eb195ba60ca7b7c9a22b47ad: all Hide & Seek behavior and visual states pass; the phone reward temporarily replaces and then restores Again while staying clear of heading, navigation and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -1459,12 +1461,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6"
+        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6",
+        "baseline-observations.md#hide--seek-phone-notice-repair-at-2aae9f7"
       ]
     },
     {
@@ -1519,8 +1522,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Hide & Seek title and instruction on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "Reviewed 2aae9f7e2c1ddb33eb195ba60ca7b7c9a22b47ad: all Hide & Seek behavior and visual states pass; the phone reward temporarily replaces and then restores Again while staying clear of heading, navigation and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -1546,13 +1549,14 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md",
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6"
+        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6",
+        "baseline-observations.md#hide--seek-phone-notice-repair-at-2aae9f7"
       ]
     },
     {
@@ -1606,8 +1610,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Hide & Seek title and instruction on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "Reviewed 2aae9f7e2c1ddb33eb195ba60ca7b7c9a22b47ad: all Hide & Seek behavior and visual states pass; the phone reward temporarily replaces and then restores Again while staying clear of heading, navigation and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -1633,12 +1637,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6"
+        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6",
+        "baseline-observations.md#hide--seek-phone-notice-repair-at-2aae9f7"
       ]
     },
     {
@@ -1692,8 +1697,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Hide & Seek title and instruction on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "Reviewed 2aae9f7e2c1ddb33eb195ba60ca7b7c9a22b47ad: all Hide & Seek behavior and visual states pass; the phone reward temporarily replaces and then restores Again while staying clear of heading, navigation and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -1719,12 +1724,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6"
+        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6",
+        "baseline-observations.md#hide--seek-phone-notice-repair-at-2aae9f7"
       ]
     },
     {
@@ -1778,8 +1784,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Hide & Seek title and instruction on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "Reviewed 2aae9f7e2c1ddb33eb195ba60ca7b7c9a22b47ad: all Hide & Seek behavior and visual states pass; the phone reward temporarily replaces and then restores Again while staying clear of heading, navigation and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -1805,12 +1811,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6"
+        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6",
+        "baseline-observations.md#hide--seek-phone-notice-repair-at-2aae9f7"
       ]
     },
     {
@@ -1864,8 +1871,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Hide & Seek title and instruction on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "Reviewed 2aae9f7e2c1ddb33eb195ba60ca7b7c9a22b47ad: all Hide & Seek behavior and visual states pass; the phone reward temporarily replaces and then restores Again while staying clear of heading, navigation and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -1891,12 +1898,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6"
+        "baseline-observations.md#hide--seek-visualplay-audit-at-3cb61a6",
+        "baseline-observations.md#hide--seek-phone-notice-repair-at-2aae9f7"
       ]
     },
     {
