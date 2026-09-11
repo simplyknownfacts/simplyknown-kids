@@ -1,7 +1,7 @@
 # Kids Math repair + Clock audit handoff — 2026-09-11 (codex)
 
 1. Project: Kids App; checkout `C:\Users\HomeSeer\.codex\worktrees\b44d\Kids_App`; branch `codex/kids-math-repair-clock-audit-20260911-b44d`; authorized clean start `ddb34d883107b3762347eb9ae6c4b988560e4757`.
-2. Accepted Math product/test commit: `48fed5da63794cc0bb44cdc7a960f021489d9591`; Clock evidence/ledger/archive-helper commit: `cc4a0b5d72f55b6c2aa895c001f0608341d8d48e`.
+2. Accepted Math product/test commit: `48fed5da63794cc0bb44cdc7a960f021489d9591`; Clock evidence/ledger/archive-helper commit: `cc4a0b5e6ff5d0268614679b6e2d4147971e60d4`.
 3. Math repair: Math-only compact phone reward placement, replay hidden through automatic notice removal, and a 320x568 gear lane that retains 70px answers. T1-T2 deferral, T3-T10 rewards, PIN settings, operations/missing modes, persistence, navigation/reload and desktop/tablet behavior are preserved.
 4. Math proof: red 13 fail / 5 pass; final focused 18/18; full 20/20 rows plus 8/8 probes, 160 correct answers, 212 inspected renders and zero reward/responsive overlap. Independent exact-commit review is PASS with no P1/P2.
 5. Clock report-only audit: 20/20 T1-T10 phone/desktop rows, 240 correct answers, all tier minute modes, real PIN settings, wrong/rapid/exact-once input, right/teaching feedback, persistence, navigation, reload, repeated play and rewards passed; eight responsive probes passed behaviorally and 192 renders/four contact sheets were inspected.
