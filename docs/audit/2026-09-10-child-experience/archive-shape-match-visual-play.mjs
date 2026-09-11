@@ -1,5 +1,6 @@
 // Create one no-overwrite, self-hashed archive for the Shape Match audit batch.
-import { copyFileSync, createHash, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
