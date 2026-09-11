@@ -146,6 +146,8 @@ async function progressSnapshot(page) {
       counter: state.counters?.['peek-a-boo'] || 0,
       repeat: state.repeats?.['peek-a-boo'] || 0,
       recordCalls: window.__auditProgressCalls?.filter(call => call[0] === 'record').length || 0,
+      rewardShows: window.__auditProgressCalls?.filter(call => call[0] === 'show').length || 0,
+      lastShownAt: sessionStorage.getItem('vb_award_last_shown'),
     };
   });
 }
@@ -157,7 +159,7 @@ async function waitReady(page, selector) {
   }, selector);
 }
 
-async function playRound(page, rowId, round, screenshots) {
+async function playRound(page, rowId, round, screenshots, advance = true, captureFound = true) {
   await waitReady(page, '#roundAction');
   await clickCenter(page, page.locator('#roundAction'));
   await page.waitForFunction(() => document.querySelector('#stage')?.dataset.phase === 'seek');
@@ -176,19 +178,21 @@ async function playRound(page, rowId, round, screenshots) {
   await page.waitForFunction(() => document.querySelector('#stage')?.dataset.phase === 'found');
   if ((await progressSnapshot(page)).recordCalls !== before.recordCalls + 1) throw new Error('correct hiding spot did not record exactly once');
   const animal = (await page.locator('#hint').textContent()).replace(/^You found /, '').replace(/!$/, '');
-  if (round === 0) await saveShot(page, rowId, 'found', screenshots);
+  if (round === 0 && captureFound) await saveShot(page, rowId, 'found', screenshots);
   await page.locator(`.hiding-spot[data-spot="${target}"]`).dispatchEvent('pointerdown', { pointerId: 71, pointerType: 'touch', bubbles: true });
   if ((await progressSnapshot(page)).recordCalls !== before.recordCalls + 1) throw new Error('found phase accepted duplicate progress');
-  await waitReady(page, '#playAgain');
-  await clickCenter(page, page.locator('#playAgain'));
-  await page.waitForFunction(() => document.querySelector('#stage')?.dataset.phase === 'watch');
+  if (advance) {
+    await waitReady(page, '#playAgain');
+    await clickCenter(page, page.locator('#playAgain'));
+    await page.waitForFunction(() => document.querySelector('#stage')?.dataset.phase === 'watch');
+  }
   return { target, wrong, animal, spotCount };
 }
 
 async function rewardGeometry(page) {
   return page.locator('.vb-celebrate').evaluate(notice => {
     const r = notice.getBoundingClientRect();
-    const candidates = [...document.querySelectorAll('.seek-heading h1,#hint,#stage,.seek-controls button,.back-btn,.home-btn')].filter(element => {
+    const candidates = [...document.querySelectorAll('.seek-heading h1,#hint,#stage,.seek-controls button,.back-btn,.home-btn,.vb-replay-instruction')].filter(element => {
       const style = getComputedStyle(element), box = element.getBoundingClientRect();
       return style.display !== 'none' && style.visibility !== 'hidden' && box.width > 0 && box.height > 0;
     }).map(element => {
@@ -258,42 +262,7 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
   let postRewardPlayable = false;
   let fatal = null;
 
-  try {
-    await page.goto(base + '/games/peek-a-boo.html', { waitUntil: 'load', timeout: 20000 });
-    await page.locator('.hiding-spot').first().waitFor({ timeout: 10000 });
-    await page.evaluate(() => {
-      window.__auditProgressCalls = [];
-      const record = window.vbProgress.record;
-      window.vbProgress.record = (...args) => { window.__auditProgressCalls.push(['record', ...args]); return record.apply(window.vbProgress, args); };
-    });
-    await saveShot(page, rowId, 'initial', screenshots);
-
-    for (let round = 0; round < ROUNDS; round++) {
-      if (await page.locator('.vb-celebrate.in').isVisible().catch(() => false)) midPlayNotices++;
-      const sample = await geometry(page);
-      geometrySamples.push(sample);
-      if (sample.spotCount !== expectedSpots || sample.minTarget < 44 || sample.horizontalOverflow > 1 || sample.clippedSpots || sample.viewportClips || sample.chromeOverlap || !sample.titleVisible || !sample.hintVisible) {
-        throw new Error(`bad Hide & Seek geometry: ${JSON.stringify(sample)}`);
-      }
-      rounds.push(await playRound(page, rowId, round, screenshots));
-      completedRounds++;
-      wrongRecoveries++;
-      freshRounds++;
-    }
-
-    if (tier >= 3) {
-      try {
-        await page.locator('.vb-celebrate.in').waitFor({ timeout: 8000 });
-      } catch (error) {
-        throw new Error(`reward notice did not appear after persisted state ${JSON.stringify(await progressSnapshot(page))}: ${error.message}`);
-      }
-    } else {
-      await page.waitForTimeout(2800);
-      if (await page.locator('.vb-celebrate.in').isVisible().catch(() => false)) throw new Error('little-tier reward interrupted active play');
-      await page.locator('.back-btn').click();
-      await page.waitForURL(/\/games\/(index\.html)?$/);
-      await page.locator('.vb-celebrate.in').waitFor({ timeout: 2000 });
-    }
+  const captureReward = async () => {
     reward = await rewardGeometry(page);
     await saveShot(page, rowId, 'reward', screenshots);
     const tappedNotice = await page.evaluate(() => {
@@ -310,6 +279,54 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     } else {
       reward.dismissMs = null;
       reward.dismissMode = 'automatic';
+    }
+  };
+
+  try {
+    await page.goto(base + '/games/peek-a-boo.html', { waitUntil: 'load', timeout: 20000 });
+    await page.locator('.hiding-spot').first().waitFor({ timeout: 10000 });
+    await page.evaluate(() => {
+      window.__auditProgressCalls = [];
+      const record = window.vbProgress.record;
+      const show = window.vbCelebrate.show;
+      window.vbProgress.record = (...args) => { window.__auditProgressCalls.push(['record', ...args]); return record.apply(window.vbProgress, args); };
+      window.vbCelebrate.show = (...args) => { window.__auditProgressCalls.push(['show', Date.now()]); return show.apply(window.vbCelebrate, args); };
+    });
+    await saveShot(page, rowId, 'initial', screenshots);
+
+    for (let round = 0; round < ROUNDS; round++) {
+      if (await page.locator('.vb-celebrate.in').isVisible().catch(() => false)) midPlayNotices++;
+      const sample = await geometry(page);
+      geometrySamples.push(sample);
+      if (sample.spotCount !== expectedSpots || sample.minTarget < 44 || sample.horizontalOverflow > 1 || sample.clippedSpots || sample.viewportClips || sample.chromeOverlap || !sample.titleVisible || !sample.hintVisible) {
+        throw new Error(`bad Hide & Seek geometry: ${JSON.stringify(sample)}`);
+      }
+      const rewardRound = tier >= 3 && round === 0;
+      rounds.push(await playRound(page, rowId, round, screenshots, !rewardRound, !rewardRound));
+      completedRounds++;
+      wrongRecoveries++;
+      if (rewardRound) {
+        try {
+          await page.locator('.vb-celebrate.in').waitFor({ timeout: 8000 });
+        } catch (error) {
+          throw new Error(`reward notice did not appear after persisted state ${JSON.stringify(await progressSnapshot(page))}: ${error.message}`);
+        }
+        await captureReward();
+        await saveShot(page, rowId, 'found', screenshots);
+        await waitReady(page, '#playAgain');
+        await clickCenter(page, page.locator('#playAgain'));
+        await page.waitForFunction(() => document.querySelector('#stage')?.dataset.phase === 'watch');
+      }
+      freshRounds++;
+    }
+
+    if (tier <= 2) {
+      await page.waitForTimeout(2800);
+      if (await page.locator('.vb-celebrate.in').isVisible().catch(() => false)) throw new Error('little-tier reward interrupted active play');
+      await page.locator('.back-btn').click();
+      await page.waitForURL(/\/games\/(index\.html)?$/);
+      await page.locator('.vb-celebrate.in').waitFor({ timeout: 2000 });
+      await captureReward();
     }
 
     if (tier <= 2) {
