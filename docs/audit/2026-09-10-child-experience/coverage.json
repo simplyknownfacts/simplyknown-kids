@@ -5374,12 +5374,12 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5406,7 +5406,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5417,12 +5418,12 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5449,7 +5450,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5460,12 +5462,12 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5492,7 +5494,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5503,12 +5506,12 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5535,7 +5538,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5546,12 +5550,12 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5578,7 +5582,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5589,12 +5594,12 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5621,7 +5626,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5632,12 +5638,12 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5664,7 +5670,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5675,12 +5682,12 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5707,7 +5714,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5718,12 +5726,12 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5750,7 +5758,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5761,12 +5770,12 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5793,7 +5802,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5804,12 +5814,12 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5836,7 +5846,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5847,12 +5858,12 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5879,7 +5890,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5890,12 +5902,12 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5922,7 +5934,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5933,12 +5946,12 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -5965,7 +5978,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -5976,12 +5990,12 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -6008,7 +6022,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -6019,12 +6034,12 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -6051,7 +6066,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -6062,12 +6078,12 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -6094,7 +6110,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -6105,12 +6122,12 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -6137,7 +6154,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -6148,12 +6166,12 @@
       "viewport": "desktop",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -6180,7 +6198,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -6191,12 +6210,12 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "Tilt Drive play is complete; unavailable motion sensors get a false tilt instruction and invalid gamma can poison steering until reload.",
+      "verdict": "PASS",
+      "reason": "All applicable Tilt Drive behavior, repeated play, score, reward and reviewed visual states complete after the independently reviewed sensor fallback repair.",
       "checks": {
         "launch": "PASS",
-        "instructions": "FAIL",
-        "input": "FAIL",
+        "instructions": "PASS",
+        "input": "PASS",
         "progression": "PASS",
         "score": "PASS",
         "rewards": "PASS",
@@ -6223,7 +6242,8 @@
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5"
+        "baseline-observations.md#tilt-drive-visualplay-audit-at-0c6d9e5",
+        "baseline-observations.md#tilt-drive-repair-at-b036b0e"
       ]
     },
     {
@@ -7113,17 +7133,17 @@
       "tier": 1,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "BLK",
-        "progression": "BLK",
+        "input": "PASS",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -7140,12 +7160,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7155,17 +7176,17 @@
       "tier": 1,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "BLK",
-        "progression": "BLK",
+        "input": "PASS",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -7182,12 +7203,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7197,17 +7219,17 @@
       "tier": 2,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -7224,12 +7246,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7239,17 +7262,17 @@
       "tier": 2,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -7266,12 +7289,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7281,17 +7305,17 @@
       "tier": 3,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -7308,12 +7332,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7323,17 +7348,17 @@
       "tier": 3,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -7350,12 +7375,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7365,17 +7391,17 @@
       "tier": 4,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7392,12 +7418,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7407,17 +7434,17 @@
       "tier": 4,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7434,12 +7461,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7449,17 +7477,17 @@
       "tier": 5,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7476,12 +7504,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7491,17 +7520,17 @@
       "tier": 5,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7518,12 +7547,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7533,17 +7563,17 @@
       "tier": 6,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7560,12 +7590,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7575,17 +7606,17 @@
       "tier": 6,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7602,12 +7633,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7617,17 +7649,17 @@
       "tier": 7,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7644,12 +7676,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7659,17 +7692,17 @@
       "tier": 7,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7686,12 +7719,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7701,17 +7735,17 @@
       "tier": 8,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7728,12 +7762,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7743,17 +7778,17 @@
       "tier": 8,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7770,12 +7805,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7785,17 +7821,17 @@
       "tier": 9,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7812,12 +7848,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7827,17 +7864,17 @@
       "tier": 9,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7854,12 +7891,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7869,17 +7907,17 @@
       "tier": 10,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7896,12 +7934,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
@@ -7911,17 +7950,17 @@
       "tier": 10,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Hello Colors behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -7938,12 +7977,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#hello-colors-visualplay-audit-at-b036b0e"
       ]
     },
     {
