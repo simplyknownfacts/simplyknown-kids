@@ -3,6 +3,31 @@ import { createHut } from './world-huts.js';
 import { createIsland } from './world-islands.js';
 import { createOcean } from './world-ocean.js';
 
+function createCompanionBoat(THREE) {
+  const group = new THREE.Group();
+  group.name = 'companion-boat';
+  const material = (color, roughness = .7) => new THREE.MeshStandardMaterial({ color, roughness });
+  const hull = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 10), material('#ef7868'));
+  hull.scale.set(.72, .32, 1.45); hull.position.y = .02; group.add(hull);
+  const inside = new THREE.Mesh(new THREE.BoxGeometry(1.15, .16, 1.72), material('#fff0bf', .82));
+  inside.position.y = .29; group.add(inside);
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(1.3, .12, .34), material('#b56f45', .88));
+  seat.position.set(0, .48, .05); group.add(seat);
+  for (const side of [-1, 1]) {
+    const oar = new THREE.Mesh(new THREE.CylinderGeometry(.045, .045, 2.3, 8), material('#c58a55', .86));
+    oar.position.set(side * .7, .34, .1); oar.rotation.set(Math.PI / 2, 0, side * .58); group.add(oar);
+  }
+  group.traverse(object => { if (object.isMesh) object.castShadow = true; });
+  let x = 0, z = 0;
+  function place(nextX, nextZ) { x = nextX; z = nextZ; update(0, true); }
+  function update(time, reducedMotion = false) {
+    const t = reducedMotion ? 0 : time;
+    group.position.set(x, -.48 + Math.sin(t * 1.15) * .045, z);
+    group.rotation.set(Math.sin(t * .95) * .025, -.18, Math.sin(t * 1.1) * .035);
+  }
+  return { group, place, update, anchor: () => group.localToWorld(new THREE.Vector3(0, 1.04, 0)) };
+}
+
 // The home is a live, lit mesh scene. DOM buttons are keyboard equivalents;
 // physical touches are raycast against each island, building and activity props.
 //
@@ -24,11 +49,12 @@ import { createOcean } from './world-ocean.js';
 // (frame) that pauses itself when hidden, backgrounded, or reduced-motion is
 // on -> pointer handlers that raycast a tap against the 3D meshes to decide
 // which hut was actually touched (pick).
-export function createWorldScene(host, { activate, placeCompanion, announce }) {
+export function createWorldScene(host, { activate, placeCompanion, announce, roomLabel = 'MY ROOM' }) {
   const canvas = host.querySelector('canvas');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
+  // The old 1.5 cap visibly softened canvas-drawn sign text on 2x/3x phones.
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -50,24 +76,24 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
   const fill = new THREE.DirectionalLight('#c6e8ff', .8);
   fill.position.set(12, 9, -10); scene.add(fill);
   const islands = new Map();
-  const destinationKinds = ['games','learn','art','watch','listen','ribbons','my-room'];
-  for (const kind of [...destinationKinds,'companion']) {
+  const destinationKinds = ['games','learn','art','watch','listen','my-room','ribbons'];
+  for (const kind of destinationKinds) {
     const island = createIsland(THREE, kind);
-    if (kind !== 'companion') island.group.userData.world = kind;
+    island.group.userData.world = kind;
     scene.add(island.group); islands.set(kind, island);
   }
   const ocean = createOcean(THREE); scene.add(ocean.group);
+  const companionBoat = createCompanionBoat(THREE); scene.add(companionBoat.group);
   const huts = new Map(), targets = [...islands].filter(([kind])=>kind!=='companion').map(([,island])=>island.group);
   for (const kind of destinationKinds) {
-    const model = createHut(THREE, kind);
+    const model = createHut(THREE, kind, kind === 'my-room' ? roomLabel : undefined);
     model.group.userData.world = kind;
     scene.add(model.group); huts.set(kind, model); targets.push(model.group);
   }
   const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2();
-  let width = 1, height = 1, portrait = true;
+  let width = 1, height = 1, portrait = true, compact = false;
   let raf = 0, lastFrame = -Infinity, tick = 0, paused = false, lost = false;
   let pointerOwner = null, pointerStart = null, hover = null, elapsed = 0;
-  const plaza = new THREE.Vector3(0, .54, 1.2);
 
   const point = new THREE.Vector3();
   function project(position) {
@@ -84,8 +110,8 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
   // to 65 tries so a pathological layout can't loop forever -- it just stops
   // at whatever distance it reached.
   function fitCamera() {
-    const target=new THREE.Vector3(0,.9,portrait?-1.1:0);
-    const direction=new THREE.Vector3(0,portrait?1.55:1.65,1.38).normalize();
+    const target=new THREE.Vector3(0,.9,compact?.4:portrait?-1.1:0);
+    const direction=new THREE.Vector3(0,compact?2.05:portrait?1.55:1.65,compact?1.12:1.38).normalize();
     const fitPoints=[];
     // Fit the complete archipelago, not the ocean or passing decorations.
     islands.forEach(model=>{
@@ -98,7 +124,7 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
     camera.aspect=width/height;camera.updateProjectionMatrix();
     for(let i=0;i<65;i++) {
       camera.position.copy(target).addScaledVector(direction,distance);camera.lookAt(target);camera.updateMatrixWorld(true);
-      const fits=fitPoints.every(p=>{const n=p.clone().project(camera);return Math.abs(n.x)<.94 && n.y<.8 && n.y>-.95;});
+      const fits=fitPoints.every(p=>{const n=p.clone().project(camera);return Math.abs(n.x)<.92 && n.y<.8 && n.y>-.95;});
       if(fits)break; distance*=1.045;
     }
   }
@@ -119,26 +145,32 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
       const control=host.querySelector('[data-world="'+kind+'"]');
       Object.assign(control.style,{left:left+'px',top:top+'px',width:(right-left)+'px',height:(bottom-top)+'px'});
     }
-    const anchor=project(plaza.clone().setY(.77));
-    const scalePoint=project(plaza.clone().add(new THREE.Vector3(1.8,0,0)));
+    const anchor=project(companionBoat.anchor());
+    const scalePoint=project(companionBoat.group.localToWorld(new THREE.Vector3(1.55,1.04,0)));
     const size=Math.abs(scalePoint.x-anchor.x)*1.75;
-    placeCompanion(anchor.x,anchor.y,height<330?Math.max(52,Math.min(64,size)):Math.max(84,Math.min(180,size)));
+    const placedSize=compact?Math.max(44,Math.min(portrait?60:52,size)):height<500?Math.max(44,Math.min(54,size)):!portrait?Math.max(58,Math.min(72,size)):Math.max(68,Math.min(96,size));
+    placeCompanion(anchor.x,anchor.y,placedSize);
   }
   function resize() {
     const r=host.getBoundingClientRect();if(!r.width||!r.height)return;
     width=r.width;height=r.height;
-    portrait=width/height<1.1;
-    plaza.set(0,.54,portrait?1.2:4.5);
-    const depth=portrait?Math.max(1,Math.min(1.7,.98/(width/height))):1;
-    plaza.z*=depth;
-    const layout=portrait
-      ? {ribbons:[-7.2,-10.7,-.08],learn:[0,-10.7,.06],'my-room':[7.2,-10.7,.08],games:[-4.3,-3.7,-.15],art:[4.3,-3.7,.15],listen:[-4.4,6.2,-.12],watch:[4.4,6.2,.12]}
-      : {games:[-14,-4.5,-.12],learn:[-7,-4.5,-.06],art:[0,-4.5,0],ribbons:[7,-4.5,.06],'my-room':[14,-4.5,.12],listen:[-7,4.5,-.1],watch:[7,4.5,.1]};
+    portrait=width/height<1.1;compact=width<=600;
+    const depth=compact?Math.max(1,Math.min(2.1,(height/width)*.95)):portrait?Math.max(1,Math.min(1.7,.98/(width/height))):1;
+    const layout=compact
+      ? {games:[-7.8,-5,-.1],learn:[-2.6,-5,-.03],art:[2.6,-5,.03],watch:[7.8,-5,.1],listen:[-5.2,5,-.06],'my-room':[0,5,0],ribbons:[5.2,5,.06]}
+      : portrait
+      ? {games:[-10.5,-4,-.1],learn:[-3.5,-4,-.03],art:[3.5,-4,.03],watch:[10.5,-4,.1],listen:[-7,4,-.06],'my-room':[0,4,0],ribbons:[7,4,.06]}
+      : {games:[-11.4,-3.6,-.1],learn:[-3.8,-3.6,-.03],art:[3.8,-3.6,.03],watch:[11.4,-3.6,.1],listen:[-7.6,4.2,-.06],'my-room':[0,4.2,0],ribbons:[7.6,4.2,.06]};
+    const hutScale=compact?1.36:1.12,islandScale=compact?.68:portrait?.9:.88;
     for(const [kind,model] of huts) {
-      const [x,baseZ,angle]=layout[kind],z=baseZ*depth;model.group.position.set(x,.58,z);model.group.rotation.y=angle;
-      const island=islands.get(kind).group;island.position.set(x,0,z);island.rotation.y=angle;
+      const [x,baseZ,angle]=layout[kind],z=baseZ*depth;model.group.position.set(x,.58,z);model.group.rotation.y=angle;model.group.scale.setScalar(hutScale);
+      const island=islands.get(kind).group;island.position.set(x,0,z);island.rotation.y=angle;island.scale.setScalar(islandScale);
     }
-    islands.get('companion').group.position.set(plaza.x,0,plaza.z);
+    if(compact&&portrait)companionBoat.place(-8.8,11*depth);
+    else if(compact)companionBoat.place(-13,6.5);
+    else if(portrait)companionBoat.place(-10.5,15);
+    else if(width>=1000)companionBoat.place(-12,9.6);
+    else companionBoat.place(-16,7.6);
     renderer.setSize(width,height,false);fitCamera();positionControls();
     renderer.shadowMap.needsUpdate=true;renderOnce();
   }
@@ -157,6 +189,15 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
     }
     return null;
   }
+  function findOceanPoint() {
+    const rect = canvas.getBoundingClientRect();
+    const candidates = [];
+    for (const y of [.5,.62,.38,.74,.26,.86]) for (const x of [.5,.12,.88,.3,.7]) candidates.push({x:width*x,y:height*y});
+    return candidates.find(candidate =>
+      document.elementFromPoint(rect.left+candidate.x,rect.top+candidate.y)===canvas &&
+      pick(rect.left+candidate.x,rect.top+candidate.y)===null
+    ) || {x:width/2,y:height/2};
+  }
   function renderOnce() {
     if(lost)return;
     renderer.render(scene,camera);tick++;
@@ -173,7 +214,7 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
     const dt=Math.min((now-lastFrame)/1000,.08);lastFrame=now;elapsed+=Number.isFinite(dt)?dt:0;
     huts.forEach(model=>model.update(elapsed,false));
     islands.forEach(model=>model.update(elapsed,false));
-    ocean.update(elapsed,false);renderOnce();
+    ocean.update(elapsed,false);companionBoat.update(elapsed,false);renderOnce();
   }
   function resume() {paused=false;lastFrame=-Infinity;if(!raf&&!reduced.matches)raf=requestAnimationFrame(frame);else renderOnce();}
   function pause() {paused=true;if(raf)cancelAnimationFrame(raf);raf=0;pointerOwner=null;}
@@ -200,14 +241,14 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
   canvas.addEventListener('webglcontextrestored',()=>{lost=false;host.dataset.state='ready';resize();resume();});
   const observer=new ResizeObserver(resize);observer.observe(host);
   reduced.addEventListener('change',()=>{
-    if(reduced.matches){pause();huts.forEach(model=>model.update(0,true));islands.forEach(model=>model.update(0,true));ocean.update(0,true);renderOnce();}
+    if(reduced.matches){pause();huts.forEach(model=>model.update(0,true));islands.forEach(model=>model.update(0,true));ocean.update(0,true);companionBoat.update(0,true);positionControls();renderOnce();}
     else resume();
   });
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();else resume();});
   resize();host.dataset.state='ready';host.dataset.renderer='webgl';resume();
   return {pause,resume,pick,
-    snapshot:()=>({renderer:'webgl',revision:THREE.REVISION,frames:tick,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,
-      reducedMotion:reduced.matches,portrait,ocean:ocean.snapshot(),oceanPoint:project(new THREE.Vector3(0,-.7,islands.get('watch').group.position.z+3.6)),islands:[...islands].map(([kind,model])=>({kind,center:model.group.position.toArray(),shore:project(model.group.localToWorld(new THREE.Vector3(0,.6,2.65)))})),houses:[...huts].map(([kind,model])=>({kind,meshes:model.group.getObjectsByProperty('isMesh',true).length,
-        point:project(model.group.localToWorld(new THREE.Vector3(0,1.8,1.7)))})),plaza:project(plaza)}),
+    snapshot:()=>({renderer:'webgl',revision:THREE.REVISION,pixelRatio:renderer.getPixelRatio(),frames:tick,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,
+      reducedMotion:reduced.matches,portrait,compact,ocean:ocean.snapshot(),oceanPoint:findOceanPoint(),islands:[...islands].map(([kind,model])=>({kind,center:model.group.position.toArray(),scale:model.group.scale.toArray(),shore:project(model.group.localToWorld(new THREE.Vector3(0,.6,2.65)))})),companionBoat:project(companionBoat.anchor()),houses:[...huts].map(([kind,model])=>({kind,meshes:model.group.getObjectsByProperty('isMesh',true).length,
+        center:model.group.position.toArray(),scale:model.group.scale.toArray(),label:model.group.userData.label,labelTexture:model.group.userData.labelTexture,roofRibbon:!!model.group.getObjectByName('ribbons-roof-ribbon'),point:project(model.group.localToWorld(new THREE.Vector3(0,1.8,1.7)))}))}),
   };
 }

@@ -29,11 +29,12 @@ body.world-home{background:#a3def2;color:#21565b;font-family:var(--font-ui,syste
 .world-home button:focus-visible:not(.house){outline:4px solid #fff4bb;outline-offset:4px}.world-home button:active:not(.house){filter:brightness(.97)}
 .world-status{position:absolute;bottom:65px;left:50%;transform:translateX(-50%);z-index:40;width:max-content;max-width:min(340px,90vw);background:#fffdf3;border:2px solid #fff;box-shadow:0 6px 20px #214c4520;padding:12px 17px;border-radius:17px;font-size:13px;font-weight:700;text-align:center;color:#245965}.world-status:empty{display:none}
 /* Explicit failure fallback; never presented as a 3D world. */
-.world-scene[data-state="fallback"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:center;gap:16px;padding:100px 22px 80px}
+.world-scene[data-state="fallback"]{display:grid;grid-template-columns:repeat(4,minmax(44px,160px));align-content:center;justify-content:center;gap:12px;padding:90px 12px 54px}
 .world-scene[data-state="fallback"] canvas{display:none}
-.world-scene[data-state="fallback"] .house{position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:80px!important;pointer-events:auto;color:#215b69;background:#fff5dc;border:3px solid #fff;border-radius:20px;box-shadow:0 5px 0 #5195a1;font-size:23px;font-weight:900}
+.world-scene[data-state="fallback"] .house{position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:80px!important;pointer-events:auto;color:#215b69;background:#fff5dc;border:3px solid #fff;border-radius:20px;box-shadow:0 5px 0 #5195a1;font-size:clamp(13px,2.4vw,21px);font-weight:900}
 .world-scene[data-state="fallback"] .house span{position:static;width:auto;height:auto;overflow:visible;clip-path:none}.world-scene[data-state="fallback"] .world-companion{display:none}
 @media(max-width:600px){.world-header{padding:0 11px;gap:6px}.world-brand{font-size:12px;gap:6px;letter-spacing:-.5px}.brand-mark{width:29px;height:30px}.world-profile{padding:4px 8px;gap:5px;font-size:12px;min-height:42px}.world-profile #pillName{max-width:70px}.world-header-actions{gap:6px}.world-exit{width:42px;min-height:42px}.world-greeting{top:18px}.world-greeting h1{font-size:27px}}
+@media(max-width:600px){.world-scene[data-state="fallback"]{gap:7px;padding-left:8px;padding-right:8px}.world-scene[data-state="fallback"] .house{height:72px}}
 @media(max-width:359px){.world-brand>span:last-child{display:none}.world-greeting h1{font-size:24px}}
 @media(max-height:500px) and (orientation:landscape){.world-shell{padding-top:6px;padding-bottom:4px;grid-template-rows:40px minmax(0,1fr)}.world-greeting{top:4px}.world-greeting h1{font-size:20px}.world-profile,.world-exit{min-height:36px}.world-exit{width:36px}.brand-mark{height:29px;width:29px}}
 @media(prefers-reduced-motion:reduce){.world-shell *{animation:none!important;transition:none!important}}

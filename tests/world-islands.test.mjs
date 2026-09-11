@@ -95,6 +95,7 @@ test('ocean archipelago keeps seven separated destination islands selectable and
               return {
                 kind: island.kind,
                 center: island.center,
+                scale: island.scale,
                 shore: island.shore,
                 shorePick: vbWorldScene.pick(rect.x + island.shore.x, rect.y + island.shore.y),
                 shoreTarget: document.elementFromPoint(rect.x + island.shore.x, rect.y + island.shore.y)?.id,
@@ -124,7 +125,8 @@ test('ocean archipelago keeps seven separated destination islands selectable and
           for (let j = i + 1; j < result.islands.length; j++) {
             const a = result.islands[i], b = result.islands[j];
             const distance = Math.hypot(a.center[0] - b.center[0], a.center[2] - b.center[2]);
-            assert.ok(distance >= 7, `${a.kind} and ${b.kind} have no visible water gap (${distance.toFixed(2)} world units)`);
+            const required = 3.5 * (a.scale[0] + b.scale[0]);
+            assert.ok(distance >= required, `${a.kind} and ${b.kind} have no visible water gap (${distance.toFixed(2)} < ${required.toFixed(2)} world units)`);
           }
         }
 

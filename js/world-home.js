@@ -9,6 +9,19 @@
   const companion = document.getElementById('worldCompanion');
   const species = profile.mascot?.id || 'dog';
   const animal = window.mascot?.available.includes(species) ? species : 'dog';
+  function roomLabelFor(name) {
+    const clean = String(name || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!clean) return 'My Room';
+    const firstName = clean.split(' ')[0];
+    const characters = Array.from(firstName);
+    const shortName = characters.length <= 12 ? firstName : characters.slice(0, 11).join('').replace(/[^\p{L}\p{N}]$/u, '') + '…';
+    return shortName + '’s Room';
+  }
+  window.vbRoomLabelFor = roomLabelFor;
+  const roomLabel = roomLabelFor(profile.name);
+  const roomButton = host.querySelector('[data-world="my-room"]');
+  roomButton.querySelector('span').textContent = roomLabel;
+  roomButton.setAttribute('aria-label', roomLabel + ' — choose your look and animal buddy');
   let scene, statusTimer, reactionTimer, loadingTimer, leaving = false;
   document.getElementById('pillName').textContent = profile.name || 'Your world';
   document.getElementById('pillAvatar').textContent = MASCOT_EMOJI[animal] || '🐾';
@@ -71,7 +84,7 @@
       clearTimeout(loadingTimer);
       if(leaving||scene)return;
       clearTimeout(statusTimer);status.textContent='';
-      scene=createWorldScene(host,{activate,announce,placeCompanion(x,y,size){
+      scene=createWorldScene(host,{activate,announce,roomLabel,placeCompanion(x,y,size){
         Object.assign(companion.style,{left:x+'px',top:y+'px',width:size+'px',height:(size*1.05)+'px'});
       }});
       window.vbWorldScene=scene;

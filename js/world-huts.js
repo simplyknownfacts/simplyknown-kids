@@ -166,7 +166,7 @@ function materialFactory(THREE) {
   };
 }
 
-function canvasTexture(THREE, draw, width = 1024, height = 256) {
+function canvasTexture(THREE, draw, width = 1536, height = 384) {
   let canvas;
   if (typeof OffscreenCanvas !== 'undefined') canvas = new OffscreenCanvas(width, height);
   else if (typeof document !== 'undefined') canvas = document.createElement('canvas');
@@ -179,6 +179,9 @@ function canvasTexture(THREE, draw, width = 1024, height = 256) {
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
+  // Angled roof signs were visibly soft on high-DPR phones. A larger source
+  // plus anisotropic sampling keeps letter edges crisp without raster assets.
+  texture.anisotropy = 8;
   texture.needsUpdate = true;
   return texture;
 }
@@ -188,16 +191,17 @@ function labelTexture(THREE, label, palette) {
     ctx.fillStyle = '#fff8dc';
     ctx.fillRect(0, 0, width, height);
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 24;
-    ctx.strokeRect(12, 12, width - 24, height - 24);
+    ctx.lineWidth = 32;
+    ctx.strokeRect(16, 16, width - 32, height - 32);
     ctx.fillStyle = `#${palette.dark.toString(16).padStart(6, '0')}`;
-    ctx.font = '900 208px "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif';
+    const fontSize = label.length <= 8 ? 304 : label.length <= 12 ? 260 : 220;
+    ctx.font = `900 ${fontSize}px "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.shadowColor = 'rgba(24,77,74,0.16)';
     ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 10;
-    ctx.fillText(label, width / 2, height / 2 + 5, width - 80);
+    ctx.shadowOffsetY = 12;
+    ctx.fillText(label, width / 2, height / 2 + 6, width - 96);
   });
 }
 
@@ -300,8 +304,9 @@ function addFacade(THREE, group, geo, mats) {
 }
 
 function addSignFace(THREE, sign, palette, label, width, height, z = 0.21) {
+  const map = labelTexture(THREE, label, palette);
   const faceMaterial = new THREE.MeshStandardMaterial({
-    map: labelTexture(THREE, label, palette),
+    map,
     color: 0xffffff,
     roughness: 0.68,
     metalness: 0,
@@ -309,17 +314,18 @@ function addSignFace(THREE, sign, palette, label, width, height, z = 0.21) {
     emissiveIntensity: 0.1,
   });
   addMesh(THREE, sign, new THREE.PlaneGeometry(width, height), faceMaterial, [0, 0, z]);
+  return map;
 }
 
-function addRoofSign(THREE, group, geo, mats, palette, kind, animated) {
+function addRoofSign(THREE, group, geo, mats, palette, kind, label, animated) {
   const mounts = {
     games:  { y: 4.03, z: 1.2,  tilt: -0.17, width: 3.48, height: 1.06, post: 1.02 },
-    learn:  { y: 3.54, z: 1.5,  tilt: -0.11, width: 2.5, height: 0.72, post: 0.62 },
-    art:    { y: 3.48, z: 1.58, tilt: -0.08, width: 1.72, height: 0.92, post: 1.24 },
+    learn:  { y: 3.66, z: 1.5,  tilt: -0.11, width: 3.2, height: 1, post: 0.7 },
+    art:    { y: 3.62, z: 1.58, tilt: -0.08, width: 3, height: 1.05, post: 1.18 },
     watch:  { y: 3.58, z: 1.54, tilt: -0.12, width: 3.5, height: 0.98, post: 0.68 },
-    listen: { y: 2.93, z: 1.58, tilt: -0.09, width: 2.3, height: 0.7, post: 0.46 },
-    ribbons:{ y: 4.02, z: 1.5,  tilt: -0.1,  width: 3.28, height: 0.8, post: 0.68 },
-    'my-room':{ y: 3.82, z: 1.52, tilt: -0.1, width: 2.92, height: 0.8, post: 0.62 },
+    listen: { y: 3.02, z: 1.58, tilt: -0.09, width: 3.2, height: 1, post: 0.58 },
+    ribbons:{ y: 4.12, z: 1.5,  tilt: -0.1,  width: 3.5, height: 1, post: 0.72 },
+    'my-room':{ y: 3.94, z: 1.52, tilt: -0.1, width: 3.5, height: 1, post: 0.7 },
   };
   const config = mounts[kind];
   const sign = new THREE.Group();
@@ -363,8 +369,9 @@ function addRoofSign(THREE, group, geo, mats, palette, kind, animated) {
     addBox(THREE, sign, geo, mats.step, [0.13, 1.36, 0.15], [0, -0.76, -0.05], [0, 0, -0.13]);
   }
 
-  addSignFace(THREE, sign, palette, LABELS[kind], config.width - 0.24, config.height - 0.2);
+  const texture = addSignFace(THREE, sign, palette, label, config.width - 0.24, config.height - 0.2);
   group.add(sign);
+  return texture;
 }
 
 function addGableRoof(THREE, group, material, width = 3.66, height = 1.22, depth = 3.02, y = 2.72) {
@@ -540,7 +547,15 @@ function buildRibbons(THREE, group, geo, mats, animated) {
     addFrontDisc(THREE, group, geo, mats.trim, 0.48, 0.14, [x, 1.7, 1.58]);
     addMesh(THREE, group, starGeometry(THREE, 0.28, 0.13, 0.1), mats.dark, [x, 1.7, 1.68]);
   });
-  const crown = addMesh(THREE, group, starGeometry(THREE, 0.5, 0.23, 0.15), mats.trim, [0, 3.56, 1.48]);
+  // A single giant roof ribbon remains recognizable before a child can read.
+  const roofRibbon = new THREE.Group();
+  roofRibbon.name = 'ribbons-roof-ribbon';
+  roofRibbon.position.set(0, 5.36, 0.62);
+  addRounded(THREE, roofRibbon, mats.accent, [0.62, 1.56, 0.14], [-0.28, -0.82, 0], 0.07, [0, 0, -0.18]);
+  addRounded(THREE, roofRibbon, mats.roof, [0.62, 1.56, 0.14], [0.28, -0.82, 0], 0.07, [0, 0, 0.18]);
+  addFrontDisc(THREE, roofRibbon, geo, mats.trim, 0.94, 0.2, [0, 0, 0.02]);
+  const crown = addMesh(THREE, roofRibbon, starGeometry(THREE, 0.54, 0.25, 0.16), mats.dark, [0, 0, 0.2]);
+  group.add(roofRibbon);
   animated.star = crown;
 }
 
@@ -565,11 +580,12 @@ function buildMyRoom(THREE, group, geo, mats, animated) {
  * @param {'games'|'learn'|'art'|'watch'|'listen'|'ribbons'|'my-room'} kind Destination id.
  * @returns {{group: object, update: (timeSeconds:number, reducedMotion?:boolean)=>void}}
  */
-export function createHut(THREE, kind) {
+export function createHut(THREE, kind, requestedLabel = LABELS[kind]) {
   if (!THREE || typeof THREE.Group !== 'function') throw new TypeError('createHut requires the Three.js module namespace');
   if (!Object.hasOwn(PALETTES, kind)) throw new RangeError(`Unknown hut kind: ${kind}`);
 
   const palette = PALETTES[kind];
+  const label = String(requestedLabel || LABELS[kind]).trim() || LABELS[kind];
   const geo = shared(THREE);
   const material = materialFactory(THREE);
   const mats = {
@@ -591,6 +607,7 @@ export function createHut(THREE, kind) {
   const group = new THREE.Group();
   group.name = `wonderwood-hut-${kind}`;
   group.userData.kind = kind;
+  group.userData.label = label;
   group.userData.selectable = true;
 
   addRounded(THREE, group, material(0xf2db9e, { roughness: 0.9 }), [3.56, 0.24, 2.82], [0, 0.12, 0], 0.18);
@@ -607,7 +624,12 @@ export function createHut(THREE, kind) {
   if (kind === 'listen') buildListen(THREE, group, geo, mats, animated);
   if (kind === 'ribbons') buildRibbons(THREE, group, geo, mats, animated);
   if (kind === 'my-room') buildMyRoom(THREE, group, geo, mats, animated);
-  addRoofSign(THREE, group, geo, mats, palette, kind, animated);
+  const signTexture = addRoofSign(THREE, group, geo, mats, palette, kind, label, animated);
+  group.userData.labelTexture = {
+    width: signTexture.image.width,
+    height: signTexture.image.height,
+    anisotropy: signTexture.anisotropy,
+  };
 
   let meshCount = 0;
   group.traverse(object => {
