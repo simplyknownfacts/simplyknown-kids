@@ -10,7 +10,7 @@ import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const OUT = path.join(import.meta.dirname, 'out', 'magic-touch-visual-play');
-const AUDIT_START = 'f3fe28f08992c39869108bb8f6edc1721decba2c';
+const REPAIR_START = 'a7c9ac06feba7a7a3d193583e4fd4669bfa8892f';
 const VIEWPORTS = {
   desktop: { width: 1280, height: 900, isMobile: false, hasTouch: false },
   phone: { width: 390, height: 844, isMobile: true, hasTouch: true },
@@ -233,7 +233,7 @@ async function playDotShape(page, rowId, index, screenshots) {
   await page.waitForFunction(() => /^✨ A .+! ✨$/.test(document.querySelector('#hint')?.textContent || ''));
   const after = await progressSnapshot(page);
   const records = after.recordCalls - before.recordCalls;
-  if (records !== 1 && records !== 2) throw new Error(`connected shape recorded ${records} progress events`);
+  if (records !== 1) throw new Error(`connected shape recorded ${records} progress events instead of one`);
   const shape = (await page.locator('#hint').textContent()).replace(/^✨ A /, '').replace(/! ✨$/, '');
   if (index === 0) await saveShot(page, rowId, 'mode', screenshots);
   await page.waitForFunction(() => document.querySelector('#hint')?.textContent?.includes('Tap the dots'), null, { timeout: 4000 });
@@ -397,9 +397,9 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     await context.close();
   }
 
-  const doubleDotProgress = dotRounds.length === 3 && dotRounds.every(round => round.records === 2);
+  const singleDotProgress = tier < 6 || (dotRounds.length === 3 && dotRounds.every(round => round.records === 1));
   const stable = !fatal && recoveredAfterReload && freeRecords >= 5
-    && (tier < 6 || (dotRounds.length === 3 && dotRounds.every(round => round.wrongRecovered)));
+    && singleDotProgress && (tier < 6 || dotRounds.every(round => round.wrongRecovered));
   return {
     id: rowId,
     activityId: 'magic-touch',
@@ -407,8 +407,8 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     tier,
     viewport: viewportName,
     checks: {
-      progression: fatal ? fail(fatal) : doubleDotProgress
-        ? fail('Each completed connect-the-dots shape records progress twice: once in completion and again in its gold burst.')
+      progression: fatal || !singleDotProgress
+        ? fail(fatal || 'Connect-the-dots progress was not exactly one record per completed shape.')
         : pass(`${freeRecords} free-play bursts and ${dotRounds.length || 0} goal rounds persisted at one record per completed action.`),
       score: na('Magic Touch has no visible score, win/loss score state or score reset mechanic.'),
       rewards: !fatal && reward
@@ -425,7 +425,7 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     deferredReward,
     freeRecords,
     dotRounds,
-    doubleDotProgress,
+    singleDotProgress,
     recoveredAfterReload,
     reward,
     finalProgress,
@@ -470,7 +470,7 @@ try {
       const job = jobs.shift();
       const row = await runCell(browser, base, job.viewportName, job.viewport, job.tier, screenshots);
       rows.push(row);
-      console.log(`${row.fatal ? 'ERROR' : row.doubleDotProgress ? 'FINDING' : 'PASS'} ${row.id} free=${row.freeRecords} dots=${row.dotRounds.map(round => round.records).join(',')}${row.fatal ? ` ${row.fatal}` : ''}`);
+      console.log(`${row.fatal ? 'ERROR' : 'PASS'} ${row.id} free=${row.freeRecords} dots=${row.dotRounds.map(round => round.records).join(',')}${row.fatal ? ` ${row.fatal}` : ''}`);
     }
   }
   await Promise.all(Array.from({ length: 2 }, worker));
@@ -488,7 +488,7 @@ rows.sort((a, b) => a.id.localeCompare(b.id));
 const counts = { rows: rows.length, pass: 0, fail: 0, na: 0, blk: 0 };
 for (const row of rows) for (const result of Object.values(row.checks)) counts[result.status.toLowerCase()]++;
 const report = {
-  auditStart: AUDIT_START,
+  repairStart: REPAIR_START,
   magicTouchSha256: sha256(path.join(ROOT, 'games', 'magic-touch.html')),
   base,
   generatedAt: new Date().toISOString(),
@@ -503,4 +503,4 @@ console.log(JSON.stringify({ ...counts, screenshots: screenshots.length, duratio
 const expectedRows = SELECTED_TIERS.length * SELECTED_VIEWPORTS.length;
 const expectedDotRows = SELECTED_TIERS.filter(tier => tier >= 6).length * SELECTED_VIEWPORTS.length;
 if (rows.length !== expectedRows || rows.some(row => row.fatal || row.pageErrors.length || row.failedLocalRequests.length)
-  || rows.filter(row => row.doubleDotProgress).length !== expectedDotRows) process.exitCode = 1;
+  || rows.filter(row => row.tier >= 6 && row.singleDotProgress).length !== expectedDotRows) process.exitCode = 1;
