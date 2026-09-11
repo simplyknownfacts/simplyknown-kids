@@ -31,8 +31,8 @@ after(async () => {
   if (server) server.kill();
 });
 
-async function activityPage(id, tier, features = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+async function activityPage(id, tier, features = {}, viewport = { width: 390, height: 844 }) {
+  const ctx = await browser.newContext({ viewport, serviceWorkers: 'block' });
   await ctx.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
   await ctx.addInitScript(({ id, tier, features }) => {
     localStorage.setItem('vb_profiles', JSON.stringify([{
@@ -90,6 +90,38 @@ test('changed activity behavior survives real pointer input', async (t) => {
     assert.equal(await page.locator('#surprise').getAttribute('class'), '');
     assert.notEqual((await page.locator('#name').textContent()).trim(), '');
     await ctx.close();
+  });
+
+  await t.test('Surprise Pop shows and persists the promised collection for the youngest tier', async () => {
+    const { ctx, page } = await activityPage('surprise-pop', 1);
+    await page.goto(base + '/games/surprise-pop.html', { waitUntil: 'domcontentloaded' });
+    assert.equal(await page.locator('#collection').isVisible(), true);
+    assert.match(await page.locator('.col-title').textContent(), /my collection/i);
+    assert.match(await page.locator('.col-count').textContent(), /0\s*\/\s*16/);
+    assert.equal(await page.locator('.col-item').count(), 16);
+    await page.locator('#egg').dispatchEvent('pointerdown', { pointerId: 4 });
+    assert.equal(await page.locator('.col-item.got').count(), 1);
+    assert.match(await page.locator('.col-count').textContent(), /1\s*\/\s*16/);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    assert.equal(await page.locator('.col-item.got').count(), 1);
+    await ctx.close();
+
+    for (const viewport of [{ width: 320, height: 568 }, { width: 1280, height: 900 }]) {
+      const sample = await activityPage('surprise-pop', 1, {}, viewport);
+      await sample.page.goto(base + '/games/surprise-pop.html', { waitUntil: 'domcontentloaded' });
+      const layout = await sample.page.evaluate(() => {
+        const collection = document.querySelector('#collection').getBoundingClientRect();
+        const blockers = [...document.querySelectorAll('.back-btn,.home-btn,#gameSettingsGear,.settings-gear,#egg,#hint')]
+          .filter(element => { const style = getComputedStyle(element), box = element.getBoundingClientRect(); return style.display !== 'none' && box.width && box.height; })
+          .map(element => { const box = element.getBoundingClientRect(); return { name:element.id || element.className,left:box.left,top:box.top,right:box.right,bottom:box.bottom }; });
+        const overlaps = blockers.filter(box => Math.min(collection.right,box.right)>Math.max(collection.left,box.left)
+          && Math.min(collection.bottom,box.bottom)>Math.max(collection.top,box.top)).map(box => box.name);
+        return { clipped:collection.left < -1 || collection.top < -1 || collection.right > innerWidth + 1 || collection.bottom > innerHeight + 1, overlaps };
+      });
+      assert.equal(layout.clipped, false, `${viewport.width}x${viewport.height} collection is clipped`);
+      assert.deepEqual(layout.overlaps, [], `${viewport.width}x${viewport.height} collection covers ${layout.overlaps}`);
+      await sample.ctx.close();
+    }
   });
 
   await t.test('Math records one result when the correct choice is mashed', async () => {

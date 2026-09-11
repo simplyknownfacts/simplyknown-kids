@@ -35,12 +35,18 @@
     .choice:active { transform: scale(0.9); }
     .choice:disabled { opacity: 0.45; }
     .choice.wrong { border-color:#FF6B6B; background:rgba(255,107,107,0.22); animation:jiggle .3s ease; }
-    /* Collection strip (tier 3+) — pointer-events:none so taps fall through to Back. */
-    #collection { position: fixed; top: 58px; left: 0; right: 0; display: flex; flex-wrap: wrap;
-      gap: 5px 7px; justify-content: center; align-items: center; padding: 0 12px; pointer-events: none; }
-    .col-count { font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 15px; color: #fff;
-      background: rgba(255,255,255,0.16); padding: 3px 11px; border-radius: 999px; margin-right: 4px; }
-    .col-item { font-size: 22px; line-height: 1; opacity: 0.3; filter: grayscale(1); transition: opacity .3s; }
+    /* Every child is promised a collection on the Games card, so keep this
+       visible at every tier. Pointer events fall through to the game below. */
+    #collection { position: fixed; z-index: 4; top: calc(94px + env(safe-area-inset-top)); left: 50%;
+      width: min(calc(100% - 24px), 720px); transform: translateX(-50%); box-sizing: border-box;
+      display: flex; flex-direction: column; gap: 6px; padding: 8px 12px 10px; pointer-events: none;
+      color: #fff; background: rgba(255,255,255,0.13); border: 2px solid rgba(255,255,255,0.22);
+      border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); backdrop-filter: blur(5px); }
+    .collection-head { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .col-title,.col-count { font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 15px; }
+    .col-count { background: rgba(255,255,255,0.16); padding: 3px 11px; border-radius: 999px; }
+    .col-items { display: flex; flex-wrap: wrap; gap: 5px 7px; justify-content: center; align-items: center; }
+    .col-item { font-size: 22px; line-height: 1; opacity: 0.34; filter: grayscale(1); transition: opacity .3s; }
     .col-item.got { opacity: 1; filter: none; }
     #hint { position: fixed; left: 0; right: 0; bottom: 30px; text-align: center; pointer-events: none;
       font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 17px; color: rgba(255,255,255,0.85);
@@ -48,11 +54,14 @@
     .confetti { position: fixed; width: 12px; height: 12px; border-radius: 2px; pointer-events: none;
       animation: fly 1s ease-out forwards; }
     @keyframes fly { 0%{opacity:1;transform:translate(0,0) rotate(0)} 100%{opacity:0;transform:translate(var(--tx),var(--ty)) rotate(var(--r))} }
+    @media (max-width: 420px) { #collection{top:calc(88px + env(safe-area-inset-top));padding:6px 8px 8px;gap:4px}.collection-head{gap:7px}.col-title,.col-count{font-size:13px}.col-count{padding:2px 8px}.col-items{gap:3px 5px}.col-item{font-size:20px} }
+    @media (max-width: 600px) { .vb-celebrate{top:auto;bottom:calc(72px + env(safe-area-inset-bottom));} }
+    @media (max-height: 650px) { #collection{top:calc(80px + env(safe-area-inset-top));padding:4px 8px 6px}.col-items{gap:2px 4px}.col-item{font-size:18px} }
     @media (prefers-reduced-motion: reduce) { #egg,#surprise{animation:none} .confetti{display:none} }
   </style>
 </head>
 <body>
-  <div id="collection"></div>
+  <div id="collection" role="status" aria-live="polite" aria-label="My surprise collection"></div>
   <div id="stage">
     <button id="egg" aria-label="Tap the egg">🥚</button>
     <div id="reveal">
@@ -88,7 +97,6 @@
 
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const showName       = tier >= 3;  // toddlers+ see what popped out (first words)
-    const showCollection = tier >= 3;  // toddlers+ fill a collection of all 16
     const showGuess      = tier >= 5;  // big kids guess from a silhouette clue before it pops
 
     // Broad mix (animals + objects + magic) on purpose — keeps this game's content
@@ -115,14 +123,16 @@
     // ── Collection (persisted per child) ──────────────────────────────────────
     const FKEY = 'vb_sppop_' + profile.id;
     let found = {};
-    try { found = JSON.parse(localStorage.getItem(FKEY) || '{}'); } catch (e) { found = {}; }
+    try {
+      const saved = JSON.parse(localStorage.getItem(FKEY) || '{}');
+      found = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    } catch (e) { found = {}; }
     const saveFound = () => { try { localStorage.setItem(FKEY, JSON.stringify(found)); } catch (e) {} };
     const foundCount = () => SURPRISES.filter(s => found[s.n]).length;
 
     function renderCollection() {
-      if (!showCollection) return;
-      colEl.innerHTML = `<span class="col-count">✨ ${foundCount()} / ${SURPRISES.length}</span>` +
-        SURPRISES.map(s => `<span class="col-item ${found[s.n] ? 'got' : ''}">${found[s.n] ? s.e : '❔'}</span>`).join('');
+      colEl.innerHTML = `<div class="collection-head"><span class="col-title">✨ My collection</span><span class="col-count">${foundCount()} / ${SURPRISES.length}</span></div>` +
+        `<div class="col-items">${SURPRISES.map(s => `<span class="col-item ${found[s.n] ? 'got' : ''}">${found[s.n] ? s.e : '❔'}</span>`).join('')}</div>`;
     }
 
     function confetti() {
@@ -164,12 +174,12 @@
       // so we keep naming visual-only (no robotic TTS). "Yes!" is recorded.
       if (correct === true) { try { speak('Yes!'); } catch (e) {} }
 
-      const wasNew = showCollection && !found[s.n];
+      const wasNew = !found[s.n];
       if (wasNew) { found[s.n] = 1; saveFound(); }
       renderCollection();
       pops++;
 
-      if (showCollection && foundCount() === SURPRISES.length) {
+      if (foundCount() === SURPRISES.length) {
         setTimeout(celebrateComplete, 1700);
       } else {
         setTimeout(resetEgg, showGuess ? 2100 : 1700);

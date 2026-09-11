@@ -15,10 +15,11 @@ const ROUNDS = 6;
 const VIEWPORTS = {
   desktop: { width: 1280, height: 900, isMobile: false, hasTouch: false },
   phone: { width: 390, height: 844, isMobile: true, hasTouch: true },
+  'short-phone': { width: 320, height: 568, isMobile: true, hasTouch: true },
 };
 const TIERS = [1,2,3,4,5,6,7,8,9,10];
 const SELECTED_TIERS = process.env.TIERS ? process.env.TIERS.split(',').map(Number) : TIERS;
-const SELECTED_VIEWPORTS = process.env.VIEWPORTS ? process.env.VIEWPORTS.split(',') : Object.keys(VIEWPORTS);
+const SELECTED_VIEWPORTS = process.env.VIEWPORTS ? process.env.VIEWPORTS.split(',') : ['desktop', 'phone'];
 const pass = note => ({ status: 'PASS', note });
 const fail = note => ({ status: 'FAIL', note });
 const na = note => ({ status: 'NA', note });
@@ -144,11 +145,16 @@ async function geometry(page) {
       if (Math.min(a.right, b.right) > Math.max(a.left, b.left)
         && Math.min(a.bottom, b.bottom) > Math.max(a.top, b.top)) overlaps.push([a, b]);
     }
+    const collectionBox = box(document.querySelector('#collection'));
+    const collectionOverlaps = visible('.back-btn,.home-btn,#gameSettingsGear,.settings-gear,#egg,#surprise,#name,#sub,#choices,.vb-celebrate')
+      .map(box).filter(item => Math.min(collectionBox.right,item.right)>Math.max(collectionBox.left,item.left)
+        && Math.min(collectionBox.bottom,item.bottom)>Math.max(collectionBox.top,item.top)).map(item => item.name);
     return {
       minTarget: Math.min(...targetBoxes.map(item => Math.min(item.width, item.height))),
       clippedTargets: targetBoxes.filter(item => item.left < -1 || item.top < -1 || item.right > innerWidth + 1 || item.bottom > innerHeight + 1),
       clippedContent: contentBoxes.filter(item => item.left < -1 || item.top < -1 || item.right > innerWidth + 1 || item.bottom > innerHeight + 1),
       choiceOverlaps: overlaps.length,
+      collectionOverlaps,
       horizontalOverflow: Math.max(0, document.documentElement.scrollWidth - innerWidth),
       targets: targetBoxes,
       content: contentBoxes,
@@ -158,7 +164,7 @@ async function geometry(page) {
 
 function geometryOk(sample) {
   return sample.minTarget >= 44 && !sample.clippedTargets.length && !sample.clippedContent.length
-    && !sample.choiceOverlaps && sample.horizontalOverflow <= 1;
+    && !sample.choiceOverlaps && !sample.collectionOverlaps.length && sample.horizontalOverflow <= 1;
 }
 
 async function triggerEgg(page, rapid = false) {
@@ -218,10 +224,15 @@ async function inspectReward(page) {
   await page.locator('.vb-celebrate.in').waitFor({ timeout: 5000 });
   return page.locator('.vb-celebrate').evaluate(element => {
     const rect = element.getBoundingClientRect();
+    const overlaps = [...document.querySelectorAll('#collection,#egg,#surprise,#name,#sub,#choices,#hint,#gameSettingsGear,.settings-gear')]
+      .filter(candidate => { const style=getComputedStyle(candidate),box=candidate.getBoundingClientRect(); return style.display!=='none'&&style.visibility!=='hidden'&&box.width&&box.height; })
+      .filter(candidate => { const box=candidate.getBoundingClientRect(); return Math.min(rect.right,box.right)>Math.max(rect.left,box.left)&&Math.min(rect.bottom,box.bottom)>Math.max(rect.top,box.top); })
+      .map(candidate => candidate.id || candidate.className);
     return {
       title: element.querySelector('.cele-title')?.textContent?.trim() || '',
       hint: element.querySelector('.cele-hint')?.textContent?.trim() || '',
       inViewport: rect.left >= -1 && rect.top >= -1 && rect.right <= innerWidth + 1 && rect.bottom <= innerHeight + 1,
+      overlaps,
     };
   });
 }
@@ -271,7 +282,14 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
   const pageErrors = [], failedLocalRequests = [], screenshots = [], geometrySamples = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   page.on('requestfailed', request => {
-    if (request.url().startsWith(base)) failedLocalRequests.push(`${request.url()} ${request.failure()?.errorText || ''}`);
+    const error = request.failure()?.errorText || '';
+    // Replacing spoken feedback and navigating intentionally cancel the prior
+    // local voice clip. Keep real media/network failures strict.
+    const expectedVoiceCancel = request.resourceType() === 'media' && error === 'net::ERR_ABORTED';
+    if (request.url().startsWith(base)
+      && !expectedVoiceCancel) {
+      failedLocalRequests.push(`${request.url()} ${error}`);
+    }
   });
   let reward = null, rounds = 0, wrongRecovered = tier < 5, collectionBeforeReload = null;
   let collectionAfterReload = null, rapidProtected = false, reloadRecovered = false, fatal = null;
@@ -306,7 +324,7 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
       await saveShot(page, rowId, 'reward', screenshots);
       await dismissReward(page, reward);
     }
-    if (!reward.title || reward.hint !== 'Saved in your gallery' || !reward.inViewport || reward.dismissMs > 500) {
+    if (!reward.title || reward.hint !== 'Saved in your gallery' || !reward.inViewport || reward.overlaps.length || reward.dismissMs > 500) {
       throw new Error(`invalid reward result: ${JSON.stringify(reward)}`);
     }
 
@@ -320,7 +338,7 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     const stable = await progress(page);
     if (stable.counter !== 299 + ROUNDS) throw new Error(`counter ${stable.counter}, expected ${299 + ROUNDS}`);
     collectionBeforeReload = await collectionCount(page, profileId);
-    if (tier >= 3 && (collectionBeforeReload.saved < 2 || !collectionBeforeReload.text.endsWith('/ 16'))) {
+    if (collectionBeforeReload.saved < 2 || !collectionBeforeReload.text.endsWith('/ 16')) {
       throw new Error(`collection did not persist varied finds: ${JSON.stringify(collectionBeforeReload)}`);
     }
 
