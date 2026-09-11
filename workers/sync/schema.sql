@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS signup_log (
   ip_hash    TEXT,
   created_at INTEGER
 );
+CREATE INDEX IF NOT EXISTS idx_signup_ip_created ON signup_log (ip_hash, created_at);
+CREATE INDEX IF NOT EXISTS idx_signup_created ON signup_log (created_at);
 
 -- /signup: invite-word guess throttle (Codex 0903-1-era HIGH, fixed
 -- 2026-09-01). Separate from signup_log on purpose -- only WRONG guesses
@@ -60,6 +62,8 @@ CREATE TABLE IF NOT EXISTS invite_fail_log (
   ip_hash    TEXT,
   created_at INTEGER
 );
+CREATE INDEX IF NOT EXISTS idx_invite_fail_ip_created ON invite_fail_log (ip_hash, created_at);
+CREATE INDEX IF NOT EXISTS idx_invite_fail_created ON invite_fail_log (created_at);
 
 -- /signin: failed-attempt throttle, keyed on (email, caller) as of the
 -- 2026-09-01 fix -- a stranger sending wrong passwords from their own
@@ -74,6 +78,9 @@ CREATE TABLE IF NOT EXISTS signin_fail_log_v2 (
   ip_hash    TEXT,
   created_at INTEGER
 );
+CREATE INDEX IF NOT EXISTS idx_signin_fail_email_ip_created ON signin_fail_log_v2 (email_hash, ip_hash, created_at);
+CREATE INDEX IF NOT EXISTS idx_signin_fail_ip_created ON signin_fail_log_v2 (ip_hash, created_at);
+CREATE INDEX IF NOT EXISTS idx_signin_fail_created ON signin_fail_log_v2 (created_at);
 
 -- /voice-name: the generated ElevenLabs clips themselves (the actual mp3
 -- bytes), keyed by a hash of (name, voice, phrase index) so re-adding an

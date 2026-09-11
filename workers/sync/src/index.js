@@ -16,6 +16,9 @@
 // without the schema.sql review that change would also need.
 
 const PBKDF2_ITER = 100000;
+const INVITE_FAIL_WINDOW_MS = 60 * 60 * 1000;
+const SIGNIN_FAIL_WINDOW_MS = 15 * 60 * 1000;
+const SIGNUP_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 function corsHeaders(origin) {
   return {
@@ -88,9 +91,11 @@ async function getAccountByEmailHash(env, eh) {
 // address itself: this is a children's app and it should hold as little about
 // anyone as it can get away with.
 async function suEnsureTable(env) {
-  await env.DB.prepare(
-    'CREATE TABLE IF NOT EXISTS signup_log (id TEXT PRIMARY KEY, ip_hash TEXT, created_at INTEGER)'
-  ).run();
+  await env.DB.batch([
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS signup_log (id TEXT PRIMARY KEY, ip_hash TEXT, created_at INTEGER)'),
+    env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_signup_ip_created ON signup_log (ip_hash, created_at)'),
+    env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_signup_created ON signup_log (created_at)'),
+  ]);
 }
 
 // Invite-word guess throttle. Separate from signup_log on purpose: signup_log
@@ -98,9 +103,17 @@ async function suEnsureTable(env) {
 // family's daily allowance) — this table exists only to bound how many WRONG
 // guesses one caller gets, and must never affect that other cap.
 async function ivEnsureTable(env) {
-  await env.DB.prepare(
-    'CREATE TABLE IF NOT EXISTS invite_fail_log (id TEXT PRIMARY KEY, ip_hash TEXT, created_at INTEGER)'
-  ).run();
+  await env.DB.batch([
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS invite_fail_log (id TEXT PRIMARY KEY, ip_hash TEXT, created_at INTEGER)'),
+    env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_invite_fail_ip_created ON invite_fail_log (ip_hash, created_at)'),
+    env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_invite_fail_created ON invite_fail_log (created_at)'),
+  ]);
+}
+
+function batchCount(result) {
+  const count = Number(result && result.results && result.results[0] && result.results[0].n);
+  if (!Number.isFinite(count) || count < 0) throw new Error('invalid D1 throttle count');
+  return count;
 }
 
 async function handleSignup(req, env) {
@@ -129,16 +142,20 @@ async function handleSignup(req, env) {
   // word, and it must never share signup_log's success-only counter (that
   // cap protects against a different thing: bulk *account* creation).
   await ivEnsureTable(env);
-  const ivSince = Date.now() - 60 * 60 * 1000;
-  const ivFails = await env.DB.prepare(
-    'SELECT COUNT(*) AS n FROM invite_fail_log WHERE ip_hash = ? AND created_at > ?'
-  ).bind(ipHash, ivSince).first();
-  if (ivFails && ivFails.n >= Number(env.INVITE_FAIL_LIMIT || 15)) {
-    return err('too many attempts — try again later', 429);
-  }
+  const ivSince = Date.now() - INVITE_FAIL_WINDOW_MS;
   if (!secretMatches(String((body.code || '')).trim(), env.SIGNUP_CODE)) {
-    await env.DB.prepare('INSERT INTO invite_fail_log (id, ip_hash, created_at) VALUES (?, ?, ?)')
-      .bind(randomHex(12), ipHash, Date.now()).run();
+    const reservationId = randomHex(12);
+    const now = Date.now();
+    const [, countResult] = await env.DB.batch([
+      env.DB.prepare('INSERT INTO invite_fail_log (id, ip_hash, created_at) VALUES (?, ?, ?)')
+        .bind(reservationId, ipHash, now),
+      env.DB.prepare('SELECT COUNT(*) AS n FROM invite_fail_log WHERE ip_hash = ? AND created_at > ?')
+        .bind(ipHash, ivSince),
+    ]);
+    if (batchCount(countResult) > Number(env.INVITE_FAIL_LIMIT || 15)) {
+      await env.DB.prepare('DELETE FROM invite_fail_log WHERE id = ?').bind(reservationId).run();
+      return err('too many attempts — try again later', 429);
+    }
     return err('that invite word is not right', 403);
   }
 
@@ -146,7 +163,7 @@ async function handleSignup(req, env) {
   // Two ceilings so a script cannot mint accounts in bulk. Both are deliberately
   // generous for a family app and stingy for a robot.
   await suEnsureTable(env);
-  const suSince = Date.now() - 24 * 3600 * 1000;
+  const suSince = Date.now() - SIGNUP_WINDOW_MS;
   const perIp = await env.DB.prepare(
     'SELECT COUNT(*) AS n FROM signup_log WHERE ip_hash = ? AND created_at > ?'
   ).bind(ipHash, suSince).first();
@@ -202,9 +219,12 @@ async function handleSignup(req, env) {
 // deploy is exactly the kind of thing that goes wrong in production with no
 // one watching. `signin_fail_log` is simply retired, unread from here on.
 async function siEnsureTable(env) {
-  await env.DB.prepare(
-    'CREATE TABLE IF NOT EXISTS signin_fail_log_v2 (id TEXT PRIMARY KEY, email_hash TEXT, ip_hash TEXT, created_at INTEGER)'
-  ).run();
+  await env.DB.batch([
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS signin_fail_log_v2 (id TEXT PRIMARY KEY, email_hash TEXT, ip_hash TEXT, created_at INTEGER)'),
+    env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_signin_fail_email_ip_created ON signin_fail_log_v2 (email_hash, ip_hash, created_at)'),
+    env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_signin_fail_ip_created ON signin_fail_log_v2 (ip_hash, created_at)'),
+    env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_signin_fail_created ON signin_fail_log_v2 (created_at)'),
+  ]);
 }
 
 async function handleSignin(req, env) {
@@ -217,11 +237,24 @@ async function handleSignin(req, env) {
   const ipHash = await sha256Hex('ip-v1:' + (req.headers.get('CF-Connecting-IP') || 'unknown'));
 
   await siEnsureTable(env);
-  const since = Date.now() - 15 * 60 * 1000;
-  const fails = await env.DB.prepare(
-    'SELECT COUNT(*) AS n FROM signin_fail_log_v2 WHERE email_hash = ? AND ip_hash = ? AND created_at > ?'
-  ).bind(eh, ipHash, since).first();
-  if (fails && fails.n >= Number(env.SIGNIN_FAIL_LIMIT || 8)) {
+  const now = Date.now();
+  const since = now - SIGNIN_FAIL_WINDOW_MS;
+  // signin throttle reservation: this atomic reserve-and-count happens before
+  // account lookup and PBKDF2, so rotating fake emails cannot buy unlimited
+  // expensive hashes from one caller. A successful sign-in removes its row.
+  const reservationId = randomHex(12);
+  const [, pairCountResult, ipCountResult] = await env.DB.batch([
+    env.DB.prepare('INSERT INTO signin_fail_log_v2 (id, email_hash, ip_hash, created_at) VALUES (?, ?, ?, ?)')
+      .bind(reservationId, eh, ipHash, now),
+    env.DB.prepare('SELECT COUNT(*) AS n FROM signin_fail_log_v2 WHERE email_hash = ? AND ip_hash = ? AND created_at > ?')
+      .bind(eh, ipHash, since),
+    env.DB.prepare('SELECT COUNT(*) AS n FROM signin_fail_log_v2 WHERE ip_hash = ? AND created_at > ?')
+      .bind(ipHash, since),
+  ]);
+  const pairLimit = Number(env.SIGNIN_FAIL_LIMIT || 8);
+  const ipLimit = Number(env.SIGNIN_FAIL_IP_LIMIT || 24);
+  if (batchCount(pairCountResult) > pairLimit || batchCount(ipCountResult) > ipLimit) {
+    await env.DB.prepare('DELETE FROM signin_fail_log_v2 WHERE id = ?').bind(reservationId).run();
     return err('too many attempts — try again in a few minutes', 429);
   }
 
@@ -235,10 +268,9 @@ async function handleSignin(req, env) {
   // side-channel for the same enumeration this fix exists to close.
   const check = await pbkdf2(password, account ? account.pw_salt : eh.slice(0, 32));
   if (!account || check !== account.pw_hash) {
-    await env.DB.prepare('INSERT INTO signin_fail_log_v2 (id, email_hash, ip_hash, created_at) VALUES (?, ?, ?, ?)')
-      .bind(randomHex(12), eh, ipHash, Date.now()).run();
     return err('that email or password is not right', 401);
   }
+  await env.DB.prepare('DELETE FROM signin_fail_log_v2 WHERE id = ?').bind(reservationId).run();
   const newKey = randomHex(24);
   await env.DB.prepare('UPDATE accounts SET sync_key = ? WHERE email_hash = ?')
     .bind(newKey, eh).run();
@@ -289,6 +321,17 @@ async function handleSignout(req, env) {
   await env.DB.prepare('UPDATE accounts SET sync_key = NULL WHERE email_hash = ?')
     .bind(acc.email_hash).run();
   return jsonResp({ ok: true });
+}
+
+async function cleanupThrottleLogs(env, now) {
+  await suEnsureTable(env);
+  await ivEnsureTable(env);
+  await siEnsureTable(env);
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM invite_fail_log WHERE created_at < ?').bind(now - INVITE_FAIL_WINDOW_MS),
+    env.DB.prepare('DELETE FROM signin_fail_log_v2 WHERE created_at < ?').bind(now - SIGNIN_FAIL_WINDOW_MS),
+    env.DB.prepare('DELETE FROM signup_log WHERE created_at < ?').bind(now - SIGNUP_WINDOW_MS),
+  ]);
 }
 
 async function handleReset() {
@@ -577,5 +620,8 @@ export default {
     const finalHeaders = new Headers(response.headers);
     for (const [k, v] of Object.entries(headers)) finalHeaders.set(k, v);
     return new Response(response.body, { status: response.status, headers: finalHeaders });
+  },
+  scheduled(event, env, ctx) {
+    ctx.waitUntil(cleanupThrottleLogs(env, event.scheduledTime || Date.now()));
   },
 };
