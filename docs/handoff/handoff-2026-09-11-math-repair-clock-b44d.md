@@ -1,0 +1,14 @@
+# Kids Math repair + Clock audit handoff — 2026-09-11 (codex)
+
+1. Project: Kids App; checkout `C:\Users\HomeSeer\.codex\worktrees\b44d\Kids_App`; branch `codex/kids-math-repair-clock-audit-20260911-b44d`; authorized clean start `ddb34d883107b3762347eb9ae6c4b988560e4757`.
+2. Accepted Math product/test commit: `48fed5da63794cc0bb44cdc7a960f021489d9591`; Clock evidence/ledger/archive-helper commit: `cc4a0b5d72f55b6c2aa895c001f0608341d8d48e`.
+3. Math repair: Math-only compact phone reward placement, replay hidden through automatic notice removal, and a 320x568 gear lane that retains 70px answers. T1-T2 deferral, T3-T10 rewards, PIN settings, operations/missing modes, persistence, navigation/reload and desktop/tablet behavior are preserved.
+4. Math proof: red 13 fail / 5 pass; final focused 18/18; full 20/20 rows plus 8/8 probes, 160 correct answers, 212 inspected renders and zero reward/responsive overlap. Independent exact-commit review is PASS with no P1/P2.
+5. Clock report-only audit: 20/20 T1-T10 phone/desktop rows, 240 correct answers, all tier minute modes, real PIN settings, wrong/rapid/exact-once input, right/teaching feedback, persistence, navigation, reload, repeated play and rewards passed; eight responsive probes passed behaviorally and 192 renders/four contact sheets were inspected.
+6. Clock P2 findings, no product repair: T3-T10 phone reward notices overlap the title; sampled 320x568 T4/T6/T10 states show the fixed settings gear over the right answer. Targets remain 64px and reachable by scroll; desktop/tablet are clear.
+7. Ledger importer changed 108 cells once and zero on repeat. Current totals: 10,161 PASS / 44 FAIL / 2,721 BLK / 3,574 NA; row verdicts 272 PASS / 44 FAIL / 344 BLK; 300 COMPLETE / 360 PARTIAL.
+8. Exact full suite: 480 tests, 471 pass, nine already-ledgered Bubble Pop guidance failures, zero skipped; intentionally not green. Math focused checks pass inside it.
+9. Durable archive: `C:\Users\HomeSeer\OneDrive\Documents\Claude\Projects\Kids_App\audit-evidence-archive\2026-09-11-math-repair-clock-audit-b44d`; 431 payloads / 432 files / 97,460,051 payload bytes / 97,521,522 total bytes; zero bad format, unsafe path, duplicate, missing, mismatch, extra or reparse; manifest SHA-256 `8ca9b63fc3dc6dd622976489f7ea24a6b3d7c0575e8a6760ece86be185233e44`.
+10. Generated Math/Clock browser evidence and the ignored `node_modules` dependency junction remain local; tracked work is clean at release. The reviewer checkout is retained and released; no worktree was deleted.
+11. Next exact eligible untouched registry activity is Spelling. Bubble Pop and Animal Sounds remain human-audio blocked; ABCs impossible mastery remains report-only. Do not start from an old backend plan without rereading the live Kids inbox.
+12. Boundaries preserved: no production/main, push, merge, deploy/promote, secrets, PII, provider/paid, gate/security, remote-data, task archival, worktree deletion or unrelated repair action.
