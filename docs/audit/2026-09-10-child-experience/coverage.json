@@ -3645,17 +3645,17 @@
       "tier": 1,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -3672,12 +3672,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -3687,17 +3688,17 @@
       "tier": 1,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -3714,12 +3715,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -3729,17 +3731,17 @@
       "tier": 2,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -3756,12 +3758,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -3771,17 +3774,17 @@
       "tier": 2,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -3798,12 +3801,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -3813,17 +3817,17 @@
       "tier": 3,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -3840,12 +3844,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -3855,17 +3860,17 @@
       "tier": 3,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -3882,12 +3887,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -3897,17 +3903,17 @@
       "tier": 4,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -3924,12 +3930,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -3939,17 +3946,17 @@
       "tier": 4,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -3966,12 +3973,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -3981,17 +3989,17 @@
       "tier": 5,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4008,12 +4016,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4023,17 +4032,17 @@
       "tier": 5,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4050,12 +4059,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4065,17 +4075,17 @@
       "tier": 6,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4092,12 +4102,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4107,17 +4118,17 @@
       "tier": 6,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4134,12 +4145,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4149,17 +4161,17 @@
       "tier": 7,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4176,12 +4188,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4191,17 +4204,17 @@
       "tier": 7,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4218,12 +4231,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4233,17 +4247,17 @@
       "tier": 8,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4260,12 +4274,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4275,17 +4290,17 @@
       "tier": 8,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4302,12 +4317,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4317,17 +4333,17 @@
       "tier": 9,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4344,12 +4360,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4359,17 +4376,17 @@
       "tier": 9,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4386,12 +4403,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4401,17 +4419,17 @@
       "tier": 10,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4428,12 +4446,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {
@@ -4443,17 +4462,17 @@
       "tier": 10,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Surprise Pop reward, repeated-play, collection, recovery and reviewed visual dimensions are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -4470,12 +4489,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#surprise-pop-visualplay-audit-at-e690d35"
       ]
     },
     {

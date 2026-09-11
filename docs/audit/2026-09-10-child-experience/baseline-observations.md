@@ -243,3 +243,15 @@
 7. Full project suite is intentionally not green: 417 tests, 408 pass / 9 known Bubble Pop failures / 0 skip. Historical Math/Shape cadence assertions were not changed or used to claim a green suite.
 8. Only the one Tap-a-Tune T10 phone `visual_quality` FAIL cell changes to PASS because that ledger row carries the 320x568 responsive finding. Totals become **9,437 PASS / 16 FAIL / 3,513 BLK / 3,534 NA**; row verdicts become 140 PASS / 16 FAIL / 504 BLK, with 140 COMPLETE / 520 PARTIAL.
 9. Physical-device touch and human-audible quality remain unclaimed; no provider, production, push, merge, deploy or promote action occurred.
+
+## Surprise Pop visual/play audit at `e690d35`
+
+1. Surprise Pop was the next untouched eligible Games activity in exact registry order after completed Hide & Seek, Magic Touch and Tap-a-Tune; Bubble Pop remains blocked on real guidance audio. No Surprise Pop product source changed.
+2. T1-T10 at 1280x900 desktop and 390x844 touch phone completed 20/20 rows and 140 real reveal cycles: six repeated rounds plus one post-reload recovery per row. Five rapid egg events at round start produced one reveal and one progress record in every row.
+3. T5-T10 recovered from a real wrong silhouette choice before the correct choice; T1-T4 correctly have no wrong-answer mechanic. T3-T10 collection state gained at least five distinct surprises and persisted unchanged across reload; T1-T2 correctly omit the written collection and item name.
+4. A seeded 299-to-300 threshold produced one `Surprise Pop Star` reward per row. T1-T2 deferred it to the Games hub; T3-T10 showed it in the activity. Every reward persisted, stayed inside the viewport, carried the gallery message and dismissed in under 500ms.
+5. Automated geometry across every opening and reveal state found a 48px minimum target, no clipped target or content, no choice overlap and no horizontal overflow. Page errors and failed local requests were zero.
+6. All 112 full-page renders and both contact sheets were inspected. Eggs, silhouettes, choices, wrong feedback, named reveals, collection strips, rewards and recovered states remain readable and coherent at every tier and size; no visual finding was observed.
+7. The focused report has 40 PASS / 0 FAIL / 40 explicit NA / 20 pre-review visual placeholders; report SHA-256 is `67b4be94e902615eaae129f2c15e30a0542a896201c08fe96b4bbb5d2b179e94` and runner SHA-256 is `2bc44912478cd042292c2648a10f9e290f1dbace4fc72baa1aaf41fb229943c5`.
+8. The guarded importer changes exactly 60 BLK dimensions to PASS and 40 to NA, then zero on repeat. Totals become **9,497 PASS / 16 FAIL / 3,413 BLK / 3,574 NA**; row verdicts become 160 PASS / 16 FAIL / 484 BLK, with 160 COMPLETE / 500 PARTIAL.
+9. Synthetic profiles and silent local media stubs do not prove physical-device touch, human-audible quality or provider behavior. No product fix, production/main, push, merge, deploy/promote, secrets, PII, paid/provider, gate/security or remote-data action occurred.
