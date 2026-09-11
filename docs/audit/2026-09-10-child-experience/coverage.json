@@ -6114,17 +6114,17 @@
       "tier": 1,
       "viewport": "desktop",
       "defaultVisible": false,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6141,12 +6141,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6156,17 +6157,17 @@
       "tier": 1,
       "viewport": "phone",
       "defaultVisible": false,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "BLK",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "input": "PASS",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6183,12 +6184,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6198,17 +6200,17 @@
       "tier": 2,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6225,12 +6227,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6240,17 +6243,17 @@
       "tier": 2,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6267,12 +6270,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6282,17 +6286,17 @@
       "tier": 3,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6309,12 +6313,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6324,17 +6329,17 @@
       "tier": 3,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6351,12 +6356,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6366,17 +6372,17 @@
       "tier": 4,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6393,12 +6399,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6408,17 +6415,17 @@
       "tier": 4,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6435,12 +6442,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6450,17 +6458,17 @@
       "tier": 5,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6477,12 +6485,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6492,17 +6501,17 @@
       "tier": 5,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6519,12 +6528,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6534,17 +6544,17 @@
       "tier": 6,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6561,12 +6571,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6576,17 +6587,17 @@
       "tier": 6,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6603,12 +6614,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6618,17 +6630,17 @@
       "tier": 7,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6645,12 +6657,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6660,17 +6673,17 @@
       "tier": 7,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6687,12 +6700,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6702,17 +6716,17 @@
       "tier": 8,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6729,12 +6743,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6744,17 +6759,17 @@
       "tier": 8,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6771,12 +6786,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6786,17 +6802,17 @@
       "tier": 9,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6813,12 +6829,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6828,17 +6845,17 @@
       "tier": 9,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6855,12 +6872,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6870,17 +6888,17 @@
       "tier": 10,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Memory Match behavior, recovery, repeated full-board play, reward persistence and visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6897,12 +6915,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
@@ -6912,17 +6931,17 @@
       "tier": 10,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Memory Match behavior is complete, but visual review found either an earned-ribbon notice covering the phone title or desktop cards initially below the viewport.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -6939,12 +6958,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#memory-match-visual-play-d404038"
       ]
     },
     {
