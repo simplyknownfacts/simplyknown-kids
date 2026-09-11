@@ -106,7 +106,19 @@
       if (typeof speakInstruction === 'function') speakInstruction(prompt);
       else speak(prompt);
     }
-    if (challengeOn) { targetEl.style.display = 'flex'; pickTarget(); }
+    if (challengeOn) {
+      targetEl.style.display = 'flex';
+      pickTarget();
+    } else {
+      // Young children still need an instruction they can see, hear, and replay.
+      // Reuse the challenge banner so the cue stays in the measured HUD and the
+      // bubble playfield continues below every control on small screens.
+      const prompt = 'Tap the bubbles!';
+      targetEl.textContent = prompt;
+      targetEl.style.display = 'flex';
+      if (typeof speakInstruction === 'function') speakInstruction(prompt);
+      else speak(prompt);
+    }
 
     // Navigation and replay own the first row. The challenge/score flow below
     // it, and bubbles use the remaining canvas rather than passing under them.
