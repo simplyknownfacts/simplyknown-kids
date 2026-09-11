@@ -29,6 +29,9 @@
     @keyframes padGlow { 0%,100% { filter: brightness(1); transform: translateY(0); } 50% { filter: brightness(1.6); transform: translateY(-6px); } }
     .pad.wrong { animation: padShake 0.3s; }
     @keyframes padShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+    @media (max-width: 360px) {
+      #pads { gap: 7px; }
+    }
     #songBtn, #memBtn {
       margin: 12px 6px 0; padding: 12px 22px; border-radius: 999px; border: none; cursor: pointer;
       font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 16px; color: #fff;
