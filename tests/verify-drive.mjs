@@ -326,6 +326,9 @@ async function driveScreen(ctx, s) {
     const t = r.url() + ' ' + (r.failure()?.errorText || '');
     if (!ignorable(t)) errs.push('failed request: ' + t);
   });
+  page.on('response', r => {
+    if (r.status() >= 400 && !ignorable(r.url())) errs.push('HTTP ' + r.status() + ': ' + r.url());
+  });
 
   let drew = 0;
   try {
@@ -624,7 +627,7 @@ for (const t of trophyResults) {
   console.log((t.ok ? 'PASS  ' : 'FAIL  ') + t.id.padEnd(26) + t.what + (t.ok ? '' : '\n        ' + t.errs.join('\n        ')));
 }
 
-/* Pass 7 — the live 3D world: real building taps, conditional Listen,
+/* Pass 7 — the live 3D world: real building taps, local Listen,
    reduced motion, offline gating and usable fallbacks when media fails. */
 const hubResults = [];
 {
@@ -654,27 +657,36 @@ const hubResults = [];
         return !!r && r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
       };
       const houses = [...document.querySelectorAll('.house')];
+      const kinds = vbWorldScene.snapshot().houses.map(house => house.kind).sort();
       return {
-        chrome: ['#hiText','#avatarPill','#exitBtn','#ribbonLink'].every(visible),
-        houses: visible('#worldCanvas') && !!document.getElementById('worldCanvas').getContext('webgl2') && vbWorldScene.snapshot().houses.length === 5 && vbWorldScene.snapshot().triangles > 1000,
-        listenDisabled: document.querySelector('[data-world="listen"]')?.getAttribute('aria-disabled') === 'true',
-        motion: houses.length === 5 && vbWorldScene.snapshot().reducedMotion,
+        // Comment 6 deliberately replaced the footer ribbon link with Ribbons
+        // and My Room houses. Keep chrome checks scoped to actual chrome and
+        // prove the complete seven-destination world independently below.
+        chrome: ['#hiText','#avatarPill','#exitBtn'].every(visible),
+        houses: visible('#worldCanvas') && !!document.getElementById('worldCanvas').getContext('webgl2') &&
+          JSON.stringify(kinds) === JSON.stringify(['art','games','learn','listen','my-room','ribbons','watch']) &&
+          vbWorldScene.snapshot().triangles > 1000,
+        // The Yoto retirement made Listen a local destination; it must remain
+        // available without a provider connection.
+        listenEnabled: document.querySelector('[data-world="listen"]')?.getAttribute('aria-disabled') === 'false',
+        motion: houses.length === 7 && vbWorldScene.snapshot().reducedMotion,
       };
     });
     const frame=await page.evaluate(()=>vbWorldScene.snapshot().frames);
     await page.waitForTimeout(350);
     result.motion=result.motion && frame===await page.evaluate(()=>vbWorldScene.snapshot().frames);
-    add('hub-chrome',result.chrome,'Greeting, child switch, exit and ribbons remain visible','Missing world chrome');
-    add('hub-landmarks-present',result.houses,'Five real 3D buildings render through WebGL','Missing 3D building geometry');
-    add('hub-listen-availability',result.listenDisabled,'Disconnected Listening Hut explains its unavailable state','Listen was enabled without a connection');
+    add('hub-chrome',result.chrome,'Greeting, child switch and exit remain visible','Missing world chrome');
+    add('hub-landmarks-present',result.houses,'All seven real 3D destinations render through WebGL','Missing or unexpected 3D destination geometry');
+    add('hub-listen-availability',result.listenEnabled,'Local Listen remains available without a provider connection','Local Listen was incorrectly disabled');
     add('hub-reduced-motion',result.motion,'Reduced motion keeps houses visible and decorative animation still','Hidden house or running decorative animation');
     await page.close();
   }
-  for (const [id,destination] of [['games','games/index.html'],['learn','learning/index.html'],['art','art/index.html'],['ribbons','achievements.html'],['watch','videos/index.html']]) {
+  // Comment 6 moved Ribbons into the world and added My Room, so every one of
+  // the seven current houses must navigate through the same real raycast path.
+  for (const [id,destination] of [['games','games/index.html'],['learn','learning/index.html'],['art','art/index.html'],['listen','listen/index.html'],['my-room','my-room.html'],['ribbons','achievements.html'],['watch','videos/index.html']]) {
     const page = await openHome(); let error = '';
     try {
-      if(id === 'ribbons') await page.locator('#ribbonLink').click();
-      else await tapHut(page,id);
+      await tapHut(page,id);
       await page.waitForURL(u => u.pathname.endsWith('/'+destination), {timeout:5000});
     } catch (e) { error = e.message; }
     add('hub-nav-'+id,!error,'Tapping '+id+' opens '+destination,error);
@@ -701,7 +713,7 @@ const hubResults = [];
     await ctx.addInitScript(profiles => localStorage.setItem('vb_profiles',JSON.stringify(profiles)),TIER_PROFILES);
     await ctx.route('**/mascots/**', route => route.abort());
     const page = await openHome(ctx);
-    const fallback = await page.locator('#companionFallback').isVisible() && await page.evaluate(()=>vbWorldScene.snapshot().houses.length===5);
+    const fallback = await page.locator('#companionFallback').isVisible() && await page.evaluate(()=>vbWorldScene.snapshot().houses.length===7);
     add('hub-media-fallback',fallback,'Failed companion media leaves a visible buddy fallback and all 3D huts','Fallback or 3D huts disappeared');
     let error = '';
     try {
