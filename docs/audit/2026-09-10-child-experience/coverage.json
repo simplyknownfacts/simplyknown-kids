@@ -1914,17 +1914,17 @@
       "tier": 1,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Magic Touch free play, reward, repeated interaction, visual states and reload recovery passed; no score or explicit restart mechanic applies.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -1941,12 +1941,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -1956,17 +1957,17 @@
       "tier": 1,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Magic Touch free play, reward, repeated interaction, visual states and reload recovery passed; no score or explicit restart mechanic applies.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -1983,12 +1984,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -1998,17 +2000,17 @@
       "tier": 2,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Magic Touch free play, reward, repeated interaction, visual states and reload recovery passed; no score or explicit restart mechanic applies.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2025,12 +2027,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2040,17 +2043,17 @@
       "tier": 2,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Magic Touch free play, reward, repeated interaction, visual states and reload recovery passed; no score or explicit restart mechanic applies.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2067,12 +2070,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2082,17 +2086,17 @@
       "tier": 3,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Magic Touch free play, reward, repeated interaction, visual states and reload recovery passed; no score or explicit restart mechanic applies.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2109,12 +2113,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2124,17 +2129,17 @@
       "tier": 3,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Magic Touch free play, reward, repeated interaction, visual states and reload recovery passed; no score or explicit restart mechanic applies.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2151,12 +2156,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2166,17 +2172,17 @@
       "tier": 4,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Magic Touch free play, reward, repeated interaction, visual states and reload recovery passed; no score or explicit restart mechanic applies.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2193,12 +2199,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2208,17 +2215,17 @@
       "tier": 4,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Magic Touch free play, reward, repeated interaction, visual states and reload recovery passed; no score or explicit restart mechanic applies.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2235,12 +2242,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2250,17 +2258,17 @@
       "tier": 5,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Magic Touch free play, reward, repeated interaction, visual states and reload recovery passed; no score or explicit restart mechanic applies.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2277,12 +2285,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2292,17 +2301,17 @@
       "tier": 5,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "Magic Touch free play, reward, repeated interaction, visual states and reload recovery passed; no score or explicit restart mechanic applies.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "PASS",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2319,12 +2328,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2334,17 +2344,17 @@
       "tier": 6,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "FAIL",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2361,12 +2371,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2376,17 +2387,17 @@
       "tier": 6,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "FAIL",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2403,12 +2414,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2418,17 +2430,17 @@
       "tier": 7,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "FAIL",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2445,12 +2457,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2460,17 +2473,17 @@
       "tier": 7,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "FAIL",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2487,12 +2500,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2502,17 +2516,17 @@
       "tier": 8,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "FAIL",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2529,12 +2543,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2544,17 +2559,17 @@
       "tier": 8,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "FAIL",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2571,12 +2586,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2586,17 +2602,17 @@
       "tier": 9,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "FAIL",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2613,12 +2629,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2628,17 +2645,17 @@
       "tier": 9,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "FAIL",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2655,12 +2672,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2670,17 +2688,17 @@
       "tier": 10,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "FAIL",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2697,12 +2715,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
@@ -2712,17 +2731,17 @@
       "tier": 10,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Games negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "P2 Magic Touch defects: each connected shape records progress twice, and the goal-mode toggle is 42px high against the Kids 44px floor; all other selected visual/play dimensions passed.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
-        "score": "BLK",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "progression": "FAIL",
+        "score": "NA",
+        "rewards": "PASS",
+        "restart": "NA",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -2739,12 +2758,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#games-resilience-d6687a3"
+        "baseline-observations.md#games-resilience-d6687a3",
+        "baseline-observations.md#magic-touch-visualplay-audit-at-f3fe28f"
       ]
     },
     {
