@@ -10557,17 +10557,17 @@
       "tier": 1,
       "viewport": "desktop",
       "defaultVisible": false,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "BLK",
-        "progression": "BLK",
+        "input": "PASS",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -10584,12 +10584,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -10599,17 +10600,17 @@
       "tier": 1,
       "viewport": "phone",
       "defaultVisible": false,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "BLK",
-        "progression": "BLK",
+        "input": "PASS",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -10626,12 +10627,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -10641,17 +10643,17 @@
       "tier": 2,
       "viewport": "desktop",
       "defaultVisible": false,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "BLK",
-        "progression": "BLK",
+        "input": "PASS",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -10668,12 +10670,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -10683,17 +10686,17 @@
       "tier": 2,
       "viewport": "phone",
       "defaultVisible": false,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "BLK",
-        "progression": "BLK",
+        "input": "PASS",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -10710,12 +10713,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -10725,17 +10729,17 @@
       "tier": 3,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -10752,12 +10756,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -10767,17 +10772,17 @@
       "tier": 3,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Days behavior, repeated play, reward persistence and recovery are complete; the reward notice obscures the activity title on phone for T3-T10.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -10794,12 +10799,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -10809,17 +10815,17 @@
       "tier": 4,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -10836,12 +10842,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -10851,17 +10858,17 @@
       "tier": 4,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Days behavior, repeated play, reward persistence and recovery are complete; the reward notice obscures the activity title on phone for T3-T10.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
-        "progression": "BLK",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -10878,12 +10885,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -10893,17 +10901,17 @@
       "tier": 5,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -10920,12 +10928,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -10935,17 +10944,17 @@
       "tier": 5,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Days behavior, repeated play, reward persistence and recovery are complete; the reward notice obscures the activity title on phone for T3-T10.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -10962,12 +10971,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -10977,17 +10987,17 @@
       "tier": 6,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -11004,12 +11014,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -11019,17 +11030,17 @@
       "tier": 6,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Days behavior, repeated play, reward persistence and recovery are complete; the reward notice obscures the activity title on phone for T3-T10.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -11046,12 +11057,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -11061,17 +11073,17 @@
       "tier": 7,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -11088,12 +11100,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -11103,17 +11116,17 @@
       "tier": 7,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Days behavior, repeated play, reward persistence and recovery are complete; the reward notice obscures the activity title on phone for T3-T10.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -11130,12 +11143,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -11145,17 +11159,17 @@
       "tier": 8,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -11172,12 +11186,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -11187,17 +11202,17 @@
       "tier": 8,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Days behavior, repeated play, reward persistence and recovery are complete; the reward notice obscures the activity title on phone for T3-T10.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -11214,12 +11229,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -11229,17 +11245,17 @@
       "tier": 9,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -11256,12 +11272,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -11271,17 +11288,17 @@
       "tier": 9,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Days behavior, repeated play, reward persistence and recovery are complete; the reward notice obscures the activity title on phone for T3-T10.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -11298,12 +11315,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -11313,17 +11331,17 @@
       "tier": 10,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Days behavior, repeated play, reward persistence, recovery and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -11340,12 +11358,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
@@ -11355,17 +11374,17 @@
       "tier": 10,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Days behavior, repeated play, reward persistence and recovery are complete; the reward notice obscures the activity title on phone for T3-T10.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -11382,12 +11401,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#days-visual-play-888bed8"
       ]
     },
     {
