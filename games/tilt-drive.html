@@ -103,6 +103,9 @@
     renderBackBtn('index.html');
     if (window.gameSettings) gameSettings.attach('tilt-drive');
     if (window.vbProgress) vbProgress.firstPlay('tilt-drive');
+    if (typeof DeviceOrientationEvent === 'undefined') {
+      document.getElementById('startHint').textContent = 'Pick a ride, then drag left & right to steer!';
+    }
 
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 

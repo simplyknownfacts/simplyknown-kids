@@ -67,6 +67,7 @@ function installHarness({ tier }) {
   Math.random = () => 0.5;
 
   window.__permission = 'denied';
+  Object.defineProperty(window, 'DeviceOrientationEvent', { configurable: true, writable: true, value: undefined });
   window.__installOrientation = mode => {
     if (mode === 'unavailable') {
       Object.defineProperty(window, 'DeviceOrientationEvent', { configurable: true, writable: true, value: undefined });
@@ -160,6 +161,7 @@ test('Tilt Drive tells the truth for unavailable, denied, rejected, and granted 
       await t.test(`T${entry.tier} ${entry.name}`, async () => {
         const { context, page } = await openCase(browser, base, entry);
         try {
+          assert.match(await page.locator('#startHint').textContent(), /drag left & right/i);
           assert.match(await start(page, 'unavailable'), /Drag left & right/);
           await returnToPicker(page);
           assert.match(await start(page, 'denied', 1), /Drag left & right/);
