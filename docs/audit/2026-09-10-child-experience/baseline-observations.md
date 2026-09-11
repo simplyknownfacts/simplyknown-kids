@@ -360,3 +360,23 @@
 8. All four contact sheets and representative full-size addition, division, missing-number, reward, reload and short-phone states were inspected. Minimum answer target is 70px, minimum navigation target is 48px, and no horizontal overflow, clipped navigation, page error or unexpected local request failure occurred.
 9. The guarded importer changes the eight repaired Days FAIL cells to PASS and adjudicates 92 remaining Math BLK cells as 84 PASS plus eight phone visual FAIL; its second run changes zero. Totals become **10,061 PASS / 44 FAIL / 2,821 BLK / 3,574 NA**; row verdicts become 252 PASS / 44 FAIL / 364 BLK, with 280 COMPLETE / 380 PARTIAL.
 10. Browser pointer/touch emulation and silent media stubs do not prove physical child touch, human-audible quality or provider behavior. ABCs remains report-only for impossible mastery. No Math repair, production/main, push, merge, deploy/promote, secrets, PII, paid/provider, gate/security, remote-data, task archival or worktree deletion occurred.
+
+## Math layout repair `48fed5d`
+
+1. Red-first layout proof reproduced 13 failures: all eight T3-T10 390x844 reward/title collisions, the sampled T6 320x568 reward collision, and T6/T8/T10 320x568 settings-gear/answer collisions; five wider-layout controls already passed.
+2. Product commit `48fed5da63794cc0bb44cdc7a960f021489d9591` uses Math-only compact reward placement, keeps replay hidden until the notice DOM is removed, and reserves a narrow short-phone gear lane without shrinking the 70px answer targets.
+3. Focused final proof passes 18/18, including automatic fade while the notice remains attached. The full Math run passes 20/20 rows and 8/8 probes with 160 correct answers, 212 renders and zero reward or responsive overlap.
+4. T1-T2 hub deferral, T3-T10 in-game rewards, real PIN settings, every operation and missing-number mode, rapid/wrong/exact-once input, persistence, navigation, reload and repeated play all remain intact; desktop and tablet retain the shared placement.
+5. All four contact sheets and representative phone, short-phone, tablet and desktop frames were inspected. Math source SHA-256 is `115855c91aa99115cb88de4e5587d44fadcf0796f9a6e6eb91e784d06834e912`; final report SHA-256 is `f593ab85ccb142de7432a308e9fe0ac544b36ec0b4ee1cda3f9ffa356d423eff`.
+6. Independent separate-checkout review accepted exact `48fed5d` with no P1/P2 after repeating focused 18/18, all 20 rows, all eight probes and the automatic-fade edge. Only the eight prior Math phone visual FAIL cells change to PASS.
+
+## Clock Time visual/play audit `48fed5d`
+
+1. Clock Time T1-T10 at 1280x900 desktop and 390x844 phone completed all 20 rows and 240 correct answers; eight 320x568/820x1180 probes completed 24 more real rounds.
+2. Every row used real PIN settings and proved wrong-answer rejection, rapid exact-once progress, right-answer marking, teaching feedback, persistence, navigation, reload, repeated play and one threshold reward from 119 to 120.
+3. Exact tier modes were exhausted: T1-T7 `:00`, T8 `:00/:30`, T9 all quarter hours and T10 all twelve five-minute values. All 20 rows and all eight behavioral probes pass.
+4. **Confirmed report-only P2, T3-T10 phone:** the `Clock Time Star` notice visibly overlaps the centered `Clock Time` title. T1-T2 defer the reward to the hub; desktop and tablet remain clear. No Clock product repair was authorized or made.
+5. **Confirmed report-only P2, 320x568:** the fixed settings gear visibly covers the right answer in actual T4 sample 1, T6 sample 3 and T10 samples 1-2. All answer targets remain 64px, reachable by normal scrolling and behaviorally usable. T8 samples and every tablet probe remain clear.
+6. All 192 renders and four contact sheets were inspected. Clock source SHA-256 is `5c9dcee9fc9fcc5aab986d785d018d791cf3a3160b99604feaf34d273a1a2616`; report SHA-256 is `d4329e7ed2a24dd66a9f3d1f2cf58fb1b72f06383f02c571afe886f9c18cd5cc`.
+7. The guarded importer repairs only the eight accepted Math visual cells, then adjudicates Clock as 92 BLK-to-PASS cells and eight phone visual BLK-to-FAIL cells; its second run changes zero. Totals become **10,161 PASS / 44 FAIL / 2,721 BLK / 3,574 NA**; row verdicts become 272 PASS / 44 FAIL / 344 BLK, with 300 COMPLETE / 360 PARTIAL.
+8. Browser emulation does not prove physical child touch. No Clock repair, production/main, push, merge, deploy/promote, secrets, PII, provider, paid, gate/security, remote-data, task archival or worktree deletion action occurred.
