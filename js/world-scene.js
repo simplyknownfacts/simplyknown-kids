@@ -120,6 +120,7 @@ export function createWorldScene(host, { activate, placeCompanion, announce, roo
     });
     scene.updateMatrixWorld(true);
     huts.forEach(model=>fitPoints.push(...corners(new THREE.Box3().setFromObject(model.group))));
+    fitPoints.push(...corners(new THREE.Box3().setFromObject(companionBoat.group)));
     let distance=23;
     camera.aspect=width/height;camera.updateProjectionMatrix();
     for(let i=0;i<65;i++) {
@@ -169,7 +170,7 @@ export function createWorldScene(host, { activate, placeCompanion, announce, roo
     if(compact&&portrait)companionBoat.place(-8.8,11*depth);
     else if(compact)companionBoat.place(-13,6.5);
     else if(portrait)companionBoat.place(-10.5,15);
-    else if(width>=1000)companionBoat.place(-12,9.6);
+    else if(width>=1000)companionBoat.place(-12,10.4);
     else companionBoat.place(-16,7.6);
     renderer.setSize(width,height,false);fitCamera();positionControls();
     renderer.shadowMap.needsUpdate=true;renderOnce();
@@ -248,7 +249,7 @@ export function createWorldScene(host, { activate, placeCompanion, announce, roo
   resize();host.dataset.state='ready';host.dataset.renderer='webgl';resume();
   return {pause,resume,pick,
     snapshot:()=>({renderer:'webgl',revision:THREE.REVISION,pixelRatio:renderer.getPixelRatio(),frames:tick,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,
-      reducedMotion:reduced.matches,portrait,compact,ocean:ocean.snapshot(),oceanPoint:findOceanPoint(),islands:[...islands].map(([kind,model])=>({kind,center:model.group.position.toArray(),scale:model.group.scale.toArray(),shore:project(model.group.localToWorld(new THREE.Vector3(0,.6,2.65)))})),companionBoat:project(companionBoat.anchor()),houses:[...huts].map(([kind,model])=>({kind,meshes:model.group.getObjectsByProperty('isMesh',true).length,
+      reducedMotion:reduced.matches,portrait,compact,ocean:ocean.snapshot(),oceanPoint:findOceanPoint(),islands:[...islands].map(([kind,model])=>({kind,center:model.group.position.toArray(),scale:model.group.scale.toArray(),shore:project(model.group.localToWorld(new THREE.Vector3(0,.6,2.65)))})),companionBoat:project(companionBoat.anchor()),companionBoatBounds:corners(new THREE.Box3().setFromObject(companionBoat.group)).map(project),houses:[...huts].map(([kind,model])=>({kind,meshes:model.group.getObjectsByProperty('isMesh',true).length,
         center:model.group.position.toArray(),scale:model.group.scale.toArray(),label:model.group.userData.label,labelTexture:model.group.userData.labelTexture,roofRibbon:!!model.group.getObjectByName('ribbons-roof-ribbon'),point:project(model.group.localToWorld(new THREE.Vector3(0,1.8,1.7)))}))}),
   };
 }

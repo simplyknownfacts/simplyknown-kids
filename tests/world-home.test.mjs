@@ -60,7 +60,7 @@ test('3D world fits, uses building geometry for taps and keeps its buddy in a si
           const s=vbWorldScene.snapshot();
           return {overflow:document.documentElement.scrollWidth>innerWidth || document.documentElement.scrollHeight>innerHeight,
             gl:!!canvas.getContext('webgl2'),triangles:s.triangles,pixelRatio:s.pixelRatio,
-            islands:s.islands,companionBoat:s.companionBoat,
+            islands:s.islands,companionBoat:s.companionBoat,companionBoatBounds:s.companionBoatBounds,
             houses:s.houses.map(h=>{
               const b=document.querySelector('[data-world="'+h.kind+'"]').getBoundingClientRect();
               return {kind:h.kind,point:h.point,pick:vbWorldScene.pick(r.x+h.point.x,r.y+h.point.y),
@@ -78,6 +78,7 @@ test('3D world fits, uses building geometry for taps and keeps its buddy in a si
         }
         assert.equal(result.islands.some(island=>island.kind==='companion'),false,'the central mascot island still exists');
         assert.ok(result.companionBoat,'the child companion has no side boat');
+        assert.ok(result.companionBoatBounds.every(point=>point.x>=0&&point.x<=width&&point.y>=0&&point.y<=height),`3D companion boat is clipped: ${JSON.stringify(result.companionBoatBounds)}`);
         assert.ok(result.companion.x>=0&&result.companion.y>=0&&result.companion.right<=width&&result.companion.bottom<=height,'companion boat is clipped');
         assert.equal(result.houses.find(h=>h.kind==='ribbons').roofRibbon,true,'Ribbons needs a large roof ribbon');
         for(const house of result.houses){
