@@ -8833,17 +8833,17 @@
       "tier": 1,
       "viewport": "desktop",
       "defaultVisible": false,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "BLK",
-        "progression": "BLK",
+        "input": "PASS",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -8860,12 +8860,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -8875,17 +8876,17 @@
       "tier": 1,
       "viewport": "phone",
       "defaultVisible": false,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Count Along play is complete; the tappable narrow digit 1 is below the 44px phone target floor.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "BLK",
-        "progression": "BLK",
+        "input": "PASS",
+        "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -8902,12 +8903,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -8917,17 +8919,17 @@
       "tier": 2,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -8944,12 +8946,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -8959,17 +8962,17 @@
       "tier": 2,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Count Along play is complete; the tappable narrow digit 1 is below the 44px phone target floor.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -8986,12 +8989,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "FAIL"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9001,17 +9005,17 @@
       "tier": 3,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -9028,12 +9032,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9043,17 +9048,17 @@
       "tier": 3,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -9070,12 +9075,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9085,17 +9091,17 @@
       "tier": 4,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Count Along play is complete; the enabled T4 how-many setting remains unreachable because tap-count runs first.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "PASS",
+        "input": "FAIL",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -9112,12 +9118,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9127,17 +9134,17 @@
       "tier": 4,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "FAIL",
+      "reason": "Count Along play is complete; the enabled T4 how-many setting remains unreachable because tap-count runs first.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
-        "input": "PASS",
+        "input": "FAIL",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "NA",
@@ -9154,12 +9161,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9169,17 +9177,17 @@
       "tier": 5,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9196,12 +9204,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9211,17 +9220,17 @@
       "tier": 5,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9238,12 +9247,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9253,17 +9263,17 @@
       "tier": 6,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9280,12 +9290,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9295,17 +9306,17 @@
       "tier": 6,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9322,12 +9333,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9337,17 +9349,17 @@
       "tier": 7,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9364,12 +9376,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9379,17 +9392,17 @@
       "tier": 7,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9406,12 +9419,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9421,17 +9435,17 @@
       "tier": 8,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9448,12 +9462,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9463,17 +9478,17 @@
       "tier": 8,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9490,12 +9505,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9505,17 +9521,17 @@
       "tier": 9,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9532,12 +9548,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9547,17 +9564,17 @@
       "tier": 9,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9574,12 +9591,13 @@
         "empty_min_max_values": "NA",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9589,17 +9607,17 @@
       "tier": 10,
       "viewport": "desktop",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9616,12 +9634,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
@@ -9631,17 +9650,17 @@
       "tier": 10,
       "viewport": "phone",
       "defaultVisible": true,
-      "execution": "PARTIAL",
-      "verdict": "BLK",
-      "reason": "Learning negative/recovery checks recorded; remaining dimensions are still incomplete.",
+      "execution": "COMPLETE",
+      "verdict": "PASS",
+      "reason": "All applicable Count Along behavior, repeated play, reward persistence and inspected visual states are complete.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
         "input": "PASS",
         "progression": "PASS",
         "score": "NA",
-        "rewards": "BLK",
-        "restart": "BLK",
+        "rewards": "PASS",
+        "restart": "PASS",
         "back_home": "PASS",
         "rapid_double_input": "PASS",
         "wrong_answers": "PASS",
@@ -9658,12 +9677,13 @@
         "empty_min_max_values": "PASS",
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
-        "long_repeated_play": "BLK",
-        "visual_quality": "BLK"
+        "long_repeated_play": "PASS",
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
-        "baseline-observations.md#learning-resilience-f782603"
+        "baseline-observations.md#learning-resilience-f782603",
+        "baseline-observations.md#count-along-visualplay-audit-at-789d20f"
       ]
     },
     {
