@@ -42,9 +42,9 @@ function birthday(tier){const months={1:6,2:18,3:30,4:42,5:54,6:66,7:78,8:90,9:1
 function patchedSource(){
   const multiple="const target = WORDS[Math.floor(Math.random() * WORDS.length)];";
   const spell="const target = pool[Math.floor(Math.random() * pool.length)];";
-  if(!SOURCE.includes(multiple)||!SOURCE.includes(spell))throw new Error('Spelling target hooks changed');
   const deterministic="const target = window.__spellingTargets[window.__spellingTargetIndex++ % window.__spellingTargets.length];";
-  return SOURCE.replace(multiple,deterministic).replace(spell,deterministic);
+  const replaceUnique=(source,needle,label)=>{const pieces=source.split(needle);if(pieces.length!==2)throw new Error(`Spelling ${label} target hook count changed: ${pieces.length-1}`);return pieces.join(deterministic)};
+  return replaceUnique(replaceUnique(SOURCE,multiple,'multiple-choice'),spell,'spell-mode');
 }
 const HTML=patchedSource();
 
@@ -91,17 +91,23 @@ async function verifySettings(page,tier){
 }
 
 async function solveRound(page,tier,target,rapid){
-  const selector=tier>=6?'.letter-tile':'.word-card',controls=page.locator(selector),labels=(await controls.allTextContents()).map(value=>value.trim()),before=(await state(page)).counter;
-  const wrong=labels.findIndex(label=>tier>=6?label!==target.w[0]:label!==target.w);if(wrong<0)throw new Error(`no wrong choice for ${target.w}`);
-  await controls.nth(wrong).dispatchEvent('pointerdown');const wrongMarked=await controls.nth(wrong).evaluate(element=>element.classList.contains('wrong'));const wrongDidNotProgress=(await state(page)).counter===before;
+  const selector=tier>=6?'.letter-tile':'.word-card',controls=page.locator(selector),before=(await state(page)).counter;
+  await controls.first().waitFor();
   const oldPicture=await page.locator('.pic-big').elementHandle();
-  if(tier>=6){for(const letter of target.w)await controls.filter({hasText:new RegExp(`^${letter}$`)}).first().dispatchEvent('pointerdown')}
-  else await controls.filter({hasText:new RegExp(`^${target.w}$`)}).first().dispatchEvent('pointerdown');
-  if(rapid){await controls.first().dispatchEvent('pointerdown');await controls.nth(wrong).dispatchEvent('pointerdown')}
+  const outcome=await page.evaluate(({tier,target,before,rapid})=>{
+    const selector=tier>=6?'.letter-tile':'.word-card',controls=[...document.querySelectorAll(selector)],labels=controls.map(element=>element.textContent.trim());
+    const wrongIndex=labels.findIndex(label=>tier>=6?label!==target.w[0]:label!==target.w);if(wrongIndex<0)throw new Error(`no wrong choice for ${target.w}`);
+    const readCounter=()=>{const profile=JSON.parse(localStorage.vb_profiles||'[]')[0]||{};return profile.achievements?.counters?.spelling||0};
+    const press=element=>element.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:1,pointerType:'touch',isPrimary:true,button:0,buttons:1}));
+    const wrong=controls[wrongIndex];press(wrong);
+    const wrongMarked=wrong.classList.contains('wrong'),wrongDidNotProgress=readCounter()===before,wrongFeedback=tier>=6?document.querySelector('#hint')?.textContent.includes(`Next letter: ${target.w[0]}`):document.querySelector('#hint')?.textContent.includes(`${labels[wrongIndex]} is not ${target.w}`);
+    if(tier>=6){for(const letter of target.w){const element=controls.find(control=>control.textContent.trim()===letter);if(!element)throw new Error(`missing ${letter} tile for ${target.w}`);press(element)}}
+    else{const correct=controls.find(control=>control.textContent.trim()===target.w);if(!correct)throw new Error(`missing ${target.w} card`);press(correct)}
+    if(rapid){press(controls[0]);press(wrong)}
+    return{wrongMarked,wrongDidNotProgress,wrongFeedback,exactIncrement:readCounter()===before+1,correctMarked:tier>=6?document.querySelectorAll('.spelled-slot.filled').length===target.w.length:controls.find(control=>control.textContent.trim()===target.w)?.classList.contains('matched')===true,feedback:tier>=6?[...document.querySelectorAll('.spelled-slot')].map(slot=>slot.textContent).join('')===target.w:true};
+  },{tier,target,before,rapid});
   await page.waitForFunction(value=>{const profile=JSON.parse(localStorage.vb_profiles||'[]')[0]||{};return profile.achievements?.counters?.spelling===value+1},before,{timeout:1500});
-  const correctMarked=tier>=6?await page.locator('.spelled-slot.filled').count()===target.w.length:await controls.filter({hasText:new RegExp(`^${target.w}$`)}).first().evaluate(element=>element.classList.contains('matched'));
-  const feedback=tier>=6?(await page.locator('.spelled-slot').allTextContents()).join('')===target.w:true;
-  return{word:target.w,wrongMarked,wrongDidNotProgress,exactIncrement:(await state(page)).counter===before+1,correctMarked,feedback,oldPicture};
+  return{word:target.w,...outcome,oldPicture};
 }
 async function waitNext(page,oldPicture){await page.waitForFunction(element=>!element?.isConnected,oldPicture,{timeout:2000});await page.locator('.pic-big').waitFor()}
 
@@ -118,17 +124,17 @@ async function runCell(browser,base,viewportName,viewport,tier,allScreenshots){
   let counterBefore=null,counterAfter=null,repeatAfter=null,reward=null,settingsPass=false,navigationRecovered=false,reloadRecovered=false,fatal=null;
   try{
     await page.goto(base+'/learning/spelling.html',{waitUntil:'load'});geometrySamples.push(await geometry(page));await saveShot(page,rowId,'opening',screenshots);settingsPass=await verifySettings(page,tier);geometrySamples.push(await geometry(page));await saveShot(page,rowId,'settings-return',screenshots);counterBefore=(await state(page)).counter;
-    for(let index=0;index<targets.length;index++){const round=await solveRound(page,tier,targets[index],index===0);rounds.push({word:round.word,wrongMarked:round.wrongMarked,wrongDidNotProgress:round.wrongDidNotProgress,exactIncrement:round.exactIncrement,correctMarked:round.correctMarked,feedback:round.feedback});if(index===0&&tier>=3)reward=await inspectReward(page,rowId,screenshots);await waitNext(page,round.oldPicture);if(index===2||index===targets.length-1){geometrySamples.push(await geometry(page));await saveShot(page,rowId,`round-${index+1}-${round.word.toLowerCase()}`,screenshots)}}
+    for(let index=0;index<targets.length;index++){const round=await solveRound(page,tier,targets[index],index===0);rounds.push({word:round.word,wrongMarked:round.wrongMarked,wrongDidNotProgress:round.wrongDidNotProgress,wrongFeedback:round.wrongFeedback,exactIncrement:round.exactIncrement,correctMarked:round.correctMarked,feedback:round.feedback});if(index===0&&tier>=3)reward=await inspectReward(page,rowId,screenshots);await waitNext(page,round.oldPicture);if(index===2||index===targets.length-1){geometrySamples.push(await geometry(page));await saveShot(page,rowId,`round-${index+1}-${round.word.toLowerCase()}`,screenshots)}}
     const completed=await state(page);counterAfter=completed.counter;repeatAfter=completed.repeat;await page.locator('.back-btn').click();await page.waitForURL(/\/learning\/(index\.html)?$/);if(tier<=2)reward=await inspectReward(page,rowId,screenshots);await page.locator('[data-activity="spelling"]').click();await page.waitForURL(/\/learning\/spelling\.html$/);navigationRecovered=(await state(page)).counter===counterAfter&&await page.locator('.pic-big').count()===1;await saveShot(page,rowId,'navigation-return',screenshots);const beforeReload=(await state(page)).counter;await page.reload({waitUntil:'load'});reloadRecovered=(await state(page)).counter===beforeReload&&(await state(page)).tierOverride===tier&&await page.locator('.pic-big').count()===1;geometrySamples.push(await geometry(page));await saveShot(page,rowId,'reload',screenshots);if(pageErrors.length||failedLocalRequests.length)throw new Error(`browser/runtime failure ${JSON.stringify({pageErrors,failedLocalRequests})}`);
   }catch(error){fatal=`${error.name}: ${error.message}`;try{await saveShot(page,rowId,'failure',screenshots)}catch{}}finally{allScreenshots.push(...screenshots.map(item=>({...item,viewport:viewportName,tier})));await context.close()}
   const expectedWords=targets.map(item=>item.w),observedWords=rounds.map(item=>item.word),soakPass=JSON.stringify(observedWords)===JSON.stringify(expectedWords),geometryPass=geometrySamples.length>=5&&geometrySamples.every(sample=>sample.minTarget>=44&&sample.targetsReachable&&sample.minNavTarget>=44&&sample.horizontalOverflow<=1&&!sample.navClipped),rewardPass=reward?.title&&reward.hint==='Saved in your gallery'&&reward.inViewport&&repeatAfter===1,rewardClear=reward&&!reward.overlaps.length;
-  return{id:rowId,activityId:'spelling',route:'/learning/spelling.html',tier,viewport:viewportName,checks:{input:!fatal&&settingsPass&&rounds.length===targets.length&&rounds.every(round=>round.wrongMarked&&round.wrongDidNotProgress&&round.exactIncrement&&round.correctMarked&&round.feedback)?'PASS':'FAIL',progression:!fatal&&counterBefore===119&&counterAfter===119+targets.length?'PASS':'FAIL',rewards:!fatal&&rewardPass?'PASS':'FAIL',restart:!fatal&&navigationRecovered&&reloadRecovered?'PASS':'FAIL',long_repeated_play:!fatal&&soakPass?'PASS':'FAIL',visual_quality:!fatal&&geometryPass&&rewardClear?'PASS':'FAIL'},priorResponsiveRegression:'33a26ea4851dc70d74d6bb8b51f2a577e5251de6',expectedWords,observedWords,settingsPass,counterBefore,counterAfter,repeatAfter,reward,navigationRecovered,reloadRecovered,rounds,geometrySamples,pageErrors,failedLocalRequests,screenshotCount:screenshots.length,fatal};
+  return{id:rowId,activityId:'spelling',route:'/learning/spelling.html',tier,viewport:viewportName,checks:{input:!fatal&&settingsPass&&rounds.length===targets.length&&rounds.every(round=>round.wrongMarked&&round.wrongDidNotProgress&&round.wrongFeedback&&round.exactIncrement&&round.correctMarked&&round.feedback)?'PASS':'FAIL',progression:!fatal&&counterBefore===119&&counterAfter===119+targets.length?'PASS':'FAIL',rewards:!fatal&&rewardPass?'PASS':'FAIL',restart:!fatal&&navigationRecovered&&reloadRecovered?'PASS':'FAIL',long_repeated_play:!fatal&&soakPass?'PASS':'FAIL',visual_quality:!fatal&&geometryPass&&rewardClear?'PASS':'FAIL'},priorResponsiveRegression:'33a26ea4851dc70d74d6bb8b51f2a577e5251de6',expectedWords,observedWords,settingsPass,counterBefore,counterAfter,repeatAfter,reward,navigationRecovered,reloadRecovered,rounds,geometrySamples,pageErrors,failedLocalRequests,screenshotCount:screenshots.length,fatal};
 }
 
 async function runProbe(browser,base,viewportName,viewport,tier,allScreenshots){
   const rowId=`spelling-probe:T${tier}:${viewportName}`,made=await makeContext(browser,base,viewport,tier),context=made.context,targets=made.targets.slice(0,3),page=await context.newPage(),screenshots=[],rounds=[],geometrySamples=[];let reward=null,fatal=null;
-  try{await page.goto(base+'/learning/spelling.html',{waitUntil:'load'});for(let index=0;index<targets.length;index++){geometrySamples.push(await geometry(page));await saveShot(page,rowId,`round-${index+1}`,screenshots);const round=await solveRound(page,tier,targets[index],index===0);rounds.push({word:round.word,exactIncrement:round.exactIncrement,wrongMarked:round.wrongMarked,wrongDidNotProgress:round.wrongDidNotProgress});if(index===0)reward=await inspectReward(page,rowId,screenshots);await waitNext(page,round.oldPicture)}}catch(error){fatal=`${error.name}: ${error.message}`;try{await saveShot(page,rowId,'failure',screenshots)}catch{}}finally{allScreenshots.push(...screenshots.map(item=>({...item,viewport:viewportName,tier})));await context.close()}
-  const behaviorPass=!fatal&&geometrySamples.length===3&&geometrySamples.every(sample=>sample.minTarget>=44&&sample.targetsReachable&&sample.minNavTarget>=44&&sample.horizontalOverflow<=1&&!sample.navClipped)&&rounds.length===3&&rounds.every(round=>round.exactIncrement&&round.wrongMarked&&round.wrongDidNotProgress)&&reward?.inViewport;
+  try{await page.goto(base+'/learning/spelling.html',{waitUntil:'load'});for(let index=0;index<targets.length;index++){geometrySamples.push(await geometry(page));await saveShot(page,rowId,`round-${index+1}`,screenshots);const round=await solveRound(page,tier,targets[index],index===0);rounds.push({word:round.word,exactIncrement:round.exactIncrement,wrongMarked:round.wrongMarked,wrongDidNotProgress:round.wrongDidNotProgress,wrongFeedback:round.wrongFeedback,correctMarked:round.correctMarked,feedback:round.feedback});if(index===0)reward=await inspectReward(page,rowId,screenshots);await waitNext(page,round.oldPicture)}}catch(error){fatal=`${error.name}: ${error.message}`;try{await saveShot(page,rowId,'failure',screenshots)}catch{}}finally{allScreenshots.push(...screenshots.map(item=>({...item,viewport:viewportName,tier})));await context.close()}
+  const behaviorPass=!fatal&&geometrySamples.length===3&&geometrySamples.every(sample=>sample.minTarget>=44&&sample.targetsReachable&&sample.minNavTarget>=44&&sample.horizontalOverflow<=1&&!sample.navClipped)&&rounds.length===3&&rounds.every(round=>round.exactIncrement&&round.wrongMarked&&round.wrongDidNotProgress&&round.wrongFeedback&&round.correctMarked&&round.feedback)&&reward?.inViewport&&!reward.overlaps.length;
   return{id:rowId,tier,viewport:viewportName,behaviorPass,reward,rounds,geometrySamples,screenshotCount:screenshots.length,fatal};
 }
 

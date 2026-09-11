@@ -17,6 +17,20 @@ const WORDS = {
   PENGUIN: { w: 'PENGUIN', e: '🐧' },
   ELEPHANT: { w: 'ELEPHANT', e: '🐘' },
 };
+const REWARD_CASES = [
+  ...Array.from({ length: 8 }, (_, index) => ({ tier: index + 3, name: 'phone', width: 390, height: 844 })),
+  { tier: 8, name: 'short-phone', width: 320, height: 568 },
+  { tier: 10, name: 'short-phone', width: 320, height: 568 },
+  { tier: 10, name: 'tablet', width: 820, height: 1180 },
+  { tier: 10, name: 'desktop', width: 1280, height: 900 },
+];
+const GEAR_CASES = [
+  { tier: 8, word: 'APPLE', name: 'short-phone', width: 320, height: 568 },
+  { tier: 10, word: 'ELEPHANT', name: 'short-phone', width: 320, height: 568 },
+  { tier: 10, word: 'ELEPHANT', name: 'phone', width: 390, height: 844 },
+  { tier: 10, word: 'ELEPHANT', name: 'tablet', width: 820, height: 1180 },
+  { tier: 10, word: 'ELEPHANT', name: 'desktop', width: 1280, height: 900 },
+];
 
 let browser;
 let server;
@@ -109,6 +123,10 @@ async function openCase({ tier, word, viewport }) {
   await page.goto(`${base}/learning/spelling.html`, { waitUntil: 'domcontentloaded' });
   await page.locator(tier >= 6 ? '.letter-tile' : '.word-card').first().waitFor();
   return { context, page };
+}
+
+function overlaps(a, b) {
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
 }
 
 async function assertReachableLayout(page, viewport, requireVerticalScroll = false) {
@@ -214,6 +232,106 @@ test('Spelling choices stay reachable across tiers, widths, word lengths, and re
         await page.reload({ waitUntil: 'domcontentloaded' });
         await page.locator('.letter-tile').first().waitFor();
         await assertReachableLayout(page, viewport, viewport.width === 320);
+      } finally {
+        await context.close();
+      }
+    });
+  }
+});
+
+test('Spelling rewards and settings stay clear of required content', { timeout: 180000 }, async t => {
+  for (const entry of REWARD_CASES) {
+    await t.test(`reward T${entry.tier} ${entry.name} ${entry.width}x${entry.height}`, async () => {
+      const word = entry.tier >= 10 ? 'ELEPHANT' : entry.tier >= 8 ? 'APPLE' : entry.tier >= 7 ? 'MOON' : 'EGG';
+      const { context, page } = await openCase({ tier: entry.tier, word, viewport: { width: entry.width, height: entry.height } });
+      try {
+        await page.evaluate(() => {
+          speakInstruction('Spell the word!');
+          vbCelebrate.show([{ id: 'spelling-layout', type: 'milestone', tier: 'gold', title: 'Spelling Bee Star' }]);
+        });
+        await page.locator('.vb-celebrate.in').waitFor();
+        const geometry = await page.evaluate(() => {
+          const rect = element => {
+            if (!element || getComputedStyle(element).display === 'none' || getComputedStyle(element).visibility === 'hidden') return null;
+            const value = element.getBoundingClientRect();
+            return { left: value.left, top: value.top, right: value.right, bottom: value.bottom, width: value.width, height: value.height };
+          };
+          return {
+            notice: rect(document.querySelector('.vb-celebrate')),
+            title: rect(document.querySelector('.title')),
+            hint: rect(document.querySelector('#hint')),
+            replayVisible: getComputedStyle(document.querySelector('.vb-replay-instruction')).visibility !== 'hidden',
+            noticeTop: document.querySelector('.vb-celebrate').getBoundingClientRect().top,
+            viewport: { width: innerWidth, height: innerHeight },
+          };
+        });
+        assert.ok(geometry.notice.left >= 0 && geometry.notice.top >= 0 &&
+          geometry.notice.right <= geometry.viewport.width && geometry.notice.bottom <= geometry.viewport.height,
+        `reward notice is clipped: ${JSON.stringify(geometry.notice)}`);
+        if (entry.width <= 600) {
+          assert.equal(overlaps(geometry.notice, geometry.title), false,
+            `reward notice overlaps title: ${JSON.stringify({ notice: geometry.notice, title: geometry.title })}`);
+          assert.equal(overlaps(geometry.notice, geometry.hint), false,
+            `reward notice overlaps hint: ${JSON.stringify({ notice: geometry.notice, hint: geometry.hint })}`);
+          assert.equal(geometry.replayVisible, false, 'phone reward should temporarily replace the replay control');
+        } else {
+          assert.equal(geometry.noticeTop, 72, 'tablet/desktop shared reward placement changed');
+          assert.equal(geometry.replayVisible, true, 'tablet/desktop replay control should remain visible');
+        }
+        if (entry.tier === 3 && entry.name === 'phone') {
+          const fading = await page.evaluate(() => new Promise(resolve => {
+            const notice = document.querySelector('.vb-celebrate');
+            const observer = new MutationObserver(() => {
+              if (!notice.classList.contains('in')) {
+                observer.disconnect();
+                resolve({
+                  attached: notice.isConnected,
+                  opacity: Number(getComputedStyle(notice).opacity),
+                  replayVisible: getComputedStyle(document.querySelector('.vb-replay-instruction')).visibility !== 'hidden',
+                  timedOut: false,
+                });
+              }
+            });
+            observer.observe(notice, { attributes: true, attributeFilter: ['class'] });
+            setTimeout(() => { observer.disconnect(); resolve({ timedOut: true }); }, 4000);
+          }));
+          assert.equal(fading.timedOut, false, 'automatic dismissal did not begin');
+          assert.equal(fading.attached, true, 'automatic dismissal skipped the visible transition');
+          assert.ok(fading.opacity > 0, 'automatic dismissal transition was not visible');
+          assert.equal(fading.replayVisible, false, 'replay returned before the reward DOM disappeared');
+        } else {
+          await page.locator('.vb-celebrate').click();
+        }
+        await page.locator('.vb-celebrate').waitFor({ state: 'detached', timeout: 1000 });
+        await page.locator('.vb-replay-instruction').waitFor({ state: 'visible', timeout: 1000 });
+      } finally {
+        await context.close();
+      }
+    });
+  }
+
+  for (const entry of GEAR_CASES) {
+    await t.test(`settings T${entry.tier} ${entry.name} ${entry.width}x${entry.height}`, async () => {
+      const { context, page } = await openCase({ tier: entry.tier, word: entry.word, viewport: { width: entry.width, height: entry.height } });
+      try {
+        await page.locator('#stage').evaluate(element => { element.scrollTop = 0; });
+        const geometry = await page.evaluate(() => {
+          const read = element => {
+            const value = element.getBoundingClientRect();
+            return { left: value.left, top: value.top, right: value.right, bottom: value.bottom, width: value.width, height: value.height };
+          };
+          return {
+            gear: read(document.querySelector('#gameSettingsGear')),
+            letters: [...document.querySelectorAll('.letter-tile')].map(read),
+            horizontalOverflow: Math.max(0, document.documentElement.scrollWidth - innerWidth),
+          };
+        });
+        assert.ok(geometry.letters.length >= new Set(entry.word).size, 'Spelling letter bank is incomplete');
+        assert.ok(geometry.letters.every(letter => Math.min(letter.width, letter.height) >= 44), 'letter target shrank below 44px');
+        assert.equal(geometry.letters.some(letter => overlaps(geometry.gear, letter)), false,
+          `settings gear covers a required letter tile: ${JSON.stringify(geometry)}`);
+        assert.ok(Math.min(geometry.gear.width, geometry.gear.height) >= 44, 'settings target shrank below 44px');
+        assert.ok(geometry.horizontalOverflow <= 1, `horizontal overflow is ${geometry.horizontalOverflow}px`);
       } finally {
         await context.close();
       }
