@@ -75,3 +75,6 @@ CODEX-TASKS.md
 
 # per-run staging folders made by tests — regenerable, never committed
 .publish-test-*/
+
+# Codex audit evidence store (immutable, never committed to the app repo)
+audit-evidence-archive/
