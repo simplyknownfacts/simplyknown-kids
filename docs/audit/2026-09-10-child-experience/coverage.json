@@ -4622,8 +4622,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Shape Match title on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "All applicable Shape Match behavior, negative recovery, repeated play, reward persistence and reviewed visual states complete; phone reward notice is clear of the title and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -4649,12 +4649,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#shape-match-visual-play-3a16"
+        "baseline-observations.md#shape-match-visual-play-3a16",
+        "baseline-observations.md#shape-match-notice-repair-d92e248"
       ]
     },
     {
@@ -4708,8 +4709,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Shape Match title on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "All applicable Shape Match behavior, negative recovery, repeated play, reward persistence and reviewed visual states complete; phone reward notice is clear of the title and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -4735,12 +4736,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#shape-match-visual-play-3a16"
+        "baseline-observations.md#shape-match-visual-play-3a16",
+        "baseline-observations.md#shape-match-notice-repair-d92e248"
       ]
     },
     {
@@ -4794,8 +4796,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Shape Match title on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "All applicable Shape Match behavior, negative recovery, repeated play, reward persistence and reviewed visual states complete; phone reward notice is clear of the title and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -4821,12 +4823,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#shape-match-visual-play-3a16"
+        "baseline-observations.md#shape-match-visual-play-3a16",
+        "baseline-observations.md#shape-match-notice-repair-d92e248"
       ]
     },
     {
@@ -4880,8 +4883,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Shape Match title on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "All applicable Shape Match behavior, negative recovery, repeated play, reward persistence and reviewed visual states complete; phone reward notice is clear of the title and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -4907,12 +4910,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#shape-match-visual-play-3a16"
+        "baseline-observations.md#shape-match-visual-play-3a16",
+        "baseline-observations.md#shape-match-notice-repair-d92e248"
       ]
     },
     {
@@ -4966,8 +4970,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Shape Match title on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "All applicable Shape Match behavior, negative recovery, repeated play, reward persistence and reviewed visual states complete; phone reward notice is clear of the title and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -4993,12 +4997,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#shape-match-visual-play-3a16"
+        "baseline-observations.md#shape-match-visual-play-3a16",
+        "baseline-observations.md#shape-match-notice-repair-d92e248"
       ]
     },
     {
@@ -5052,8 +5057,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Shape Match title on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "All applicable Shape Match behavior, negative recovery, repeated play, reward persistence and reviewed visual states complete; phone reward notice is clear of the title and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -5079,12 +5084,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "PASS",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#shape-match-visual-play-3a16"
+        "baseline-observations.md#shape-match-visual-play-3a16",
+        "baseline-observations.md#shape-match-notice-repair-d92e248"
       ]
     },
     {
@@ -5138,8 +5144,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Shape Match title on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "All applicable Shape Match behavior, negative recovery, repeated play, reward persistence and reviewed visual states complete; phone reward notice is clear of the title and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -5165,12 +5171,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#shape-match-visual-play-3a16"
+        "baseline-observations.md#shape-match-visual-play-3a16",
+        "baseline-observations.md#shape-match-notice-repair-d92e248"
       ]
     },
     {
@@ -5224,8 +5231,8 @@
       "viewport": "phone",
       "defaultVisible": true,
       "execution": "COMPLETE",
-      "verdict": "FAIL",
-      "reason": "P2 child-experience visual defect: the earned-ribbon notice covers the Shape Match title on phone; all behavior and other visual states completed.",
+      "verdict": "PASS",
+      "reason": "All applicable Shape Match behavior, negative recovery, repeated play, reward persistence and reviewed visual states complete; phone reward notice is clear of the title and play.",
       "checks": {
         "launch": "PASS",
         "instructions": "PASS",
@@ -5251,12 +5258,13 @@
         "timer_expiry": "NA",
         "interrupted_audio": "NA",
         "long_repeated_play": "PASS",
-        "visual_quality": "FAIL"
+        "visual_quality": "PASS"
       },
       "evidence": [
         "baseline-observations.md#core-e2e-df25aec",
         "baseline-observations.md#games-resilience-d6687a3",
-        "baseline-observations.md#shape-match-visual-play-3a16"
+        "baseline-observations.md#shape-match-visual-play-3a16",
+        "baseline-observations.md#shape-match-notice-repair-d92e248"
       ]
     },
     {
