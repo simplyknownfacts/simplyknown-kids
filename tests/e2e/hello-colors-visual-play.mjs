@@ -15,25 +15,33 @@ const AUDIT_START = '12314eff5258a1969f3bb1d0d204d8bc243ab3d5';
 const VIEWPORTS = {
   desktop: { width: 1280, height: 900, isMobile: false, hasTouch: false },
   phone: { width: 390, height: 844, isMobile: true, hasTouch: true },
+  'short-phone': { width: 320, height: 568, isMobile: true, hasTouch: true },
 };
+const DEFAULT_VIEWPORTS = ['desktop', 'phone'];
 const TIERS = [1,2,3,4,5,6,7,8,9,10];
 const SELECTED_TIERS = process.env.TIERS ? process.env.TIERS.split(',').map(Number) : TIERS;
-const SELECTED_VIEWPORTS = process.env.VIEWPORTS ? process.env.VIEWPORTS.split(',') : Object.keys(VIEWPORTS);
+const SELECTED_VIEWPORTS = process.env.VIEWPORTS ? process.env.VIEWPORTS.split(',') : DEFAULT_VIEWPORTS;
 const COLOR_THINGS = {
   Red: ['Apple','Rose','Fire Truck','Heart'], Blue: ['Blueberry','Ocean','Dolphin','Heart'],
   Yellow: ['Sunflower','Lemon','Star','Bee'], Green: ['Frog','Leaf','Broccoli','Turtle'],
-  Purple: ['Grapes','Unicorn','Flower','Heart'], Orange: ['Orange','Pumpkin','Fox','Carrot'],
+  Purple: ['Grapes','Purple Circle','Flower','Heart'], Orange: ['Orange','Pumpkin','Fox','Carrot'],
   Pink: ['Pig','Blossom','Flamingo','Heart'], Brown: ['Bear','Chocolate','Log','Potato'],
   Gray: ['Elephant','Fog','Shark','Rock'], Black: ['Bat','Cat','Hat','Spider'],
   White: ['Cloud','Swan','Milk','Snow'],
 };
 const COLOR_EMOJIS = {
   Red: ['🍎','🌹','🚒','❤️'], Blue: ['🫐','🌊','🐬','💙'], Yellow: ['🌻','🍋','⭐','🐝'],
-  Green: ['🐸','🌿','🥦','🐢'], Purple: ['🍇','🦄','🪻','💜'], Orange: ['🍊','🎃','🦊','🥕'],
+  Green: ['🐸','🌿','🥦','🐢'], Purple: ['🍇','🟣','🪻','💜'], Orange: ['🍊','🎃','🦊','🥕'],
   Pink: ['🐷','🌸','🦩','🩷'], Brown: ['🐻','🍫','🪵','🥔'], Gray: ['🐘','🌫️','🦈','🪨'],
   Black: ['🦇','🐈‍⬛','🎩','🕷️'], White: ['☁️','🦢','🥛','❄️'],
 };
 const MIXES = { 'Red + Blue': 'Purple', 'Red + Yellow': 'Orange', 'Blue + Yellow': 'Green', 'Red + White': 'Pink', 'Black + White': 'Gray' };
+const COLOR_RGB = {
+  Red:'rgb(255, 68, 68)', Blue:'rgb(68, 136, 255)', Yellow:'rgb(255, 215, 0)',
+  Green:'rgb(68, 204, 68)', Purple:'rgb(153, 102, 204)', Orange:'rgb(255, 140, 0)',
+  Pink:'rgb(255, 105, 180)', Brown:'rgb(139, 90, 43)', Gray:'rgb(154, 160, 166)',
+  Black:'rgb(43, 43, 51)', White:'rgb(239, 239, 243)',
+};
 const sha256 = file => createHash('sha256').update(readFileSync(file)).digest('hex');
 
 async function freePort() {
@@ -150,6 +158,27 @@ async function geometry(page) {
   }, minTarget);
 }
 
+async function presentation(page) {
+  return page.evaluate(expected => {
+    const label = document.querySelector('#colorLabel');
+    const labelVisible = getComputedStyle(label).display !== 'none';
+    const labelName = label.textContent.trim();
+    const mixWords = [...document.querySelectorAll('.quiz-color-word')].map(word => ({
+      name: word.textContent.trim(), color: getComputedStyle(word).color,
+    }));
+    return {
+      bodyBackground: getComputedStyle(document.body).backgroundImage,
+      overlay: document.querySelector('#bg').style.background,
+      labelVisible,
+      labelName,
+      labelColor: getComputedStyle(label).color,
+      wordsMatch: (!labelVisible || expected[labelName] === getComputedStyle(label).color)
+        && mixWords.every(word => expected[word.name] === word.color),
+      mixWords,
+    };
+  }, COLOR_RGB);
+}
+
 function answerIndex(prompt, names, emojis) {
   const clean = prompt.replace(/[!?]/g, '').trim();
   if (clean.includes(' + ')) {
@@ -178,12 +207,14 @@ async function solveExploration(page, rapid = false) {
     if (rapid) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     if (!await cards.nth(i).evaluate(element => element.classList.contains('revealed'))) await cards.nth(i).click();
   }
-  return { mode: 'explore', wrongRecovered: null };
+  const colors = await cards.evaluateAll(nodes => nodes.map(node => node.dataset.color));
+  return { mode: 'explore', wrongRecovered: null, choiceCount: count, distinctColors: new Set(colors).size, answerCount: count };
 }
 
 async function solveQuiz(page, rapid = false) {
   const prompt = (await page.locator('#quizLabel').textContent()).trim();
   const cards = page.locator('#thingsRow .thing-card');
+  const count = await cards.count();
   const names = await cards.evaluateAll(nodes => nodes.map(node => node.querySelector('.thing-name')?.textContent?.trim() || ''));
   const emojis = await cards.evaluateAll(nodes => nodes.map(node => node.querySelector('.thing-emoji')?.textContent?.trim() || ''));
   const correct = answerIndex(prompt, names, emojis);
@@ -197,7 +228,15 @@ async function solveQuiz(page, rapid = false) {
     await cards.nth(correct).dispatchEvent('pointerdown');
     await cards.nth(correct).dispatchEvent('pointerdown');
   }
-  return { mode: prompt.includes(' + ') ? 'mix' : prompt.startsWith('Which') ? 'odd' : 'identify', wrongRecovered };
+  const colors = await cards.evaluateAll(nodes => nodes.map(node => node.dataset.color));
+  const answerCount = await cards.evaluateAll(nodes => nodes.filter(node => node.dataset.answer === 'true').length);
+  return {
+    mode: prompt.includes(' + ') ? 'mix' : prompt.startsWith('Which') ? 'odd' : 'identify',
+    wrongRecovered,
+    choiceCount: count,
+    distinctColors: new Set(colors).size,
+    answerCount,
+  };
 }
 
 async function reward(page, tier, base, rowId, screenshots) {
@@ -209,10 +248,15 @@ async function reward(page, tier, base, rowId, screenshots) {
   await page.waitForTimeout(500);
   const result = await page.locator('.vb-celebrate').evaluate(element => {
     const rect = element.getBoundingClientRect();
+    const blockers = [...document.querySelectorAll('#colorLabel,#quizLabel,#thingsRow .thing-card,.back-btn,.home-btn,#gameSettingsGear,.settings-gear')]
+      .filter(node => { const box = node.getBoundingClientRect(), style = getComputedStyle(node); return style.display !== 'none' && style.visibility !== 'hidden' && box.width && box.height; })
+      .map(node => { const box = node.getBoundingClientRect(); return { name:node.id || node.className,left:box.left,top:box.top,right:box.right,bottom:box.bottom }; });
     return {
       title: element.querySelector('.cele-title')?.textContent?.trim() || '',
       hint: element.querySelector('.cele-hint')?.textContent?.trim() || '',
       inViewport: rect.left >= -1 && rect.top >= -1 && rect.right <= innerWidth + 1 && rect.bottom <= innerHeight + 1,
+      overlaps: blockers.filter(box => Math.min(rect.right,box.right)>Math.max(rect.left,box.left)
+        && Math.min(rect.bottom,box.bottom)>Math.max(rect.top,box.top)).map(box => box.name),
     };
   });
   await saveShot(page, rowId, 'reward', screenshots);
@@ -222,6 +266,7 @@ async function reward(page, tier, base, rowId, screenshots) {
     await page.goto(base + '/learning/hello-colors.html', { waitUntil: 'load' });
     await installProgressHook(page);
   }
+  result.contentRestored = await page.evaluate(() => ['#colorLabel','#quizLabel'].every(selector => getComputedStyle(document.querySelector(selector)).visibility === 'visible'));
   return result;
 }
 
@@ -254,10 +299,12 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     else failedLocalRequests.push(failure);
   });
   let counterBefore = null, counterAfter = null, autoAdvanced = null, rewardResult = null, fatal = null;
+  const presentationSamples = [];
   try {
     await page.goto(base + '/learning/hello-colors.html', { waitUntil: 'load' });
     await installProgressHook(page);
     geometrySamples.push(await geometry(page));
+    presentationSamples.push(await presentation(page));
     await saveShot(page, rowId, 'initial', screenshots);
     counterBefore = (await progress(page)).counter;
 
@@ -272,9 +319,10 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
       if (tier >= 8) await page.evaluate(value => { window.__colorRandom = [value]; }, [0, 0.3, 0.6, 0][round % 4]);
       else if (tier >= 6) await page.evaluate(value => { window.__colorRandom = [value]; }, [0, 0.4, 0][round % 3]);
       const before = (await progress(page)).records.length;
-      const result = tier <= 3 ? await solveExploration(page, round === 0) : await solveQuiz(page, round === 0);
+      const result = tier === 1 ? await solveExploration(page, round === 0) : await solveQuiz(page, round === 0);
       await page.waitForFunction(value => (window.__colorRecords || []).length === value + 1, before, { timeout: 2000 });
       rounds.push(result);
+      presentationSamples.push(await presentation(page));
       if (round === 0 && tier >= 3) rewardResult = await reward(page, tier, base, rowId, screenshots);
       if (round < 6) await page.waitForFunction(() => document.querySelector('.thing-card') !== window.__roundFirst, null, { timeout: 4000 });
       if ([0,3,6].includes(round)) await saveShot(page, rowId, `round-${round + 1}`, screenshots);
@@ -295,10 +343,19 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
   const expectedCounter = counterBefore == null ? null : counterBefore + 7;
   const geometryPass = geometrySamples.length === 2 && geometrySamples.every(sample => sample.minTarget >= 44 && sample.minNavTarget >= 44 && sample.horizontalOverflow <= 1 && !sample.navClipped.length);
   const modes = new Set(rounds.map(round => round.mode));
-  const expectedModes = tier >= 8 ? ['identify','odd','mix'] : tier >= 6 ? ['identify','odd'] : tier >= 4 ? ['identify'] : ['explore'];
+  const expectedModes = tier >= 8 ? ['identify','odd','mix'] : tier >= 6 ? ['identify','odd'] : tier >= 2 ? ['identify'] : ['explore'];
   const modePass = expectedModes.every(mode => modes.has(mode));
-  const wrongPass = tier <= 3 || rounds.every(round => round.wrongRecovered);
-  const rewardPass = rewardResult?.title && rewardResult.hint === 'Saved in your gallery' && rewardResult.inViewport;
+  const wrongPass = tier === 1 || rounds.every(round => round.wrongRecovered);
+  const choicesPass = rounds.every(round => {
+    if (tier === 1) return round.choiceCount === 4 && round.distinctColors === 1;
+    if (tier === 2) return round.choiceCount === 2 && round.distinctColors === 2 && round.answerCount === 1;
+    if (tier === 3) return round.choiceCount === 3 && round.distinctColors === 3 && round.answerCount === 1;
+    return round.choiceCount === 4 && round.distinctColors >= (round.mode === 'identify' ? 3 : 2) && round.answerCount === 1;
+  });
+  const firstBackground = presentationSamples[0]?.bodyBackground;
+  const presentationPass = presentationSamples.length === 8 && presentationSamples.every(sample =>
+    sample.overlay === '' && sample.wordsMatch && sample.bodyBackground === firstBackground && /gradient/.test(sample.bodyBackground));
+  const rewardPass = rewardResult?.title && rewardResult.hint === 'Saved in your gallery' && rewardResult.inViewport && !rewardResult.overlaps.length && rewardResult.contentRestored;
   return {
     id: rowId,
     activityId: 'hello-colors',
@@ -306,12 +363,12 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     tier,
     viewport: viewportName,
     checks: {
-      input: !fatal && rounds.length === 7 && wrongPass ? 'PASS' : 'FAIL',
+      input: !fatal && rounds.length === 7 && wrongPass && choicesPass ? 'PASS' : 'FAIL',
       progression: !fatal && counterAfter === expectedCounter ? 'PASS' : 'FAIL',
       rewards: !fatal && rewardPass ? 'PASS' : 'FAIL',
       restart: !fatal && rounds.length === 7 && modePass ? 'PASS' : 'FAIL',
       long_repeated_play: !fatal && rounds.length === 7 && modePass && (tier !== 1 || autoAdvanced) ? 'PASS' : 'FAIL',
-      visual_quality: !fatal && geometryPass ? 'PASS' : 'FAIL',
+      visual_quality: !fatal && geometryPass && presentationPass ? 'PASS' : 'FAIL',
     },
     rounds,
     autoAdvanced,
@@ -320,6 +377,7 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     counterAfter,
     expectedCounter,
     geometrySamples,
+    presentationSamples,
     blockedExternal,
     pageErrors,
     failedLocalRequests,

@@ -53,3 +53,11 @@ test('wrong answers teach or permit retry in the improved games', () => {
   const tune = read('games/tap-a-tune.html');
   assert.match(tune, /That was \$\{NOTES\[i\]\.name\}/);
 });
+
+test('Hello Colors avoids ambiguous examples and scales toddler color choices', () => {
+  const colors = read('learning/hello-colors.html');
+  assert.doesNotMatch(colors, /🦄|Unicorn/, 'the pink-and-purple unicorn is not a clear purple example');
+  assert.match(colors, /tier === 2 \? 2 : tier === 3 \? 3 : 4/, 'toddler choice count must scale from two to three');
+  assert.match(colors, /dataset\.color/, 'color choices need explicit color identity');
+  assert.doesNotMatch(colors, /bg\.style\.background\s*=/, 'rounds must not repaint the normal app background');
+});

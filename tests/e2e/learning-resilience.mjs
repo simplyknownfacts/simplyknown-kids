@@ -30,7 +30,7 @@ const LESSONS = [
 const COLOR_BY_EMOJI = {
   '🍎':'Red','🌹':'Red','🚒':'Red','❤️':'Red', '🫐':'Blue','🌊':'Blue','🐬':'Blue','💙':'Blue',
   '🌻':'Yellow','🍋':'Yellow','⭐':'Yellow','🐝':'Yellow', '🐸':'Green','🌿':'Green','🥦':'Green','🐢':'Green',
-  '🍇':'Purple','🦄':'Purple','🪻':'Purple','💜':'Purple', '🍊':'Orange','🎃':'Orange','🦊':'Orange','🥕':'Orange',
+  '🍇':'Purple','🟣':'Purple','🪻':'Purple','💜':'Purple', '🍊':'Orange','🎃':'Orange','🦊':'Orange','🥕':'Orange',
   '🐷':'Pink','🌸':'Pink','🦩':'Pink','🩷':'Pink', '🐻':'Brown','🍫':'Brown','🪵':'Brown','🥔':'Brown',
   '🐘':'Gray','🌫️':'Gray','🦈':'Gray','🪨':'Gray', '🦇':'Black','🐈‍⬛':'Black','🎩':'Black','🕷️':'Black',
   '☁️':'White','🦢':'White','🥛':'White','❄️':'White',
@@ -220,7 +220,7 @@ function parseMoney(text) {
 }
 
 async function wrongAnswerRecovery(page, lesson, tier) {
-  if (lesson.id === 'abcs' || (lesson.id === 'hello-colors' && tier <= 3)
+  if (lesson.id === 'abcs' || (lesson.id === 'hello-colors' && tier === 1)
     || (lesson.id === 'animal-sounds' && tier <= 4) || (lesson.id === 'count-along' && tier <= 4)
     || (lesson.id === 'days' && tier <= 4)) return na('this age/mode has no wrong-answer mechanic');
 

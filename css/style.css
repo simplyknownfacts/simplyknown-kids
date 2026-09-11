@@ -1284,21 +1284,21 @@ body.world-page .home-btn { background: #8AE0C2; }
 .world-page .cards-row { flex-shrink: 0; }
 
 /* Play rooms share the house materials. Canvas geometry and custom themes stay
-   with each activity; the color lesson keeps its full-screen color mechanic. */
+   with each activity. */
 html:not([data-vbtheme]) body[data-play-world="games"] {
   background: radial-gradient(ellipse at 20% 10%, #297e70, transparent 65%), linear-gradient(155deg, #173e4f, #164f52);
 }
 html:not([data-vbtheme]) body[data-play-world="art"] {
   background: linear-gradient(140deg, #e4d4f9, #fff6ec 65%, #e8def9);
 }
-html:not([data-vbtheme]) body[data-play-world="learn"]:not([data-play-activity="hello-colors"]) {
+html:not([data-vbtheme]) body[data-play-world="learn"] {
   --text: #184d4a; --text-soft: #496d62; --accent: #aa620e;
   --chip-bg: #fff9e9; --chip-border: #d4c8a5;
   color: #184d4a;
   background: radial-gradient(ellipse at 15% 10%, #fffdf0 0, transparent 50%),
     radial-gradient(ellipse at 100% 90%, #e0edcf 0, transparent 48%), #f8edcb;
 }
-html:not([data-vbtheme]) body[data-play-world="learn"]:not([data-play-activity="hello-colors"]) :is(.number-big,.thing-label,.eq-row,.answer-box,.letter-big,.spelled-slot,.prompt-big,#hint,.cname) {
+html:not([data-vbtheme]) body[data-play-world="learn"] :is(.number-big,.thing-label,.eq-row,.answer-box,.letter-big,.spelled-slot,.prompt-big,#hint,.cname) {
   color: #184d4a; text-shadow: none;
 }
 html:not([data-vbtheme]) body[data-play-world="learn"] :is(.num-btn,.word-card,.letter-tile,.start-tile,.choice-btn,.day-tile,.pager-btn.secondary) {

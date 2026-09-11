@@ -31,18 +31,18 @@ after(async () => {
   if (server) server.kill();
 });
 
-async function activityPage(id, tier, features = {}, viewport = { width: 390, height: 844 }) {
+async function activityPage(id, tier, features = {}, viewport = { width: 390, height: 844 }, theme) {
   const ctx = await browser.newContext({ viewport, serviceWorkers: 'block' });
   await ctx.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
-  await ctx.addInitScript(({ id, tier, features }) => {
+  await ctx.addInitScript(({ id, tier, features, theme }) => {
     localStorage.setItem('vb_profiles', JSON.stringify([{
       id: 'content-kid', name: 'Test Kid', birthday: '2020-01-01', color: '#4ECDC4',
       voice: 'girl', mascot: { id: 'dog' }, tierOverrides: { [id]: tier },
-      features: { [id]: features }, activitiesVisible: {}, youtube: [],
+      features: { [id]: features }, activitiesVisible: {}, youtube: [], theme,
     }]));
     localStorage.setItem('vb_active_id', 'content-kid');
     HTMLMediaElement.prototype.play = () => Promise.resolve();
-  }, { id, tier, features });
+  }, { id, tier, features, theme });
   const page = await ctx.newPage();
   return { ctx, page };
 }
@@ -121,6 +121,68 @@ test('changed activity behavior survives real pointer input', async (t) => {
       assert.equal(layout.clipped, false, `${viewport.width}x${viewport.height} collection is clipped`);
       assert.deepEqual(layout.overlaps, [], `${viewport.width}x${viewport.height} collection covers ${layout.overlaps}`);
       await sample.ctx.close();
+    }
+  });
+
+  await t.test('Hello Colors gives toddlers scaled mixed choices on the normal app background', async () => {
+    const expectedRgb = {
+      Red: 'rgb(255, 68, 68)', Blue: 'rgb(68, 136, 255)', Yellow: 'rgb(255, 215, 0)',
+      Green: 'rgb(68, 204, 68)', Purple: 'rgb(153, 102, 204)', Orange: 'rgb(255, 140, 0)',
+      Pink: 'rgb(255, 105, 180)', Brown: 'rgb(139, 90, 43)', Gray: 'rgb(154, 160, 166)',
+      Black: 'rgb(43, 43, 51)', White: 'rgb(239, 239, 243)',
+    };
+
+    for (const [tier, expectedCards] of [[1, 4], [2, 2], [3, 3], [4, 4]]) {
+      const { ctx, page } = await activityPage('hello-colors', tier);
+      await page.goto(base + '/learning/hello-colors.html', { waitUntil: 'domcontentloaded' });
+      const initial = await page.evaluate(() => ({
+        background: getComputedStyle(document.body).backgroundImage,
+        overlay: document.querySelector('#bg').style.background,
+        label: document.querySelector('#colorLabel').textContent.trim(),
+        labelColor: getComputedStyle(document.querySelector('#colorLabel')).color,
+        cards: [...document.querySelectorAll('.thing-card')].map(card => ({
+          color: card.dataset.color,
+          answer: card.dataset.answer,
+        })),
+      }));
+      assert.match(initial.background, /radial-gradient/, `T${tier} should use the normal Learning background`);
+      assert.equal(initial.overlay, '', `T${tier} must not paint a round color over the app`);
+      assert.equal(initial.labelColor, expectedRgb[initial.label], `T${tier} color word must match its name`);
+      assert.equal(initial.cards.length, expectedCards, `T${tier} choice count`);
+
+      if (tier === 1) {
+        assert.equal(new Set(initial.cards.map(card => card.color)).size, 1, 'baby sensory examples stay simple');
+      } else {
+        const distinctColors = new Set(initial.cards.map(card => card.color)).size;
+        if (tier <= 3) assert.equal(distinctColors, expectedCards, `T${tier} needs one differently colored thing per choice`);
+        else assert.ok(distinctColors >= 3, `T${tier} needs varied colors even in object-specific rounds`);
+        assert.equal(initial.cards.filter(card => card.answer === 'true').length, 1, `T${tier} needs one right choice`);
+        const before = await page.evaluate(() => vbProgress.getState().counters['hello-colors'] || 0);
+        const wrong = page.locator('.thing-card[data-answer="false"]').first();
+        await wrong.dispatchEvent('pointerdown', { pointerId: tier * 10 });
+        assert.equal(await wrong.evaluate(card => card.classList.contains('wrong')), true, `T${tier} wrong choice must teach retry`);
+        assert.equal(await page.evaluate(() => vbProgress.getState().counters['hello-colors'] || 0), before, `T${tier} wrong choice must not score`);
+        await page.evaluate(() => { window.__helloFirst = document.querySelector('.thing-card'); });
+        await page.locator('.thing-card[data-answer="true"]').dispatchEvent('pointerdown', { pointerId: tier * 10 + 1 });
+        assert.equal(await page.evaluate(() => vbProgress.getState().counters['hello-colors'] || 0), before + 1, `T${tier} right choice scores once`);
+        await page.waitForFunction(() => document.querySelector('.thing-card') !== window.__helloFirst, null, { timeout: 3000 });
+        assert.equal(await page.locator('#bg').evaluate(element => element.style.background), '', `T${tier} background stays neutral after success`);
+      }
+      await ctx.close();
+    }
+
+    for (const theme of ['paper', 'candy']) {
+      const { ctx, page } = await activityPage('hello-colors', 2, {}, { width: 390, height: 844 }, theme);
+      await page.goto(base + '/learning/hello-colors.html', { waitUntil: 'domcontentloaded' });
+      const themed = await page.evaluate(() => ({
+        theme: document.documentElement.dataset.vbtheme,
+        background: getComputedStyle(document.body).backgroundImage,
+        overlay: document.querySelector('#bg').style.background,
+      }));
+      assert.equal(themed.theme, theme);
+      assert.match(themed.background, /gradient/, `${theme} theme background should remain visible`);
+      assert.equal(themed.overlay, '', `${theme} theme must not be covered by a round color`);
+      await ctx.close();
     }
   });
 

@@ -9,15 +9,17 @@
   <script>/* apply the active kid's theme before first paint (default storybook = no attribute); activity pages also stamp data-tod (shell pages get it from atmosphere.js) so theme tokens resolve */try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook"){document.documentElement.setAttribute("data-vbtheme",_t);var _h=new Date().getHours();document.documentElement.setAttribute("data-tod",_h>=5&&_h<10?"morning":_h>=10&&_h<17?"afternoon":_h>=17&&_h<20?"evening":"night")}}catch(e){}</script>
   <link rel="stylesheet" href="../css/achievements.css">
   <style>
-    #bg { position:fixed; inset:0; transition: background 0.8s ease; }
+    #bg { position:fixed; inset:0; pointer-events:none; }
     .screen { justify-content: flex-start !important;
               padding-top: calc(70px + env(safe-area-inset-top));
               padding-bottom: 200px;
               overflow-y: auto; }
     .color-label {
       font-size: clamp(48px, 14vw, 100px);
-      font-weight: 900; color: white;
-      text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      font-weight: 900;
+      -webkit-text-stroke: clamp(1px, 0.3vw, 3px) rgba(24,77,74,0.72);
+      paint-order: stroke fill;
+      text-shadow: 0 4px 16px rgba(24,77,74,0.22);
       position: relative; z-index: 2;
     }
     .things-row {
@@ -26,28 +28,42 @@
     }
     .thing-card {
       display:flex; flex-direction:column; align-items:center; gap:6px;
-      cursor:pointer; transition:transform 0.12s;
+      justify-content:center; min-width:110px; min-height:120px; padding:12px;
+      border:3px solid #dfcca0; border-radius:24px;
+      background:rgba(255,253,246,0.9); box-shadow:0 5px 0 #d9c495, 0 9px 18px #765c1612;
+      color:#184d4a; font:inherit; cursor:pointer; transition:transform 0.12s;
     }
     .thing-card:active { transform:scale(0.9); }
     .thing-emoji { font-size: clamp(56px, 13vw, 90px); line-height:1; }
-    .thing-name  { font-size:15px; font-weight:800; color:white;
-                   text-shadow:0 2px 8px rgba(0,0,0,0.5); text-align:center;
+    .thing-name  { font-size:15px; font-weight:800; color:#184d4a;
+                   text-align:center;
                    visibility:hidden; }
     .thing-card.revealed .thing-name { visibility:visible; }
     .quiz-label {
-      font-size: clamp(20px, 5vw, 32px); font-weight:900; color:white;
-      text-shadow:0 3px 12px rgba(0,0,0,0.4); position:relative; z-index:2;
+      font-size: clamp(20px, 5vw, 32px); font-weight:900; color:#184d4a;
+      position:relative; z-index:2;
       text-align:center;
     }
+    .quiz-color-word { -webkit-text-stroke:1px rgba(24,77,74,0.7); paint-order:stroke fill; }
     @keyframes shake {
       0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)}
     }
     .thing-card.wrong { animation: shake 0.3s; }
 
     /* Younger ages (tier <= 3): larger emoji + wider spacing. */
-    body.young-icons .thing-emoji { font-size: clamp(80px, 20vw, 130px); }
-    body.young-icons .things-row { gap: 36px; }
+    body.young-icons .thing-emoji { font-size: clamp(72px, 18vw, 112px); }
+    body.young-icons .things-row { gap: 24px; }
     body.young-icons .thing-name { font-size: 20px; }
+    @media (max-width: 600px) {
+      body:has(.vb-celebrate.in) :is(#colorLabel,#quizLabel) { visibility:hidden; }
+    }
+    @media (max-width: 360px), (max-height: 620px) {
+      .screen { gap:16px !important; padding-bottom:110px; }
+      .color-label { font-size:clamp(42px,12vw,64px); }
+      .thing-card { min-width:92px; min-height:96px; padding:8px; }
+      body.young-icons .thing-emoji { font-size:clamp(58px,16vw,78px); }
+      body.young-icons .things-row { gap:14px; }
+    }
   </style>
 </head>
 <body>
@@ -80,14 +96,14 @@
     gameSettings.attach('hello-colors');
     if (window.vbProgress) { vbProgress.firstPlay('hello-colors'); vbProgress.touchStreak(); }
 
-    const quizOn = tier >= 4 || getProfileFeature(profile, 'hello-colors', 'colorQuiz');
+    const quizOn = tier >= 2 || getProfileFeature(profile, 'hello-colors', 'colorQuiz');
 
     const COLORS = [
       { name:'Red',    hex:'#FF4444', things:[{e:'🍎',n:'Apple'},{e:'🌹',n:'Rose'},{e:'🚒',n:'Fire Truck'},{e:'❤️',n:'Heart'}] },
       { name:'Blue',   hex:'#4488FF', things:[{e:'🫐',n:'Blueberry'},{e:'🌊',n:'Ocean'},{e:'🐬',n:'Dolphin'},{e:'💙',n:'Heart'}] },
       { name:'Yellow', hex:'#FFD700', things:[{e:'🌻',n:'Sunflower'},{e:'🍋',n:'Lemon'},{e:'⭐',n:'Star'},{e:'🐝',n:'Bee'}] },
       { name:'Green',  hex:'#44CC44', things:[{e:'🐸',n:'Frog'},{e:'🌿',n:'Leaf'},{e:'🥦',n:'Broccoli'},{e:'🐢',n:'Turtle'}] },
-      { name:'Purple', hex:'#9966CC', things:[{e:'🍇',n:'Grapes'},{e:'🦄',n:'Unicorn'},{e:'🪻',n:'Flower'},{e:'💜',n:'Heart'}] },
+      { name:'Purple', hex:'#9966CC', things:[{e:'🍇',n:'Grapes'},{e:'🟣',n:'Purple Circle'},{e:'🪻',n:'Flower'},{e:'💜',n:'Heart'}] },
       { name:'Orange', hex:'#FF8C00', things:[{e:'🍊',n:'Orange'},{e:'🎃',n:'Pumpkin'},{e:'🦊',n:'Fox'},{e:'🥕',n:'Carrot'}] },
       { name:'Pink',   hex:'#FF69B4', things:[{e:'🐷',n:'Pig'},{e:'🌸',n:'Blossom'},{e:'🦩',n:'Flamingo'},{e:'🩷',n:'Heart'}] },
     ];
@@ -116,8 +132,14 @@
     const label     = document.getElementById('colorLabel');
     const quizLbl   = document.getElementById('quizLabel');
     const thingsRow = document.getElementById('thingsRow');
-    const bg        = document.getElementById('bg');
     const screen    = document.getElementById('screen');
+
+    function showColorWord(color) {
+      label.textContent = color.name;
+      label.style.color = color.hex;
+      label.dataset.color = color.name;
+      label.style.display = 'block';
+    }
 
     function nextRound() {
       thingsRow.innerHTML = '';
@@ -130,14 +152,16 @@
         // must tap each one (reveals + names it). Once all are tapped, we
         // celebrate and advance to the next color automatically.
         const color = COLORS[colorIdx % COLORS.length];
-        bg.style.background = color.hex;
-        label.textContent = color.name;
-        label.style.display = 'block';
+        showColorWord(color);
         let tappedCount = 0;
         const total = color.things.length;
         color.things.forEach(t => {
-          const card = document.createElement('div');
+          const card = document.createElement('button');
+          card.type = 'button';
           card.className = 'thing-card pop-in';
+          card.dataset.color = color.name;
+          card.dataset.answer = 'true';
+          card.setAttribute('aria-label', `${t.n}, ${color.name}`);
           card.innerHTML = `<span class="thing-emoji">${t.e}</span><span class="thing-name">${t.n}</span>`;
           card.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -157,8 +181,7 @@
         });
         quizLbl.textContent = `👆 Tap all of the ${color.name} things for the next color!`;
 
-        // Sensory babies (tier 1) can't tap all 4 — gently auto-cycle colors
-        // so the screen keeps changing for them. Toddlers (tier 2-3) must tap.
+        // Sensory babies gently auto-cycle colors so the screen keeps changing.
         if (tier <= 1) {
           // The giant color word already shows the name; a second label below
           // it is redundant for sensory babies, so leave the quiz label empty.
@@ -168,11 +191,11 @@
 
       } else {
         // Quiz — round type scales with age:
-        //   T4-5: identify ("tap the blue thing" / strict "tap the blue blueberry")
+        //   T2: choose the requested color from 2 things
+        //   T3: choose the requested color from 3 things
+        //   T4-5: 4-choice identify (plus some object-specific prompts)
         //   T6-7: + bigger colour set + odd-one-out ("which is NOT blue?")
         //   T8+ : + colour MIXING ("red + blue = ?")
-        label.style.display = 'none';
-        bg.style.background = '#1a1a2e';
         const types = tier >= 8 ? ['identify','odd','mix','identify']
                     : tier >= 6 ? ['identify','odd','identify']
                     : ['identify'];
@@ -185,9 +208,13 @@
 
     // ── Quiz round types ──────────────────────────────────────────────────────
     function quizPalette() { return tier >= 6 ? ALL_COLORS : COLORS; }
-    function makeThingCard(thing, onTap) {
-      const card = document.createElement('div');
+    function makeThingCard(thing, onTap, meta = {}) {
+      const card = document.createElement('button');
+      card.type = 'button';
       card.className = 'thing-card pop-in';
+      if (meta.color) card.dataset.color = meta.color;
+      if (typeof meta.answer === 'boolean') card.dataset.answer = String(meta.answer);
+      card.setAttribute('aria-label', `${thing.n}${meta.color ? `, ${meta.color}` : ''}`);
       card.innerHTML = `<span class="thing-emoji">${thing.e}</span><span class="thing-name">${thing.n}</span>`;
       card.addEventListener('pointerdown', () => onTap(card));
       thingsRow.appendChild(card);
@@ -199,7 +226,7 @@
     function identifyRound() {
       let settled = false;
       const palette = quizPalette();
-      const strict = Math.random() < 0.5;
+      const strict = tier >= 4 && Math.random() < 0.5;
       const targetColor = palette[Math.floor(Math.random() * palette.length)];
       const targetThing = targetColor.things[Math.floor(Math.random() * targetColor.things.length)];
       const lineup = [{ color: targetColor, thing: targetThing, isAnswer: true }];
@@ -209,11 +236,13 @@
       }
       const otherColors = palette.filter(c => c.name !== targetColor.name).sort(() => Math.random()-0.5);
       let oi = 0;
-      while (lineup.length < 4) {
+      const choiceCount = tier === 2 ? 2 : tier === 3 ? 3 : 4;
+      while (lineup.length < choiceCount) {
         const c = otherColors[oi++];
         lineup.push({ color:c, thing:c.things[Math.floor(Math.random()*c.things.length)], isAnswer:false, sameColor:false });
       }
       lineup.sort(() => Math.random()-0.5);
+      showColorWord(targetColor);
       const promptText = strict ? `Tap the ${targetColor.name} ${targetThing.n}!` : `Tap the ${targetColor.name} thing!`;
       quizLbl.textContent = promptText; (() => {
         if (typeof speakInstruction === 'function') speakInstruction(promptText);
@@ -226,14 +255,13 @@
           playSuccess();
           if (window.vbProgress) { vbProgress.record('hello-colors'); vbProgress.mastery('hello-colors.mastery'); }
           speak(`Yes! ${slot.thing.n} is ${slot.color.name}!`);
-          bg.style.background = slot.color.hex; label.style.display='block'; label.textContent = slot.color.name;
           autoTimer = setTimeout(nextRound, 1800);
         } else {
           wrongFlash(card);
           if (slot.sameColor) speak(`That's ${targetColor.name}, but not a ${targetThing.n}.`);
           else speak('Try again!');
         }
-      }));
+      }, { color:slot.color.name, answer:slot.isAnswer }));
     }
 
     // "Which one is NOT <colour>?" — 3 things of that colour + 1 odd one out (T6+)
@@ -247,6 +275,7 @@
         { thing: odd.things[Math.floor(Math.random()*odd.things.length)], isAnswer:true },
       ].sort(() => Math.random()-0.5);
       const promptText = `Which one is NOT ${c.name}?`;
+      showColorWord(c);
       quizLbl.textContent = promptText; (() => {
         if (typeof speakInstruction === 'function') speakInstruction(promptText);
         else speak(promptText);
@@ -260,7 +289,7 @@
           speak(`Yes! That one is not ${c.name}.`);
           autoTimer = setTimeout(nextRound, 1600);
         } else { wrongFlash(card); speak(`That one IS ${c.name}. Find the one that is not.`); }
-      }));
+      }, { color:slot.isAnswer ? odd.name : c.name, answer:slot.isAnswer }));
     }
 
     // Colour mixing: "Red + Blue = ?" → tap the result swatch (T8+)
@@ -268,7 +297,8 @@
       let settled = false;
       const mix = MIXES[Math.floor(Math.random() * MIXES.length)];
       const promptText = `${mix.a} + ${mix.b} = ?`;
-      quizLbl.textContent = promptText; (() => {
+      label.style.display = 'none';
+      quizLbl.innerHTML = `<span class="quiz-color-word" style="color:${hexOf(mix.a)}">${mix.a}</span> + <span class="quiz-color-word" style="color:${hexOf(mix.b)}">${mix.b}</span> = ?`; (() => {
         const spokenPrompt = `${mix.a} plus ${mix.b} makes what?`;
         if (typeof speakInstruction === 'function') speakInstruction(spokenPrompt);
         else speak(spokenPrompt);
@@ -277,8 +307,12 @@
       const pool = ALL_COLORS.map(c => c.name).filter(n => n !== mix.a && n !== mix.b);
       while (choices.size < 4) choices.add(pool[Math.floor(Math.random()*pool.length)]);
       [...choices].sort(() => Math.random()-0.5).forEach(name => {
-        const card = document.createElement('div');
+        const card = document.createElement('button');
+        card.type = 'button';
         card.className = 'thing-card pop-in revealed';
+        card.dataset.color = name;
+        card.dataset.answer = String(name === mix.r);
+        card.setAttribute('aria-label', name);
         card.innerHTML = `<span class="thing-emoji" style="width:clamp(56px,13vw,90px);height:clamp(56px,13vw,90px);border-radius:50%;background:${hexOf(name)};border:3px solid rgba(255,255,255,0.6);"></span><span class="thing-name">${name}</span>`;
         card.addEventListener('pointerdown', () => {
           if (settled) return;
@@ -287,7 +321,7 @@
             playSuccess();
             if (window.vbProgress) { vbProgress.record('hello-colors'); vbProgress.mastery('hello-colors.mastery'); }
             speak(`Yes! ${mix.a} and ${mix.b} make ${mix.r}!`);
-            bg.style.background = hexOf(mix.r); label.style.display='block'; label.textContent = mix.r;
+            showColorWord(ALL_COLORS.find(color => color.name === mix.r));
             autoTimer = setTimeout(nextRound, 2000);
           } else { wrongFlash(card); speak('Try again!'); }
         });
