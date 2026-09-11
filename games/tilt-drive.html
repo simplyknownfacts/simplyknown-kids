@@ -86,7 +86,6 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -104,6 +103,9 @@
     renderBackBtn('index.html');
     if (window.gameSettings) gameSettings.attach('tilt-drive');
     if (window.vbProgress) vbProgress.firstPlay('tilt-drive');
+    if (typeof DeviceOrientationEvent === 'undefined') {
+      document.getElementById('startHint').textContent = 'Pick a ride, then drag left & right to steer!';
+    }
 
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -156,26 +158,42 @@
     function saveBest(k, m) { try { localStorage.setItem(bestKey(k), String(m)); } catch (e) {} }
 
     // ── Steering inputs (tilt + touch + keyboard all feed car.target) ─────────
-    let tiltOn = false, tiltBase = null, tiltVal = 0, lastPointer = 0;
+    let tiltOn = false, tiltAllowed = false, tiltListening = false, tiltBase = null, tiltVal = 0, lastPointer = 0;
+    function keepSteeringFinite() {
+      const center = (roadX0 + roadX1) / 2;
+      if (!Number.isFinite(tiltBase)) tiltBase = null;
+      if (!Number.isFinite(tiltVal)) tiltVal = 0;
+      if (!car) return;
+      if (!Number.isFinite(car.x)) car.x = center;
+      if (!Number.isFinite(car.target)) car.target = car.x;
+    }
     function onOrient(e) {
-      if (e.gamma == null) return;
+      if (!tiltAllowed) return;
+      if (!Number.isFinite(e.gamma)) { keepSteeringFinite(); return; }
       tiltOn = true;
       if (tiltBase == null) tiltBase = e.gamma;       // calibrate to how they're holding it
       tiltVal = Math.max(-35, Math.min(35, e.gamma - tiltBase));
     }
     async function enableTilt() {
+      tiltAllowed = false;
+      tiltOn = false;
       try {
-        if (typeof DeviceOrientationEvent !== 'undefined' &&
-            typeof DeviceOrientationEvent.requestPermission === 'function') {
+        if (typeof DeviceOrientationEvent === 'undefined') return false;
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
           const r = await DeviceOrientationEvent.requestPermission();   // iOS 13+ (needs the tap gesture)
           if (r !== 'granted') return false;
         }
-        window.addEventListener('deviceorientation', onOrient);
+        tiltAllowed = true;
+        if (!tiltListening) {
+          window.addEventListener('deviceorientation', onOrient);
+          tiltListening = true;
+        }
         return true;
       } catch (e) { return false; }
     }
     function onPointer(e) {
       if (state !== 'play') return;
+      keepSteeringFinite();
       lastPointer = Date.now();
       const x = (e.touches ? e.touches[0].clientX : e.clientX);
       car.target = Math.min(Math.max(x, roadX0 + vSize / 2), roadX1 - vSize / 2);
@@ -184,6 +202,7 @@
     canvas.addEventListener('pointermove', onPointer);
     window.addEventListener('keydown', (e) => {
       if (state !== 'play' || !car) return;
+      keepSteeringFinite();
       const step = (roadX1 - roadX0) * 0.16;
       if (e.key === 'ArrowLeft')  { car.target = Math.max(roadX0 + vSize / 2, car.target - step); lastPointer = Date.now(); }
       if (e.key === 'ArrowRight') { car.target = Math.min(roadX1 - vSize / 2, car.target + step); lastPointer = Date.now(); }
@@ -260,6 +279,7 @@
     function loop(now) {
       const dt = Math.min(50, now - lastT) / 1000; lastT = now;       // seconds, clamped
       const carY = H * 0.8;
+      keepSteeringFinite();
 
       // steering: tilt nudges unless a touch/keys were used in the last 700ms
       if (tiltOn && Date.now() - lastPointer > 700) {

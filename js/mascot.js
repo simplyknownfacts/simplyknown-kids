@@ -4,7 +4,7 @@
 //   - On show: play base idle on loop (subtle breathing/sitting)
 //   - Every 5-15s random: interrupt with a random action gesture, then return to base
 //   - speak: play speaking clip, then return to base
-//   - Tap mascot: nothing (disabled per user request)
+//   - World companion button: mascot.react() plays its animal sound + welcome motion
 
 const MASCOT_AVAILABLE = ['dog', 'tiger', 'giraffe', 'panda', 'orca', 'eagle', 'axolotl', 'tabby',
   'owl', 'parrot', 'dolphin', 'octopus', 'lion', 'bunny', 'fox', 'penguin'];
@@ -81,7 +81,14 @@ let _lastAction = null;
 let _state = 'hidden';
 let _frontIdx = 0;
 let _lastSfxAt = 0;
+let _reactionBusy = false;
+let _reactionTimer = null;
+let _reactionAudio = null;
+let _reactionGeneration = 0;
+let _hideTimer = null;
+let _pageActive = true;
 const SFX_COOLDOWN_MS = 15000;
+const REACTION_TIMEOUT_MS = 8000;
 
 function _activeProfile() {
   return (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
@@ -193,11 +200,19 @@ function _ensureEl() {
   // movement is a TAP (sound + action via _onMascotTap); crossing the drag
   // threshold turns it into a reposition (no tap fires). See _attachDrag.
   // pointerdown beats click on toddler taps (no 300ms delay, no shrink-target miss).
-  _attachDrag(wrap);
-  document.body.appendChild(wrap);
+  const worldHost = document.querySelector('[data-world-companion]');
+  if (worldHost) {
+    wrap.dataset.inWorld = '1';
+    // The scene's real button owns interaction and focus. The rendered mascot
+    // is only its visual child, so it must never cover or consume scene taps.
+    wrap.style.pointerEvents = 'none';
+    wrap.style.touchAction = 'auto';
+  }
+  else _attachDrag(wrap);
+  (worldHost || document.body).appendChild(wrap);
   _mascotEl = wrap;
   _frontIdx = 0;
-  _restorePosition(wrap);
+  if (!worldHost) _restorePosition(wrap);
   return wrap;
 }
 
@@ -368,7 +383,7 @@ function _settleDrop(wrap) {
 // alone when it's not covering anything (don't needlessly move a fine mascot).
 function _settleIfCovering() {
   const wrap = _mascotEl;
-  if (!wrap || _drag || wrap.style.display === 'none') return;
+  if (!wrap || wrap.dataset.inWorld === '1' || _drag || wrap.style.display === 'none') return;
   const r = wrap.getBoundingClientRect();
   if (r.width === 0 || r.height === 0) return;
   if (!_overlapsAny(r.left, r.top, r.width, r.height, _interactiveRects(wrap))) return;
@@ -431,6 +446,7 @@ function _back()  { const v = _videos(); return v ? v[1 - _frontIdx] : null; }
 // ---------------------------------------------------------------------------
 let _chromaActive = false;   // is the wrap currently in chroma mode?
 let _chromaRaf = null;       // running render-loop handle
+let _lastChromaFrame = 0;
 
 function _setChromaMode(on) {
   const wrap = _mascotEl;
@@ -460,9 +476,13 @@ function _setChromaMode(on) {
   }
 }
 
-function _chromaFrame() {
+function _chromaFrame(now = 0) {
   _chromaRaf = _chromaActive ? requestAnimationFrame(_chromaFrame) : null;
   if (!_chromaActive) return;
+  // The clips are 24/30fps. Re-keying the same frame at display refresh rate
+  // adds pixel work while the child is tapping without improving animation.
+  if (now - _lastChromaFrame < 30) return;
+  _lastChromaFrame = now;
   const vids = _videos(), cvs = _canvases();
   for (let i = 0; i < cvs.length; i++) {
     const v = vids[i], c = cvs[i];
@@ -471,6 +491,9 @@ function _chromaFrame() {
     // but keying both is cheap at this size and keeps the crossfade in-motion.
     if (c.style.opacity === '0' && v !== _back()) continue;
     if (v.readyState < 2 || v.videoWidth === 0) continue;
+    const frameKey = v.currentSrc + ':' + v.currentTime;
+    if (c._frameKey === frameKey) continue;
+    c._frameKey = frameKey;
     const ctx = c._ctx || (c._ctx = c.getContext('2d', { willReadFrequently: true }));
     const w = c.width, h = c.height;
     ctx.clearRect(0, 0, w, h);
@@ -522,6 +545,11 @@ function _crossfadeTo(src, opts) {
   };
   const onReady = () => {
     back.removeEventListener('loadeddata', onReady);
+    if (opts.muted && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      back.pause();
+      startCrossfade();
+      return;
+    }
     back.addEventListener('playing', onPlaying, { once: true });
     back.play().catch(() => {
       // Autoplay blocked or play() rejected — fall back to immediate crossfade
@@ -545,6 +573,7 @@ function _src(mascotId, voice, key) {
 
 function _scheduleNextAction() {
   clearTimeout(_actionTimer);
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   // Random 5-15 seconds before next action gesture interrupts the base
   const delay = 5000 + Math.random() * 10000;
   _actionTimer = setTimeout(_playAction, delay);
@@ -624,21 +653,382 @@ function play(key, opts) {
   _scheduleSettle();   // nudge off any control it's covering on this screen
 }
 
+function _finishReaction(generation, resumeBase) {
+  if (!_reactionBusy || generation !== _reactionGeneration) return;
+  clearTimeout(_reactionTimer);
+  _reactionTimer = null;
+  if (_reactionAudio) {
+    _reactionAudio.onended = null;
+    _reactionAudio.onerror = null;
+    try { _reactionAudio.pause(); } catch {}
+  }
+  _reactionAudio = null;
+  _reactionBusy = false;
+  if (resumeBase && _pageActive) _playBase();
+}
+
+// Play the selected species' existing real animal sound and pair it with the
+// mascot's existing welcome video as a muted visual reaction.
+// Returns true only when this tap owns a new reaction; callers can use that to
+// start their own button animation without reacting to toddler tap bursts.
+function react() {
+  if (_reactionBusy || !_pageActive) return false;
+  const profile = _activeProfile();
+  if (!profile) return false;
+
+  const mascotId = _mascotIdFor(profile);
+  const voice = _mascotVoiceFor(profile);
+  const soundFile = MASCOT_SOUND_FILE[mascotId];
+  if (!soundFile) return false;
+  let audio;
+  try {
+    audio = new Audio(`${rootPath()}audio/sounds/${soundFile}`);
+  } catch {
+    return false;
+  }
+  const wrap = _ensureEl();
+
+  clearTimeout(_actionTimer);
+  clearTimeout(_hideTimer);
+  _reactionBusy = true;
+  const generation = ++_reactionGeneration;
+  _state = 'speaking';
+  wrap.style.display = 'block';
+  wrap.style.opacity = '1';
+  wrap.style.transform = 'scale(1)';
+
+  const finish = () => _finishReaction(generation, true);
+  _reactionAudio = audio;
+  audio.volume = 0.7;
+  audio.onended = finish;
+  audio.onerror = finish;
+  // A missing/corrupt asset or a browser that never emits an end/error event
+  // must not leave the companion locked. The next tap can retry after this.
+  _reactionTimer = setTimeout(finish, REACTION_TIMEOUT_MS);
+  _setChromaMode(_isChroma(mascotId));
+  _crossfadeTo(_src(mascotId, voice, 'welcome'), {
+    muted: true,
+    loop: false,
+    onended: () => {
+      if (_reactionBusy && generation === _reactionGeneration && _pageActive) _playBase();
+    },
+  });
+  try {
+    const started = audio.play();
+    if (started && typeof started.catch === 'function') started.catch(finish);
+  } catch {
+    _finishReaction(generation, true);
+    return false;
+  }
+  return true;
+}
+
 function show() {
   // Just show + start base loop, no speech
+  clearTimeout(_hideTimer);
   _playBase();
 }
 
 function hide() {
   if (!_mascotEl) return;
   clearTimeout(_actionTimer);
+  clearTimeout(_hideTimer);
+  _finishReaction(_reactionGeneration, false);
   if (_chromaRaf) { cancelAnimationFrame(_chromaRaf); _chromaRaf = null; }
-  _videos().forEach(v => { try { v.pause(); } catch {} v.removeAttribute('src'); v.load(); });
+  _videos().forEach(v => {
+    v.onended = null;
+    try { v.pause(); } catch {}
+    v.removeAttribute('src');
+    v.load();
+  });
   _mascotEl.style.opacity = '0';
   _mascotEl.style.transform = 'scale(0.5)';
-  setTimeout(() => { if (_mascotEl) _mascotEl.style.display = 'none'; }, 300);
+  _hideTimer = setTimeout(() => { if (_mascotEl) _mascotEl.style.display = 'none'; }, 300);
   _state = 'hidden';
 }
+
+// A lightweight, isolated companion renderer for activity scenes. Unlike the
+// floating home widget, an actor has no profile state, sounds, gestures,
+// timers, dragging, or global visibility side effects. Its caller owns layout.
+function createActor({ host, id = DEFAULT_MASCOT_ID } = {}) {
+  if (!host || typeof host.appendChild !== 'function') {
+    throw new TypeError('mascot.createActor requires a host element');
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'companion-actor-canvas';
+  canvas.width = 320;
+  canvas.height = 320;
+  canvas.dataset.media = 'loading';
+  canvas.setAttribute('aria-hidden', 'true');
+  canvas.style.cssText = 'display:block;width:100%;height:100%;max-width:320px;max-height:320px;background:transparent;';
+
+  // The source video never paints directly, so native controls, poster icons,
+  // and browser play overlays cannot appear in the child-facing scene.
+  const video = document.createElement('video');
+  video.className = 'companion-actor-source';
+  video.muted = true;
+  video.defaultMuted = true;
+  video.playsInline = true;
+  video.loop = true;
+  video.autoplay = false;
+  video.controls = false;
+  video.hidden = true;
+  video.preload = 'auto';
+  video.disablePictureInPicture = true;
+  video.setAttribute('muted', '');
+  video.setAttribute('playsinline', '');
+  video.setAttribute('aria-hidden', 'true');
+  video.tabIndex = -1;
+  video.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;clip-path:inset(50%);';
+  host.append(canvas, video);
+
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let currentId = DEFAULT_MASCOT_ID;
+  let poster = null;
+  let posterReady = false;
+  let posterFailed = false;
+  let videoFailed = false;
+  let playFailed = false;
+  let visible = true;
+  let manuallyPaused = false;
+  let pageActive = !document.hidden;
+  let disposed = false;
+  let generation = 0;
+  let raf = 0;
+  let lastFrameAt = -Infinity;
+
+  function validId(nextId) {
+    return MASCOT_AVAILABLE.includes(nextId) ? nextId : DEFAULT_MASCOT_ID;
+  }
+
+  function setMedia(value) {
+    if (canvas.dataset.media !== value) canvas.dataset.media = value;
+  }
+
+  function drawKeyed(source, sourceWidth, sourceHeight) {
+    if (disposed || !context || !sourceWidth || !sourceHeight) return false;
+    const width = canvas.width;
+    const height = canvas.height;
+    const scale = Math.min(width / sourceWidth, height / sourceHeight);
+    const drawWidth = sourceWidth * scale;
+    const drawHeight = sourceHeight * scale;
+    const x = (width - drawWidth) / 2;
+    const y = (height - drawHeight) / 2;
+    try {
+      context.clearRect(0, 0, width, height);
+      context.drawImage(source, x, y, drawWidth, drawHeight);
+      _chromaKey(context, width, height);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function drawPoster(expectedGeneration = generation) {
+    if (disposed || expectedGeneration !== generation || !posterReady || !poster) return false;
+    const drawn = drawKeyed(poster, poster.naturalWidth, poster.naturalHeight);
+    if (drawn) setMedia('poster');
+    return drawn;
+  }
+
+  function drawVideoStill(expectedGeneration = generation) {
+    if (disposed || expectedGeneration !== generation || video.readyState < 2 || !video.videoWidth) return false;
+    const drawn = drawKeyed(video, video.videoWidth, video.videoHeight);
+    if (drawn) setMedia('poster');
+    try { video.pause(); } catch {}
+    return drawn;
+  }
+
+  function stopFrames() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    try { video.pause(); } catch {}
+  }
+
+  function canAnimate() {
+    return !disposed && visible && !manuallyPaused && pageActive && !document.hidden
+      && !reducedMotion.matches && video.readyState >= 2 && video.videoWidth > 0;
+  }
+
+  function frame(now = 0) {
+    raf = 0;
+    if (!canAnimate()) return;
+    raf = requestAnimationFrame(frame);
+    // The source clips are 24/30fps; re-keying at display refresh rate wastes
+    // battery without producing new motion.
+    if (now - lastFrameAt < 1000 / 24) return;
+    lastFrameAt = now;
+    if (drawKeyed(video, video.videoWidth, video.videoHeight)) setMedia('video');
+    else drawPoster();
+  }
+
+  function startFrames(expectedGeneration = generation) {
+    if (disposed || expectedGeneration !== generation || !canAnimate() || raf) return;
+    lastFrameAt = -Infinity;
+    raf = requestAnimationFrame(frame);
+  }
+
+  function startVideo(expectedGeneration = generation) {
+    if (disposed || expectedGeneration !== generation || !canAnimate()) return;
+    let playResult;
+    try {
+      playResult = video.play();
+    } catch {
+      playFailed = true;
+      stopFrames();
+      if (!drawPoster(expectedGeneration) && posterFailed) setMedia('unavailable');
+      return;
+    }
+    Promise.resolve(playResult).then(() => {
+      // A reused video's older play() can settle after setId() has already
+      // started the new source. Stale completions must not pause that source.
+      if (disposed || expectedGeneration !== generation) return;
+      if (!canAnimate()) {
+        try { video.pause(); } catch {}
+        return;
+      }
+      startFrames(expectedGeneration);
+    }).catch(() => {
+      if (disposed || expectedGeneration !== generation) return;
+      playFailed = true;
+      stopFrames();
+      if (!drawPoster(expectedGeneration) && posterFailed) setMedia('unavailable');
+    });
+  }
+
+  function settlePlayback() {
+    if (disposed) return;
+    if (!canAnimate()) {
+      stopFrames();
+      if (reducedMotion.matches && !drawPoster()) drawVideoStill();
+      return;
+    }
+    startVideo();
+  }
+
+  function setId(nextId) {
+    if (disposed) return;
+    const expectedGeneration = ++generation;
+    currentId = validId(nextId);
+    canvas.dataset.id = currentId;
+    setMedia('loading');
+    stopFrames();
+    context?.clearRect(0, 0, canvas.width, canvas.height);
+    posterReady = false;
+    posterFailed = false;
+    videoFailed = false;
+    playFailed = false;
+    poster = new Image();
+    poster.decoding = 'async';
+    poster.onload = () => {
+      if (disposed || expectedGeneration !== generation) return;
+      posterReady = true;
+      if (canvas.dataset.media !== 'video') drawPoster(expectedGeneration);
+      settlePlayback();
+    };
+    poster.onerror = () => {
+      if (disposed || expectedGeneration !== generation) return;
+      posterReady = false;
+      posterFailed = true;
+      if (videoFailed || playFailed) setMedia('unavailable');
+    };
+    poster.src = `${rootPath()}mascots/${currentId}/green/master.png`;
+
+    video.onloadeddata = () => {
+      if (disposed || expectedGeneration !== generation) return;
+      settlePlayback();
+    };
+    video.onerror = () => {
+      if (disposed || expectedGeneration !== generation) return;
+      videoFailed = true;
+      stopFrames();
+      if (!drawPoster(expectedGeneration) && posterFailed) setMedia('unavailable');
+    };
+    video.src = _src(currentId, null, 'BASE');
+    video.load();
+  }
+
+  function setVisible(nextVisible) {
+    if (disposed) return;
+    visible = !!nextVisible;
+    canvas.hidden = !visible;
+    if (!visible) stopFrames();
+    else {
+      if (canvas.dataset.media === 'loading') drawPoster();
+      settlePlayback();
+    }
+  }
+
+  function pause() {
+    if (disposed) return;
+    manuallyPaused = true;
+    stopFrames();
+  }
+
+  function resume() {
+    if (disposed) return;
+    manuallyPaused = false;
+    settlePlayback();
+  }
+
+  function onVisibilityChange() {
+    pageActive = !document.hidden;
+    settlePlayback();
+  }
+
+  function onPageHide() {
+    pageActive = false;
+    stopFrames();
+  }
+
+  function onPageShow() {
+    pageActive = true;
+    settlePlayback();
+  }
+
+  function onMotionChange() {
+    if (reducedMotion.matches) {
+      stopFrames();
+      drawPoster();
+    } else settlePlayback();
+  }
+
+  function dispose() {
+    if (disposed) return;
+    disposed = true;
+    generation += 1;
+    stopFrames();
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    window.removeEventListener('pagehide', onPageHide);
+    window.removeEventListener('pageshow', onPageShow);
+    reducedMotion.removeEventListener('change', onMotionChange);
+    video.onloadeddata = null;
+    video.onerror = null;
+    video.removeAttribute('src');
+    try { video.load(); } catch {}
+    poster = null;
+    canvas.remove();
+    video.remove();
+  }
+
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('pagehide', onPageHide);
+  window.addEventListener('pageshow', onPageShow);
+  reducedMotion.addEventListener('change', onMotionChange);
+  setId(id);
+  return { setId, setVisible, pause, resume, dispose };
+}
+
+window.addEventListener('pagehide', () => {
+  _pageActive = false;
+  _finishReaction(_reactionGeneration, false);
+  hide();
+});
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) _pageActive = true;
+});
 
 // Respect global idle/active events from app.js — stop scheduling actions when idle,
 // resume base loop when the user comes back.
@@ -656,4 +1046,4 @@ document.addEventListener('vb:active', () => {
   }
 });
 
-window.mascot = { play, show, hide, available: MASCOT_AVAILABLE, labels: MASCOT_LABELS };
+window.mascot = { play, show, hide, react, createActor, available: MASCOT_AVAILABLE, labels: MASCOT_LABELS };

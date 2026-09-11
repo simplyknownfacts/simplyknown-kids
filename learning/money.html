@@ -49,7 +49,6 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -167,9 +166,9 @@
 
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
-    let roundTimer = null;
+    let roundTimer = null, roundSettled = false;
     let lastTargetId = null;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(roundTimer)));
 
     // Make-change round (Grade 3+): "It costs 65¢, you pay $1 — what's the change?"
     function changeRound() {
@@ -183,10 +182,14 @@
       const change = paid - price;
 
       hint.textContent = `It costs ${moneyLabel(price)}. You pay ${moneyLabel(paid)}. How much change?`;
+      (() => {
+        if (typeof speakInstruction === 'function') speakInstruction(hint.textContent);
+        else speak(hint.textContent);
+      })();
 
       const row = document.createElement('div'); row.className = 'money-row';
       const tag = document.createElement('div');
-      tag.style.cssText = 'font-size:clamp(34px,8vw,52px);font-weight:900;color:white;display:flex;align-items:center;gap:10px;';
+      tag.style.cssText = 'font-size:clamp(34px,8vw,52px);font-weight:900;color:var(--text);display:flex;align-items:center;gap:10px;';
       tag.textContent = `🏷️ ${moneyLabel(price)}`;
       row.appendChild(tag);
       row.appendChild(makeMoney(MONEY.find(m => m.cents === paid) || MONEY[MONEY.length - 1]));
@@ -203,14 +206,19 @@
         const btn = document.createElement('div');
         btn.className = 'num-btn'; btn.textContent = moneyLabel(n);
         btn.addEventListener('pointerdown', () => {
+          if (roundSettled) return;
           if (n === change) {
+            roundSettled = true;
             playSuccess();
             if (window.vbProgress) vbProgress.record('money');
             btn.style.background = 'rgba(168,230,207,0.5)';
+            hint.textContent = `${moneyLabel(paid)} − ${moneyLabel(price)} = ${moneyLabel(change)} change.`;
             roundTimer = setTimeout(nextRound, 2000);
           } else {
             btn.classList.add('wrong');
             playBoop();
+            hint.textContent = `Count up from ${moneyLabel(price)} to ${moneyLabel(paid)}. Try again!`;
+            speak('Try again!');
             setTimeout(() => btn.classList.remove('wrong'), 350);
           }
         });
@@ -220,7 +228,7 @@
     }
 
     function nextRound() {
-      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer); roundSettled = false;
       if (changeOn && Math.random() < 0.45) { changeRound(); return; }
 
       // Pool by tier
@@ -236,12 +244,18 @@
         const target = choosable[Math.floor(Math.random() * choosable.length)];
         lastTargetId = target.id;
         hint.textContent = `Tap the ${target.name}!`;
-        setTimeout(() => speak(`Tap the ${target.name}.`), 300);
+        (() => {
+          const prompt = `Tap the ${target.name}.`;
+          if (typeof speakInstruction === 'function') speakInstruction(prompt);
+          else speak(prompt);
+        })();
         const row = document.createElement('div'); row.className = 'money-row';
         [...pool].sort(() => Math.random() - 0.5).forEach(m => {
           const node = makeMoney(m);
           node.addEventListener('pointerdown', () => {
+            if (roundSettled) return;
             if (m.id === target.id) {
+              roundSettled = true;
               node.classList.add('matched');
               playSuccess();
               if (window.vbProgress) vbProgress.record('money');
@@ -250,6 +264,8 @@
             } else {
               node.classList.add('wrong');
               playBoop();
+              hint.textContent = `${m.name} is ${moneyLabel(m.cents)}. Find the ${target.name}.`;
+              speak('Try again!');
               setTimeout(() => node.classList.remove('wrong'), 350);
             }
           });
@@ -268,7 +284,10 @@
           pile.push(m); total += m.cents;
         }
         hint.textContent = 'How much money?';
-        setTimeout(() => speak('How much money is here?'), 300);
+        (() => {
+          if (typeof speakInstruction === 'function') speakInstruction('How much money is here?');
+          else speak('How much money is here?');
+        })();
         const row = document.createElement('div'); row.className = 'money-row';
         pile.forEach(m => row.appendChild(makeMoney(m)));
         bodyEl.appendChild(row);
@@ -285,15 +304,20 @@
           const btn = document.createElement('div');
           btn.className = 'num-btn'; btn.textContent = moneyLabel(n);
           btn.addEventListener('pointerdown', () => {
+            if (roundSettled) return;
             if (n === total) {
+              roundSettled = true;
               playSuccess();
               if (window.vbProgress) { vbProgress.record('money'); vbProgress.mastery('money.mastery'); }
               speak(`Yes! ${moneyLabel(total)}.`);
               btn.style.background = 'rgba(168,230,207,0.5)';
+              hint.textContent = `${pile.map(m => moneyLabel(m.cents)).join(' + ')} = ${moneyLabel(total)}.`;
               roundTimer = setTimeout(nextRound, 2000);
             } else {
               btn.classList.add('wrong');
               playBoop();
+              hint.textContent = `Add each value once. Try again!`;
+              speak('Try again!');
               setTimeout(() => btn.classList.remove('wrong'), 350);
             }
           });

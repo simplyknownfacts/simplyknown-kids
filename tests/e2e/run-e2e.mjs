@@ -4,9 +4,9 @@
 // context per age tier, run concurrently. Implements tests/e2e/MAP.md.
 //
 // Usage:
-//   node run-e2e.mjs                 full run, 8 tiers, BASE=https://kids.simplyknown.co
+//   node run-e2e.mjs                 full run, 10 tiers, desktop viewport
 //   node run-e2e.mjs --tiers=1       single tier (validation)
-//   node run-e2e.mjs --tiers=1,8 --conc=2
+//   node run-e2e.mjs --tiers=1,8 --conc=2 --viewport=phone
 //   BASE=http://localhost:8790 node run-e2e.mjs
 //
 // Anti-hang: per-op timeouts, bounded interaction loops, per-tier result file
@@ -17,35 +17,40 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT = join(__dirname, 'out');
 const BASE = (process.env.BASE || process.env.BASE_URL || 'https://kids.simplyknown.co').replace(/\/$/, '');
 const args = process.argv.slice(2);
 const argVal = (n) => { const a = args.find((x) => x.startsWith(`--${n}=`)); return a ? a.split('=')[1] : null; };
 const TIERS = argVal('tiers') ? argVal('tiers').split(',').map(Number) : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const CONC = Number(argVal('conc') || 4);
-const VIEWPORT = { width: 1280, height: 900 }; // wide => settings sidebar layout
+const VIEWPORT_NAME = argVal('viewport') || 'desktop';
+const VIEWPORTS = { desktop: { width: 1280, height: 900 }, phone: { width: 390, height: 844 } };
+if (!VIEWPORTS[VIEWPORT_NAME]) throw new Error(`Unknown viewport ${VIEWPORT_NAME}; expected desktop or phone`);
+const VIEWPORT = VIEWPORTS[VIEWPORT_NAME];
+const OUT_LABEL = (argVal('out') || VIEWPORT_NAME).replace(/[^a-z0-9_-]/gi, '');
+if (!OUT_LABEL) throw new Error('Output label must contain a letter, number, underscore, or hyphen');
+const OUT = join(__dirname, 'out', OUT_LABEL);
 
-// ── catalog (15 in ACTIVITY_FEATURES) + peek-a-boo orphan ────────────────────
+// ── activity catalog; Hide & Seek is reachable through Games ────────────────────
 const SECTION_DIR = { games: 'games', learn: 'learning', art: 'art' };
 const ACTIVITIES = [
-  { id: 'tap-pop', name: 'Tap & Pop', section: 'games', file: 'games/tap-pop.html', minTier: 1 },
+  { id: 'tap-pop', name: 'Bubble Pop', section: 'games', file: 'games/tap-pop.html', minTier: 1 },
   { id: 'shape-match', name: 'Shape Match', section: 'games', file: 'games/shape-match.html', minTier: 1 },
   { id: 'memory-match', name: 'Memory Match', section: 'games', file: 'games/memory-match.html', minTier: 2 },
   { id: 'clock', name: 'Clock Time', section: 'learn', file: 'learning/clock.html', minTier: 6 },
   { id: 'hello-colors', name: 'Hello Colors', section: 'learn', file: 'learning/hello-colors.html', minTier: 1 },
   { id: 'animal-sounds', name: 'Animal Sounds', section: 'learn', file: 'learning/animal-sounds.html', minTier: 1 },
   { id: 'count-along', name: 'Count Along', section: 'learn', file: 'learning/count-along.html', minTier: 2 },
-  { id: 'abcs', name: 'ABCs', section: 'learn', file: 'learning/abcs.html', minTier: 2 },
+  { id: 'abcs', name: 'ABCs', section: 'learn', file: 'learning/abcs.html', minTier: 2, maxTier: 6 },
   { id: 'body-parts', name: 'Body Parts', section: 'learn', file: 'learning/body-parts.html', minTier: 2 },
   { id: 'days', name: 'Days', section: 'learn', file: 'learning/days.html', minTier: 3 },
   { id: 'math', name: 'Math Mountain', section: 'learn', file: 'learning/math.html', minTier: 4 },
   { id: 'spelling', name: 'Spelling Bee', section: 'learn', file: 'learning/spelling.html', minTier: 4 },
   { id: 'money', name: 'Money', section: 'learn', file: 'learning/money.html', minTier: 4 },
   { id: 'stamp-art', name: 'Stamp Art', section: 'art', file: 'art/stamp-art.html', minTier: 1 },
-  { id: 'finger-paint', name: 'Finger Paint', section: 'art', file: 'art/finger-paint.html', minTier: 1 },
+  { id: 'finger-paint', name: 'Free Paint', section: 'art', file: 'art/finger-paint.html', minTier: 1 },
   { id: 'color-splash', name: 'Color Splash', section: 'art', file: 'art/color-splash.html', minTier: 1 },
   { id: 'color-in', name: 'Color In', section: 'art', file: 'art/color-in.html', minTier: 1 },
-  { id: 'peek-a-boo', name: 'Peek-a-boo', section: 'games', file: 'games/peek-a-boo.html', minTier: 1, orphan: true },
+  { id: 'peek-a-boo', name: 'Hide & Seek', section: 'games', file: 'games/peek-a-boo.html', minTier: 1 },
   { id: 'magic-touch', name: 'Magic Touch', section: 'games', file: 'games/magic-touch.html', minTier: 1 },
   { id: 'tap-a-tune', name: 'Tap-a-Tune', section: 'games', file: 'games/tap-a-tune.html', minTier: 1 },
   { id: 'surprise-pop', name: 'Surprise Pop', section: 'games', file: 'games/surprise-pop.html', minTier: 1 },
@@ -53,19 +58,18 @@ const ACTIVITIES = [
 ];
 // features per activity (key, label text in #featuresTable, minTier)
 const FEATURES = {
+  'peek-a-boo': [{ k: 'multiChoice', t: 5, label: 'Three hiding places' }],
   'shape-match': [{ k: 'dragMode', t: 1, label: 'Drag-to-match mode' }],
   'hello-colors': [{ k: 'colorQuiz', t: 4, label: 'Color quiz mode' }],
   'animal-sounds': [{ k: 'quizMode', t: 4, label: 'Sound quiz mode' }],
   'count-along': [{ k: 'quizMode', t: 4, label: 'How-many quiz mode' }],
-  'abcs': [{ k: 'wordHints', t: 3, label: 'Show "A is for Apple" word hints' }, { k: 'spellMode', t: 6, label: 'Spell short words' }],
+  'abcs': [{ k: 'wordHints', t: 3, label: 'Show "A is for Apple" word hints' }],
   'days': [{ k: 'quizMode', t: 5, label: 'Quiz mode (what comes after Monday?)' }],
-  'math': [{ k: 'subtract', t: 5, label: 'Include subtraction' }, { k: 'multiply', t: 8, label: 'Include multiplication' }],
+  'math': [{ k: 'subtract', t: 5, label: 'Include subtraction' }, { k: 'multiply', t: 8, label: 'Include multiplication' }, { k: 'divide', t: 9, label: 'Include division' }, { k: 'missingNumber', t: 10, label: 'Missing-number problems (7 + _ = 12)' }],
   'spelling': [{ k: 'spellMode', t: 6, label: 'Spell from letter bank' }],
-  'money': [{ k: 'countMode', t: 6, label: 'Count coin + bill totals' }],
+  'money': [{ k: 'countMode', t: 6, label: 'Count coin + bill totals' }, { k: 'makeChange', t: 9, label: 'Make change (pay $1, get back…)' }],
   'body-parts': [{ k: 'allParts', t: 4, label: 'Include extra parts (hair, belly, etc.)' }],
-  'stamp-art': [{ k: 'themeSwitcher', t: 4, label: 'Theme switcher (farm/ocean/space)' }],
-  'finger-paint': [{ k: 'colorPalette', t: 2, label: 'Color palette' }, { k: 'eraser', t: 4, label: 'Eraser tool' }],
-  'color-splash': [{ k: 'colorPicker', t: 2, label: 'Color picker' }],
+  'stamp-art': [{ k: 'stampPalette', t: 2, label: 'Stamp picker' }, { k: 'themeSwitcher', t: 4, label: 'Theme switcher (farm/ocean/space)' }],
 };
 const EXPECT_VISIBLE = { // per tier: games/learn/art (for gating assertion)
   // games: 7 catalog games minTier 1 + Memory Match minTier 2 (v107).
@@ -128,6 +132,38 @@ async function play(page, act, tier) {
   try {
     if (id === 'tap-pop') {
       const box = await page.locator('#canvas').boundingBox();
+      if (tier >= 5) {
+        // Older tiers accept only the named target colour. Read actual canvas
+        // pixels so the probe taps a visible target instead of guessing at a
+        // fast moving mixed-colour field.
+        for (let attempt = 0; attempt < 30 && !(await bumped()); attempt++) {
+          const point = await page.evaluate(() => {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const rgb = (getComputedStyle(document.querySelector('#target .swatch')).backgroundColor.match(/\d+/g) || []).slice(0, 3).map(Number);
+            if (rgb.length !== 3) return null;
+            const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            for (let y = 4; y < canvas.height - 4; y += 4) {
+              let runStart = -1;
+              for (let x = 2; x < canvas.width - 2; x += 2) {
+                const i = (y * canvas.width + x) * 4;
+                const match = Math.abs(pixels[i] - rgb[0]) < 3 && Math.abs(pixels[i + 1] - rgb[1]) < 3 && Math.abs(pixels[i + 2] - rgb[2]) < 3 && pixels[i + 3] > 240;
+                if (match && runStart < 0) runStart = x;
+                if (!match && runStart >= 0) {
+                  if (x - runStart >= 24) return { x: (runStart + x - 2) / 2, y, width: canvas.width, height: canvas.height };
+                  runStart = -1;
+                }
+              }
+            }
+            return null;
+          });
+          if (point) {
+            await page.mouse.click(box.x + point.x * box.width / point.width, box.y + point.y * box.height / point.height);
+          }
+          await sleep(60);
+        }
+        return { ok: await bumped(), signal: 'score/counter +1 via visible target-colour bubble' };
+      }
       for (let i = 0; i < 70 && !(await bumped()); i++) {
         await page.mouse.move(box.x + box.width * rnd(0.15, 0.85), box.y + box.height * rnd(0.4, 0.95));
         await page.mouse.down(); await page.mouse.up(); await sleep(100);
@@ -188,26 +224,35 @@ async function play(page, act, tier) {
       return { ok: await bumped(), signal: `clock quiz, tried ${n} times` };
     }
     if (id === 'peek-a-boo') {
-      // v125: every tier taps a curtain now (littles get one big wiggling one).
-      const curtains = page.locator('#stage .curtain-wrap .curtain');
-      const n = await curtains.count();
-      for (let i = 0; i < Math.max(1, n); i++) {
-        await curtains.nth(i).click({ timeout: 4000 }).catch(() => {});
-        await sleep(400);
-        if (await page.locator('#stage .curtain.open').count()) return { ok: true, signal: 'curtain opened' };
-      }
-      return { ok: await bumped(), signal: 'clicked curtains' };
+      await page.waitForSelector('#friendIntro');
+      const neutral = await page.evaluate(() => document.querySelector('#stage').dataset.phase === 'watch'
+        && !document.querySelector('#friendIntro').hidden
+        && !document.querySelector('.hiding-spot.clue-peek,.hiding-spot.clue-rustle')
+        && ![...document.querySelectorAll('.hiding-spot .fallback-animal')].some(element => element.textContent.trim()));
+      await page.waitForFunction(() => document.querySelector('#roundAction').getAttribute('aria-disabled') === 'false');
+      await page.locator('#roundAction').click();
+      await page.waitForFunction(() => document.querySelector('#stage').dataset.phase === 'seek');
+      const firstClue = page.locator('.hiding-spot.clue-peek,.hiding-spot.clue-rustle').first();
+      await firstClue.waitFor();
+      const target = Number(await firstClue.getAttribute('data-spot'));
+      await page.locator('#showAgain').click();
+      const peek = page.locator('.hiding-spot.clue-peek').first();
+      await peek.waitFor();
+      const hintKeptTarget = Number(await peek.getAttribute('data-spot')) === target;
+      const count = await page.locator('.hiding-spot').count();
+      await page.locator('.hiding-spot').nth((target + 1) % count).click();
+      const wrongStayedOpen = await page.locator('#stage').getAttribute('data-phase') === 'seek' && !(await bumped());
+      await page.locator('.hiding-spot').nth(target).click();
+      return { ok: neutral && hintKeptTarget && wrongStayedOpen && await bumped(), signal: 'neutral intro, partial clue, wrong retry, then found friend' };
     }
     if (id === 'abcs') {
-      // ABCs is LETTERS-ONLY since v117 (Spelling Bee owns spelling) and
-      // auto-hides ≥T7 — only use the spell path if slots actually exist.
-      if (await page.locator('.spelled-slot').count()) {
-        const slots = await page.locator('.spelled-slot').evaluateAll((els) => els.map((e) => e.dataset.target));
-        for (const ch of slots) { await page.locator(`.letter-grid .letter-tile`, { hasText: new RegExp(`^${ch}$`, 'i') }).first().click({ timeout: 3000 }).catch(() => {}); await sleep(150); }
-        return { ok: await bumped(), signal: `spell "${slots.join('')}"` };
+      const choices = page.locator('.abc-choice[data-answer="true"]');
+      const count = await choices.count();
+      for (let index = 0; index < count; index++) {
+        await choices.nth(index).click({ timeout: 3000 }).catch(() => {});
+        await sleep(120);
       }
-      await page.locator('.nav-row .pager-btn:not(.secondary)').first().click({ timeout: 4000 }).catch(() => {});
-      return { ok: await bumped(), signal: 'clicked Next (default mode)' };
+      return { ok: await bumped(), signal: `ABC Quest, solved ${count} correct choice${count === 1 ? '' : 's'}` };
     }
     if (id === 'animal-sounds') {
       const garden = await page.locator('#garden .animal-float').count();
@@ -317,7 +362,11 @@ async function play(page, act, tier) {
     if (id === 'spelling') {
       if (tier >= 6 || await page.locator('.spelled-slot').count()) {
         const slots = await page.locator('.spelled-slot').evaluateAll((els) => els.map((e) => e.dataset.target));
-        for (const ch of slots) { await page.locator('.letter-tile', { hasText: new RegExp(`^${ch}$`, 'i') }).first().click({ timeout: 3000 }).catch(() => {}); await sleep(150); }
+        for (const ch of slots) {
+          const beforeFilled = await page.locator('.spelled-slot.filled').count();
+          await page.locator('.letter-tile', { hasText: new RegExp(`^${ch}$`, 'i') }).first().dispatchEvent('pointerdown').catch(() => {});
+          await page.waitForFunction(count => document.querySelectorAll('.spelled-slot.filled').length > count, beforeFilled, { timeout: 1500 }).catch(() => {});
+        }
         return { ok: await bumped(), signal: `spell "${slots.join('')}"` };
       }
       const cards = page.locator('.word-choices .word-card'); const m = await cards.count();
@@ -357,28 +406,29 @@ async function play(page, act, tier) {
       const hasCanvas = !!(await page.locator('canvas').count());
       return { ok: hasCanvas || await bumped(), signal: hasCanvas ? 'game canvas running' : 'no canvas' };
     }
-    // color-in switched to the shared freeform paint engine in v120 — it's
-    // brush-tested with the other art below (canvas id vbPaintCanvas).
-    if (['color-splash', 'finger-paint', 'stamp-art', 'color-in'].includes(id)) {
-      // finger-paint & stamp-art keep their own #canvas; color-splash & color-in
-      // use the shared paint engine's #vbPaintCanvas (v119/v120).
+    if (id === 'color-in') {
+      const canvas=page.locator('#colorFillCanvas[data-ready="1"]'); await canvas.waitFor();
+      const points=[[.5,.375],[.575,.375],[.5,.1125],[.42,.47]];
+      const sample=()=>canvas.evaluate((c,points)=>points.map(([x,y])=>Array.from(c.getContext('2d').getImageData(Math.floor(c.width*x),Math.floor(c.height*y),1,1).data)),points);
+      const before=await sample(), box=await canvas.boundingBox();
+      await page.mouse.click(box.x+box.width*.5,box.y+box.height*.375);
+      const after=await sample(),eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+      const filled=!eq(before[0],after[0])&&!eq(before[1],after[1])&&eq(after[0],after[1])&&eq(before[2],after[2])&&eq(before[3],after[3]);
+      return {ok:filled,signal:filled?'enclosed face filled; ray and pupil preserved':'tap did not fill only the selected region'};
+    }
+    if (['color-splash', 'finger-paint', 'stamp-art'].includes(id)) {
+      // Free Paint and Stamp Art own #canvas; Color Splash uses vbPaintCanvas.
       const box = await page.locator('#canvas, #vbPaintCanvas').first().boundingBox();
       if (!box) return { ok: false, signal: 'no canvas' };
+      const signature=()=>page.locator('#canvas, #vbPaintCanvas').first().evaluate(c=>c.toDataURL());
+      const before=await signature();
       const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
-      if (id === 'finger-paint' || id === 'color-splash' || id === 'color-in') { await page.mouse.move(cx - 130, cy); await page.mouse.down(); await page.mouse.move(cx + 130, cy, { steps: 14 }); await page.mouse.up(); }
+      if (id === 'finger-paint' || id === 'color-splash') { await page.mouse.move(cx - box.width*.2, cy); await page.mouse.down(); await page.mouse.move(cx + box.width*.2, cy, { steps: 14 }); await page.mouse.up(); }
       else { await page.mouse.move(cx, cy); await page.mouse.down(); await page.mouse.up(); }
       await sleep(300);
-      // sample a box centered on canvas center (where the stroke/stamp/splash lands)
-      const painted = await page.evaluate((boxsz) => {
-        const c = document.querySelector('#canvas, #vbPaintCanvas'); if (!c) return false; const ctx = c.getContext('2d'); if (!ctx) return false;
-        const px = Math.floor(c.width / 2), py = Math.floor(c.height / 2), half = Math.floor(boxsz / 2);
-        const sx = Math.max(0, px - half), sy = Math.max(0, py - half);
-        const w = Math.min(boxsz, c.width - sx), h = Math.min(boxsz, c.height - sy);
-        const d = ctx.getImageData(sx, sy, w, h).data; const bg = [26, 26, 46];
-        for (let i = 0; i < d.length; i += 4) { if (d[i + 3] > 0 && Math.abs(d[i] - bg[0]) + Math.abs(d[i + 1] - bg[1]) + Math.abs(d[i + 2] - bg[2]) > 24) return true; }
-        return false;
-      }, id === 'stamp-art' ? 80 : 44).catch(() => false);
-      return { ok: painted, signal: painted ? 'canvas painted (non-bg pixels)' : 'canvas appears unchanged' };
+      // Compare before/after: a preexisting white sheet is not painted content.
+      const painted=before!==await signature();
+      return { ok: painted, signal: painted ? 'canvas pixels changed after drawing' : 'canvas appears unchanged' };
     }
     return { ok: false, signal: 'no recipe' };
   } catch (e) {
@@ -398,7 +448,8 @@ function classify({ loaded, redirected, recipe, errs, noSuccessByDesign, loadOnl
 async function runTier(browser, tier) {
   const cells = [];
   const tdir = join(OUT, `t${tier}`); mkdirSync(tdir, { recursive: true });
-  const ctx = await browser.newContext({ viewport: VIEWPORT, reducedMotion: 'reduce' });
+  const phone = VIEWPORT_NAME === 'phone';
+  const ctx = await browser.newContext({ viewport: VIEWPORT, reducedMotion: 'reduce', isMobile: phone, hasTouch: phone });
   ctx.setDefaultTimeout(15000);
   const baseProfile = makeProfile(tier, 'e2e-base', `Test${tier}`);
   await ctx.addInitScript(initScript(baseProfile));
@@ -415,6 +466,24 @@ async function runTier(browser, tier) {
     return true;
   };
   const redirectedToPicker = () => { const p = page.url().replace(BASE, ''); return p === '/' || p === '/index.html' || p === ''; };
+  const selectSettingsChild = async (profileId) => {
+    const picker = page.locator('#settingsChildSelect');
+    if (!(await picker.count())) return false;
+    await picker.selectOption(profileId);
+    return await picker.inputValue() === profileId;
+  };
+  const selectSettingsSection = async (key) => {
+    const picker = page.locator('#settingsSectionPicker');
+    if (await picker.isVisible().catch(() => false)) {
+      await picker.selectOption(key);
+      return true;
+    }
+    return page.evaluate((section) => {
+      if (typeof showPanel !== 'function') return false;
+      showPanel(section);
+      return true;
+    }, key).catch(() => false);
+  };
 
   // ── STEP 1: add a 2nd kid via the REAL UI ──
   try {
@@ -426,10 +495,12 @@ async function runTier(browser, tier) {
     await page.waitForSelector('#addForm', { state: 'visible', timeout: 10000 });
     await page.fill('#newName', `Added${tier}`);
     await page.fill('#newBirthday', birthdayForTier(tier));
-    // mascot + voice are REQUIRED since v101 — save silently refuses without them
-    await page.locator('#newMascotPicker div').first().click();
-    await page.locator('#newVoicePicker div').first().click();
-    await page.locator('button', { hasText: /^Save$/ }).first().click();
+    await page.locator('#addNext1').click();
+    // Buddy and voice are deliberate required choices in steps 2 and 3.
+    await page.locator('#newMascotPicker button[data-mascot]').first().click();
+    await page.locator('#addNext2').click();
+    await page.locator('#newVoicePicker button[data-voice]').first().click();
+    await page.locator('#createChild').click();
     await sleep(600);
     const count = await page.evaluate(() => JSON.parse(localStorage.getItem('vb_profiles') || '[]').length);
     await shot('01-add-kid');
@@ -451,7 +522,7 @@ async function runTier(browser, tier) {
 
   // ── STEP 3: activities ──
   for (const act of ACTIVITIES) {
-    const visible = !act.orphan && tier >= act.minTier;
+    const visible = !act.orphan && tier >= act.minTier && tier <= (act.maxTier || 10);
     const playable = visible || act.orphan; // orphan games still played via direct load
     try {
       let loaded, viaTile = false;
@@ -473,14 +544,16 @@ async function runTier(browser, tier) {
       const redirected = redirectedToPicker();
       const hasApp = await page.evaluate(() => !!window.vbProgress).catch(() => false);
       let recipe = null;
-      const noSuccessByDesign = (act.id === 'days' && tier <= 4) || (act.id === 'hello-colors' && tier === 1) || (act.id === 'peek-a-boo' && tier <= 2);
+      const noSuccessByDesign = (act.id === 'days' && tier <= 4) || (act.id === 'hello-colors' && tier === 1);
       if (playable && !redirected && hasApp) recipe = await play(page, act, tier);
       await shot(`act-${act.id}`);
       const kind = act.orphan ? 'orphan' : (visible ? 'play' : 'gated-load');
-      const status = classify({ loaded, redirected, recipe, errs: snapErrors(errs), noSuccessByDesign, loadOnly: !visible && !act.orphan });
+      const cellErrors = snapErrors(errs);
+      const status = classify({ loaded, redirected, recipe, errs: cellErrors, noSuccessByDesign, loadOnly: !visible && !act.orphan });
       record(act.name, kind, redirected ? 'FAIL' : status, {
         signal: recipe ? recipe.signal : 'load-only',
         note: [act.orphan ? 'not in catalog — unreachable by kids via nav' : '', visible && !viaTile ? 'nav: direct (tile slow under load)' : '', recipe && recipe.note ? recipe.note : '', redirected ? 'redirected to picker' : ''].filter(Boolean).join('; ') || undefined,
+        ...cellErrors,
       });
     } catch (e) { await shot(`act-${act.id}-ERR`); record(act.name, act.orphan ? 'orphan' : (visible ? 'play' : 'gated-load'), 'FAIL', { note: String(e.message || e).slice(0, 140), ...snapErrors(errs) }); }
   }
@@ -495,10 +568,10 @@ async function runTier(browser, tier) {
     record('settings PIN unlock', 'flow', unlocked ? 'PASS' : 'FAIL', { ...snapErrors(errs) });
     if (unlocked) {
       // 2 kids exist now — make sure settings is editing the base kid
-      await page.locator('#kidsBar .kid-pill', { hasText: `Test${tier}` }).first().click().catch(() => {});
+      const childSelected = await selectSettingsChild('e2e-base').catch(() => false);
       await sleep(200);
       // features panel
-      await page.locator('#sideNav .navitem[data-key="features"]').click().catch(() => {});
+      await selectSettingsSection('features');
       await sleep(300);
       let toggled = 0, toggleFail = 0;
       for (const act of ACTIVITIES) {
@@ -506,21 +579,21 @@ async function runTier(browser, tier) {
           if (f.t > tier) continue;
           const row = page.locator('#featuresTable tr', { hasText: act.name });
           const cb = row.locator('label.feat-label', { hasText: f.label }).locator('input[type=checkbox]').first();
-          if (!(await cb.count())) continue;
+          if (!(await cb.count())) { toggleFail++; continue; }
           await cb.check({ timeout: 3000 }).catch(() => {});
           const on = await page.evaluate(({ a, k }) => { const p = JSON.parse(localStorage.vb_profiles).find((x) => x.id === 'e2e-base'); return !!(p && p.features && p.features[a] && p.features[a][k]); }, { a: act.id, k: f.k }).catch(() => false);
           on ? toggled++ : toggleFail++;
         }
       }
-      record('feature toggles', 'settings', toggleFail ? 'WARN' : 'PASS', { signal: `${toggled} toggled, ${toggleFail} failed`, ...snapErrors(errs) });
+      record('feature toggles', 'settings', !childSelected || toggleFail ? 'WARN' : 'PASS', { signal: `${toggled} toggled, ${toggleFail} failed; child=${childSelected ? 'selected' : 'missing'}`, ...snapErrors(errs) });
       // voice
-      await page.locator('#sideNav .navitem[data-key="voice"]').click().catch(() => {});
+      await selectSettingsSection('voice');
       await sleep(300);
       await page.locator('#voiceSection .vcard[data-voice="woman"]').click().catch(() => {});
       const vsel = await page.locator('#voiceSection .vcard[data-voice="woman"].sel').count().catch(() => 0);
       record('voice pick', 'settings', vsel ? 'PASS' : 'WARN', { ...snapErrors(errs) });
       // hide an activity then restore
-      await page.locator('#sideNav .navitem[data-key="activities"]').click().catch(() => {});
+      await selectSettingsSection('activities');
       await sleep(300);
       const visCb = page.locator('#activitiesSection input.act-vis[data-aid="tap-pop"]').first();
       let hideOk = false;
@@ -545,7 +618,7 @@ async function runTier(browser, tier) {
     await page.waitForSelector('#pinPad', { timeout: 12000 }).catch(() => {});
     for (const d of ['1', '2', '3', '4']) await page.locator('#pinPad .pin-key', { hasText: new RegExp('^' + d + '$') }).first().click().catch(() => {});
     await page.waitForSelector('#mainSettings', { state: 'visible', timeout: 10000 }).catch(() => {});
-    await page.locator('#sideNav .navitem[data-key="children"]').click().catch(() => {});
+    await selectSettingsSection('children');
     await sleep(300);
     const card = page.locator('#profilesList .card', { hasText: `Added${tier}` });
     if (await card.count()) await card.getByRole('button', { name: 'Delete' }).click().catch(() => {});
@@ -565,7 +638,7 @@ async function runTier(browser, tier) {
 (async () => {
   const started = Date.now();
   mkdirSync(OUT, { recursive: true });
-  console.log(`[e2e] base=${BASE} tiers=${TIERS.join(',')} conc=${CONC}`);
+  console.log(`[e2e] base=${BASE} tiers=${TIERS.join(',')} viewport=${VIEWPORT_NAME} conc=${CONC}`);
   const browser = await chromium.launch();
   const results = [];
   const queue = [...TIERS];
@@ -575,16 +648,16 @@ async function runTier(browser, tier) {
 
   results.sort((a, b) => a.tier - b.tier);
   const all = results.flatMap((r) => r.cells);
-  const summary = { base: BASE, generatedAt: new Date().toISOString(), durationSec: Math.round((Date.now() - started) / 1000), counts: { total: all.length, pass: all.filter((c) => c.status === 'PASS').length, warn: all.filter((c) => c.status === 'WARN').length, fail: all.filter((c) => c.status === 'FAIL').length }, results };
+  const summary = { base: BASE, viewport: VIEWPORT_NAME, viewportSize: VIEWPORT, generatedAt: new Date().toISOString(), durationSec: Math.round((Date.now() - started) / 1000), counts: { total: all.length, pass: all.filter((c) => c.status === 'PASS').length, warn: all.filter((c) => c.status === 'WARN').length, fail: all.filter((c) => c.status === 'FAIL').length }, results };
   writeFileSync(join(OUT, 'report.json'), JSON.stringify(summary, null, 2));
   writeFileSync(join(OUT, 'report.md'), renderMd(summary));
   console.log(`\n[e2e] DONE: ${summary.counts.pass} PASS / ${summary.counts.warn} WARN / ${summary.counts.fail} FAIL of ${summary.counts.total} in ${summary.durationSec}s`);
-  console.log(`[e2e] report: tests/e2e/out/report.md`);
+  console.log(`[e2e] report: tests/e2e/out/${OUT_LABEL}/report.md`);
 })().catch((e) => { console.error('[e2e] FATAL', e); process.exit(1); });
 
 function renderMd(s) {
   const L = [];
-  L.push('# Full E2E Report', '', `- Base: ${s.base}`, `- Generated: ${s.generatedAt}`, `- Duration: ${s.durationSec}s`, `- **${s.counts.pass} PASS / ${s.counts.warn} WARN / ${s.counts.fail} FAIL** of ${s.counts.total}`, '');
+  L.push('# Full E2E Report', '', `- Base: ${s.base}`, `- Viewport: ${s.viewport} (${s.viewportSize.width}x${s.viewportSize.height})`, `- Generated: ${s.generatedAt}`, `- Duration: ${s.durationSec}s`, `- **${s.counts.pass} PASS / ${s.counts.warn} WARN / ${s.counts.fail} FAIL** of ${s.counts.total}`, '');
   // activity x tier matrix (play + gated-load cells)
   const acts = ACTIVITIES.map((a) => a.id);
   const tiers = s.results.map((r) => r.tier);

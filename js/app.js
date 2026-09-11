@@ -1,3 +1,31 @@
+// Stop stale callbacks from starting speech after leaving this page.
+var _pageAcceptsSpeech = true;
+// The direct-URL age guard can navigate before the rest of this file runs.
+// Its audio cleanup must already have initialized state.
+let _audio = null;
+let _speakGen = 0; // bumps every cancel; in-flight chains check before each clip
+let _clipResolve = null;
+let _activeSpeechKind = null;
+let _lastInstructionText = '';
+let _vbReplayEl = null;
+
+// Retired listening-integration state must not linger on family devices or
+// revive old playback. These keys are no longer read anywhere in the app.
+try {
+  // Early versions stored one token record per child; later versions used one
+  // shared family key. Remove both shapes without disturbing unrelated state.
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (key === 'vb_yoto_tokens' || (key && key.startsWith('vb_yoto_tokens_'))) {
+      localStorage.removeItem(key);
+    }
+  }
+  localStorage.removeItem('vb_yoto_client_id');
+  sessionStorage.removeItem('vb_yoto_pkce_verifier');
+  sessionStorage.removeItem('vb_yoto_oauth_state');
+  sessionStorage.removeItem('vb_yoto_now_playing');
+} catch (e) {}
+
 // Zoom defense — toddlers triggering pinch/wheel-zoom shouldn't break the
 // layout. Viewport meta user-scalable=no is ignored on modern iOS, and a
 // Chrome PWA on desktop still honors Ctrl+wheel and Ctrl+=. Trap the routes
@@ -55,6 +83,18 @@
   if (!isActivityVisible(profile, activity.id)) goHome();
 })();
 
+// Carry the house palette into registered play screens. Custom parent themes
+// and activity-specific color lessons retain their own visual treatment.
+(function _playWorld() {
+  if (typeof ACTIVITY_FEATURES === 'undefined') return;
+  const file = location.pathname.split('/').pop();
+  const activity = ACTIVITY_FEATURES.find(a => a.file === file);
+  if (activity) {
+    document.body.dataset.playWorld = activity.section;
+    document.body.dataset.playActivity = activity.id;
+  }
+})();
+
 // Idle detection — pauses all <video> elements after 3 min of no input, so the
 // device's screen-off timer can kick in. On Android, an actively-playing video
 // keeps the screen awake; pausing releases that lock.
@@ -108,7 +148,13 @@
 })();
 
 // Navigation
-function goTo(path) { window.location.href = path; }
+function goTo(path) {
+  _pageAcceptsSpeech = false;
+  // Stop page-owned speech before navigation begins. pagehide is the backstop,
+  // but cancelling here also covers slow navigations and history transitions.
+  if (typeof cancelSpeak === 'function') cancelSpeak();
+  window.location.href = path;
+}
 function goHome()    { goTo(rootPath() + 'home.html'); }
 function goProfiles(){ goTo(rootPath() + 'index.html'); }
 
@@ -299,8 +345,6 @@ function _matchClips(text) {
 // stacked up faster than cancel could pause them, producing lag + duplicate
 // playback. One element + immediate src reassignment is what mobile browsers
 // actually optimize for.
-let _audio = null;
-let _speakGen = 0; // bumps every cancel; in-flight chains check before each clip
 
 function _ensureAudio() {
   if (!_audio) {
@@ -320,20 +364,31 @@ function _playClip(voice, hash, gen) {
     try { a.pause(); } catch {}
     a.onended = a.onerror = null;  // clear stale handlers
     a.src = `${rootPath()}audio/${voice}/${hash}.mp3`;
-    a.onended = () => { if (gen === _speakGen) resolve(); };
-    a.onerror = () => resolve();
+    _clipResolve = resolve;
+    const finish = () => {
+      if (_clipResolve === resolve) _clipResolve = null;
+      resolve();
+    };
+    a.onended = finish;
+    a.onerror = finish;
     // play() returns a promise that may reject if cancelSpeak fires mid-load.
     a.play().catch((e) => {
       // Phones block un-gestured audio (NotAllowedError) — flag it so pages can
       // replay the phrase on the first real tap (see home.html greeting retry).
       if (e && e.name === 'NotAllowedError') window._vbAudioBlocked = true;
-      resolve();
+      finish();
     });
   });
 }
 
 function cancelSpeak() {
   _speakGen++;
+  _activeSpeechKind = null;
+  if (_clipResolve) {
+    const finish = _clipResolve;
+    _clipResolve = null;
+    try { finish(); } catch {}
+  }
   if (_audio) {
     try { _audio.pause(); _audio.removeAttribute('src'); _audio.load(); } catch {}
   }
@@ -347,7 +402,7 @@ function _voiceSpeak(text, voice) {
   const gen = _speakGen;
   // Fire-and-forget IIFE — no shared queue, so a new speak() never waits for
   // the previous to clean up. The gen check inside _playClip aborts stale chains.
-  (async () => {
+  return (async () => {
     for (const h of hashes) {
       if (gen !== _speakGen) return;
       await _playClip(voice, h, gen);
@@ -362,23 +417,83 @@ function _getActiveVoice() {
   return v;
 }
 
-function speak(text, rate = 0.85, pitch = 1.2) {
-  // Always cancel any in-flight speech before queuing the next phrase. Without
-  // this, a kid spam-tapping in a game stacks up clips that play long after
-  // they're done. The internal clip-sequencing for multi-clip phrases (e.g.
-  // "3 ducks" = ["3","ducks"]) is unaffected because that's a single speak()
-  // call that builds one chain.
-  cancelSpeak();
-  _showCaption(text);
-  // Big kids (Grade 3+, age tier ≥9) read: captions + SFX only, no spoken
-  // prompts — a 9-year-old finds the narration babyish. Age-based on purpose
-  // (not per-activity override) so one kid gets one consistent experience.
+function _speechEnabledForProfile() {
+  // Big kids (Grade 3+, age tier >=9) read: captions + SFX only, no spoken
+  // prompts. Keep this decision shared by feedback and instructions.
   try {
     const p = (typeof getActiveProfile === 'function') ? getActiveProfile() : null;
-    if (p && typeof tierForAge === 'function' && tierForAge(getAgeMonths(p.birthday)) >= 9) return;
-  } catch (e) {}
-  const v = _getActiveVoice();
-  return _voiceSpeak(text, v);
+    return !(p && typeof tierForAge === 'function' && tierForAge(getAgeMonths(p.birthday)) >= 9);
+  } catch (e) { return true; }
+}
+
+function _startSpeech(text, kind) {
+  cancelSpeak();
+  _activeSpeechKind = kind;
+  const gen = _speakGen;
+  const playback = _voiceSpeak(text, _getActiveVoice());
+  Promise.resolve(playback).finally(() => {
+    if (gen === _speakGen && _activeSpeechKind === kind) _activeSpeechKind = null;
+  });
+  return playback;
+}
+
+function _ensureInstructionReplay() {
+  if (_vbReplayEl && _vbReplayEl.isConnected) return _vbReplayEl;
+  if (!document.getElementById('vb-replay-instruction-style')) {
+    const style = document.createElement('style');
+    style.id = 'vb-replay-instruction-style';
+    style.textContent =
+      '.vb-replay-instruction{position:fixed;top:calc(14px + env(safe-area-inset-top));right:14px;z-index:1090;' +
+      'min-width:72px;min-height:48px;padding:8px 12px;border:2px solid rgba(255,255,255,.7);border-radius:999px;' +
+      'background:rgba(20,20,40,.78);color:#fff;font:800 14px/1.1 system-ui,-apple-system,sans-serif;' +
+      'box-shadow:0 4px 14px rgba(0,0,0,.24);cursor:pointer;touch-action:manipulation}' +
+      '.vb-replay-instruction:active{transform:scale(.96)}' +
+      '@media(prefers-reduced-motion:reduce){.vb-replay-instruction{transition:none}}';
+    document.head.appendChild(style);
+  }
+  _vbReplayEl = document.createElement('button');
+  _vbReplayEl.type = 'button';
+  _vbReplayEl.className = 'vb-replay-instruction';
+  _vbReplayEl.textContent = '\ud83d\udd0a Again';
+  _vbReplayEl.setAttribute('aria-label', 'Hear the instruction again');
+  _vbReplayEl.addEventListener('click', replayInstruction);
+  (document.body || document.documentElement).appendChild(_vbReplayEl);
+  return _vbReplayEl;
+}
+
+// Optional feedback: the latest tap wins, but it never cuts off an essential
+// instruction and never waits in a queue to play after the moment has passed.
+function speak(text, rate = 0.85, pitch = 1.2) {
+  if (!_pageAcceptsSpeech) return false;
+  _showCaption(text);
+  if (!_speechEnabledForProfile()) return;
+  if (_activeSpeechKind === 'instruction') return false;
+  return _startSpeech(text, 'feedback');
+}
+
+// Essential activity guidance gets one protected playback and a persistent,
+// explicit replay control. A newer instruction replaces an obsolete one.
+function speakInstruction(text) {
+  if (!_pageAcceptsSpeech) return false;
+  _lastInstructionText = String(text || '');
+  if (!_lastInstructionText) return;
+  _ensureInstructionReplay();
+  _showCaption(_lastInstructionText);
+  if (!_speechEnabledForProfile()) return;
+  return _startSpeech(_lastInstructionText, 'instruction');
+}
+
+function replayInstruction() {
+  if (_activeSpeechKind === 'instruction') return false;
+  if (_lastInstructionText) return speakInstruction(_lastInstructionText);
+}
+
+// A page's audio and clip chain must not survive deliberate navigation.
+if (typeof window !== 'undefined') {
+  const leaveSpeechPage = () => { _pageAcceptsSpeech = false; cancelSpeak(); };
+  window.addEventListener('pagehide', leaveSpeechPage);
+  window.addEventListener('beforeunload', leaveSpeechPage);
+  window.addEventListener('pageshow', () => { _pageAcceptsSpeech = true; });
 }
 
 // Render the nav chrome: a Back + Home pair, top-left. Both are big rounded
@@ -414,47 +529,120 @@ function renderBackBtn(dest) {
 // ── Hold-to-activate ────────────────────────────────────────────────────────
 // Guards parent-only doors (Parent Settings, in-game settings gear) so a
 // toddler can't tap straight in. Fires onActivate only after a deliberate
-// ~0.7s press; releasing early cancels. A fill ring animates during the hold so
-// a parent sees it working. (Game Back/Home stay instant — only settings hold.)
+// configured hold (3s on the parent picker; 0.7s for in-game gears). Releasing
+// early cancels. A fill follows elapsed time, including with reduced motion.
+// Game Back/Home stay instant; Enter/Space can hold the focused settings button.
 let _holdStyleInjected = false;
 function _injectHoldStyle() {
   if (_holdStyleInjected) return;
   _holdStyleInjected = true;
   const s = document.createElement('style');
   s.textContent =
-    '@keyframes vbHoldFill{from{box-shadow:0 0 0 0 rgba(78,205,196,0);}' +
-    'to{box-shadow:0 0 0 6px rgba(78,205,196,0.85);}}' +
-    '.vb-holding{animation:vbHoldFill var(--vb-hold,700ms) linear forwards;}';
+    '.vb-hold-control{isolation:isolate;overflow:hidden;}' +
+    '.vb-hold-control,.vb-hold-control:hover,.vb-hold-control:active,.vb-hold-control.vb-press{transform:none!important;}' +
+    '.vb-hold-fill{position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;' +
+    'background:rgba(78,205,196,.62);transform-origin:left center;transform:scaleX(var(--vb-hold-progress,0));' +
+    'transition:none!important;animation:none!important;}';
   document.head.appendChild(s);
 }
 function holdToActivate(el, onActivate, opts) {
   const ms = (opts && opts.ms) || 700;
   _injectHoldStyle();
-  el.style.setProperty('--vb-hold', ms + 'ms');
+  el.classList.add('vb-hold-control');
+  if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+  const fill = document.createElement('span');
+  fill.className = 'vb-hold-fill';
+  fill.setAttribute('aria-hidden', 'true');
+  el.prepend(fill);
+  const hint = el.querySelector('[data-hold-label]');
+  const idleHint = hint && hint.textContent;
   // iOS long-press otherwise pops the native Share/Copy/Download callout instead
   // of registering the hold — suppress it so the press just opens settings.
   el.style.webkitTouchCallout = 'none';
   el.style.userSelect = 'none';
   el.style.webkitUserSelect = 'none';
-  el.style.touchAction = 'manipulation';
+  el.style.touchAction = 'none';
   el.addEventListener('contextmenu', (e) => e.preventDefault());
-  let timer = null, active = false;
-  const start = (e) => {
-    if (active) return;
-    active = true;
-    if (e && e.cancelable) e.preventDefault();
-    el.classList.add('vb-holding');
-    timer = setTimeout(() => { stop(); onActivate(); }, ms);
+  let timer = null, frame = null, owner = null, started = 0, lastSecond = -1;
+  const showProgress = value => {
+    el.style.setProperty('--vb-hold-progress', String(value));
+    if (hint) {
+      const second = Math.ceil((1 - value) * ms / 1000);
+      if (second !== lastSecond) {
+        hint.textContent = value >= 1 ? 'Opening…' : `Keep holding… ${second}`;
+        lastSecond = second;
+      }
+    }
   };
   const stop = () => {
-    active = false;
-    if (timer) { clearTimeout(timer); timer = null; }
+    const previous = owner;
+    owner = null;
+    clearTimeout(timer); timer = null;
+    cancelAnimationFrame(frame); frame = null;
     el.classList.remove('vb-holding');
+    el.style.setProperty('--vb-hold-progress', '0');
+    if (hint) hint.textContent = idleHint;
+    lastSecond = -1;
+    if (previous && previous.kind === 'pointer') {
+      try { if (el.hasPointerCapture(previous.id)) el.releasePointerCapture(previous.id); } catch (_) {}
+    }
   };
-  el.addEventListener('pointerdown', start);
-  el.addEventListener('pointerup', stop);
-  el.addEventListener('pointerleave', stop);
-  el.addEventListener('pointercancel', stop);
+  const update = () => {
+    if (!owner) return;
+    showProgress(Math.min(.999, (performance.now() - started) / ms));
+    frame = requestAnimationFrame(update);
+  };
+  const start = next => {
+    if (owner || el.disabled) return;
+    owner = next;
+    started = performance.now();
+    el.classList.add('vb-holding');
+    showProgress(0);
+    frame = requestAnimationFrame(update);
+    timer = setTimeout(() => {
+      if (!owner || document.hidden || !el.isConnected) { stop(); return; }
+      // Keep ownership until release: repeated keydown/pointerdown cannot fire
+      // twice from a single continuous hold, including non-navigation callbacks.
+      owner.fired = true;
+      cancelAnimationFrame(frame); frame = null; timer = null;
+      showProgress(1);
+      onActivate();
+    }, ms);
+  };
+  el.addEventListener('pointerdown', e => {
+    if (owner || e.isPrimary === false || e.button !== 0) return;
+    e.preventDefault();
+    el.focus({preventScroll:true});
+    start({kind:'pointer',id:e.pointerId,bounds:el.getBoundingClientRect()});
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  const endPointer = e => { if (owner && owner.kind === 'pointer' && owner.id === e.pointerId) stop(); };
+  for (const name of ['pointerup','pointercancel','lostpointercapture']) el.addEventListener(name,endPointer);
+  el.addEventListener('pointermove', e => {
+    if (!owner || owner.kind !== 'pointer' || owner.id !== e.pointerId) return;
+    const b = owner.bounds;
+    if ((e.pointerType === 'mouse' && e.buttons === 0) || e.clientX < b.left || e.clientX > b.right || e.clientY < b.top || e.clientY > b.bottom) stop();
+  });
+  el.addEventListener('pointerleave', e => {
+    if (!el.hasPointerCapture(e.pointerId)) endPointer(e);
+  });
+  const holdKey = e => e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar';
+  el.addEventListener('keydown', e => {
+    if (!holdKey(e)) return;
+    e.preventDefault();
+    if (!e.repeat) start({kind:'key',key:e.key});
+  });
+  el.addEventListener('keyup', e => {
+    if (!holdKey(e)) return;
+    e.preventDefault();
+    if (owner && owner.kind === 'key' && owner.key === e.key) stop();
+  });
+  el.addEventListener('click', e => e.preventDefault());
+  el.addEventListener('blur', stop);
+  window.addEventListener('blur', stop);
+  window.addEventListener('pagehide', stop);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
+  stop();
   return stop;
 }
 

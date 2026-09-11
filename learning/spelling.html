@@ -40,9 +40,11 @@
       font-size: 32px; font-weight: 900; color: white;
     }
     .spelled-slot.filled { border-style: solid; background: rgba(168,230,207,0.3); }
+    #body { width: 100%; }
     .letter-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
-      gap: 10px; max-width: 540px;
+      gap: 10px; width: 100%; max-width: 540px;
+      box-sizing: border-box; padding: 0 4px;
     }
     .letter-tile {
       aspect-ratio: 1; min-height: 56px; border-radius: 14px;
@@ -53,6 +55,20 @@
     }
     .letter-tile:active { transform: scale(0.9); }
     .letter-tile.wrong { animation: shake 0.3s; }
+    /* On phones, use the clear top-right gap for the compact reward and keep
+       Again out of that gap until the notice has fully left the DOM. */
+    @media (max-width: 600px) {
+      .vb-celebrate { top: calc(4px + env(safe-area-inset-top)); }
+      body:has(.vb-celebrate) .vb-replay-instruction {
+        visibility: hidden;
+        pointer-events: none;
+      }
+    }
+    /* Keep the 64px letter targets and reserve the fixed settings gear's lane
+       on a 320x568 screen by using three columns instead of four. */
+    @media (max-width: 360px) and (max-height: 650px) {
+      .letter-grid { width: 220px; margin-right: 60px; }
+    }
     @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
     /* Hint sits on a gold background — make it fully legible. */
     #hint { color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.45); }
@@ -69,7 +85,6 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -125,11 +140,11 @@
 
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
-    let roundTimer = null;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    let roundTimer = null, roundSettled = false;
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(roundTimer)));
 
     function nextRound() {
-      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer); roundSettled = false;
 
       if (!spellOn) {
         // Multiple choice: show picture, tap the matching word from 3-4 choices
@@ -148,7 +163,9 @@
           const card = document.createElement('div');
           card.className = 'word-card'; card.textContent = w;
           card.addEventListener('pointerdown', () => {
+            if (roundSettled) return;
             if (w === target.w) {
+              roundSettled = true;
               card.classList.add('matched');
               playSuccess();
               if (window.vbProgress) vbProgress.record('spelling');
@@ -157,13 +174,18 @@
             } else {
               card.classList.add('wrong');
               playBoop();
+              hint.textContent = `${w} is not ${target.w}. Look for the word that starts with ${target.w[0]}.`;
+              speak('Try again!');
               setTimeout(() => card.classList.remove('wrong'), 350);
             }
           });
           grid.appendChild(card);
         });
         bodyEl.appendChild(grid);
-        setTimeout(() => speak(target.w), 400);
+        (() => {
+          if (typeof speakInstruction === 'function') speakInstruction(target.w);
+          else speak(target.w);
+        })();
 
       } else {
         // Tier 6+: spell the word — tap letters in order from a bank.
@@ -191,6 +213,7 @@
           const tile = document.createElement('div');
           tile.className = 'letter-tile'; tile.textContent = L;
           tile.addEventListener('pointerdown', () => {
+            if (roundSettled) return;
             const nextEmpty = slots.findIndex(s => !s.textContent);
             if (nextEmpty === -1) return;
             if (slots[nextEmpty].dataset.target === L) {
@@ -198,6 +221,7 @@
               slots[nextEmpty].classList.add('filled');
               speak(L);
               if (slots.every(s => s.textContent)) {
+                roundSettled = true;
                 playSuccess();
                 if (window.vbProgress) { vbProgress.record('spelling'); vbProgress.mastery('spelling.mastery'); }
                 setTimeout(() => speak(target.w), 400);
@@ -206,13 +230,19 @@
             } else {
               tile.classList.add('wrong');
               playBoop();
+              hint.textContent = `Next letter: ${slots[nextEmpty].dataset.target}. Try again!`;
+              speak('Try again!');
               setTimeout(() => tile.classList.remove('wrong'), 350);
             }
           });
           grid.appendChild(tile);
         });
         bodyEl.appendChild(grid);
-        setTimeout(() => speak(`Spell ${target.w}!`), 400);
+        (() => {
+          const prompt = `Spell ${target.w}!`;
+          if (typeof speakInstruction === 'function') speakInstruction(prompt);
+          else speak(prompt);
+        })();
       }
     }
     nextRound();

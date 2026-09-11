@@ -27,6 +27,20 @@
     .num-btn:active { transform: scale(0.9); }
     .num-btn.wrong { animation: shake 0.3s; background: rgba(255,107,107,0.4); }
     .num-btn.right { background: rgba(168,230,207,0.5); }
+    /* On phones, use the clear top-right gap for the compact reward and keep
+       Again out of that gap until the notice has fully left the DOM. */
+    @media (max-width: 600px) {
+      .vb-celebrate { top: calc(4px + env(safe-area-inset-top)); }
+      body:has(.vb-celebrate) .vb-replay-instruction {
+        visibility: hidden;
+        pointer-events: none;
+      }
+    }
+    /* A 320x568 screen fits two 64px answer targets per row beside the fixed
+       grown-up gear. Keep all four choices and reserve the gear's lane. */
+    @media (max-width: 360px) and (max-height: 650px) {
+      .num-row { width: 220px; margin-right: 60px; }
+    }
     @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
   </style>
 </head>
@@ -42,7 +56,6 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -72,8 +85,8 @@
     const NS = 'http://www.w3.org/2000/svg';
     const wrap = document.getElementById('clockWrap');
     const choicesRow = document.getElementById('choices');
-    let roundTimer = null, lastKey = null;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    let roundTimer = null, lastKey = null, roundSettled = false;
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(roundTimer)));
 
     function el(tag, attrs) {
       const n = document.createElementNS(NS, tag);
@@ -120,7 +133,7 @@
     const fmt = (h, m) => `${h}:${String(m).padStart(2, '0')}`;
 
     function nextRound() {
-      choicesRow.innerHTML = ''; clearTimeout(roundTimer);
+      choicesRow.innerHTML = ''; clearTimeout(roundTimer); roundSettled = false;
       let h, m, key;
       do {
         h = 1 + Math.floor(Math.random() * 12);
@@ -130,8 +143,12 @@
       lastKey = key;
 
       drawClock(h, m);
-      document.getElementById('hint').textContent = 'What time is it?';
-      setTimeout(() => speak('What time is it?'), 400);
+      const hint = document.getElementById('hint');
+      hint.textContent = 'What time is it? Short blue hand = hour. Long red hand = minutes.';
+      (() => {
+        if (typeof speakInstruction === 'function') speakInstruction('What time is it?');
+        else speak('What time is it?');
+      })();
 
       // 4 choices: right one + distractors (different hour, or different minutes)
       const opts = new Set([key]);
@@ -145,8 +162,11 @@
         const btn = document.createElement('div');
         btn.className = 'num-btn'; btn.textContent = k;
         btn.addEventListener('pointerdown', () => {
+          if (roundSettled) return;
           if (k === key) {
+            roundSettled = true;
             btn.classList.add('right');
+            hint.textContent = `${key}. The blue hand shows ${h}; the red hand shows ${m} minutes.`;
             playSuccess();
             if (window.vbProgress) {
               vbProgress.record('clock');
@@ -156,6 +176,8 @@
           } else {
             btn.classList.add('wrong');
             playBoop();
+            hint.textContent = `The red hand shows ${m} minutes. Look where the short blue hand points. Try again!`;
+            speak('Try again!');
             setTimeout(() => btn.classList.remove('wrong'), 350);
           }
         });

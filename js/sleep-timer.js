@@ -31,9 +31,9 @@
   const TICK_MS  = 1000;
   const MAX_MIN  = 12 * 60;           // sanity clamp on anything read back
 
-  // Media a page hands us explicitly. Detached `new Audio()` elements (the Yoto
-  // mini-player uses one) are invisible to querySelectorAll, so they can only be
-  // faded if the page registers them.
+  // Media a page hands us explicitly. Detached `new Audio()` elements are
+  // invisible to querySelectorAll, so they can only be faded if the page
+  // registers them.
   const extra = [];
 
   let tickTimer = null;
@@ -112,15 +112,6 @@
     });
     // A voice prompt mid-flight would blurt out after the music stopped.
     try { if (typeof cancelSpeak === 'function') cancelSpeak(); } catch (e) {}
-    // The shared now-playing record is read by every other page's mini-player.
-    // Leave it saying "playing" and the next screen resumes the tape we just
-    // put to sleep.
-    try {
-      if (window.yotoPlayer && typeof window.yotoPlayer.getState === 'function') {
-        const state = window.yotoPlayer.getState();
-        if (state) { state.playing = false; window.yotoPlayer.publish(state); }
-      }
-    } catch (e) {}
     write(null);
     stopTick();
     sleeping = true;

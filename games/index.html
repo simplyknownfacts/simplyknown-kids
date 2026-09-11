@@ -28,16 +28,26 @@
     }
   </style>
 </head>
-<body class="section-games" data-allow-zoom="0">
+<body class="section-games world-page world-games" data-allow-zoom="0">
+  <div class="world-decor" aria-hidden="true">
+    <span class="world-spark s1"></span><span class="world-spark s2"></span><span class="world-spark s3"></span>
+  </div>
   <div class="hub-screen">
-    <h1 class="hub-title">Games</h1>
+    <header class="world-intro">
+      <div class="world-intro-copy">
+        <span class="world-kicker">Coral Clubhouse</span>
+        <h1 class="hub-title">Games Clubhouse</h1>
+        <p class="world-intro-text">Pick a playful challenge and jump right in.</p>
+      </div>
+      <div class="world-emblem" data-world-house="games" aria-hidden="true">🎮</div>
+    </header>
     <div class="cards-row" id="cardsRow"></div>
     <div class="empty-msg" id="emptyMsg" style="display:none;">
       No games are turned on for this child yet.<br>
       A grown-up can enable them in ⚙️ Parent Settings → Activities.
     </div>
 
-    <div id="vbShelfMount" style="width:100%;max-width:760px;margin:8px auto 30px;"></div>
+    <div class="world-shelf" id="vbShelfMount"></div>
   </div>
 
   <script src="../js/atmosphere.js"></script>
@@ -46,7 +56,6 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/mascot.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -62,6 +71,16 @@
     const profile = getActiveProfile();
     if (!profile) goProfiles();
     const row = document.getElementById('cardsRow');
+    const descriptions = {
+      'tap-pop': 'Pop bubbles and build speedy hands.',
+      'peek-a-boo': 'Look for little ears and rustling leaves.',
+      'magic-touch': 'Make colors and shapes burst with every tap.',
+      'tap-a-tune': 'Play bright notes and make a little song.',
+      'surprise-pop': 'Pop a surprise and fill your collection.',
+      'shape-match': 'Find where every colorful shape belongs.',
+      'tilt-drive': 'Steer a tiny car by tipping the screen.',
+      'memory-match': 'Turn cards over and find matching pairs.'
+    };
     const visible = ACTIVITY_FEATURES
       .filter(a => a.section === 'games')
       .filter(a => isActivityVisible(profile, a.id));
@@ -73,8 +92,18 @@
         const card = document.createElement('button');
         card.type = 'button';
         card.className = 'activity-card';
+        card.dataset.activity = a.id;
+        card.setAttribute('aria-label', a.name + '. ' + (descriptions[a.id] || 'Open activity.'));
         card.onclick = () => go(a.file);
-        card.innerHTML = `<div class="icon" aria-hidden="true">${a.icon}</div><div class="label">${a.name}</div>`;
+        const icon = document.createElement('span');
+        icon.className = 'icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = a.icon;
+        const label = document.createElement('span');
+        label.className = 'label'; label.textContent = a.name;
+        const note = document.createElement('span');
+        note.className = 'activity-note'; note.textContent = descriptions[a.id] || 'Open activity.';
+        const arrow = document.createElement('span');
+        arrow.className = 'activity-go'; arrow.setAttribute('aria-hidden', 'true'); arrow.textContent = '›';
+        card.append(icon, label, note, arrow);
         row.appendChild(card);
       });
     }
@@ -82,5 +111,6 @@
     // float covered a tile / the ribbons footer on the dense phone grid).
     if (window.vbShelf) vbShelf.mount(document.getElementById('vbShelfMount'), { section: 'games', title: '🎮 Games Ribbons' });
   </script>
+  <script src="../js/world-art.js"></script>
 </body>
 </html>

@@ -100,6 +100,7 @@ _phrases.push('How many sides?');
 _phrases.push('Which one is different?');
 ANIMAL_PHRASES.forEach(p => _phrases.push(p));
 _phrases.push('Try again!');
+_phrases.push('Tap the bubbles!');
 KID_NAMES.forEach(n => {
   _phrases.push(`Hi ${n}!`);
   _phrases.push(`Hi ${n}! Let's play!`);

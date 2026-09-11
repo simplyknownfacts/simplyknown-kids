@@ -52,14 +52,8 @@
 //      to prove the responsive layout holds, without re-driving all 24
 //      destinations at those widths too.
 //
-// Counted at the bottom of this file's startup log every run. As of this
-// rewrite: 21 activity pages (7 games + 10 learning + 4 art — NOT 22; see
-// "Known traps" #6 in VERIFYING.md for why that number in the original work
-// order didn't add up) + Watch + Listen = 23 destinations driven once each,
-// + 10 tier homes, + 7 shell screens x 3 widths (1 phone + 2 responsive) = 21
-// shell loads. Total: 23 + 10 + 21 = 54 screen loads, one real browser tab
-// each. NOT driven: peek-a-boo.html (registered in ACTIVITY_FEATURES but has
-// had no menu link since commit 5e37113 — deliberately excluded, not drift).
+// Totals are computed from the registry and printed at startup. The first-pass
+// redesign restored Peek-a-boo to Games, so it participates in this drive too.
 // Full list of what this run does NOT prove is in features/NOT-COVERED.md.
 import { chromium } from 'playwright';
 import { mkdir, rm, readFile } from 'node:fs/promises';
@@ -116,10 +110,8 @@ const [profilesSrc, tiersSrc] = await Promise.all([
 const ACTIVITY_FEATURES = extractArrayLiteral(profilesSrc, 'ACTIVITY_FEATURES');
 const TIERS = extractArrayLiteral(tiersSrc, 'TIERS');
 
-// peek-a-boo.html is still registered in ACTIVITY_FEATURES but has had no
-// menu link since commit 5e37113 (see CLAUDE.md's "8 total" activity list).
-// Deliberately excluded here — this is a documented retirement, not drift.
-const RETIRED_IDS = new Set(['peek-a-boo']);
+// No registered activities are retired in the current first-pass menu.
+const RETIRED_IDS = new Set();
 
 // `section` on each ACTIVITY_FEATURES entry ('games' | 'learn' | 'art') is a
 // logical category, not literally the folder name — every activity page
@@ -632,189 +624,92 @@ for (const t of trophyResults) {
   console.log((t.ok ? 'PASS  ' : 'FAIL  ') + t.id.padEnd(26) + t.what + (t.ok ? '' : '\n        ' + t.errs.join('\n        ')));
 }
 
-/* ---------------------------------------------------------------------------
-   Pass 7 — Hub home world (branch hub-home). home.html stopped being a tile
-   grid and became the fox hub-world: the same 5 real routes, now reached by
-   tapping a landmark instead of a card, plus chrome (greeting/avatar pill/
-   exit) living IN the world instead of a page header. The screenshot-only
-   passes above can prove the page renders; they cannot prove a tap actually
-   goes anywhere, that Listening Hut stays hidden without Yoto, that reduced
-   motion doesn't leave the world invisible, or that the offline gate still
-   refuses to open a dead screen. This pass proves all four.
-------------------------------------------------------------------------- */
+/* Pass 7 — the live 3D world: real building taps, conditional Listen,
+   reduced motion, offline gating and usable fallbacks when media fails. */
 const hubResults = [];
 {
   const HUB_PROFILE = tierProfileId(5);
-
-  // 7a — chrome + landmark presence + the reduced-motion path. Every context
-  // in this file is created with reducedMotion:'reduce' (see VIEWPORTS
-  // contexts above), so this is exactly what a device with "reduce motion"
-  // set actually renders — not a separate, easy-to-forget code path.
+  const add = (id, ok, what, error) => hubResults.push({id, ok, what, errs: ok ? [] : [error]});
+  async function openHome(ctx = contexts.phone) {
+    const page = await ctx.newPage();
+    await page.addInitScript(id => localStorage.setItem('vb_active_id', id), HUB_PROFILE);
+    await page.goto(BASE + '/home.html', {waitUntil:'load', timeout:15000});
+    await page.waitForSelector('#worldScene[data-state="ready"]');
+    await page.waitForFunction(() => !!window.vbWorldScene);
+    return page;
+  }
+  async function tapHut(page,kind) {
+    const point=await page.evaluate(kind=>{
+      const p=vbWorldScene.snapshot().houses.find(h=>h.kind===kind).point;
+      const r=document.getElementById('worldCanvas').getBoundingClientRect();
+      return {x:r.x+p.x,y:r.y+p.y};
+    },kind);
+    await page.mouse.click(point.x,point.y);
+  }
   {
-    const page = await contexts.phone.newPage();
-    await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, HUB_PROFILE);
-    await page.goto(BASE + '/home.html', { waitUntil: 'load', timeout: 15000 });
-    await page.waitForTimeout(600);
-
-    const chrome = await page.evaluate(() => {
-      const vis = (sel) => { const el = document.querySelector(sel); if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
-      return { hi: vis('#hiText'), pill: vis('#avatarPill'), exit: vis('#exitBtn') };
+    const page = await openHome();
+    const result = await page.evaluate(() => {
+      const visible = sel => {
+        const el = document.querySelector(sel), r = el?.getBoundingClientRect();
+        return !!r && r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
+      };
+      const houses = [...document.querySelectorAll('.house')];
+      return {
+        chrome: ['#hiText','#avatarPill','#exitBtn','#ribbonLink'].every(visible),
+        houses: visible('#worldCanvas') && !!document.getElementById('worldCanvas').getContext('webgl2') && vbWorldScene.snapshot().houses.length === 5 && vbWorldScene.snapshot().triangles > 1000,
+        listenDisabled: document.querySelector('[data-world="listen"]')?.getAttribute('aria-disabled') === 'true',
+        motion: houses.length === 5 && vbWorldScene.snapshot().reducedMotion,
+      };
     });
-    const chromeOk = chrome.hi && chrome.pill && chrome.exit;
-    hubResults.push({ id: 'hub-chrome', ok: chromeOk,
-      what: 'Hub chrome present (greeting, avatar pill, exit)',
-      errs: chromeOk ? [] : ['missing: ' + JSON.stringify(chrome)] });
-
-    const landmarks = await page.evaluate(() =>
-      ['games', 'learn', 'watch', 'art', 'ribbons'].map(id => !!document.querySelector('.spot[data-id="' + id + '"]')));
-    const landmarksOk = landmarks.every(Boolean);
-    hubResults.push({ id: 'hub-landmarks-present', ok: landmarksOk,
-      what: '5 real-section landmarks present (games/learn/watch/art/ribbons)',
-      errs: landmarksOk ? [] : ['games/learn/watch/art/ribbons present: ' + JSON.stringify(landmarks)] });
-
-    const listenAbsent = await page.evaluate(() => !document.querySelector('.spot[data-id="listen"]'));
-    hubResults.push({ id: 'hub-listen-hidden', ok: listenAbsent,
-      what: 'Listening Hut landmark hidden when Yoto is not connected',
-      errs: listenAbsent ? [] : ['.spot[data-id="listen"] rendered without a Yoto connection'] });
-
-    // The real risk of a prefers-reduced-motion bug is content stuck at
-    // opacity:0 forever because the entrance animation never gets to run.
-    const bandsVisible = await page.evaluate(() => {
-      const bands = [...document.querySelectorAll('.band')];
-      return bands.length > 0 && bands.every(b => parseFloat(getComputedStyle(b).opacity) === 1);
-    });
-    hubResults.push({ id: 'hub-reduced-motion', ok: bandsVisible,
-      what: 'Reduced motion: island bands render at full opacity immediately (not stuck invisible)',
-      errs: bandsVisible ? [] : ['one or more .band elements were not at opacity:1 under prefers-reduced-motion'] });
-
+    const frame=await page.evaluate(()=>vbWorldScene.snapshot().frames);
+    await page.waitForTimeout(350);
+    result.motion=result.motion && frame===await page.evaluate(()=>vbWorldScene.snapshot().frames);
+    add('hub-chrome',result.chrome,'Greeting, child switch, exit and ribbons remain visible','Missing world chrome');
+    add('hub-landmarks-present',result.houses,'Five real 3D buildings render through WebGL','Missing 3D building geometry');
+    add('hub-listen-availability',result.listenDisabled,'Disconnected Listening Hut explains its unavailable state','Listen was enabled without a connection');
+    add('hub-reduced-motion',result.motion,'Reduced motion keeps houses visible and decorative animation still','Hidden house or running decorative animation');
     await page.close();
   }
-
-  // 7b — each landmark actually navigates to its real section. minTier/
-  // maxTier don't apply at this level (the old tile grid didn't gate section
-  // access either — the section pages gate individual activities), so any
-  // tier profile proves this; HUB_PROFILE (tier 5) is reused from above.
-  const NAV_LANDMARKS = [
-    { id: 'games',   endsWith: '/games/index.html' },
-    { id: 'learn',   endsWith: '/learning/index.html' },
-    { id: 'art',     endsWith: '/art/index.html' },
-    { id: 'ribbons', endsWith: '/achievements.html' },
-    { id: 'watch',   endsWith: '/videos/index.html' },   // online by default in this pass — must navigate
-  ];
-  for (const lm of NAV_LANDMARKS) {
-    const page = await contexts.phone.newPage();
-    await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, HUB_PROFILE);
-    await page.goto(BASE + '/home.html', { waitUntil: 'load', timeout: 15000 });
-    await page.waitForTimeout(300);
-    let landed = null;
+  for (const [id,destination] of [['games','games/index.html'],['learn','learning/index.html'],['art','art/index.html'],['ribbons','achievements.html'],['watch','videos/index.html']]) {
+    const page = await openHome(); let error = '';
     try {
-      await page.click('.spot[data-id="' + lm.id + '"]', { timeout: 5000 });
-      await page.waitForURL((u) => u.pathname.endsWith(lm.endsWith), { timeout: 5000 });
-      landed = page.url();
-    } catch (e) { landed = 'ERROR: ' + e.message; }
-    const ok = !!(landed && landed.includes(lm.endsWith));
-    hubResults.push({ id: 'hub-nav-' + lm.id, ok,
-      what: 'Tapping "' + lm.id + '" navigates to ' + lm.endsWith,
-      errs: ok ? [] : ['landed on: ' + landed] });
+      if(id === 'ribbons') await page.locator('#ribbonLink').click();
+      else await tapHut(page,id);
+      await page.waitForURL(u => u.pathname.endsWith('/'+destination), {timeout:5000});
+    } catch (e) { error = e.message; }
+    add('hub-nav-'+id,!error,'Tapping '+id+' opens '+destination,error);
     await page.close();
   }
-
-  // 7c — offline gate: Watch/Listen must dim to "Needs wifi" and refuse to
-  // navigate rather than open a dead screen a toddler would tap and melt down
-  // over — the same behavior the old tile grid had. Flips navigator.onLine
-  // and fires the real 'offline' event instead of context.setOffline(), which
-  // would also block this same-origin dev server's own requests.
   {
-    const page = await contexts.phone.newPage();
-    await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, HUB_PROFILE);
-    await page.goto(BASE + '/home.html', { waitUntil: 'load', timeout: 15000 });
-    await page.waitForTimeout(600);
-
+    const page = await openHome();
     await page.evaluate(() => {
-      Object.defineProperty(Object.getPrototypeOf(navigator), 'onLine', { get: () => false, configurable: true });
+      Object.defineProperty(Object.getPrototypeOf(navigator),'onLine',{get:()=>false,configurable:true});
       window.dispatchEvent(new Event('offline'));
     });
-    await page.waitForTimeout(200);
-
-    const dimmed = await page.evaluate(() => {
-      const el = document.querySelector('.spot[data-id="watch"]');
-      return !!el && el.classList.contains('needs-wifi');
-    });
-    hubResults.push({ id: 'hub-offline-dim', ok: dimmed,
-      what: 'Watch landmark shows "Needs wifi" while offline',
-      errs: dimmed ? [] : ['.spot[data-id="watch"] did not get .needs-wifi while offline'] });
-
-    await page.click('.spot[data-id="watch"]').catch(() => {});
-    await page.waitForTimeout(600);
-    const stillHome = page.url().endsWith('/home.html');
-    hubResults.push({ id: 'hub-offline-no-nav', ok: stillHome,
-      what: 'Tapping Watch while offline must NOT navigate into a dead screen',
-      errs: stillHome ? [] : ['navigated to ' + page.url() + ' while offline'] });
-
+    const unavailable = await page.locator('[data-world="watch"]').evaluate(el =>
+      el.getAttribute('aria-disabled') === 'true');
+    add('hub-offline-state',unavailable,'Offline Watch exposes its unavailable state','Watch lacks its offline state');
+    // A physical tap can activate an explanation even though aria-disabled
+    // correctly prevents Playwright's semantic button click from activating it.
+    await tapHut(page,'watch');
+    const stays = page.url().endsWith('/home.html') && /connection/i.test(await page.locator('#worldStatus').textContent());
+    add('hub-offline-no-nav',stays,'An actual offline Watch tap explains and stays home','Offline tap navigated away or did not explain');
     await page.close();
   }
-
-  // 7d — Codex 0902-4: if redesign-hub-bg.jpg fails to precache (a transient
-  // blip, a renamed file), the hub used to have no fallback at all — just a
-  // flat background-color rectangle with unlabeled, invisible landmarks. This
-  // blocks the image at the NETWORK level (not just a bad cache) — the
-  // worse, more realistic case — and proves the fallback shows AND a
-  // landmark is still tappable and still goes to the right place.
-  //
-  // A DEDICATED context, serviceWorkers:'block': contexts.phone is shared
-  // across this whole file and by this point already has sw.js active from
-  // earlier tests, with redesign-hub-bg.jpg already precached successfully
-  // -- a new page's request would be served straight from that cache,
-  // never touching the network, making page.route().abort() below a no-op
-  // (found live: the first version of this test passed against the BROKEN
-  // code because of exactly this). Same reasoning tests/e2e/v2/lib/
-  // harness.mjs already uses for its own newContext().
   {
-    const freshCtx = await browser.newContext({ viewport: VIEWPORTS.phone, reducedMotion: 'reduce', serviceWorkers: 'block' });
-    // A fresh context has none of contexts.phone's context-level profile
-    // seed (see its own addInitScript above) -- reseed the same TIER_PROFILES
-    // here or getActiveProfile() finds nothing and home.html just redirects
-    // to the picker, never building a hub at all.
-    await freshCtx.addInitScript((profiles) => {
-      try { localStorage.setItem('vb_profiles', JSON.stringify(profiles)); } catch {}
-    }, TIER_PROFILES);
-    const page = await freshCtx.newPage();
-    await page.route('**/redesign-hub-bg.jpg', (route) => route.abort());
-    await page.addInitScript((id) => { try { localStorage.setItem('vb_active_id', id); } catch {} }, HUB_PROFILE);
-    await page.goto(BASE + '/home.html', { waitUntil: 'load', timeout: 15000 });
-    // WAIT for the fallback, don't guess a fixed delay: three separate <img>
-    // elements each firing their own onerror is not instant, and a flat
-    // sleep here is exactly the kind of flaky timing this repo's own
-    // Testing Standard warns against.
-    const fallback = await page.evaluate(() => new Promise((resolve) => {
-      const isDone = () => {
-        const bands = [...document.querySelectorAll('.band')];
-        return bands.length > 0 && bands.every((b) => b.classList.contains('band-fallback'));
-      };
-      if (isDone()) return resolve(true);
-      const t0 = Date.now();
-      const iv = setInterval(() => {
-        if (isDone()) { clearInterval(iv); resolve(true); }
-        else if (Date.now() - t0 > 5000) { clearInterval(iv); resolve(false); }
-      }, 50);
-    }));
-    hubResults.push({ id: 'hub-image-fallback', ok: fallback,
-      what: 'A failed hub background image gets a visible fallback, not a blank rectangle',
-      errs: fallback ? [] : ['.band-fallback did not appear on every band after the image request was blocked'] });
-
-    let landed = null;
+    const ctx = await browser.newContext({viewport:VIEWPORTS.phone,reducedMotion:'reduce',serviceWorkers:'block'});
+    await ctx.addInitScript(profiles => localStorage.setItem('vb_profiles',JSON.stringify(profiles)),TIER_PROFILES);
+    await ctx.route('**/mascots/**', route => route.abort());
+    const page = await openHome(ctx);
+    const fallback = await page.locator('#companionFallback').isVisible() && await page.evaluate(()=>vbWorldScene.snapshot().houses.length===5);
+    add('hub-media-fallback',fallback,'Failed companion media leaves a visible buddy fallback and all 3D huts','Fallback or 3D huts disappeared');
+    let error = '';
     try {
-      await page.click('.spot[data-id="games"]', { timeout: 5000 });
-      await page.waitForURL((u) => u.pathname.endsWith('/games/index.html'), { timeout: 5000 });
-      landed = page.url();
-    } catch (e) { landed = 'ERROR: ' + e.message; }
-    const stillTappable = !!(landed && landed.includes('/games/index.html'));
-    hubResults.push({ id: 'hub-image-fallback-tappable', ok: stillTappable,
-      what: 'A landmark is still tappable and navigates correctly with the fallback showing',
-      errs: stillTappable ? [] : ['landed on: ' + landed] });
-
-    await page.close();
-    await freshCtx.close();
+      await tapHut(page,'games');
+      await page.waitForURL('**/games/index.html',{timeout:5000});
+    } catch (e) { error = e.message; }
+    add('hub-media-fallback-tappable',!error,'House navigation works when companion media fails',error);
+    await ctx.close();
   }
 }
 for (const h of hubResults) {

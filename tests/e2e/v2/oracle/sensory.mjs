@@ -23,6 +23,5 @@ const auto = (id, url, tiers, ready = 'body') => ({
 export default [
   auto('hello-colors-auto', '/learning/hello-colors.html', [1]),
   auto('animal-sounds-auto', '/learning/animal-sounds.html', [1]),
-  auto('peek-a-boo-auto', '/games/peek-a-boo.html', [1]),
   auto('count-along-auto', '/learning/count-along.html', [2]),
 ];

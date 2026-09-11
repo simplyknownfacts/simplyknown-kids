@@ -268,8 +268,9 @@ async function unlockParentSettings(page, panel) {
   await page.waitForSelector('#pinPad .pin-key');
   for (const i of [0, 1, 2, 3]) await page.locator('#pinPad .pin-key').nth(i).click();  // 1-2-3-4
   await page.waitForSelector('#mainSettings', { state: 'visible', timeout: 10000 });
-  // At phone width the panels are an accordion, opened by tapping their heading.
-  await page.locator(`#panel-${panel} .acc-title`).click();
+  // Phone settings use one grouped section picker, with one panel visible.
+  await page.locator('#settingsSectionPicker').selectOption(panel);
+  await page.waitForSelector(`#panel-${panel}`, { state: 'visible' });
 }
 
 /* Fill in the sign-in form and press the button. */
@@ -351,11 +352,14 @@ test('finding 13: a future birthday typed past the picker is refused, and no chi
     await page.waitForSelector('#addForm', { state: 'visible' });
 
     await page.fill('#newName', 'Sam');
-    // Setting the value directly is the point: the `max` attribute marks the
-    // field invalid but does not stop a value being put there, which is why the
-    // save path has to check as well.
-    await page.fill('#newBirthday', '2031-04-09');
-    await page.locator('#addForm button:has-text("Save")').click();
+    await page.fill('#newBirthday', todayISO());
+    await page.locator('#addNext1').click();
+    await page.locator('#newMascotPicker button[data-mascot]').first().click();
+    await page.locator('#addNext2').click();
+    // Change the date after the first step has validated it. The final Create
+    // path must recheck it even though this field is now in a hidden step.
+    await page.locator('#newBirthday').evaluate(el => { el.value = '2031-04-09'; });
+    await page.locator('#createChild').click();
     await page.waitForTimeout(300);
 
     assert.equal(alerts.length, 1, 'expected exactly one message; got: ' + JSON.stringify(alerts));
@@ -367,15 +371,17 @@ test('finding 13: a future birthday typed past the picker is refused, and no chi
     assert.deepEqual(names, ['Robin'],
       'a child with a future birthday was created anyway — js/tiers.js would file them as a newborn');
 
-    // Control: today is not the future, so the same Save gets past the birthday
-    // check and stops at the next thing it needs. Without this the test would
+    // Control: today is not the future, so Create gets past the birthday
+    // check and stops at the missing voice. Without this the test would
     // still pass if the guard refused every date there is.
     await page.fill('#newBirthday', todayISO());
-    await page.locator('#addForm button:has-text("Save")').click();
+    await page.locator('#addNext1').click();
+    await page.locator('#addNext2').click();
+    await page.locator('#createChild').click();
     await page.waitForTimeout(300);
 
     assert.equal(alerts.length, 2, 'expected a second message; got: ' + JSON.stringify(alerts));
-    assert.match(alerts[1], /animal companion/i,
+    assert.match(alerts[1], /pick a voice/i,
       "today's date should have been accepted and the save moved on to the next question; got: " + alerts[1]);
 
     await ctx.close();

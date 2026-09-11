@@ -1,0 +1,17 @@
+✖ ordinary pages expose no retired library copy, links, controls, or scripts (11.0725ms)
+✖ old callback URL is inert and has a safe local destination (1.0031ms)
+✖ offline shell does not preload the retired integration (1.1319ms)
+✖ local Listening Hut stays independent of account or connection checks (1.1971ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 0
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 140.3347
+✖ failing tests:
+✖ ordinary pages expose no retired library copy, links, controls, or scripts (11.0725ms)
+✖ old callback URL is inert and has a safe local destination (1.0031ms)
+✖ offline shell does not preload the retired integration (1.1319ms)
+✖ local Listening Hut stays independent of account or connection checks (1.1971ms)

@@ -29,6 +29,9 @@
     @keyframes padGlow { 0%,100% { filter: brightness(1); transform: translateY(0); } 50% { filter: brightness(1.6); transform: translateY(-6px); } }
     .pad.wrong { animation: padShake 0.3s; }
     @keyframes padShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+    @media (max-width: 360px) {
+      #pads { gap: 7px; }
+    }
     #songBtn, #memBtn {
       margin: 12px 6px 0; padding: 12px 22px; border-radius: 999px; border: none; cursor: pointer;
       font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 16px; color: #fff;
@@ -58,7 +61,6 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -129,6 +131,26 @@
 
     let song = null, pos = 0;
     let memMode = false, memSeq = [], memPos = 0, memBusy = false;
+    let memTimer = null, memGeneration = 0, pageActive = true;
+    function scheduleMemory(fn, delay, generation) {
+      clearTimeout(memTimer);
+      memTimer = setTimeout(() => {
+        if (pageActive && memMode && generation === memGeneration) fn();
+      }, delay);
+    }
+    function disposePage() {
+      pageActive = false;
+      memGeneration++;
+      clearTimeout(memTimer);
+      memTimer = null;
+      memBusy = false;
+      pads.forEach(p => p.classList.remove('active', 'wrong'));
+    }
+    window.addEventListener('pagehide', disposePage);
+    window.addEventListener('beforeunload', disposePage);
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) { pageActive = true; stopMemory(); }
+    });
 
     function notePop(padEl, emoji) {
       if (reduce) return;
@@ -168,29 +190,38 @@
     // ── Memory (Simon) mode, tier 7+ ──
     // App plays a growing sequence (watch), kid repeats from memory. +1 note each
     // round. A miss just replays the same sequence (no harsh game-over).
-    function flashPad(i, cb) {
+    function flashPad(i, cb, generation) {
       const p = pads[i];
       note(NOTES[i].f);
       p.classList.add('active');
-      setTimeout(() => { p.classList.remove('active'); cb && cb(); }, 420);
+      scheduleMemory(() => { p.classList.remove('active'); cb && cb(); }, 420, generation);
     }
-    function memPlayback() {
+    function memPlayback(generation) {
+      if (!pageActive || !memMode || generation !== memGeneration) return;
       memBusy = true; clearGuide(); hintEl.textContent = '👀 Watch the colors…';
       let k = 0;
       (function step() {
+        if (!pageActive || !memMode || generation !== memGeneration) return;
         if (k >= memSeq.length) { memBusy = false; memPos = 0; hintEl.textContent = '🧠 Your turn!'; return; }
-        flashPad(memSeq[k], () => { k++; setTimeout(step, 200); });
+        flashPad(memSeq[k], () => { k++; scheduleMemory(step, 200, generation); }, generation);
       })();
     }
     function startMemory() {
       memMode = true; song = null; clearGuide();
+      pageActive = true;
+      const generation = ++memGeneration;
+      memBusy = true;
       memSeq = [Math.floor(Math.random() * NOTES.length)];
       memBtn.textContent = '✋ Stop';
       songBtn.style.display = 'none';
-      setTimeout(memPlayback, 450);
+      scheduleMemory(() => memPlayback(generation), 450, generation);
     }
     function stopMemory() {
+      memGeneration++;
+      clearTimeout(memTimer);
+      memTimer = null;
       memMode = false; memBusy = false; memSeq = []; memPos = 0; clearGuide();
+      pads.forEach(p => p.classList.remove('active'));
       memBtn.textContent = '🧠 Memory game';
       if (canSong) songBtn.style.display = 'block';
       hintEl.textContent = 'Tap the keys! 🎹';
@@ -200,17 +231,23 @@
       if (i === memSeq[memPos]) {
         hitPad(i); memPos++;
         if (memPos >= memSeq.length) {
+          memBusy = true;
           if (typeof playSuccess === 'function') { try { playSuccess(); } catch (e) {} }
           if (window.vbProgress) vbProgress.record('tap-a-tune');
           hintEl.textContent = '✅ ' + memSeq.length + ' in a row!';
           memSeq.push(Math.floor(Math.random() * NOTES.length));
-          setTimeout(memPlayback, 950);
+          const generation = memGeneration;
+          scheduleMemory(() => memPlayback(generation), 950, generation);
         }
       } else {
+        memBusy = true;
         const p = pads[i]; p.classList.add('wrong'); setTimeout(() => p.classList.remove('wrong'), 300);
         if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
-        hintEl.textContent = '❌ Watch again…';
-        memPos = 0; setTimeout(memPlayback, 950);
+        hintEl.textContent = `❌ That was ${NOTES[i].name}. Watch the pattern again…`;
+        try { speak('Try again!'); } catch (e) {}
+        memPos = 0;
+        const generation = memGeneration;
+        scheduleMemory(() => memPlayback(generation), 950, generation);
       }
     }
 
@@ -231,6 +268,8 @@
         const p = pads[i];
         p.classList.add('wrong'); setTimeout(() => p.classList.remove('wrong'), 300);
         if (typeof playBoop === 'function') { try { playBoop(); } catch (e) {} }
+        hintEl.textContent = `That was ${NOTES[i].name}. Follow the glowing key.`;
+        try { speak('Try again!'); } catch (e) {}
       }
     }
     padsEl.addEventListener('pointerdown', (e) => {

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kids local preview</title></head>
+<body><p>Opening your adventure…</p><script>
+// Development preview only. The release staging allow-list excludes this page.
+// Use synthetic data in this origin; never replace an existing family.
+if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+  if (!localStorage.getItem('vb_profiles')) {
+    const previewChild = { id: 'local-preview-explorer', name: 'Explorer', birthday: '2021-01-01', color: '#78b99b', voice: 'girl', mascot: { id: 'bunny', voice: 'girl' }, features: {}, activitiesVisible: {} };
+    localStorage.setItem('vb_profiles', JSON.stringify([previewChild]));
+    localStorage.setItem('vb_active_id', previewChild.id);
+  }
+}
+location.replace('home.html');
+</script></body></html>

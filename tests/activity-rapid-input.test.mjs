@@ -1,0 +1,189 @@
+// Real-browser regressions for round ownership under rapid input.
+import test, { before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { spawn } from 'node:child_process';
+import { chromium } from 'playwright';
+import path from 'node:path';
+
+const ROOT = path.resolve(import.meta.dirname, '..');
+let server;
+let browser;
+let base;
+
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const probe = createServer();
+    probe.once('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const { port } = probe.address();
+      probe.close(() => resolve(port));
+    });
+  });
+}
+
+before(async () => {
+  const port = await freePort();
+  base = `http://127.0.0.1:${port}`;
+  server = spawn(process.execPath, ['scripts/serve.mjs'], {
+    cwd: ROOT,
+    env: { ...process.env, PORT: String(port) },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  for (let i = 0; i < 50; i++) {
+    try {
+      const response = await fetch(base + '/__health.json');
+      if (response.ok) break;
+    } catch {}
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  browser = await chromium.launch();
+});
+
+after(async () => {
+  if (browser) await browser.close();
+  if (server) server.kill();
+});
+
+async function activityPage(id, tier, { random } = {}) {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await ctx.addInitScript(({ id, tier, random }) => {
+    localStorage.setItem('vb_profiles', JSON.stringify([{
+      id: 'rapid-kid', name: 'Rapid', birthday: '2020-01-01', color: '#4ECDC4',
+      voice: 'girl', mascot: { id: 'dog' }, tierOverrides: { [id]: tier },
+      features: {}, activitiesVisible: {}, youtube: [],
+    }]));
+    localStorage.setItem('vb_active_id', 'rapid-kid');
+    HTMLMediaElement.prototype.play = () => Promise.resolve();
+    if (random != null) Math.random = () => random;
+  }, { id, tier, random });
+  return { ctx, page: await ctx.newPage() };
+}
+
+test('Body Parts accepts the current target once and owns its prompt/transition timers', async () => {
+  const { ctx, page } = await activityPage('body-parts', 4);
+  await page.goto(base + '/learning/body-parts.html', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#figure .hit');
+
+  const point = await page.evaluate(() => {
+    window.bodyCalls = [];
+    window.vbProgress = {record:id=>bodyCalls.push(['record',id]),mastery:id=>bodyCalls.push(['mastery',id])};
+    const prompt = document.getElementById('hint').textContent;
+    const names = [...document.querySelectorAll('#figure .hit')].map(el=>el.dataset.name);
+    const plural = {eye:'eyes',ear:'ears',hand:'hands',foot:'feet',arm:'arms',leg:'legs'};
+    const target = names.find(name=>prompt.toLowerCase().includes((plural[name]||name).toLowerCase()));
+    const r = document.querySelector('#figure .hit[data-name="'+target+'"]').getBoundingClientRect();
+    return {x:r.left+r.width/2,y:r.top+r.height/2};
+  });
+  // This check owns timing/once-only behavior; the visible-art suite supplies
+  // independent picture coordinates for anatomical correctness.
+  for(let i=0;i<8;i++) await page.mouse.click(point.x,point.y);
+  const result = await page.evaluate(()=>{
+    const html=document.getElementById('figure').innerHTML;
+    window.dispatchEvent(new PageTransitionEvent('pagehide'));
+    return {calls:bodyCalls,html};
+  });
+  assert.equal(result.calls.filter(([kind]) => kind === 'record').length, 1,
+    'one Body Parts target recorded more than once');
+  await page.waitForTimeout(2000);
+  assert.equal(await page.locator('#figure').evaluate((el) => el.innerHTML), result.html,
+    'Body Parts advanced after pagehide');
+  await ctx.close();
+
+  const delayed = await activityPage('body-parts', 4);
+  await delayed.page.goto(base + '/learning/body-parts.html', { waitUntil: 'domcontentloaded' });
+  const spoken = await delayed.page.evaluate(async () => {
+    const calls = [];
+    window.speakInstruction = (text) => calls.push(text);
+    window.dispatchEvent(new PageTransitionEvent('pagehide'));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return calls;
+  });
+  assert.deepEqual(spoken, [], 'Body Parts restarted a delayed instruction after pagehide');
+  await delayed.ctx.close();
+});
+
+test('Hide and Seek accepts the clue location once under repeated physical taps', async () => {
+  const { ctx, page } = await activityPage('peek-a-boo', 5);
+  try {
+    await page.goto(base + '/games/peek-a-boo.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#friendIntro');
+    assert.equal(await page.locator('.peek-marker,.clue-peek,.clue-rustle').count(), 0,
+      'introduction gives away the hiding place');
+    await page.evaluate(() => { window.seekCalls = []; window.vbProgress = {record:id=>seekCalls.push(id)}; });
+    await page.waitForFunction(() => document.querySelector('#roundAction').getAttribute('aria-disabled') === 'false');
+    await page.locator('#roundAction').click();
+    await page.waitForFunction(() => document.querySelector('#stage').dataset.phase === 'seek');
+    await page.locator('#showAgain').click();
+    const target = await page.locator('.clue-peek').evaluate(e => Number(e.dataset.spot));
+    const r = await page.locator('.hiding-spot').nth(target).boundingBox();
+    for(let i=0;i<10;i++) await page.mouse.click(r.x+r.width/2,r.y+r.height*.7);
+    assert.deepEqual(await page.evaluate(()=>seekCalls), ['peek-a-boo']);
+    const beforeHide = await page.evaluate(() => ({
+      phase:document.querySelector('#stage').dataset.phase,
+      target:Number(document.querySelector('#seekCompanion').dataset.target),
+      name:document.querySelector('.intro-name').textContent,
+      hint:document.querySelector('#hint').textContent,
+      calls:[...seekCalls],
+    }));
+    assert.deepEqual({phase:beforeHide.phase,target:beforeHide.target}, {phase:'found',target});
+    // pagehide synchronously conceals and pauses the companion. Verify that
+    // lifecycle response, then make sure no stale round callback runs later.
+    const hidden = await page.evaluate(() => {
+      window.dispatchEvent(new PageTransitionEvent('pagehide'));
+      const host=document.querySelector('#seekCompanion'),video=host.querySelector('video');
+      return {phase:document.querySelector('#stage').dataset.phase,hidden:host.hidden,
+        target:Number(host.dataset.target),paused:video.paused,name:document.querySelector('.intro-name').textContent,
+        hint:document.querySelector('#hint').textContent,calls:[...seekCalls]};
+    });
+    assert.deepEqual(hidden,{phase:'found',hidden:true,target:-1,paused:true,
+      name:beforeHide.name,hint:beforeHide.hint,calls:['peek-a-boo']});
+    await page.waitForTimeout(700);
+    const later = await page.evaluate(() => ({phase:document.querySelector('#stage').dataset.phase,
+      name:document.querySelector('.intro-name').textContent,hint:document.querySelector('#hint').textContent,
+      calls:[...seekCalls],hidden:document.querySelector('#seekCompanion').hidden,
+      paused:document.querySelector('#seekCompanion video').paused}));
+    assert.deepEqual(later,{phase:'found',name:beforeHide.name,hint:beforeHide.hint,
+      calls:['peek-a-boo'],hidden:true,paused:true},'game changed after pagehide');
+  } finally { await ctx.close(); }
+});
+
+test('Tap-a-Tune blocks memory input while one replay is pending', async () => {
+  const { ctx, page } = await activityPage('tap-a-tune', 7, { random: 0.01 });
+  await page.goto(base + '/games/tap-a-tune.html', { waitUntil: 'domcontentloaded' });
+  await page.locator('#memBtn').click();
+  await page.waitForFunction(() => document.getElementById('hint').textContent.includes('Your turn'));
+
+  const result = await page.evaluate(async () => {
+    const calls = [];
+    window.vbProgress = { record: (id) => calls.push(id) };
+    let watchCount = 0;
+    const hint = document.getElementById('hint');
+    const observer = new MutationObserver(() => {
+      if (hint.textContent.includes('Watch the colors')) watchCount++;
+    });
+    observer.observe(hint, { childList: true, subtree: true });
+    const pad = document.querySelector('.pad[data-i="0"]');
+    const rect = pad.getBoundingClientRect();
+    for (let i = 0; i < 8; i++) {
+      pad.dispatchEvent(new PointerEvent('pointerdown', {
+        pointerId: i + 1,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+        bubbles: true,
+      }));
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+    observer.disconnect();
+    return { calls, watchCount };
+  });
+  assert.equal(result.calls.length, 2, 'input during the replay delay progressed hidden memory rounds');
+  assert.equal(result.watchCount, 1, 'more than one memory playback started for one completed round');
+  const cleanup = await page.evaluate(async () => {
+    window.dispatchEvent(new PageTransitionEvent('pagehide'));
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return document.querySelectorAll('.pad.active, .pad.wrong').length;
+  });
+  assert.equal(cleanup, 0, 'memory playback left a pad active after pagehide');
+  await ctx.close();
+});

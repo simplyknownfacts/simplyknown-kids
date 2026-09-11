@@ -54,6 +54,22 @@
     body.low-tier .pile .item { font-size: clamp(24px, 6vw, 44px); }
     body.low-tier .op { font-size: clamp(36px, 8vw, 64px); }
     body.low-tier .answer-box { min-width: 72px; min-height: 64px; font-size: clamp(36px, 8vw, 64px); }
+
+    /* On phones, use the clear top-right gap for the compact reward and keep
+       Again out of that gap until the notice has fully left the DOM. */
+    @media (max-width: 600px) {
+      .vb-celebrate { top: calc(4px + env(safe-area-inset-top)); }
+      body:has(.vb-celebrate) .vb-replay-instruction {
+        visibility: hidden;
+        pointer-events: none;
+      }
+    }
+
+    /* A 320x568 screen fits two answer targets per row beside the fixed
+       grown-up gear. Keep all four 70px targets, but reserve the gear's lane. */
+    @media (max-width: 360px) and (max-height: 650px) {
+      .num-row { width: 220px; margin-right: 60px; }
+    }
   </style>
 </head>
 <body>
@@ -67,7 +83,6 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -95,8 +110,8 @@
     const ITEMS = ['🍎','🍌','🚗','⭐','🐱','🎈','🍦','🦋'];
     const bodyEl = document.getElementById('body');
     const hint   = document.getElementById('hint');
-    let roundTimer = null;
-    window.addEventListener('beforeunload', () => clearTimeout(roundTimer));
+    let roundTimer = null, roundSettled = false;
+    ['pagehide', 'beforeunload'].forEach(event => window.addEventListener(event, () => clearTimeout(roundTimer)));
 
     function pile(n, emoji) {
       const div = document.createElement('div');
@@ -118,7 +133,7 @@
     }
 
     function nextRound() {
-      bodyEl.innerHTML = ''; clearTimeout(roundTimer);
+      bodyEl.innerHTML = ''; clearTimeout(roundTimer); roundSettled = false;
       const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
 
       const op = pickOp();
@@ -183,7 +198,11 @@
 
       // Speak the equation
       const opWord = op === '+' ? 'plus' : op === '−' ? 'minus' : op === '×' ? 'times' : 'divided by';
-      setTimeout(() => speak(missing ? `${a} ${opWord} what equals ${ans}?` : `${a} ${opWord} ${b}?`), 400);
+      const spokenPrompt = missing ? `${a} ${opWord} what equals ${ans}?` : `${a} ${opWord} ${b}?`;
+      (() => {
+        if (typeof speakInstruction === 'function') speakInstruction(spokenPrompt);
+        else speak(spokenPrompt);
+      })();
 
       // Number choices: target + 3 plausible distractors
       const choices = new Set([target]);
@@ -196,7 +215,9 @@
         const btn = document.createElement('div');
         btn.className = 'num-btn'; btn.textContent = n;
         btn.addEventListener('pointerdown', () => {
+          if (roundSettled) return;
           if (n === target) {
+            roundSettled = true;
             box.textContent = target; box.classList.add('filled');
             playSuccess();
             if (window.vbProgress) { vbProgress.record('math'); if (op === '−') vbProgress.mastery('math.mastery'); }
@@ -205,6 +226,14 @@
           } else {
             btn.classList.add('wrong');
             playBoop();
+            hint.textContent = missing
+              ? `Put a number in the box so ${a} ${op} it makes ${ans}. Try again!`
+              : op === '−'
+                ? `Start with ${a} and take away ${b}. Try again!`
+                : op === '+'
+                  ? `Count ${a}, then count ${b} more. Try again!`
+                  : `Work out ${a} ${op} ${b}. Try again!`;
+            speak('Try again!');
             setTimeout(() => btn.classList.remove('wrong'), 350);
           }
         });

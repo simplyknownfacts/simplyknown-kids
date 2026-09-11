@@ -19,7 +19,7 @@
     }
     #dotsBtn {
       position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%);
-      display: none; padding: 11px 20px; border-radius: 999px; border: none; cursor: pointer;
+      display: none; min-height: 44px; padding: 11px 20px; border-radius: 999px; border: none; cursor: pointer;
       font-family: var(--font-ui, sans-serif); font-weight: 800; font-size: 15px; color: #fff;
       background: linear-gradient(180deg, #6fd3ff, #3aa0e0); box-shadow: 0 6px 16px rgba(0,0,0,0.35);
     }
@@ -35,7 +35,6 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -124,7 +123,7 @@
         if (dotProgress >= dots.length) {
           dotDone = true;
           if (window.vbProgress) vbProgress.record('magic-touch');
-          burst(canvas.width / 2, canvas.height * 0.5, true);
+          burst(canvas.width / 2, canvas.height * 0.5, true, false);
           const h = document.getElementById('hint'); if (h) h.textContent = '✨ A ' + dotShape.name + '! ✨';
           setTimeout(() => { if (dotsMode) { pickDotShape(); const h2 = document.getElementById('hint'); if (h2) h2.textContent = '🔗 Tap the dots: 1 → 2 → 3 …'; } }, 2200);
         }
@@ -148,14 +147,14 @@
       });
     }
 
-    function burst(x, y, gold) {
+    function burst(x, y, gold, recordProgress = true) {
       const palette = gold ? GOLD : COLORS;
       const base = rc(palette);
       const n = reduce ? 8 : TUNE.count + (gold ? 10 : 0);
       for (let i = 0; i < n; i++) spawnParticle(x, y, Math.random() < 0.6 ? base : rc(palette));
       if (typeof playPop === 'function') { try { playPop(); } catch (e) {} }
       if (typeof haptic === 'function') haptic(tier <= 2 ? 22 : 14);
-      if (window.vbProgress) vbProgress.record('magic-touch');
+      if (recordProgress && window.vbProgress) vbProgress.record('magic-touch');
       bursts++;
       if (bursts === 1) { const h = document.getElementById('hint'); if (h) h.style.opacity = '0'; }
     }

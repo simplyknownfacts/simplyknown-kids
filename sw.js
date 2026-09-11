@@ -1,5 +1,21 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v145';
+const CACHE = 'vb-v168';
+// v168: add whole Ribbons and My Room houses; cache the child-safe room offline.
+// v167: compact child-menu arrivals and keep overflow on the natural page scroller.
+// v166: retire unsupported listening integration; keep local Listen available offline.
+// v165: finalize hidden companion playback, static fallbacks and safe switching.
+// v164: use the existing animated Bunny, Tabby Cat and Panda in Hide & Seek.
+// v163: anchor peeking ears and preserve finger-sized search targets in landscape.
+// v162: include the final partial-ear and rustling-bush 3D clue renderer.
+// v161: clue-based Hide & Seek, with partial peeks and a hidden hiding place.
+// v160: keep Bubble Pop canvas and touch coordinates aligned after HUD reflow.
+// v159: Bubble Pop reserves separate rows for controls, challenge and score.
+// v158: separate themed islands and animated ocean, available offline.
+// v157: the parent Add child navigation can use its cached page while offline.
+// v156: readable parent settings and guided child setup, available offline.
+// v155: visible, cancellable elapsed-time progress for the parent hold.
+// v154: separate Free Paint brushes and Color In tap-to-fill studios.
+// v148: animated personal world, redesigned rooms, bounded awards and owned play timers.
 // v145 FIX (Codex 0905-1, HIGH): js/pin-lockout.js -- loaded by both
 // home.html's exit dialog and parent/settings.html's PIN gate -- was missing
 // from ASSETS. After an SW update plus an offline launch the file could be
@@ -152,15 +168,24 @@ const CACHE = 'vb-v145';
 //      missing from the precache list -> those pages broke offline. Both added.
 // Full version history: git log.
 const ASSETS = [
-  './', './index.html', './home.html', './achievements.html',
+  // These three small idle clips and keyed stills support this activity offline.
+  // Optional media never makes a working shell update fail.
+  './mascots/bunny/green/master.png', './mascots/bunny/green/idle/idle_base.mp4',
+  './mascots/tabby/green/master.png', './mascots/tabby/green/idle/idle_base.mp4',
+  './mascots/panda/green/master.png', './mascots/panda/green/idle/idle_base.mp4',
+  './css/parent-settings.css', './css/world-home.css', './css/my-room.css',
+  './js/world-home.js',
+  './js/world-art.js',
+  './js/world-scene.js', './js/world-huts.js', './js/world-islands.js', './js/world-ocean.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
+  './js/vendor/three-r180/three.module.min.js', './js/vendor/three-r180/three.core.min.js',
+  './', './index.html', './home.html', './achievements.html', './my-room.html',
   './redesign-hub-bg.jpg',
   './css/style.css', './css/achievements.css', './css/themes.css',
   './js/atmosphere.js', './js/version.js',
   './js/tiers.js', './js/profiles.js', './js/voice-manifest.js', './js/app.js', './js/mascot.js', './js/sync.js', './js/pin-lockout.js',
   './js/achievement-defs.js', './js/achievement-logic.js', './js/ribbon.js', './js/celebrate.js', './js/progress.js', './js/shelf.js',
-  './js/game-settings.js', './js/paint.js', './js/sw-cache-policy.js',
+  './js/game-settings.js', './js/paint.js', './js/free-paint.js', './js/color-fill.js', './js/sw-cache-policy.js',
   './js/sleep-timer.js',
-  './js/yoto.js', './js/yoto-config.js', './js/yoto-player.js',
   './games/index.html', './games/tap-pop.html', './games/peek-a-boo.html',
   './games/magic-touch.html', './games/tap-a-tune.html', './games/surprise-pop.html', './games/shape-match.html',
   './games/tilt-drive.html', './games/memory-match.html',
@@ -177,7 +202,6 @@ const ASSETS = [
   './art/finger-paint.html', './art/stamp-art.html', './art/color-in.html',
   './videos/index.html',
   './listen/index.html',
-  './yoto-callback.html',
   './parent/settings.html',
   './icon-192.png', './icon-512.png',
   './offline-manifest.json',
@@ -192,7 +216,11 @@ const ASSETS = [
 // retries install later, rather than a new "ready" service worker quietly
 // missing a piece the app cannot run without.
 const REQUIRED_SHELL = [
-  './', './index.html', './home.html', './redesign-hub-bg.jpg',
+  './js/free-paint.js', './js/color-fill.js',
+  './css/parent-settings.css', './css/world-home.css', './css/my-room.css', './js/world-home.js', './js/world-art.js',
+  './js/world-scene.js', './js/world-huts.js', './js/world-islands.js', './js/world-ocean.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
+  './js/vendor/three-r180/three.module.min.js', './js/vendor/three-r180/three.core.min.js',
+  './', './index.html', './home.html', './my-room.html', './redesign-hub-bg.jpg',
   './css/style.css', './css/themes.css',
   './js/atmosphere.js', './js/version.js', './js/tiers.js', './js/profiles.js', './js/app.js', './js/mascot.js', './js/sync.js',
 ];
@@ -268,7 +296,20 @@ self.addEventListener('fetch', e => {
           );
         }
         return res;
-      }).catch(() => caches.match(e.request))
+      }).catch(async () => {
+        const exact = await caches.match(e.request);
+        if (exact) return exact;
+        // Parent actions are handled in the browser. The first offline visit
+        // to ?action=add can use the precached HTML without ever having loaded
+        // that exact query online. Keep query matching strict for other URLs,
+        // code assets and requests that are not a page navigation.
+        const parentPage = new URL('./parent/settings.html', self.location.href);
+        if (e.request.mode === 'navigate' && url.origin === parentPage.origin &&
+            url.pathname === parentPage.pathname) {
+          return caches.match(parentPage.href);
+        }
+        return undefined;
+      })
     );
   } else {
     // Cache-first for heavy, immutable assets (audio/video/images/icons/fonts).

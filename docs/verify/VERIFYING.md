@@ -18,8 +18,7 @@ service worker, `fetch()` and the sync layer all need an `http://` origin.
 node scripts/serve.mjs
 ```
 
-Serves the repo at `http://localhost:8790`. No dependencies; the repo has no build
-step and no runtime dependencies, and this does not change that.
+Serves the repo at `http://localhost:8790` using Node built-ins. No build step is required. The 3D home uses a pinned, self-hosted Three.js runtime included in the offline shell.
 
 One-time browser install for step 3 (never committed — `node_modules/` is ignored):
 
@@ -35,7 +34,7 @@ Before driving anything, confirm the pieces are sane.
 npm test
 ```
 
-Expected: **41 passing, 0 failing.** These cover the achievement rules, the backup
+Expected: **all checks passing, zero failures or skips**. Read the current total from the run output. These cover the achievement rules, the backup
 Worker's authentication, the service worker's caching policy, what is allowed to be
 published to the web, and that hostile text typed into a name or synced from the
 cloud is displayed as words rather than run as code.
@@ -76,9 +75,9 @@ node tests/verify-drive.mjs
 ```
 
 It seeds **ten test children, one per tier** (birthdays landing mid-tier, never on a
-boundary), then drives **53 screen loads** in four passes:
+boundary), then derives its screen loads from the current registry in four passes:
 
-1. Every activity page — 21 of them, plus Watch and Listen — opened **once each**,
+1. Every registered activity page, plus Watch and Listen — opened **once each**,
    signed in as the youngest tier allowed to see it. This is the main coverage
    requirement: every real destination proven to load, correctly tier-gated.
 2. The child home screen, opened **once per tier** (10 loads) — home is the one screen
@@ -94,7 +93,7 @@ the single tier used to pick it — see
 leaves unproven. On every screen it watches for errors the browser itself reports,
 confirms something was actually drawn, and saves a screenshot.
 
-Expected: **53 screens driven, 53 passed, 0 failed**, and **exit code 0**. Takes a
+Expected: **every screen and behavioral check passes, zero failures**, and **exit code 0**. Totals are printed by the driver. Takes a
 little over a minute.
 
 The screen list is not hand-typed — it's built from `js/profiles.js`'s
@@ -286,3 +285,7 @@ Run end to end on Windows, Node v24.15.0, against `http://localhost:8790`.
    `scrollLeft` + Playwright's programmatic scroll-then-click, which drive real
    `overflow-x:auto` + `-webkit-overflow-scrolling:touch` the same way a finger would, but
    is not the same as an actual finger). Recommend a real-device pass before wide rollout.
+
+
+## 2026-09-08 first-pass preview update (codex)
+The redesigned Games menu restores Peek-a-boo with its existing age/parent gates. The browser driver now includes it. Earlier dated results above retain their original scope and counts; the current registry, startup output and latest handoff are authoritative. The promote scripts and dev-verification stamp rules are unchanged. Local preview checks do not create a dev-verification stamp or authorize production.

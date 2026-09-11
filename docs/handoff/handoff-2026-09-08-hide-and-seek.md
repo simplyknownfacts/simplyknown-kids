@@ -1,0 +1,25 @@
+# Hide and Seek differentiation - 2026-09-08 (codex)
+
+## Resume here
+1. Scott said Peek-a-boo and Surprise Pop were basically the same. Peek-a-boo is now **Hide & Seek**, a location-memory game in a real animated Three.js garden. Preview: http://localhost:8795/games/peek-a-boo.html . The refreshed in-app browser tab is confirmed `data-renderer=webgl` and kept as a deliverable. Local server on port8795 remains running.
+2. Worktree `.worktrees/kids-child-experience`, branch `kids/child-experience`, application HEAD `7561b92` (game/focus/frame fixes `055739b`; final CSS contrast change `7561b92`). This adds to the [Body Parts repair](handoff-2026-09-08-body-parts.md) and prior 3D home; it does not replace those changes.
+3. Preview only. No push, merge to main, deployment, promote, or dev-verification stamp. Original main is still `30d28e772aea51d5b19b80fbca46aeb34d05787e`; its existing untracked `.publish-real-test/` is untouched. Gate/staging implementation files remain unchanged. Video Bot belongs to its existing owner; no retired scheduled reviews were recreated.
+
+## What changed
+1. The child sees Rabbit, Cat or Bear at a flower bush, presses Hide, then chooses the remembered location. Wrong choices show an empty bush and permit retry; Show me again replays the SAME location. A correct choice awards once; Play again starts another watched round. No automatic guessing or automatic next round.
+2. Two locations for tiers1-4; three for tiers5+ or the existing multiChoice override. Littles get a visual guide. Stable pink/yellow/blue flower landmarks, keyboard controls, reusable recorded animal names, reduced motion, page-exit cleanup, failed-render fallback and late-success upgrade are included.
+3. The old `peek-a-boo` id and route remain so profile settings, history and ribbons survive. Visible metadata/settings now say Hide & Seek / Three hiding places. Surprise Pop's reveal, silhouette-guess and collection gameplay is unchanged; the Games menu explains the distinct goals.
+4. Independent review caught button-role mashing, late renderer recovery, stale oracle metadata and keyboard focus. All were corrected. Hide and Play again now occupy different positions; keyboard focus stays on game actions during guarded transitions. Immediate renderer visibility is applied before painting to avoid one stale visible-animal frame. Touch areas cover the pictured bushes/flowers, and the name label no longer covers the found animal.
+
+## Validation and exact limits
+1. Broad run at `931222a`: **237/237 tests**, zero failures/skips (227.8s), and **80/80 app walkthrough** checks. That run preceded the last keyboard/frame fixes and one-line theme contrast fix; do not relabel it as a full238-test run at final HEAD.
+2. Final game/focus changes: **18/18 focused checks**, plus **1/1 new immediate-render pixel check**. The pixel check fails when fed the exact previous renderer from `931222a` and passes the fix. Independent Codex review at fixed `055739b` found no remaining material issue; its final targeted keyboard/frame checks passed6/6. Earlier integrated Hide & Seek suite passed15/15. This is not a Claude signoff.
+3. Independent picture coordinates (not DOM-derived hit-box centers) hit all three visible bushes at390x844. Visual inspection covered320x568,390x844,756x1270 and844x390; no page overflow. CSS heading contrast was then checked in arcade/paper/cloud/candy themes at `7561b92`.
+4. Legacy interactive oracle: Hide & Seek24/24 (tiers1/5, phone/tablet); Surprise Pop8/8 load/error checks (tiers2/5). Its existing silhouette wrong/right behavioral test also passed in the broad suite. An initial unsupported comma-separated `--only` filter selected zero tests; that result was rejected and replaced by the two nonempty runs. Runner zero-selection behavior is an existing evidence trap, not a validated pass.
+5. Offline check at `931222a`: cache `vb-v153` contains both new modules and the pinned Three.js dependencies. With the isolated origin stopped and an uncached fetch failing, the cached 3D game loaded and accepted one answer. Chromium's emulated `navigator.onLine` remained true; origin unavailability is the evidence, not physical airplane mode.
+6. Evidence stays ignored under `.publish-test-first-pass-evidence/seek-*` and `surprise-v2.log`; walkthrough shots under `docs/verify/shots/`. Local allow-list staging includes both modules and excludes `preview.html`. No screenshots, synthetic profiles or scratch test fixtures were committed.
+
+## Remaining review
+1. Scott's preview/taste and real-device review remain. Full-app independent Claude code review is still pending from the earlier preview; direct Claude documentation confirmation was already completed separately.
+2. New memory instructions are visible text/icons; the animal name and success/retry lines reuse verified existing clips in all four voices. Do not claim a newly recorded full hide-and-seek narration or physical-device/audio validation.
+3. Release the three exact Hide and Seek claims after recording this handoff. Keep the local preview available and the production gate unchanged.

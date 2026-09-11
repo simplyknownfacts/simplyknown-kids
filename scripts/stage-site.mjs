@@ -16,7 +16,7 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 // retyped, whichever way a given deploy path stages its files.
 export const PUBLISH = [
   // pages
-  'index.html', 'home.html', 'about.html', 'privacy.html', 'achievements.html',
+  'index.html', 'home.html', 'my-room.html', 'about.html', 'privacy.html', 'achievements.html',
   'yoto-callback.html',
   // home.html hub-world art (the approved v1 island image — see CLAUDE.md hub-home).
   // Its prototype file (redesign-hub-mock.html) and the sibling direction mocks

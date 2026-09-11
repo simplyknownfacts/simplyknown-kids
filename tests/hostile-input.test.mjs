@@ -4,7 +4,7 @@
 // types — or that arrive from the sync server — being pasted into pages as HTML
 // instead of as text. A name, a channel label or an account email containing
 // markup would then run as code on the app's own origin, which is where the cloud
-// sync key and the Yoto tokens are stored. This file exists so that hole cannot
+// sync key and other family state are stored. This file exists so that hole cannot
 // quietly come back.
 //
 // Two layers, on purpose:
@@ -124,34 +124,13 @@ test('source guard: parent settings does not paste a picture address into markup
   );
 });
 
-test('source guard: the Yoto mini-player does not paste a cover address into markup', () => {
-  const src = read('js/yoto-player.js');
-  assert.ok(
-    !/innerHTML\s*=\s*`<img[^`]*\$\{state\.cover\}/.test(src),
-    'js/yoto-player.js builds the mini-player cover with state.cover interpolated into an HTML ' +
-    'string again. This mini-player loads on every page, not just Listen, and the family\'s Yoto ' +
-    'tokens live in storage — build the <img> with createElement/.src, https: only, like listen/index.html\'s safeImageUrl().',
-  );
-  assert.ok(
-    /protocol\s*===\s*['"]https:['"]/.test(src),
-    'the https-only check on the mini-player cover address has gone missing from js/yoto-player.js.',
-  );
+test('source guard: retired playback code has no reader in a user page', () => {
+  const pages = ['home.html', 'listen/index.html', 'parent/settings.html', 'achievements.html'];
+  for (const rel of pages) {
+    const src = read(rel);
+    assert.doesNotMatch(src, /yoto|js\/yoto-player\.js/i, `${rel} still exposes retired playback code`);
+  }
 });
-
-test('source guard: Listen publishes the validated cover address, not the raw one', () => {
-  const src = read('listen/index.html');
-  assert.ok(
-    !/cover:\s*coverUrl\s*\|\|\s*null/.test(src),
-    'listen/index.html publishes the raw, unvalidated coverUrl to window.yotoPlayer again. The ' +
-    'shared mini-player on every other page trusts whatever this publishes — send the already-' +
-    'validated address (safeImageUrl(coverUrl)) instead.',
-  );
-  assert.ok(
-    /cover:\s*safeImageUrl\(coverUrl\)/.test(src),
-    'the validated cover: safeImageUrl(coverUrl) publish call has gone missing from listen/index.html.',
-  );
-});
-
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Browser drive — the real screens, in a real browser.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -263,8 +242,9 @@ async function unlockParentSettings(page, panel) {
   await page.waitForSelector('#pinPad .pin-key');
   for (const i of [0, 1, 2, 3]) await page.locator('#pinPad .pin-key').nth(i).click();  // 1-2-3-4
   await page.waitForSelector('#mainSettings', { state: 'visible', timeout: 10000 });
-  // At phone width the panels are an accordion, opened by tapping their heading.
-  await page.locator(`#panel-${panel} .acc-title`).click();
+  // Phone settings use one grouped section picker, with one panel visible.
+  await page.locator('#settingsSectionPicker').selectOption(panel);
+  await page.waitForSelector(`#panel-${panel}`, { state: 'visible' });
 }
 
 test('Watch: a hostile channel label and emoji are shown as text, not run as code',
@@ -372,65 +352,51 @@ test('In-game settings: a hostile child name is shown as text, and a real name i
     await ctx.close();
   });
 
-test('Yoto mini-player: a hostile cover address stays inert, a real https one still shows',
+test('retired playback state is erased without creating UI, executing markup, or making requests',
   { skip: NEEDS_BROWSER }, async () => {
-    // Two children on purpose: xss-a's mini-player state carries the payload;
-    // the app just needs ANY active profile to get past the picker, so which
-    // one is active doesn't matter here — only the sessionStorage payload does.
-    const ctx = await openApp();
-    const page = await ctx.newPage();
-    // vb_yoto_now_playing is sessionStorage (js/yoto-player.js's KEY), not
-    // localStorage — seed it before the mini-player's own script runs.
+    const ctx = await openApp({
+      vb_yoto_tokens: JSON.stringify({ access_token: 'old-test-token' }),
+      vb_yoto_tokens_legacy_child: JSON.stringify({ access_token: 'older-test-token', refresh_token: 'older-refresh-token' }),
+      vb_yoto_client_id: 'old-client',
+    });
+    const requested = [];
+    ctx.on('request', request => {
+      if (!request.url().startsWith(BASE) && /yoto/i.test(request.url())) requested.push(request.url());
+    });
     await ctx.addInitScript((mark) => {
       try {
-        // A real, same-origin audio file — a fake/blocked src fires the
-        // element's 'error' handler almost instantly, which calls
-        // yotoPlayer.clear() and wipes this very state before the test can
-        // look at it.
         sessionStorage.setItem('vb_yoto_now_playing', JSON.stringify({
-          src: location.origin + '/audio/girl/00679940.mp3',
+          src: 'https://api.yotoplay.com/audio-test.mp3',
           position: 0,
-          playing: false,
-          title: 'Test tape',
+          playing: true,
+          title: 'Old tape',
           cover: `x"><img class="${mark}" src="x" onerror="window.__xssFired=1">`,
         }));
+        sessionStorage.setItem('vb_yoto_pkce_verifier', 'old-verifier');
+        sessionStorage.setItem('vb_yoto_oauth_state', 'old-state');
       } catch {}
     }, MARK);
-    await page.goto(BASE + '/home.html', { waitUntil: 'load' });
-    await page.waitForSelector('#yotoMini');
 
-    await assertInert(page, 'Yoto mini-player (hostile cover)');
-
-    // The cover slot must fall back to empty (no image built from a bad
-    // address) rather than silently keep trying to render it.
-    const coverImgCount = await page.$$eval('#ymCover img', (els) => els.length);
-    assert.equal(coverImgCount, 0,
-      'a malformed cover address should never produce an <img>, hostile or not');
-
-    await ctx.close();
-  });
-
-test('Yoto mini-player: a real https cover address renders as an image',
-  { skip: NEEDS_BROWSER }, async () => {
-    const ctx = await openApp();
     const page = await ctx.newPage();
-    const GOOD_COVER = 'https://api.yotoplay.com/cover-test.png';
-    await ctx.addInitScript((cover) => {
-      try {
-        sessionStorage.setItem('vb_yoto_now_playing', JSON.stringify({
-          src: location.origin + '/audio/girl/00679940.mp3',
-          position: 0,
-          playing: false,
-          title: 'Test tape',
-          cover,
-        }));
-      } catch {}
-    }, GOOD_COVER);
     await page.goto(BASE + '/home.html', { waitUntil: 'load' });
-    await page.waitForSelector('#yotoMini');
+    await page.waitForTimeout(250);
+    assert.equal(await page.locator('#yotoMini, #yotoLaunch').count(), 0);
+    await assertInert(page, 'retired playback state');
 
-    const src = await page.$eval('#ymCover img', (el) => el.getAttribute('src'));
-    assert.equal(src, GOOD_COVER, 'a legitimate https cover address must still display');
+    const remaining = await page.evaluate(() => ({
+      tokens: localStorage.getItem('vb_yoto_tokens'),
+      legacyTokens: localStorage.getItem('vb_yoto_tokens_legacy_child'),
+      client: localStorage.getItem('vb_yoto_client_id'),
+      player: sessionStorage.getItem('vb_yoto_now_playing'),
+      verifier: sessionStorage.getItem('vb_yoto_pkce_verifier'),
+      state: sessionStorage.getItem('vb_yoto_oauth_state'),
+    }));
+    assert.deepEqual(remaining, { tokens: null, legacyTokens: null, client: null, player: null, verifier: null, state: null });
+    assert.deepEqual(requested, [], 'retired state caused a network request');
 
+    await page.goto(BASE + '/yoto-callback.html?code=old-code&state=old-state', { waitUntil: 'load' });
+    await page.waitForURL('**/index.html');
+    assert.equal(await page.locator('#yotoMini, #yotoLaunch').count(), 0);
+    assert.deepEqual(requested, [], 'the retired callback caused a network request');
     await ctx.close();
   });

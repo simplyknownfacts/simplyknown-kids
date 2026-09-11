@@ -38,6 +38,10 @@
     }
     .row.with-badges { row-gap: 36px; }
     .number-big { font-size: clamp(80px, 22vw, 140px); font-weight: 900; color: white; line-height: 1; }
+    .number-big.tap-target {
+      min-width: 44px; min-height: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
     .thing-label { font-size: clamp(18px, 5vw, 28px); font-weight: 800; color: rgba(255,255,255,0.7); }
     .num-btn {
       min-width: 70px; min-height: 70px; border-radius: 20px;
@@ -70,7 +74,6 @@
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -123,13 +126,29 @@
     const stage = document.getElementById('stage');
     const instruction = document.getElementById('instruction');
 
-    let autoTimer;
+    let autoTimer = null;
+    let roundGeneration = 0;
+    let disposed = false;
     function clearAuto() { clearTimeout(autoTimer); }
-    window.addEventListener('beforeunload', clearAuto);
+    function scheduleNext(delay, round) {
+      clearAuto();
+      autoTimer = setTimeout(() => {
+        if (!disposed && round === roundGeneration) nextRound();
+      }, delay);
+    }
+    function disposePage() { disposed = true; clearAuto(); }
+    window.addEventListener('pagehide', disposePage);
+    window.addEventListener('beforeunload', disposePage);
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) { disposed = false; nextRound(); }
+    });
 
     let currentCount = 0;
     function nextRound() {
-      stage.innerHTML = ''; clearAuto();
+      if (disposed) return;
+      clearAuto();
+      const round = ++roundGeneration;
+      stage.innerHTML = '';
       const thing = pickThing();
       const maxCount = tier <= 4 ? 10 : tier <= 6 ? 20 : 50;
       currentCount = (currentCount % maxCount) + 1;
@@ -138,7 +157,7 @@
       if (tier <= 2) {
         instruction.textContent = '👆 Tap to count!';
         const numEl = document.createElement('div');
-        numEl.className = 'number-big'; numEl.textContent = count;
+        numEl.className = 'number-big tap-target'; numEl.textContent = count;
         stage.appendChild(numEl);
         const thingEl = document.createElement('div');
         thingEl.className = 'thing-label';
@@ -148,15 +167,17 @@
         const row = document.createElement('div'); row.className = 'row with-badges';
         stage.appendChild(row);
         let tapped = 0;
+        let roundDone = false;
         // Show empty dots — child taps each one to count
         for (let i = 0; i < count; i++) {
           const d = document.createElement('div');
           d.className = 'dot'; d.textContent = thing.e;
           d.addEventListener('pointerdown', () => {
-            if (d.classList.contains('counted')) return;
+            if (disposed || round !== roundGeneration || roundDone || d.classList.contains('counted')) return;
             d.classList.add('counted');
             tapped++;
             if (tapped === count) {
+              roundDone = true;
               // Final item: speak the total ("3 ducks") directly. Do NOT speak
               // the bare number first — the old code spoke "3" then 350ms later
               // "3 ducks", replaying the "3" clip and stuttering ("three…
@@ -164,7 +185,7 @@
               speak(countWord(count, thing));
               playSuccess();
               if (window.vbProgress) vbProgress.record('count-along');
-              autoTimer = setTimeout(nextRound, 2200);
+              scheduleNext(2200, round);
             } else {
               // Snappy: just the number on each tap, interrupting prior speech.
               speak(String(tapped));
@@ -174,30 +195,35 @@
         }
         // Tap the big number to skip to next round
         numEl.style.cursor = 'pointer';
-        numEl.addEventListener('pointerdown', () => { clearAuto(); nextRound(); });
+        numEl.addEventListener('pointerdown', () => {
+          if (disposed || round !== roundGeneration || roundDone) return;
+          roundDone = true;
+          nextRound();
+        });
 
-      } else if (tier <= 4) {
+      } else if (tier <= 4 && !quizOn) {
         instruction.textContent = `Tap each ${thing.s} to count!`;
         const row = document.createElement('div'); row.className = 'row with-badges';
         let tapped = 0;
+        let roundDone = false;
         for (let i = 0; i < count; i++) {
           const d = document.createElement('div');
           d.className = 'dot'; d.textContent = thing.e;
           d.addEventListener('pointerdown', () => {
-            if (d.classList.contains('counted')) return;
+            if (disposed || round !== roundGeneration || roundDone || d.classList.contains('counted')) return;
             d.classList.add('counted');
             tapped++;
             const badge = document.createElement('span');
             badge.className = 'count-badge';
             badge.textContent = tapped;
             d.appendChild(badge);
-            cancelSpeak();
             if (tapped === count) {
+              roundDone = true;
               // Final tap: skip the lone number — go straight to "N items".
               speak(countWord(count, thing));
               playSuccess();
               if (window.vbProgress) vbProgress.record('count-along');
-              autoTimer = setTimeout(nextRound, 2200);
+              scheduleNext(2200, round);
             } else {
               speak(String(tapped));
             }
@@ -210,7 +236,8 @@
         // "How many?" of 1 is trivial and reads like a glitch — bump to 2+.
         const quizCount = count < 2 ? 2 : count;
         instruction.textContent = `How many ${thing.p}?`;
-        speak(`How many ${thing.p}?`);
+        speakInstruction(`How many ${thing.p}?`);
+        let roundDone = false;
         const row = document.createElement('div'); row.className = 'row';
         for (let i = 0; i < quizCount; i++) {
           const d = document.createElement('div');
@@ -227,15 +254,19 @@
           const btn = document.createElement('div');
           btn.className = 'num-btn'; btn.textContent = n;
           btn.addEventListener('click', () => {
+            if (disposed || round !== roundGeneration || roundDone) return;
             if (n === quizCount) {
+              roundDone = true;
               playSuccess(); speak(`Yes! ${countWord(quizCount, thing)}!`);
               if (window.vbProgress) { vbProgress.record('count-along'); vbProgress.mastery('count-along.mastery'); }
               btn.style.background = 'rgba(168,230,207,0.5)';
-              autoTimer = setTimeout(nextRound, 1500);
+              scheduleNext(1500, round);
             } else {
               playBoop();
               btn.style.background = 'rgba(255,107,107,0.4)';
-              autoTimer = setTimeout(() => btn.style.background = '', 500);
+              setTimeout(() => {
+                if (!disposed && round === roundGeneration && btn.isConnected) btn.style.background = '';
+              }, 500);
             }
           });
           numRow.appendChild(btn);
@@ -247,24 +278,25 @@
         instruction.textContent = `Tap each ${thing.s} to count!`;
         const row = document.createElement('div'); row.className = 'row';
         let tapped = 0;
+        let roundDone = false;
         for (let i = 0; i < count; i++) {
           const d = document.createElement('div');
           d.className = 'dot'; d.textContent = thing.e;
           d.addEventListener('pointerdown', () => {
-            if (d.classList.contains('counted')) return;
+            if (disposed || round !== roundGeneration || roundDone || d.classList.contains('counted')) return;
             d.classList.add('counted');
             tapped++;
             const badge = document.createElement('span');
             badge.className = 'count-badge';
             badge.textContent = tapped;
             d.appendChild(badge);
-            cancelSpeak();
             if (tapped === count) {
+              roundDone = true;
               // Final tap: skip the lone number — go straight to "N items".
               speak(countWord(count, thing));
               playSuccess();
               if (window.vbProgress) vbProgress.record('count-along');
-              autoTimer = setTimeout(nextRound, 2200);
+              scheduleNext(2200, round);
             } else {
               speak(String(tapped));
             }
@@ -281,7 +313,8 @@
         const n0 = 1 + Math.floor(Math.random() * (maxN - 1));
         const ans = isAfter ? n0 + 1 : n0 - 1;
         instruction.textContent = isAfter ? `What comes after ${n0}?` : `What comes before ${n0}?`;
-        speak(isAfter ? 'What number comes after?' : 'What number comes before?');
+        speakInstruction(isAfter ? 'What number comes after?' : 'What number comes before?');
+        let roundDone = false;
         const seqEl = document.createElement('div');
         seqEl.className = 'number-big'; seqEl.style.fontSize = 'clamp(56px, 16vw, 110px)';
         seqEl.textContent = isAfter ? `${n0}, ?` : `?, ${n0}`;
@@ -292,14 +325,18 @@
         [...choices].sort((a, b) => a - b).forEach(n => {
           const btn = document.createElement('div'); btn.className = 'num-btn'; btn.textContent = n;
           btn.addEventListener('click', () => {
+            if (disposed || round !== roundGeneration || roundDone) return;
             if (n === ans) {
+              roundDone = true;
               playSuccess(); speak(`Yes! ${ans}.`);
               if (window.vbProgress) vbProgress.record('count-along');
               btn.style.background = 'rgba(168,230,207,0.5)';
-              autoTimer = setTimeout(nextRound, 1600);
+              scheduleNext(1600, round);
             } else {
               playBoop(); btn.style.background = 'rgba(255,107,107,0.4)';
-              autoTimer = setTimeout(() => btn.style.background = '', 500);
+              setTimeout(() => {
+                if (!disposed && round === roundGeneration && btn.isConnected) btn.style.background = '';
+              }, 500);
             }
           });
           numRow.appendChild(btn);
@@ -317,7 +354,8 @@
         const ans = start + step * length;
 
         instruction.textContent = `Counting by ${step}s — what comes next?`;
-        speak(`Counting by ${step}s. What number comes next?`);
+        speakInstruction(`Counting by ${step}s. What number comes next?`);
+        let roundDone = false;
 
         const seqEl = document.createElement('div');
         seqEl.className = 'number-big';
@@ -335,15 +373,19 @@
           const btn = document.createElement('div');
           btn.className = 'num-btn'; btn.textContent = n;
           btn.addEventListener('click', () => {
+            if (disposed || round !== roundGeneration || roundDone) return;
             if (n === ans) {
+              roundDone = true;
               playSuccess(); speak(`Yes! ${ans}.`);
               if (window.vbProgress) vbProgress.record('count-along');
               btn.style.background = 'rgba(168,230,207,0.5)';
-              autoTimer = setTimeout(nextRound, 1800);
+              scheduleNext(1800, round);
             } else {
               playBoop();
               btn.style.background = 'rgba(255,107,107,0.4)';
-              autoTimer = setTimeout(() => btn.style.background = '', 500);
+              setTimeout(() => {
+                if (!disposed && round === roundGeneration && btn.isConnected) btn.style.background = '';
+              }, 500);
             }
           });
           numRow.appendChild(btn);

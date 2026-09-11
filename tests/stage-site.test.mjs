@@ -34,7 +34,7 @@ const has = (p) => fs.existsSync(path.join(OUT, p));
 
 test('the app itself is published', () => {
   stage();
-  for (const f of ['index.html', 'home.html', 'sw.js', 'manifest.json', 'icon-192.png',
+  for (const f of ['index.html', 'home.html', 'my-room.html', 'sw.js', 'manifest.json', 'icon-192.png',
                    'js/sync.js', 'css/style.css', 'games/tap-pop.html',
                    'learning/count-along.html', 'art/stamp-art.html', 'parent/settings.html',
                    // hub-home: home.html's fox-world background — a real asset now,

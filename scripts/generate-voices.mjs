@@ -15,6 +15,23 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { spawn, execSync } from 'node:child_process';
 
+const args = process.argv.slice(2);
+const isDry = args.includes('--dry');
+function option(name) {
+  const index = args.indexOf(name);
+  return index >= 0 ? args[index + 1] : null;
+}
+function integerOption(name) {
+  const raw = option(name);
+  if (raw === null) return Infinity;
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value) || value < 0) {
+    console.error(`${name} must be a non-negative integer.`);
+    process.exit(1);
+  }
+  return value;
+}
+
 async function _pitchShift(inPath, outPath, ratio) {
   return new Promise((resolve, reject) => {
     const ff = spawn('ffmpeg', ['-y', '-i', inPath, '-af',
@@ -46,11 +63,14 @@ function mainRepoRoot() {
 const ENV_PATHS = [path.join(PROJECT_ROOT, '.env')];
 const _mr = mainRepoRoot();
 if (_mr && _mr !== PROJECT_ROOT) ENV_PATHS.push(path.join(_mr, '.env'));
-for (const ENV_PATH of ENV_PATHS) {
-  if (!fs.existsSync(ENV_PATH)) continue;
-  for (const line of fs.readFileSync(ENV_PATH, 'utf8').split(/\r?\n/)) {
-    const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*?)"?\s*$/);
-    if (m) process.env[m[1]] ||= m[2];
+// A dry plan must be safe to run without opening any credential file.
+if (!isDry && !process.env.ELEVENLABS_API_KEY) {
+  for (const ENV_PATH of ENV_PATHS) {
+    if (!fs.existsSync(ENV_PATH)) continue;
+    for (const line of fs.readFileSync(ENV_PATH, 'utf8').split(/\r?\n/)) {
+      const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*?)"?\s*$/);
+      if (m) process.env[m[1]] ||= m[2];
+    }
   }
 }
 
@@ -73,14 +93,30 @@ const KID_VOICES = new Set(['girl', 'boy']);
 const PITCH_RATIO = 1.189207;
 
 const MODEL_ID = process.env.EL_MODEL || 'eleven_turbo_v2_5'; // cheap + fast
-const USD_PER_1K_CHARS = 0.30; // approximate pay-as-you-go rate
+// Provider billing estimate only. Request/character caps below are the
+// enforceable local scope guard; this estimate is not a provider-side cap.
+const USD_PER_1K_CHARS = 0.05;
 
-const args = process.argv.slice(2);
-const isDry = args.includes('--dry');
-const onlyVoice = args.includes('--voice') ? args[args.indexOf('--voice') + 1] : null;
+const onlyVoice = option('--voice');
 const voicesToRun = onlyVoice ? [onlyVoice] : Object.keys(VOICES);
+if (voicesToRun.some(voice => !Object.hasOwn(VOICES, voice))) {
+  console.error(`Unknown voice: ${onlyVoice}`);
+  process.exit(1);
+}
+const requestedText = option('--text');
+const maxRequests = integerOption('--max-requests');
+const maxChars = integerOption('--max-chars');
+const includeExistingInDryPlan = args.includes('--dry-include-existing');
+if (includeExistingInDryPlan && !isDry) {
+  console.error('--dry-include-existing is allowed only with --dry.');
+  process.exit(1);
+}
 
-const clips = VOICE_MANIFEST.allClips;
+if (requestedText && !VOICE_MANIFEST.allClips.includes(requestedText)) {
+  console.error(`Requested text is not in the voice manifest: ${requestedText}`);
+  process.exit(1);
+}
+const clips = requestedText ? [requestedText] : VOICE_MANIFEST.allClips;
 const animals = VOICE_MANIFEST.animals || [];
 
 // TTS pass
@@ -102,11 +138,27 @@ for (const voice of voicesToRun) {
 const SFX_DIR = path.join(PROJECT_ROOT, 'audio', 'sounds');
 fs.mkdirSync(SFX_DIR, { recursive: true });
 let sfxToGenerate = 0;
-for (const a of animals) {
-  const filepath = path.join(SFX_DIR, `${a.id}.mp3`);
-  if (fs.existsSync(filepath) && fs.statSync(filepath).size > 100) continue;
-  toGenerate.push({ kind: 'sfx', animal: a, filepath });
-  sfxToGenerate++;
+if (!requestedText) {
+  for (const a of animals) {
+    const filepath = path.join(SFX_DIR, `${a.id}.mp3`);
+    if (!includeExistingInDryPlan && fs.existsSync(filepath) && fs.statSync(filepath).size > 100) continue;
+    toGenerate.push({ kind: 'sfx', animal: a, filepath });
+    sfxToGenerate++;
+  }
+}
+
+const ttsRequests = toGenerate.length - sfxToGenerate;
+if (requestedText && toGenerate.some(item => item.kind !== 'tts' || item.text !== requestedText)) {
+  console.error('REFUSED: scoped generation plan contains unexpected work.');
+  process.exit(1);
+}
+if (ttsRequests > maxRequests) {
+  console.error(`REFUSED: ${ttsRequests} TTS requests exceed --max-requests ${maxRequests}.`);
+  process.exit(1);
+}
+if (charsToGenerate > maxChars) {
+  console.error(`REFUSED: ${charsToGenerate} characters exceed --max-chars ${maxChars}.`);
+  process.exit(1);
 }
 
 const USD_PER_SFX = 0.08; // approximate per-generation cost
@@ -114,9 +166,9 @@ const ttsCost = (charsToGenerate / 1000) * USD_PER_1K_CHARS;
 const sfxCost = sfxToGenerate * USD_PER_SFX;
 const estCost = ttsCost + sfxCost;
 console.log(`Manifest: ${clips.length} clips × ${voicesToRun.length} voices = ${clips.length * voicesToRun.length} total`);
-console.log(`To generate: ${toGenerate.length - sfxToGenerate} TTS clips (${charsToGenerate} chars, $${ttsCost.toFixed(2)})`);
+console.log(`To generate: ${ttsRequests} TTS clips (${charsToGenerate} chars, $${ttsCost.toFixed(4)} provider billing estimate)`);
 console.log(`             ${sfxToGenerate} SFX clips ($${sfxCost.toFixed(2)})`);
-console.log(`Estimated total cost: $${estCost.toFixed(2)} USD`);
+console.log(`Estimated total cost: $${estCost.toFixed(4)} USD (not a provider-enforced cap)`);
 
 if (isDry) {
   console.log('\nDry run — no API calls made.');

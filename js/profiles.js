@@ -19,8 +19,8 @@ function mascotEmoji(profile) {
 // appear by default. Parent can override per-child in Parent Settings.
 const ACTIVITY_FEATURES = [
   { id:'tap-pop',       name:'Bubble Pop',       icon:'🫧', file:'tap-pop.html',     section:'games', minTier:1, features:[] },
-  { id:'peek-a-boo',    name:'Peek-a-boo',       icon:'🙈', file:'peek-a-boo.html', section:'games', minTier:1, features:[
-    { key:'multiChoice',   label:'Multiple-choice mode',                    minTier:5 },
+  { id:'peek-a-boo',    name:'Hide & Seek',       icon:'🙈', file:'peek-a-boo.html', section:'games', minTier:1, features:[
+    { key:'multiChoice',   label:'Three hiding places',                    minTier:5 },
   ]},
   { id:'magic-touch',   name:'Magic Touch',      icon:'✨', file:'magic-touch.html', section:'games', minTier:1, features:[] },
   { id:'tap-a-tune',    name:'Tap-a-Tune',       icon:'🎹', file:'tap-a-tune.html', section:'games', minTier:1, features:[] },
@@ -68,10 +68,7 @@ const ACTIVITY_FEATURES = [
     { key:'stampPalette',  label:'Stamp picker',                            minTier:2 },
     { key:'themeSwitcher', label:'Theme switcher (farm/ocean/space)',       minTier:4 },
   ]},
-  { id:'finger-paint',  name:'Finger Paint',  icon:'🖌️', file:'finger-paint.html', section:'art', minTier:1, features:[
-    { key:'colorPalette',  label:'Color palette',                           minTier:2 },
-    { key:'eraser',        label:'Eraser tool',                             minTier:4 },
-  ]},
+  { id:'finger-paint',  name:'Free Paint',    icon:'🖌️', file:'finger-paint.html', section:'art', minTier:1, features:[] },
   { id:'color-splash',  name:'Color Splash',  icon:'💥',  file:'color-splash.html', section:'art', minTier:1, features:[] },
   { id:'color-in',      name:'Color In',      icon:'🖍️', file:'color-in.html',     section:'art', minTier:1, features:[] },
 ];

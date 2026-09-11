@@ -6,7 +6,7 @@
     { id:'tap-pop',      name:'Bubble Pop',   icon:'🫧', section:'games', noun:'bubbles popped', mastery:null },
     { id:'shape-match',  name:'Shape Match',  icon:'🔷', section:'games', noun:'shapes matched',
       mastery:{ title:'Shape Master', hint:'Finish a 6-shape round' } },
-    { id:'peek-a-boo',   name:'Peek-a-Boo',   icon:'👀', section:'games', noun:'peeks', mastery:null },
+    { id:'peek-a-boo',   name:'Hide & Seek',   icon:'👀', section:'games', noun:'finds', mastery:null },
     { id:'magic-touch',  name:'Magic Touch',  icon:'✨', section:'games', noun:'taps', mastery:null },
     { id:'tap-a-tune',   name:'Tap-a-Tune',   icon:'🎹', section:'games', noun:'notes played', mastery:null },
     { id:'surprise-pop', name:'Surprise Pop', icon:'🥚', section:'games', noun:'surprises', mastery:null },
@@ -23,7 +23,7 @@
     { id:'count-along',  name:'Count Along',  icon:'🔢', section:'learn', noun:'things counted',
       mastery:{ title:'Counting Champ', hint:'Win the how-many quiz' } },
     { id:'abcs',         name:'ABCs',         icon:'🔤', section:'learn', noun:'letters',
-      mastery:{ title:'Word Builder', hint:'Spell a short word' } },
+      mastery:{ title:'Alphabet Ace', hint:'Win five ABC challenges' } },
     { id:'days',         name:'Days',         icon:'📅', section:'learn', noun:'days right',
       mastery:{ title:'Calendar Kid', hint:'Win the days quiz' } },
     { id:'math',         name:'Math Mountain',icon:'➕', section:'learn', noun:'problems solved',
@@ -38,7 +38,7 @@
       mastery:{ title:'Time Keeper', hint:'Read a 5-minute time' } },
 
     { id:'stamp-art',    name:'Stamp Art',    icon:'⭐', section:'art', noun:'stamps placed', mastery:null },
-    { id:'finger-paint', name:'Finger Paint', icon:'🖌️', section:'art', noun:'strokes painted', mastery:null },
+    { id:'finger-paint', name:'Free Paint', icon:'🖌️', section:'art', noun:'strokes painted', mastery:null },
     { id:'color-splash', name:'Color Splash', icon:'💥', section:'art', noun:'splashes made', mastery:null },
     { id:'color-in',     name:'Color In',     icon:'🖍️', section:'art', noun:'areas colored', mastery:null }
   ];

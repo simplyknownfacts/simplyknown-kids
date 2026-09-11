@@ -9,36 +9,44 @@
   <script>/* apply the active kid's theme before first paint (default storybook = no attribute); activity pages also stamp data-tod (shell pages get it from atmosphere.js) so theme tokens resolve */try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook"){document.documentElement.setAttribute("data-vbtheme",_t);var _h=new Date().getHours();document.documentElement.setAttribute("data-tod",_h>=5&&_h<10?"morning":_h>=10&&_h<17?"afternoon":_h>=17&&_h<20?"evening":"night")}}catch(e){}</script>
   <link rel="stylesheet" href="../css/achievements.css">
   <style>
-    #canvas { position: fixed; inset: 0; }
+    #canvas { position: fixed; top: var(--bubble-play-top, 160px); left: 0; width: 100%; height: calc(100% - var(--bubble-play-top, 160px)); touch-action: none; }
+    #bubbleHud {
+      position: fixed; top: var(--bubble-controls-bottom, 96px);
+      left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right));
+      z-index: 10; display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 8px 16px; pointer-events: none;
+    }
     #score {
-      position: fixed; top: 16px; right: 16px;
-      font-size: 28px; font-weight: 900; color: white;
+      min-height: 44px; align-items: center; gap: 5px;
+      font-size: clamp(20px, 4vw, 28px); font-weight: 900; color: white;
+      white-space: nowrap;
       text-shadow: 0 2px 8px rgba(0,0,0,0.4);
       display: none;
     }
-    #combo { color: #FFD93D; }
+    #combo { color: #FFD93D; font-size: .75em; }
     /* Target-colour challenge banner (tier 5+) */
     #target {
-      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
-      display: none; align-items: center; gap: 9px;
-      background: rgba(0,0,0,0.45); color: #fff; font-weight: 900; font-size: 19px;
-      padding: 8px 18px; border-radius: 999px; pointer-events: none;
+      display: none; align-items: center; gap: 7px; min-height: 44px;
+      background: rgba(0,0,0,0.45); color: #fff; font-weight: 900; font-size: clamp(16px, 3vw, 19px);
+      padding: 8px 14px; border-radius: 999px; pointer-events: none; white-space: nowrap;
       text-shadow: 0 2px 6px rgba(0,0,0,0.4); transition: background 0.15s;
     }
     #target.miss { background: rgba(255,70,70,0.7); }
     #target .swatch { width: 26px; height: 26px; border-radius: 50%; border: 3px solid #fff; }
+    .vb-celebrate { top: auto; bottom: calc(76px + env(safe-area-inset-bottom)); }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  <div id="target"><span>Pop only</span><span class="swatch"></span><span id="targetName"></span><span>!</span></div>
-  <div id="score">⭐ <span id="scoreVal">0</span><span id="combo"></span></div>
+  <div id="bubbleHud">
+    <div id="target"><span>Pop only</span><span class="swatch"></span><span id="targetName"></span><span>!</span></div>
+    <div id="score" role="group" aria-label="Your score">⭐ <span id="scoreVal">0</span><span id="combo"></span></div>
+  </div>
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -59,10 +67,8 @@
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    // Keep the canvas filling the screen on rotate/resize (bubbles read canvas.width live).
-    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 
     // '#4ECDC4' used to sit in the "Green" slot but reads as TEAL — kids hunting
     // "Green" couldn't find it. Swapped for an unmistakable green.
@@ -75,7 +81,7 @@
 
     const scoreEl = document.getElementById('score');
     const scoreVal = document.getElementById('scoreVal');
-    scoreEl.style.display = 'block';
+    scoreEl.style.display = 'flex';
 
     // Target-colour challenge for older kids (tier 5+): "Pop only the RED ones!"
     // — wrong-colour taps don't pop and break your combo; right ones build a combo
@@ -96,8 +102,45 @@
       targetSwatch.style.background = c;
       targetNameEl.textContent = COLOR_NAMES[c] || '';
       correctSincePick = 0;
+      const prompt = `Tap the ${COLOR_NAMES[c]} thing!`;
+      if (typeof speakInstruction === 'function') speakInstruction(prompt);
+      else speak(prompt);
     }
-    if (challengeOn) { targetEl.style.display = 'flex'; pickTarget(); }
+    if (challengeOn) {
+      targetEl.style.display = 'flex';
+      pickTarget();
+    } else {
+      // Young children still need an instruction they can see, hear, and replay.
+      // Reuse the challenge banner so the cue stays in the measured HUD and the
+      // bubble playfield continues below every control on small screens.
+      const prompt = 'Tap the bubbles!';
+      targetEl.textContent = prompt;
+      targetEl.style.display = 'flex';
+      if (typeof speakInstruction === 'function') speakInstruction(prompt);
+      else speak(prompt);
+    }
+
+    // Navigation and replay own the first row. The challenge/score flow below
+    // it, and bubbles use the remaining canvas rather than passing under them.
+    const hud = document.getElementById('bubbleHud');
+    function fitPlayArea() {
+      const controls = [...document.querySelectorAll('.nav-chrome,.vb-replay-instruction')];
+      const controlsBottom = Math.max(0, ...controls.map(el => el.getBoundingClientRect().bottom));
+      const hudTop = Math.ceil(controlsBottom + 12);
+      const playTop = Math.ceil(hudTop + hud.getBoundingClientRect().height + 12);
+      document.body.style.setProperty('--bubble-controls-bottom', hudTop + 'px');
+      document.body.style.setProperty('--bubble-play-top', playTop + 'px');
+      // CSS and drawing dimensions use the same measurement. Reading a canvas
+      // rectangle mid-observer can otherwise return the preceding layout.
+      const width = Math.max(1, window.innerWidth), height = Math.max(1, window.innerHeight - playTop);
+      if (canvas.width !== width) canvas.width = width;
+      if (canvas.height !== height) canvas.height = height;
+    }
+    const hudObserver = new ResizeObserver(fitPlayArea);
+    hudObserver.observe(hud);
+    document.querySelectorAll('.nav-chrome,.vb-replay-instruction').forEach(el => hudObserver.observe(el));
+    window.addEventListener('resize', fitPlayArea);
+    fitPlayArea();
 
     function randColor() { return COLORS[Math.floor(Math.random() * COLORS.length)]; }
 
@@ -493,6 +536,8 @@
           if (challengeOn && !b.shiny && b.color !== targetColor) {
             combo = 0; showCombo();
             if (typeof playBoop === 'function') playBoop();
+            if (typeof _showCaption === 'function') _showCaption(`Try again! Pop only ${COLOR_NAMES[targetColor]}.`);
+            speak('Try again!');
             targetEl.classList.add('miss');
             setTimeout(() => targetEl.classList.remove('miss'), 250);
           } else {
@@ -513,6 +558,8 @@
     window.addEventListener('beforeunload', () => {
       clearInterval(spawnTimer);
       cancelAnimationFrame(animId);
+      hudObserver.disconnect();
+      window.removeEventListener('resize', fitPlayArea);
     });
     })();
   </script>

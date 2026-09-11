@@ -3,55 +3,167 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>Finger Paint</title>
+  <title>Free Paint</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/themes.css">
-  <script>/* apply the active kid's theme before first paint (default storybook = no attribute); activity pages also stamp data-tod (shell pages get it from atmosphere.js) so theme tokens resolve */try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook"){document.documentElement.setAttribute("data-vbtheme",_t);var _h=new Date().getHours();document.documentElement.setAttribute("data-tod",_h>=5&&_h<10?"morning":_h>=10&&_h<17?"afternoon":_h>=17&&_h<20?"evening":"night")}}catch(e){}</script>
+  <script>try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||_p[0])||{}).theme;if(_t&&_t!=="storybook"){document.documentElement.setAttribute("data-vbtheme",_t);var _h=new Date().getHours();document.documentElement.setAttribute("data-tod",_h>=5&&_h<10?"morning":_h>=10&&_h<17?"afternoon":_h>=17&&_h<20?"evening":"night")}}catch(e){}</script>
   <link rel="stylesheet" href="../css/achievements.css">
   <style>
-    #canvas { position:fixed; inset:0; cursor:crosshair; touch-action:none; }
-    #toolbar {
-      position:fixed; bottom:0; left:0; right:0;
-      display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px;
-      padding:10px 10px calc(10px + env(safe-area-inset-bottom)) 10px;
-      background:rgba(0,0,0,0.35); backdrop-filter:blur(8px);
-      z-index:10;
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body {
+      color: #184d4a;
+      background: linear-gradient(145deg, #f3dcff 0%, #ffe9f3 54%, #fff2cf 100%);
+      font-family: "Arial Rounded MT Bold", "Trebuchet MS", var(--font-ui, sans-serif);
+      overscroll-behavior: none;
     }
-    @media (orientation: landscape) and (min-width: 768px) {
-      #toolbar {
-        flex-direction:column; flex-wrap:wrap;
-        align-content:flex-start;
-        top:0; right:0; bottom:0; left:auto;
-        width:auto; max-width:200px; height:100vh;
-        padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)) 12px;
-        overflow:hidden; gap:14px;
+    button { font: inherit; -webkit-tap-highlight-color: transparent; }
+    #paintApp {
+      width: 100%; height: 100%; height: 100dvh;
+      display: grid; grid-template-rows: 72px minmax(0, 1fr) auto;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    #paintTopbar {
+      position: relative; z-index: 5;
+      display: flex; align-items: center; justify-content: flex-end;
+      min-width: 0; padding: 8px 12px 5px 132px;
+    }
+    .paint-title {
+      min-width: 0; margin: 0 auto;
+      color: #653e78; font-size: clamp(21px, 6vw, 32px); line-height: 1;
+      letter-spacing: -0.04em; text-align: center; white-space: nowrap;
+      text-shadow: 0 2px 0 rgba(255,255,255,.9);
+    }
+    #settingsSlot { width: 50px; min-width: 50px; min-height: 48px; display: grid; place-items: center; }
+    #paintStage {
+      position: relative; min-width: 0; min-height: 0;
+      margin: 0 10px 8px; overflow: hidden;
+      border: 4px solid rgba(255,255,255,.92); border-radius: 26px;
+      background: #fff; box-shadow: 0 8px 0 rgba(101,62,120,.13), 0 16px 35px rgba(72,42,87,.16);
+    }
+    #canvas {
+      display: block; width: 100%; height: 100%;
+      background: #fff; cursor: crosshair; touch-action: none;
+    }
+    #paintDock {
+      position: relative; z-index: 8;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 8px 8px 9px;
+      border-top: 2px solid rgba(101,62,120,.14);
+      background: rgba(255,249,235,.96);
+      box-shadow: 0 -8px 28px rgba(78,46,94,.12);
+    }
+    .tool-group { display: flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; }
+    .palette { flex-wrap: nowrap; }
+    .paint-control {
+      position: relative; min-width: 44px; width: 44px; height: 44px; min-height: 44px;
+      display: inline-grid; place-items: center; padding: 0;
+      border: 2px solid rgba(24,77,74,.17); border-radius: 14px;
+      color: #184d4a; background: #fff; cursor: pointer;
+      box-shadow: 0 3px 0 rgba(24,77,74,.13);
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .paint-control:active { transform: translateY(2px) scale(.96); box-shadow: 0 1px 0 rgba(24,77,74,.13); }
+    .paint-control:focus-visible { outline: 3px solid #35b99a; outline-offset: 2px; }
+    .paint-control.active { border-color: #184d4a; box-shadow: 0 0 0 3px #ffd55a, 0 3px 0 rgba(24,77,74,.13); }
+    .paint-control:disabled { opacity: .34; box-shadow: none; cursor: default; }
+    .swatch { border-radius: 50%; background: var(--swatch); }
+    .swatch::after {
+      content: ""; position: absolute; inset: 7px 9px auto auto; width: 9px; height: 6px;
+      border-radius: 50%; background: rgba(255,255,255,.5); transform: rotate(-28deg);
+    }
+    .brush-choice { width: auto; min-width: 76px; padding: 0 9px; gap: 6px; grid-auto-flow: column; font-size: 12px; font-weight: 900; }
+    .brush-mark { width: 23px; height: 8px; border-radius: 999px; background: currentColor; transform: rotate(-10deg); }
+    [data-brush="marker"] .brush-mark { height: 13px; opacity: .48; }
+    [data-brush="sprinkle"] .brush-mark { height: 23px; background: radial-gradient(circle, currentColor 0 2px, transparent 3px) 0 0/8px 8px; }
+    .size-dot { display: block; border-radius: 50%; background: #653e78; }
+    [data-size="small"] .size-dot { width: 7px; height: 7px; }
+    [data-size="medium"] .size-dot { width: 14px; height: 14px; }
+    [data-size="large"] .size-dot { width: 23px; height: 23px; }
+    .action-control { width: auto; min-width: 51px; padding: 0 7px; font-size: 11px; font-weight: 900; }
+    #eraserButton.active { background: #e5faf3; }
+    #clearButton { color: #a13b55; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    body.vb-chrome:not(.world-page) .nav-chrome { top: calc(7px + env(safe-area-inset-top)); left: calc(8px + env(safe-area-inset-left)); padding: 5px; }
+    body.vb-chrome:not(.world-page) .nav-btn { width: 46px; height: 46px; }
+
+    @media (max-width: 350px) {
+      #paintTopbar { padding-left: 119px; }
+      .paint-title { font-size: 20px; }
+      .tool-group { gap: 4px; }
+      .brush-choice { min-width: 70px; padding-inline: 6px; }
+      .action-control { min-width: 48px; padding-inline: 5px; }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+      #paintApp { grid-template-columns: minmax(0, 1fr) 194px; grid-template-rows: 64px minmax(0, 1fr); }
+      #paintTopbar {
+        position: relative; grid-column: 1; grid-row: 1;
+        width: auto; height: auto;
+        padding: 5px 8px 5px 126px;
       }
+      .paint-title { margin: 0 auto; font-size: 22px; }
+      #settingsSlot { display: grid; }
+      #paintStage { grid-column: 1; grid-row: 2; margin: 0 5px 6px 6px; border-radius: 22px; }
+      #paintDock {
+        grid-column: 2; grid-row: 1 / 3; align-self: stretch;
+        justify-content: center; gap: 5px; padding: 5px;
+        border-top: 0; border-left: 2px solid rgba(101,62,120,.14); box-shadow: -8px 0 24px rgba(78,46,94,.1);
+      }
+      .palette { display: grid; grid-template-columns: repeat(3, 44px); gap: 5px; }
+      .brushes { display: grid; grid-template-columns: repeat(3, 54px); }
+      .brush-choice { min-width: 54px; width: 54px; padding: 0; }
+      .brush-choice .control-label { display: none; }
+      .tool-actions { display: grid; grid-template-columns: repeat(3, 51px); gap: 5px; }
+      .tool-actions > [role="group"] { display: contents; }
+      body.vb-chrome:not(.world-page) .nav-chrome { top: calc(7px + env(safe-area-inset-top)); }
     }
-    .tool-btn {
-      width:56px; height:56px; border-radius:50%;
-      border:3px solid rgba(255,255,255,0.3);
-      flex-shrink:0;
-      cursor:pointer;
-    }
-    .tool-btn:active { box-shadow: 0 0 0 5px rgba(78,205,196,0.6); }
-    .tool-btn.active { border-color:white; box-shadow:0 0 0 3px white; }
-    #clearBtn2 {
-      padding:8px 16px; border-radius:20px;
-      background:rgba(255,255,255,0.15);
-      border:2px solid rgba(255,255,255,0.25);
-      color:white; font-weight:800; font-size:13px; cursor:pointer;
-    }
+
+    @media (prefers-reduced-motion: reduce) { .paint-control { transition: none; } }
   </style>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
-  <div id="toolbar" style="display:none;"></div>
+  <div id="paintApp">
+    <header id="paintTopbar">
+      <h1 class="paint-title">Free Paint</h1>
+      <div id="settingsSlot"></div>
+    </header>
+    <main id="paintStage">
+      <canvas id="canvas" aria-label="Blank painting canvas"></canvas>
+    </main>
+    <section id="paintDock" aria-label="Painting tools">
+      <div class="tool-group palette" role="group" aria-label="Colors">
+        <button class="paint-control swatch active" type="button" data-color="#ff5f6d" style="--swatch:#ff5f6d" aria-label="Coral" aria-pressed="true"></button>
+        <button class="paint-control swatch" type="button" data-color="#ffd55a" style="--swatch:#ffd55a" aria-label="Sunny yellow" aria-pressed="false"></button>
+        <button class="paint-control swatch" type="button" data-color="#56c98f" style="--swatch:#56c98f" aria-label="Leaf green" aria-pressed="false"></button>
+        <button class="paint-control swatch" type="button" data-color="#35b9d4" style="--swatch:#35b9d4" aria-label="Sky blue" aria-pressed="false"></button>
+        <button class="paint-control swatch" type="button" data-color="#9b6be8" style="--swatch:#9b6be8" aria-label="Purple" aria-pressed="false"></button>
+        <button class="paint-control swatch" type="button" data-color="#184d4a" style="--swatch:#184d4a" aria-label="Deep teal" aria-pressed="false"></button>
+      </div>
+      <div class="tool-group brushes" role="group" aria-label="Brush styles">
+        <button class="paint-control brush-choice active" type="button" data-brush="brush" aria-label="Paint brush" aria-pressed="true"><span class="brush-mark"></span><span class="control-label">Brush</span></button>
+        <button class="paint-control brush-choice" type="button" data-brush="marker" aria-label="Soft marker" aria-pressed="false"><span class="brush-mark"></span><span class="control-label">Marker</span></button>
+        <button class="paint-control brush-choice" type="button" data-brush="sprinkle" aria-label="Sprinkle brush" aria-pressed="false"><span class="brush-mark"></span><span class="control-label">Dots</span></button>
+      </div>
+      <div class="tool-group tool-actions">
+        <div class="tool-group" role="group" aria-label="Brush size">
+          <button class="paint-control" type="button" data-size="small" aria-label="Small brush" aria-pressed="false"><span class="size-dot"></span></button>
+          <button class="paint-control active" type="button" data-size="medium" aria-label="Medium brush" aria-pressed="true"><span class="size-dot"></span></button>
+          <button class="paint-control" type="button" data-size="large" aria-label="Large brush" aria-pressed="false"><span class="size-dot"></span></button>
+        </div>
+        <button class="paint-control action-control" id="eraserButton" type="button" aria-pressed="false">Erase</button>
+        <button class="paint-control action-control" id="undoButton" type="button" disabled>Undo</button>
+        <button class="paint-control action-control" id="clearButton" type="button">Clear</button>
+      </div>
+      <span class="sr-only" id="paintStatus" aria-live="polite"></span>
+    </section>
+  </div>
+
   <script src="../js/tiers.js"></script>
   <script src="../js/profiles.js"></script>
   <script src="../js/voice-manifest.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/sleep-timer.js"></script>
-  <script src="../js/yoto-player.js"></script>
   <script src="../js/game-settings.js"></script>
   <script src="../js/achievement-defs.js"></script>
   <script src="../js/achievement-logic.js"></script>
@@ -59,106 +171,20 @@
   <script src="../js/celebrate.js"></script>
   <script src="../js/progress.js"></script>
   <script src="../js/sync.js"></script>
+  <script src="../js/free-paint.js"></script>
   <script>window.VB_ASSET_BASE='../';</script>
   <script>
-    (function() {
-    const profile = getActiveProfile();
-    if (!profile) { goProfiles(); return; }
-    const tier = getActivityTier(profile, 'finger-paint');
-    renderBackBtn('index.html');
-    gameSettings.attach('finger-paint', { container: '#toolbar' });
-    if (window.vbProgress) { vbProgress.firstPlay('finger-paint'); vbProgress.touchStreak(); }
-
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    ctx.fillStyle = '#1a1a2e';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // Keep filling the screen + preserve the painting on rotate/resize.
-    window.addEventListener('resize', () => {
-      const tmp = document.createElement('canvas'); tmp.width = canvas.width; tmp.height = canvas.height;
-      tmp.getContext('2d').drawImage(canvas, 0, 0);
-      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-      ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(tmp, 0, 0);
-    });
-
-    const PALETTE = ['#FF6B6B','#FFE66D','#4ECDC4','#a86cdb','#FF9F43','#45B7D1','#FF69B4','#ffffff'];
-    let painting = false, lastX = 0, lastY = 0;
-    let hue = 0, brushSize = 18, erasing = false;
-    let activeColorIdx = 0;
-    const showPalette = tier >= 3 || getProfileFeature(profile, 'finger-paint', 'colorPalette');
-
-    function getColor() {
-      if (!showPalette) {
-        hue = (hue + 1) % 360;
-        return `hsl(${hue},90%,60%)`;
-      }
-      return PALETTE[activeColorIdx];
-    }
-
-    function drawStroke(x, y) {
-      ctx.beginPath();
-      ctx.moveTo(lastX, lastY);
-      ctx.lineTo(x, y);
-      ctx.strokeStyle = erasing ? '#1a1a2e' : getColor();
-      ctx.lineWidth = erasing ? brushSize * 2.5 : brushSize;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-      lastX = x; lastY = y;
-    }
-
-    if (showPalette) {
-      const toolbar = document.getElementById('toolbar');
-      toolbar.style.display = 'flex';
-
-      PALETTE.forEach((c, i) => {
-        const btn = document.createElement('div');
-        btn.className = 'tool-btn' + (i === 0 ? ' active' : '');
-        btn.style.background = c;
-        btn.addEventListener('pointerdown', () => {
-          erasing = false;
-          activeColorIdx = i;
-          document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-        });
-        toolbar.appendChild(btn);
+    (function () {
+      const profile = getActiveProfile();
+      if (!profile) { goProfiles(); return; }
+      getActivityTier(profile, 'finger-paint');
+      renderBackBtn('index.html');
+      if (window.vbProgress) { vbProgress.firstPlay('finger-paint'); vbProgress.touchStreak(); }
+      window.freePaintApp = FreePaint.mount({
+        canvas: document.getElementById('canvas'),
+        onStroke: function () { if (window.vbProgress) vbProgress.record('finger-paint'); },
       });
-
-      if (tier >= 5 || getProfileFeature(profile, 'finger-paint', 'eraser')) {
-        const eraser = document.createElement('div');
-        eraser.className = 'tool-btn';
-        eraser.textContent = '🧹';
-        eraser.style.cssText = 'background:rgba(255,255,255,0.1);font-size:22px;display:flex;align-items:center;justify-content:center;';
-        eraser.addEventListener('pointerdown', () => {
-          erasing = !erasing;
-          document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-          if (erasing) eraser.classList.add('active');
-        });
-        toolbar.appendChild(eraser);
-      }
-
-      const clearBtn = document.createElement('button');
-      clearBtn.id = 'clearBtn2'; clearBtn.textContent = '✨ Clear';
-      clearBtn.addEventListener('pointerdown', () => {
-        ctx.fillStyle = '#1a1a2e';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      });
-      toolbar.appendChild(clearBtn);
-    }
-
-    canvas.addEventListener('pointerdown', e => {
-      painting = true;
-      lastX = e.clientX; lastY = e.clientY;
-      try { canvas.setPointerCapture(e.pointerId); } catch {}
-    });
-    canvas.addEventListener('pointermove', e => {
-      if (!painting) return;
-      drawStroke(e.clientX, e.clientY);
-    });
-    canvas.addEventListener('pointerup', () => { painting = false; if (window.vbProgress) vbProgress.record('finger-paint'); });
+      gameSettings.attach('finger-paint', { container: '#settingsSlot' });
     })();
   </script>
 </body>

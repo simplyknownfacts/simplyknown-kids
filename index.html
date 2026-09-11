@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SimplyKnown Kids">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#08061C">
+  <meta name="theme-color" content="#FFF6DD">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="manifest" href="manifest.json">
@@ -87,10 +87,16 @@
     }
   </style>
 </head>
-<body>
+<body class="picker-world">
+  <div class="world-decor" aria-hidden="true">
+    <span class="world-spark s1"></span>
+    <span class="world-spark s2"></span>
+    <span class="world-spark s3"></span>
+  </div>
   <div class="picker-screen">
-    <div class="picker-greeting" id="greeting">At SimplyKnown</div>
-    <h1 class="picker-title" id="pickerTitle">Who's playing?</h1>
+    <div class="picker-kicker">Welcome to Wonderwood</div>
+    <h1 class="picker-title" id="pickerTitle">Choose your explorer</h1>
+    <div class="picker-greeting" id="greeting">Your animal friend is ready for an adventure.</div>
 
     <div class="profiles-row" id="profilesRow"></div>
 
@@ -101,7 +107,7 @@
   </div>
 
   <button class="settings-gear" id="settingsGear" aria-label="Parent settings" title="Parent settings">
-    <span class="gear" aria-hidden="true">⚙️</span><span class="gear-label">Grown-ups</span>
+    <span class="gear" aria-hidden="true">⚙️</span><span class="gear-copy"><span class="gear-label">Grown-ups</span><span class="hold-hint" id="settingsHoldHint" data-hold-label aria-live="polite">Hold 3 seconds</span></span>
   </button>
 
   <script src="js/atmosphere.js"></script>
@@ -111,25 +117,18 @@
   <script src="js/app.js"></script>
   <script src="js/sync.js"></script>
   <script>
-    // Time-of-day greeting copy (runs after atmosphere.js has set data-tod)
+    // A small time-of-day welcome; the main prompt stays direct for young readers.
     function updateGreetingCopy() {
       var tod = document.documentElement.getAttribute('data-tod') ||
                 (window.vbAtmosphere && window.vbAtmosphere.pickTOD && window.vbAtmosphere.pickTOD()) ||
                 'night';
       var greet = {
-        morning:   'Good morning at SimplyKnown',
-        afternoon: 'This afternoon at SimplyKnown',
-        evening:   'Good evening at SimplyKnown',
-        night:     'Tonight at SimplyKnown',
-      }[tod];
-      var title = {
-        morning:   "Who's awake?",
-        afternoon: "Who's playing?",
-        evening:   "Who's joining us?",
-        night:     "Who's playing tonight?",
+        morning:   'Good morning! Your animal friend is ready.',
+        afternoon: 'Ready for an afternoon adventure?',
+        evening:   'Your evening adventure is waiting.',
+        night:     'One more cozy adventure?',
       }[tod];
       document.getElementById('greeting').textContent = greet;
-      document.getElementById('pickerTitle').textContent = title;
     }
     updateGreetingCopy();
     // Run again after DOMContentLoaded in case atmosphere.js stamped data-tod
@@ -196,7 +195,8 @@
 
     // Hold (not tap) to open Parent Settings — a toddler can't wander in.
     const _gear = document.getElementById('settingsGear');
-    _gear.title = 'Hold to open';
+    _gear.title = 'Hold for 3 seconds to open Parent Settings';
+    _gear.setAttribute('aria-describedby', 'settingsHoldHint');
     if (typeof holdToActivate === 'function') {
       // Codex 0825-9: holdToActivate()'s own default is 700ms, but this
       // door is documented and shown to the parent as a 3-second hold (the
@@ -206,18 +206,7 @@
     } else {
       _gear.addEventListener('click', () => goTo('parent/settings.html'));
     }
-    // Keyboard accessibility (HIGH #8): the 3s hold-to-open guard is a
-    // touchscreen gesture (pointerdown/pointerup) — Enter/Space never fires
-    // those, so a keyboard user could reach this control but never open it.
-    // Reaching it already requires deliberately tabbing to a hidden,
-    // low-opacity control, so a direct keypress here doesn't weaken the
-    // toddler-proofing that the hold protects against for touch/mouse users.
-    _gear.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
-        e.preventDefault();
-        goTo('parent/settings.html');
-      }
-    });
+    // The shared hold helper also handles Enter/Space with the same timing.
 
     // Seed demo profiles + default video channels if none exist
     if (getProfiles().length === 0) {
