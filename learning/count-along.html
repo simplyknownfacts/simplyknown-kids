@@ -38,6 +38,10 @@
     }
     .row.with-badges { row-gap: 36px; }
     .number-big { font-size: clamp(80px, 22vw, 140px); font-weight: 900; color: white; line-height: 1; }
+    .number-big.tap-target {
+      min-width: 44px; min-height: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
     .thing-label { font-size: clamp(18px, 5vw, 28px); font-weight: 800; color: rgba(255,255,255,0.7); }
     .num-btn {
       min-width: 70px; min-height: 70px; border-radius: 20px;
@@ -153,7 +157,7 @@
       if (tier <= 2) {
         instruction.textContent = '👆 Tap to count!';
         const numEl = document.createElement('div');
-        numEl.className = 'number-big'; numEl.textContent = count;
+        numEl.className = 'number-big tap-target'; numEl.textContent = count;
         stage.appendChild(numEl);
         const thingEl = document.createElement('div');
         thingEl.className = 'thing-label';
@@ -197,7 +201,7 @@
           nextRound();
         });
 
-      } else if (tier <= 4) {
+      } else if (tier <= 4 && !quizOn) {
         instruction.textContent = `Tap each ${thing.s} to count!`;
         const row = document.createElement('div'); row.className = 'row with-badges';
         let tapped = 0;

@@ -304,9 +304,17 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
   });
   await context.addInitScript(init, { tier, bday: birthday(tier), quiz: false });
   const page = await context.newPage();
-  const pageErrors = [], failedLocalRequests = [], screenshots = [], rounds = [], geometrySamples = [];
+  const pageErrors = [], failedLocalRequests = [], expectedMediaAborts = [], screenshots = [], rounds = [], geometrySamples = [];
   page.on('pageerror', error => pageErrors.push(error.message));
-  page.on('requestfailed', request => { if (request.url().startsWith(base)) failedLocalRequests.push(`${request.url()} ${request.failure()?.errorText || ''}`); });
+  page.on('requestfailed', request => {
+    if (!request.url().startsWith(base)) return;
+    const detail = `${request.url()} ${request.failure()?.errorText || ''}`;
+    // speak() deliberately interrupts the previous clip during rapid counting.
+    // Chromium reports that replaced local media fetch as ERR_ABORTED; retain it
+    // in evidence, but do not confuse intentional cancellation with a failed asset.
+    if (request.resourceType() === 'media' && request.failure()?.errorText === 'net::ERR_ABORTED') expectedMediaAborts.push(detail);
+    else failedLocalRequests.push(detail);
+  });
   const targetRounds = tier === 4 ? 8 : 7;
   let rewardResult = null, timerCleared = false, reloadRecovered = false, featureSwitch = tier !== 4;
   let counterBefore = null, counterAfter = null, finalState = null, silentMediaPlays = 0, fatal = null;
@@ -398,6 +406,7 @@ async function runCell(browser, base, viewportName, viewport, tier, allScreensho
     blockedExternal,
     pageErrors,
     failedLocalRequests,
+    expectedMediaAborts,
     silentMediaPlays,
     screenshotCount: screenshots.length,
     fatal,
