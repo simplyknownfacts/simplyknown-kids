@@ -8,12 +8,14 @@ import { chromium } from 'playwright';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const VIEWPORTS = [[320,568],[390,844],[783,1270],[844,390],[568,320]];
-const KINDS = ['art','games','learn','listen','watch'];
+const KINDS = ['art','games','learn','listen','my-room','ribbons','watch'];
 const ROUTES = {
   art: 'art/index.html',
   games: 'games/index.html',
   learn: 'learning/index.html',
   listen: 'listen/index.html',
+  'my-room': 'my-room.html',
+  ribbons: 'achievements.html',
   watch: 'videos/index.html',
 };
 const child = {
@@ -30,7 +32,7 @@ async function freePort() {
   return port;
 }
 
-test('ocean archipelago keeps five separated activity islands selectable and its water inert', { timeout: 180000 }, async t => {
+test('ocean archipelago keeps seven separated destination islands selectable and its water inert', { timeout: 180000 }, async t => {
   const port = await freePort();
   const server = spawn(process.execPath, [path.join(ROOT, 'scripts/serve.mjs')], {
     cwd: ROOT, env: { ...process.env, PORT: String(port) }, stdio: ['ignore','pipe','pipe'],

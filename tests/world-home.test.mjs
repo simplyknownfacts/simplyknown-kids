@@ -3,11 +3,18 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const child = { id: 'world-test', name: '<Explorer>', birthday: '2021-01-01', color: '#78b99b', voice: 'girl', mascot: { id: 'bunny', voice: 'girl' }, features: {}, activitiesVisible: {} };
+test('home exposes seven real destinations and no duplicate Ribbons footer control',()=>{
+  const html=readFileSync(path.join(ROOT,'home.html'),'utf8');
+  const kinds=[...html.matchAll(/data-world="([^"]+)"/g)].map(match=>match[1]);
+  assert.deepEqual(kinds,['games','learn','art','watch','listen','ribbons','my-room']);
+  assert.doesNotMatch(html,/id="ribbonLink"/);
+});
 async function freePort() {
   const probe = createServer(); probe.listen(0, '127.0.0.1'); await once(probe, 'listening');
   const port = probe.address().port; await new Promise(resolve => probe.close(resolve)); return port;
@@ -46,7 +53,7 @@ test('3D world fits, uses building geometry for taps and keeps its buddy in the 
       },kind);
     }
     for (const [width,height] of [[390,844],[320,568],[768,1024],[756,1270],[1440,900],[844,390],[568,320]]) {
-      await t.test(`${width}×${height}: all five real buildings fit and receive their own physical taps`, async () => {
+      await t.test(`${width}×${height}: all seven real buildings fit and receive their own physical taps`, async () => {
         await page.setViewportSize({width,height}); await open();
         const result=await page.evaluate(()=>{
           const canvas=document.getElementById('worldCanvas'),r=canvas.getBoundingClientRect();
@@ -60,7 +67,7 @@ test('3D world fits, uses building geometry for taps and keeps its buddy in the 
             })};
         });
         assert.equal(result.overflow,false);assert.equal(result.gl,true);assert.ok(result.triangles>1000,'no volumetric geometry rendered');
-        assert.equal(result.houses.length,5);
+        assert.equal(result.houses.length,7);
         for(const h of result.houses){
           assert.ok(h.box.x>=0 && h.box.y>=0 && h.box.right<=width && h.box.bottom<=height,JSON.stringify(h));
           assert.ok(h.box.width>=44 && h.box.height>=44,JSON.stringify(h));
@@ -69,9 +76,9 @@ test('3D world fits, uses building geometry for taps and keeps its buddy in the 
         // Physical browser pointer events, not DOM .click(): each facade must
         // select its own building. Stub only the eventual page transition.
         await page.evaluate(()=>{window.testNav=[];window.goTo=p=>window.testNav.push(p);});
-        for(const kind of ['games','learn','art','watch','listen']){
+        for(const kind of ['games','learn','art','watch','listen','ribbons','my-room']){
           const p=await hutPoint(kind);await page.mouse.click(p.x,p.y);
-          const expected={games:'games/index.html',learn:'learning/index.html',art:'art/index.html',watch:'videos/index.html',listen:'listen/index.html'}[kind];
+          const expected={games:'games/index.html',learn:'learning/index.html',art:'art/index.html',watch:'videos/index.html',listen:'listen/index.html',ribbons:'achievements.html','my-room':'my-room.html'}[kind];
           assert.deepEqual(await page.evaluate(()=>window.testNav),[expected]);
           await open();await page.evaluate(()=>{window.testNav=[];window.goTo=p=>window.testNav.push(p);});
         }
@@ -90,7 +97,8 @@ test('3D world fits, uses building geometry for taps and keeps its buddy in the 
       const games=await hutPoint('games');for(let i=0;i<30;i++)await page.mouse.click(games.x,games.y);
       assert.deepEqual(await page.evaluate(()=>window.testNav),['games/index.html']);
       assert.equal(await page.locator('#helloCompanion').count(),0);
-      assert.deepEqual(await page.locator('.house span').allTextContents(),['Games','Learn','Art','Watch','Listen']);
+      assert.deepEqual(await page.locator('.house span').allTextContents(),['Games','Learn','Art','Watch','Listen','Ribbons','My Room']);
+      assert.equal(await page.locator('#ribbonLink').count(),0,'Ribbons still has a duplicate footer button');
     });
     await t.test('keyboard equivalent selects a hut; dragging between huts does not navigate',async()=>{
       await open();await page.evaluate(()=>{window.testNav=[];window.goTo=p=>window.testNav.push(p);});

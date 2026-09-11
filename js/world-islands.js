@@ -10,7 +10,7 @@
  */
 
 const CACHE = new WeakMap();
-const ACTIVITY_KINDS = new Set(['games', 'learn', 'art', 'watch', 'listen']);
+const ACTIVITY_KINDS = new Set(['games', 'learn', 'art', 'watch', 'listen', 'ribbons', 'my-room']);
 
 const PALETTES = {
   games: { grass: 0x72c85b, grassSide: 0x4a9e50, accent: 0xff6f61 },
@@ -18,6 +18,8 @@ const PALETTES = {
   art: { grass: 0x76c76b, grassSide: 0x4d9e67, accent: 0xb987e8 },
   watch: { grass: 0x69bf72, grassSide: 0x419665, accent: 0x58b8e8 },
   listen: { grass: 0x74c967, grassSide: 0x439b62, accent: 0x8e70db },
+  ribbons: { grass: 0x7fcf72, grassSide: 0x4b9f56, accent: 0xf3b83f },
+  'my-room': { grass: 0x79c99c, grassSide: 0x48926f, accent: 0xf07eae },
   companion: { grass: 0x83cf72, grassSide: 0x52a45e, accent: 0xff8fb1 },
 };
 
@@ -392,6 +394,7 @@ export function createIsland(THREE, requestedKind) {
   else if (kind === 'art') buildArt(THREE, group, assets, animators);
   else if (kind === 'watch') buildWatch(THREE, group, assets, animators);
   else if (kind === 'listen') buildListen(THREE, group, assets, animators);
+  else if (kind === 'ribbons' || kind === 'my-room') { /* The house facade carries this destination's large icon. */ }
   else buildCompanion(THREE, group, assets, animators, palette.accent);
 
   function reset() {

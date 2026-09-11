@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en" class="my-room-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#c8f2e7">
+  <title>My Room · SimplyKnown Kids</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <script>try{var _p=JSON.parse(localStorage.vb_profiles||"[]"),_a=localStorage.vb_active_id,_t=((_p.find(function(x){return x.id===_a})||{})||{}).theme,_h=new Date().getHours();document.documentElement.setAttribute("data-tod",_h>=5&&_h<10?"morning":_h>=10&&_h<17?"afternoon":_h>=17&&_h<20?"evening":"night");if(_t&&_t!=="storybook")document.documentElement.setAttribute("data-vbtheme",_t)}catch(e){}</script>
+  <link rel="stylesheet" href="css/my-room.css">
+</head>
+<body class="my-room-world">
+  <main class="room-main">
+    <header class="room-hero">
+      <span class="room-kicker">🏠 Make it yours</span>
+      <h1>My Room</h1>
+      <p>Pick a look and an animal buddy.</p>
+    </header>
+    <section class="room-panel" aria-labelledby="lookTitle">
+      <h2 id="lookTitle">🎨 Pick your look</h2>
+      <p>Tap one to change how your app looks.</p>
+      <div class="theme-grid" id="themeGrid"></div>
+    </section>
+    <section class="room-panel" aria-labelledby="buddyTitle">
+      <h2 id="buddyTitle">🐾 Pick your buddy</h2>
+      <p>Your buddy waits for you in the middle of your world.</p>
+      <div class="buddy-grid" id="buddyGrid"></div>
+    </section>
+    <div id="roomStatus" role="status" aria-live="polite"></div>
+  </main>
+  <script src="js/tiers.js"></script>
+  <script src="js/profiles.js"></script>
+  <script src="js/voice-manifest.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/mascot.js"></script>
+  <script src="js/sync.js"></script>
+  <script>
+    (function(){
+      const profile=getActiveProfile();
+      if(!profile){goProfiles();return;}
+      renderBackBtn('home.html');
+      const themes=[
+        {id:'storybook',name:'Storybook',icon:'🌙',swatch:'linear-gradient(90deg,#24345f,#f6cb74)'},
+        {id:'candy',name:'Candy',icon:'🍬',swatch:'linear-gradient(90deg,#ff72b6,#68d9ff,#ffe36d)'},
+        {id:'paper',name:'Paper',icon:'✂️',swatch:'linear-gradient(90deg,#ff765f,#7bd389,#58a8e8)'},
+        {id:'arcade',name:'Arcade',icon:'🕹️',swatch:'linear-gradient(90deg,#1a1238,#ff4fd8,#43f3ff)'},
+        {id:'cloud',name:'Clouds',icon:'☁️',swatch:'linear-gradient(90deg,#b7e8ff,#fff,#e0d2ff)'},
+      ];
+      const allowedThemes=new Set(themes.map(theme=>theme.id));
+      let selectedTheme=allowedThemes.has(profile.theme)?profile.theme:'storybook';
+      let selectedMascot=window.mascot.available.includes(profile.mascot?.id)?profile.mascot.id:'dog';
+      const status=document.getElementById('roomStatus');
+      let statusTimer;
+      function say(message){clearTimeout(statusTimer);status.textContent=message;statusTimer=setTimeout(()=>{status.textContent='';},3200);}
+      function chooseTheme(id){
+        if(!allowedThemes.has(id))return;
+        selectedTheme=id;updateProfile(profile.id,{theme:id});
+        if(id==='storybook')document.documentElement.removeAttribute('data-vbtheme');else document.documentElement.setAttribute('data-vbtheme',id);
+        document.querySelectorAll('[data-theme-id]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.themeId===id)));
+        say(themes.find(theme=>theme.id===id).name+' look selected!');
+      }
+      for(const theme of themes){
+        const button=document.createElement('button');button.type='button';button.className='theme-choice';button.dataset.themeId=theme.id;button.setAttribute('aria-label',theme.name+' app look');button.setAttribute('aria-pressed',String(theme.id===selectedTheme));button.style.setProperty('--swatch',theme.swatch);
+        const icon=document.createElement('span');icon.className='theme-icon';icon.setAttribute('aria-hidden','true');icon.textContent=theme.icon;
+        const name=document.createElement('span');name.textContent=theme.name;
+        const swatch=document.createElement('span');swatch.className='theme-swatch';swatch.setAttribute('aria-hidden','true');button.append(icon,name,swatch);button.addEventListener('click',()=>chooseTheme(theme.id));document.getElementById('themeGrid').appendChild(button);
+      }
+      for(const id of window.mascot.available){
+        const full=window.mascot.labels[id]||id;const name=full.replace(/^[^A-Za-z]+/,'');
+        const button=document.createElement('button');button.type='button';button.className='buddy-choice';button.dataset.mascotId=id;button.setAttribute('aria-label',name+' animal buddy');button.setAttribute('aria-pressed',String(id===selectedMascot));
+        const icon=document.createElement('span');icon.className='buddy-icon';icon.setAttribute('aria-hidden','true');icon.textContent=MASCOT_EMOJI[id]||'🐾';const label=document.createElement('span');label.textContent=name;button.append(icon,label);
+        button.addEventListener('click',()=>{selectedMascot=id;updateProfile(profile.id,{mascot:{...(profile.mascot||{}),id}});document.querySelectorAll('[data-mascot-id]').forEach(item=>item.setAttribute('aria-pressed',String(item.dataset.mascotId===id)));say(name+' is your buddy!');});document.getElementById('buddyGrid').appendChild(button);
+      }
+      window.addEventListener('pagehide',()=>clearTimeout(statusTimer));
+    })();
+  </script>
+</body>
+</html>

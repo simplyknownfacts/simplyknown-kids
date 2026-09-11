@@ -3,7 +3,7 @@
   'use strict';
   const profile = getActiveProfile();
   if (!profile) { goProfiles(); return; }
-  const routes = {games:'games/index.html',learn:'learning/index.html',art:'art/index.html',watch:'videos/index.html',listen:'listen/index.html'};
+  const routes = {games:'games/index.html',learn:'learning/index.html',art:'art/index.html',watch:'videos/index.html',listen:'listen/index.html',ribbons:'achievements.html','my-room':'my-room.html'};
   const host = document.getElementById('worldScene');
   const status = document.getElementById('worldStatus');
   const companion = document.getElementById('worldCompanion');
@@ -42,7 +42,6 @@
   }
   host.querySelectorAll('[data-world]').forEach(button=>button.addEventListener('click',()=>activate(button.dataset.world)));
   document.getElementById('avatarPill').addEventListener('click',()=>navigate('index.html'));
-  document.getElementById('ribbonLink').addEventListener('click',()=>navigate('achievements.html'));
   document.getElementById('exitBtn').addEventListener('click',()=>{if(!document.getElementById('exitKeys'))exitApp();});
   companion.addEventListener('click',()=>{
     if(leaving)return;

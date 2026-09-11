@@ -1,5 +1,6 @@
 importScripts('./js/sw-cache-policy.js');
-const CACHE = 'vb-v167';
+const CACHE = 'vb-v168';
+// v168: add whole Ribbons and My Room houses; cache the child-safe room offline.
 // v167: compact child-menu arrivals and keep overflow on the natural page scroller.
 // v166: retire unsupported listening integration; keep local Listen available offline.
 // v165: finalize hidden companion playback, static fallbacks and safe switching.
@@ -172,12 +173,12 @@ const ASSETS = [
   './mascots/bunny/green/master.png', './mascots/bunny/green/idle/idle_base.mp4',
   './mascots/tabby/green/master.png', './mascots/tabby/green/idle/idle_base.mp4',
   './mascots/panda/green/master.png', './mascots/panda/green/idle/idle_base.mp4',
-  './css/parent-settings.css', './css/world-home.css',
+  './css/parent-settings.css', './css/world-home.css', './css/my-room.css',
   './js/world-home.js',
   './js/world-art.js',
   './js/world-scene.js', './js/world-huts.js', './js/world-islands.js', './js/world-ocean.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
   './js/vendor/three-r180/three.module.min.js', './js/vendor/three-r180/three.core.min.js',
-  './', './index.html', './home.html', './achievements.html',
+  './', './index.html', './home.html', './achievements.html', './my-room.html',
   './redesign-hub-bg.jpg',
   './css/style.css', './css/achievements.css', './css/themes.css',
   './js/atmosphere.js', './js/version.js',
@@ -216,10 +217,10 @@ const ASSETS = [
 // missing a piece the app cannot run without.
 const REQUIRED_SHELL = [
   './js/free-paint.js', './js/color-fill.js',
-  './css/parent-settings.css', './css/world-home.css', './js/world-home.js', './js/world-art.js',
+  './css/parent-settings.css', './css/world-home.css', './css/my-room.css', './js/world-home.js', './js/world-art.js',
   './js/world-scene.js', './js/world-huts.js', './js/world-islands.js', './js/world-ocean.js', './js/body-parts-data.js', './js/hide-seek.js', './js/hide-seek-scene.js',
   './js/vendor/three-r180/three.module.min.js', './js/vendor/three-r180/three.core.min.js',
-  './', './index.html', './home.html', './redesign-hub-bg.jpg',
+  './', './index.html', './home.html', './my-room.html', './redesign-hub-bg.jpg',
   './css/style.css', './css/themes.css',
   './js/atmosphere.js', './js/version.js', './js/tiers.js', './js/profiles.js', './js/app.js', './js/mascot.js', './js/sync.js',
 ];

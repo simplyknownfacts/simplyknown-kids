@@ -51,9 +51,17 @@ const PALETTES = {
     wall: 0x84d2ae, wallSide: 0x4f9b78, roof: 0x4f9f65, trim: 0xf1cf71,
     accent: 0xa67bd8, dark: 0x184d4a, glow: 0xfff0ad, glass: 0xa3e3d5, sign: 0x367b61,
   },
+  ribbons: {
+    wall: 0xffd978, wallSide: 0xe8a94d, roof: 0xd85c78, trim: 0xfff0ad,
+    accent: 0xf08aa8, dark: 0x784354, glow: 0xfff4b8, glass: 0xa9e3df, sign: 0xb94768,
+  },
+  'my-room': {
+    wall: 0x8ed9c0, wallSide: 0x58ad91, roof: 0x8c67c8, trim: 0xffd66f,
+    accent: 0xf079a8, dark: 0x315e62, glow: 0xffefad, glass: 0xafe7e5, sign: 0x6f50a8,
+  },
 };
 
-const LABELS = { games: 'GAMES', learn: 'LEARN', art: 'ART', watch: 'WATCH', listen: 'LISTEN' };
+const LABELS = { games: 'GAMES', learn: 'LEARN', art: 'ART', watch: 'WATCH', listen: 'LISTEN', ribbons: 'RIBBONS', 'my-room': 'MY ROOM' };
 
 function shared(THREE) {
   if (CACHE.has(THREE)) return CACHE.get(THREE);
@@ -310,6 +318,8 @@ function addRoofSign(THREE, group, geo, mats, palette, kind, animated) {
     art:    { y: 3.48, z: 1.58, tilt: -0.08, width: 1.72, height: 0.92, post: 1.24 },
     watch:  { y: 3.58, z: 1.54, tilt: -0.12, width: 3.5, height: 0.98, post: 0.68 },
     listen: { y: 2.93, z: 1.58, tilt: -0.09, width: 2.3, height: 0.7, post: 0.46 },
+    ribbons:{ y: 4.02, z: 1.5,  tilt: -0.1,  width: 3.28, height: 0.8, post: 0.68 },
+    'my-room':{ y: 3.82, z: 1.52, tilt: -0.1, width: 2.92, height: 0.8, post: 0.62 },
   };
   const config = mounts[kind];
   const sign = new THREE.Group();
@@ -520,10 +530,39 @@ function buildListen(THREE, group, geo, mats, animated) {
   });
 }
 
+function buildRibbons(THREE, group, geo, mats, animated) {
+  addGableRoof(THREE, group, mats.roof, 3.56, 1.22, 2.82, 2.7);
+  addBox(THREE, group, geo, mats.trim, [3.54, 0.14, 0.16], [0, 2.71, 1.43]);
+  // Two oversized medals make the destination readable before the word can be read.
+  [-1.08, 1.08].forEach((x, index) => {
+    addRounded(THREE, group, index ? mats.accent : mats.roof, [0.3, 0.86, 0.08], [x - 0.16, 1.06, 1.57], 0.05, [0, 0, -0.2]);
+    addRounded(THREE, group, index ? mats.roof : mats.accent, [0.3, 0.86, 0.08], [x + 0.16, 1.06, 1.57], 0.05, [0, 0, 0.2]);
+    addFrontDisc(THREE, group, geo, mats.trim, 0.48, 0.14, [x, 1.7, 1.58]);
+    addMesh(THREE, group, starGeometry(THREE, 0.28, 0.13, 0.1), mats.dark, [x, 1.7, 1.68]);
+  });
+  const crown = addMesh(THREE, group, starGeometry(THREE, 0.5, 0.23, 0.15), mats.trim, [0, 3.56, 1.48]);
+  animated.star = crown;
+}
+
+function buildMyRoom(THREE, group, geo, mats, animated) {
+  addGableRoof(THREE, group, mats.roof, 3.56, 1.2, 2.82, 2.7);
+  addBox(THREE, group, geo, mats.trim, [3.54, 0.14, 0.16], [0, 2.71, 1.43]);
+  // A large paw and bright swatches communicate "your buddy + your look" without reading.
+  addSphere(THREE, group, geo, mats.accent, 0.31, [1.05, 1.45, 1.58], [1.15, 0.9, 0.25]);
+  [[0.76,1.82],[1.01,1.95],[1.27,1.88]].forEach(([x,y]) => addSphere(THREE, group, geo, mats.accent, 0.13, [x,y,1.59], [1,1.05,.28]));
+  const colors=[mats.accent,mats.trim,mats.roof];
+  [[-1.35,1.82],[-1.15,1.43],[-1.42,1.08]].forEach(([x,y],index) => {
+    const swatch=addFrontDisc(THREE, group, geo, colors[index], 0.2, 0.12, [x,y,1.59]);
+    animated.drops.push({object:swatch,baseY:y,baseScaleY:swatch.scale.y,phase:index*1.6});
+  });
+  addRounded(THREE, group, mats.wallSide, [0.56, 0.76, 0.58], [-1.08, 3.48, -0.42], 0.1);
+  addRounded(THREE, group, mats.trim, [0.68, 0.14, 0.7], [-1.08, 3.88, -0.42], 0.06);
+}
+
 /**
  * Build one selectable activity hut.
  * @param {object} THREE The caller's local Three.js module namespace.
- * @param {'games'|'learn'|'art'|'watch'|'listen'} kind Activity world id.
+ * @param {'games'|'learn'|'art'|'watch'|'listen'|'ribbons'|'my-room'} kind Destination id.
  * @returns {{group: object, update: (timeSeconds:number, reducedMotion?:boolean)=>void}}
  */
 export function createHut(THREE, kind) {
@@ -566,6 +605,8 @@ export function createHut(THREE, kind) {
   if (kind === 'art') buildArt(THREE, group, geo, mats, animated);
   if (kind === 'watch') buildWatch(THREE, group, geo, mats, animated);
   if (kind === 'listen') buildListen(THREE, group, geo, mats, animated);
+  if (kind === 'ribbons') buildRibbons(THREE, group, geo, mats, animated);
+  if (kind === 'my-room') buildMyRoom(THREE, group, geo, mats, animated);
   addRoofSign(THREE, group, geo, mats, palette, kind, animated);
 
   let meshCount = 0;

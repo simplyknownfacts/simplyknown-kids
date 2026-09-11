@@ -50,14 +50,15 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
   const fill = new THREE.DirectionalLight('#c6e8ff', .8);
   fill.position.set(12, 9, -10); scene.add(fill);
   const islands = new Map();
-  for (const kind of ['games','learn','art','watch','listen','companion']) {
+  const destinationKinds = ['games','learn','art','watch','listen','ribbons','my-room'];
+  for (const kind of [...destinationKinds,'companion']) {
     const island = createIsland(THREE, kind);
     if (kind !== 'companion') island.group.userData.world = kind;
     scene.add(island.group); islands.set(kind, island);
   }
   const ocean = createOcean(THREE); scene.add(ocean.group);
   const huts = new Map(), targets = [...islands].filter(([kind])=>kind!=='companion').map(([,island])=>island.group);
-  for (const kind of ['games','learn','art','watch','listen']) {
+  for (const kind of destinationKinds) {
     const model = createHut(THREE, kind);
     model.group.userData.world = kind;
     scene.add(model.group); huts.set(kind, model); targets.push(model.group);
@@ -131,8 +132,8 @@ export function createWorldScene(host, { activate, placeCompanion, announce }) {
     const depth=portrait?Math.max(1,Math.min(1.7,.98/(width/height))):1;
     plaza.z*=depth;
     const layout=portrait
-      ? {learn:[0,-10.7,.06],games:[-4.3,-3.7,-.15],art:[4.3,-3.7,.15],listen:[-4.4,6.2,-.12],watch:[4.4,6.2,.12]}
-      : {learn:[0,-4.5,.06],games:[-12,-2,-.15],art:[12,-2,.15],listen:[-7.5,4.5,-.12],watch:[7.5,4.5,.12]};
+      ? {ribbons:[-7.2,-10.7,-.08],learn:[0,-10.7,.06],'my-room':[7.2,-10.7,.08],games:[-4.3,-3.7,-.15],art:[4.3,-3.7,.15],listen:[-4.4,6.2,-.12],watch:[4.4,6.2,.12]}
+      : {games:[-14,-4.5,-.12],learn:[-7,-4.5,-.06],art:[0,-4.5,0],ribbons:[7,-4.5,.06],'my-room':[14,-4.5,.12],listen:[-7,4.5,-.1],watch:[7,4.5,.1]};
     for(const [kind,model] of huts) {
       const [x,baseZ,angle]=layout[kind],z=baseZ*depth;model.group.position.set(x,.58,z);model.group.rotation.y=angle;
       const island=islands.get(kind).group;island.position.set(x,0,z);island.rotation.y=angle;
