@@ -27,6 +27,20 @@
     .num-btn:active { transform: scale(0.9); }
     .num-btn.wrong { animation: shake 0.3s; background: rgba(255,107,107,0.4); }
     .num-btn.right { background: rgba(168,230,207,0.5); }
+    /* On phones, use the clear top-right gap for the compact reward and keep
+       Again out of that gap until the notice has fully left the DOM. */
+    @media (max-width: 600px) {
+      .vb-celebrate { top: calc(4px + env(safe-area-inset-top)); }
+      body:has(.vb-celebrate) .vb-replay-instruction {
+        visibility: hidden;
+        pointer-events: none;
+      }
+    }
+    /* A 320x568 screen fits two 64px answer targets per row beside the fixed
+       grown-up gear. Keep all four choices and reserve the gear's lane. */
+    @media (max-width: 360px) and (max-height: 650px) {
+      .num-row { width: 220px; margin-right: 60px; }
+    }
     @keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
   </style>
 </head>
