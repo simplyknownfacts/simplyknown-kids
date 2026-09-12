@@ -5,10 +5,10 @@
 //
 // This is NOT a SQL engine. It recognises exactly the query shapes
 // workers/sync/src/index.js actually sends (CREATE TABLE IF NOT EXISTS,
-// single/multi-column equality + `>` WHERE clauses joined by AND, INSERT /
-// INSERT OR REPLACE, UPDATE ... SET col = ? | NULL, DELETE) and throws on
-// anything else -- so a new, un-mocked query shape fails loudly in the test
-// that added it rather than silently returning nothing.
+// single/multi-column equality + range WHERE clauses joined by AND, INSERT /
+// INSERT OR REPLACE, UPDATE ... SET col = ? | NULL, DELETE, and no-op index
+// creation). SELECT COUNT also returns D1's `results` shape when it is used in
+// batch(). Anything else throws so a new query shape fails loudly.
 
 function parseWhere(whereSql, args, argIdx) {
   const preds = whereSql.split(/\s+AND\s+/i).map((clause) => {
@@ -41,6 +41,7 @@ export function makeFakeD1() {
   // run() whose normalised SQL matches `pattern` throws instead of applying.
   // One-shot, so a test controls exactly which statement in a batch fails.
   let failOnce = null;
+  let corruptBatchCountOnce = false;
   const maybeFail = (norm) => {
     if (failOnce && failOnce.pattern.test(norm)) {
       const e = failOnce.error || new Error('fake-d1: injected failure for test');
@@ -59,6 +60,14 @@ export function makeFakeD1() {
         if ((m = norm.match(/^CREATE TABLE IF NOT EXISTS (\w+)/i))) {
           ensureTable(m[1]);
           return { success: true };
+        }
+        if (/^CREATE INDEX IF NOT EXISTS \w+ ON \w+ \([^)]+\)$/i.test(norm)) {
+          return { success: true };
+        }
+        if ((m = norm.match(/^SELECT COUNT\(\*\) AS n FROM (\w+)(?:\s+WHERE (.+))?$/i))) {
+          const table = ensureTable(m[1]);
+          const n = m[2] ? table.filter(parseWhere(m[2], args, 0).test).length : table.length;
+          return { success: true, results: [{ n }] };
         }
         if ((m = norm.match(/^INSERT( OR REPLACE)?\s+INTO (\w+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/i))) {
           const replace = !!m[1];
@@ -146,6 +155,13 @@ export function makeFakeD1() {
       try {
         const results = [];
         for (const stmt of stmts) results.push(await stmt.run());
+        if (corruptBatchCountOnce) {
+          const countResult = results.find((result) => Array.isArray(result.results));
+          if (countResult) {
+            countResult.results = [];
+            corruptBatchCountOnce = false;
+          }
+        }
         return results;
       } catch (e) {
         tables.clear();
@@ -157,5 +173,6 @@ export function makeFakeD1() {
     _dump: () => Object.fromEntries([...tables].map(([k, v]) => [k, v.map((r) => ({ ...r }))])),
     // Test-only failure injection -- see maybeFail() above.
     _failNextRunMatching(pattern, error) { failOnce = { pattern, error }; },
+    _corruptNextBatchCount() { corruptBatchCountOnce = true; },
   };
 }

@@ -6,28 +6,32 @@ and are not repeated here; they are tracked in the app inbox. Each entry below w
 the CURRENT code (or an explicit, cited git history) before writing a verdict -- a verdict without
 reading the code is not a verdict (Testing Standard §3.5 / Deploy & Release Standard PART D6.7).
 
-The one entry marked **PENDING** below is deliberate: it is a real, still-open gap discovered in
-the most recent (2026-09-02) review, and no prior session has made a considered risk call on it.
-Writing "ACCEPTED RISK" myself for a fresh, undecided security gap on a children's app would be
-inventing Scott's answer for him -- so it stays untriaged on purpose, and `scripts/promote.mjs`
-will correctly refuse to promote until a human writes a real verdict for it. This is the gate
-working as designed, not a bug in this triage pass.
+All 23 HIGH entries below now have a real, code-verified decision. A FIXED verdict means the
+named commit and tests close the code finding; it does not claim that a separate Worker was
+deployed or that a live environment was verified.
 
 ---
 
 ### 1. HIGH — The new public-endpoint throttles are still easy to bypass and their log tables grow forever.
-**Verdict: PENDING — no verdict written.** Confirmed real by reading the cited lines
-(`workers/sync/src/index.js`): the invite check counts failures then inserts afterward (a
-concurrent burst can pass the count before any row exists), sign-in's PBKDF2 hash runs before the
-failure is logged (one caller cycling fake emails from one IP spends unlimited CPU), and
-`invite_fail_log`/`signin_fail_log_v2`/`signup_log` have no index and no expiry. None of this is
-reachable through the static-site gate this task built (it lives entirely in the sync Worker,
-which is its own separate, manual deploy) -- but it is a real, currently-live gap, not a
-theoretical one, and the fix (edge-level rate limiting, atomic bounded counters, indexes +
-scheduled expiry) is real engineering work, not something to wave through to unblock a gate.
-Flagged plainly in this session's report to master/Scott. Existing mitigation already in place
-(so this is a refinement gap, not an absent one): per-IP invite throttle (finding #5 below) and
-(email, IP)-keyed sign-in lockout (finding #6 below) both already ship.
+**Verdict: FIXED** (repair commit `09dce2b047b9ff275c16a976b22f1196a3ac35a7`, independently
+reviewed at that exact commit, PASS/no P1-P2). Every invite attempt now reserves a row and counts
+inside one atomic D1 batch before `secretMatches` runs. An over-limit attempt removes only its
+provisional row and returns 429 without revealing whether its word matched; an in-budget wrong
+guess returns 403 and keeps its row; an in-budget correct guess removes its provisional row before
+signup continues. Red proof at rejected tip `bd14613` was 11/14: an exhausted correct guess
+returned 201, a 40-word list created an account when the real word was guess 37, and a correct
+guess after a concurrent burst also returned 201. Final focused security checks pass 27/27;
+independent review reran the two invite/concurrency files at 14/14; the full suite passes 559/559.
+Sign-in reserves and checks both the existing (email, IP)
+budget and a separate IP-only budget before account lookup or PBKDF2, so rotating fake emails no
+longer buys unlimited hashes; a successful sign-in removes its provisional row. Missing/malformed
+D1 counts throw and return the existing generic 500 instead of failing open. The three throttle
+tables now have indexes matching their lookup and expiry paths, and both dev and production
+Worker configs schedule the cleanup handler every six hours; Wrangler 4.131.1 local dry-runs pass
+for both configs. **Not live evidence:** applying the
+schema/deploying the dev Worker, verifying dev D1 and cron behavior, then separately
+deploying/verifying the production Worker remain manual rollout gates; this local repair changed
+neither live Worker nor its data.
 
 ### 2. HIGH — Production can still be deployed from the wrong clean branch without the required promotion confirmation.
 **Verdict: FIXED** (this session, commits `a77aabb`, `d2dd2c3`, `cef5157`). `deploy:prod-preview`
@@ -60,8 +64,8 @@ to shared state instead of the raw one. Confirmed live today: `tests/hostile-inp
 (`invite_fail_log`, 15 wrong guesses/hour), confirmed live today via
 `tests/sync-signup-invite-throttle.test.mjs`'s passing suite ("a wrong invite word is refused...",
 "repeated wrong guesses... eventually throttled", "the guess throttle is keyed per caller"). The
-throttle's OWN refinement gaps (count-then-insert race, unbounded log growth) are a distinct,
-newer finding -- tracked as #1 above (PENDING), not reopened here.
+throttle's former refinement gaps (count-then-insert race, unbounded log growth) were a distinct,
+newer finding and are now closed by #1 above.
 
 ### 6. HIGH — The new sign-in limiter enables account lockout and unbounded database/CPU abuse.
 **Verdict: FIXED** (commit `d810d54`). The failure counter is now keyed on (email, caller) rather
@@ -71,7 +75,7 @@ cannot lock the real family out", "a single caller repeatedly guessing... is sti
 The (email, IP) keying itself is a deliberate, documented 2026-09-01 trade-off (an attacker
 rotating real IPs gets a fresh budget per IP, judged worth it for a family app, not a bank) -- not
 silently accepted, explicitly decided and written down at the time. The PBKDF2-before-log and
-unbounded-log gaps in this same code are the newer finding tracked as #1 above (PENDING).
+unbounded-log gaps in this same code were the newer finding and are now closed by #1 above.
 
 ### 7. HIGH — Account deletion can remove the login while leaving the child's synced data behind permanently.
 **Verdict: FIXED** (commit `d810d54`). Deletion now runs as one `env.DB.batch([...])` call --
@@ -129,8 +133,8 @@ both the endpoints this finding named: invite-word guessing is throttled per cal
 has an (email, caller)-keyed lockout after repeated failures, with enumeration closed (identical
 response/timing for "no account" and "wrong password", confirmed in `356c3b1`'s own verified
 description). Refinement gaps discovered in that same protection by the newer 2026-09-02 review
-are tracked separately as finding #1 above (PENDING) -- this finding's original, narrower ask
-(some protection exists) is met.
+are tracked separately and now closed as finding #1 above; this finding's original, narrower ask
+(some protection exists) remains met.
 
 ### 14. HIGH — Personalized voice clips are publicly enumerable.
 **Verdict: ACCEPTED RISK — a real, disclosed, deliberate partial fix, not a fresh call made here.**
@@ -265,13 +269,9 @@ never written to the object database). Full file: 7/7 passing;
 
 ## Summary
 
-22 of 23 HIGH findings on file have a real, code-verified decision. 1 (finding #1, the throttle
-refinement gaps from the 2026-09-02 review) is left genuinely open on purpose -- `scripts/
-promote.mjs` will refuse to promote until a human writes a real FIXED/REJECTED/ACCEPTED RISK
-verdict for it here. That is correct, intended behavior for a live, undecided security gap on a
-children's app, not a defect in this triage pass. (2026-09-04: master has already ruled finding #1
-FIXED-by-build, size M -- see `Notes\Kids — open Codex ledger (2026-09-04).md` §2.1 -- but the
-verdict here stays PENDING until the actual D1 fix lands and is verified, not merely ordered.)
+23 of 23 HIGH findings on file have a real, code-verified decision. Finding #1's local Worker
+repair is independently reviewed; its manual dev/production Worker rollout and live verification
+remain separate gates and are not implied by this triage verdict.
 
 Findings #5-#7 of the 2026-09-05 daily delta review (CSP `media-src` blocking Yoto audio, an
 expired sleep timer racing the mini-player's `register()`, and sync accepting malformed profile

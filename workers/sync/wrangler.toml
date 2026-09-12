@@ -3,6 +3,9 @@ main = "src/index.js"
 compatibility_date = "2026-05-16"
 workers_dev = true
 
+[triggers]
+crons = ["17 */6 * * *"]
+
 [vars]
 ALLOWED_ORIGIN = "https://kids.simplyknown.co"
 
