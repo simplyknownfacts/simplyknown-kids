@@ -87,6 +87,16 @@ test('concurrent wrong invite guesses cannot all pass the reserve-and-count ceil
     'every concurrent guess beyond the limit must be throttled');
   assert.equal(env.DB._dump().invite_fail_log.length, 3,
     'over-limit reservations must be removed so the retained rows equal the real failure budget');
+
+  const correctAfterBurst = await worker.fetch(signupReq({
+    ip,
+    code: env.SIGNUP_CODE,
+    email: 'correct-after-burst@example.com',
+  }), env);
+  assert.equal(correctAfterBurst.status, 429,
+    'a correct word must not bypass the budget exhausted by a concurrent burst');
+  assert.equal((env.DB._dump().accounts || []).length, 0,
+    'the over-limit correct request must not create an account');
 });
 
 test('an unreadable atomic throttle count fails closed instead of admitting a guess', async () => {

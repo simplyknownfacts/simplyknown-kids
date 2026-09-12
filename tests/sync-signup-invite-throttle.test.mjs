@@ -64,6 +64,54 @@ test('repeated wrong guesses from the same caller are eventually throttled (429)
     `guesses 6-8 should be throttled (429), got: ${statuses.slice(5).join(', ')}`);
 });
 
+test('an exhausted caller is throttled before a correct invite word is evaluated', async () => {
+  const env = makeEnv({ INVITE_FAIL_LIMIT: 3 });
+  const ip = '203.0.113.15';
+  for (let i = 0; i < 3; i++) {
+    const response = await worker.fetch(signupReq({
+      ip,
+      code: `wrong-${i}`,
+      email: `exhaust-${i}@example.com`,
+    }), env);
+    assert.equal(response.status, 403);
+  }
+
+  const correct = await worker.fetch(signupReq({
+    ip,
+    code: env.SIGNUP_CODE,
+    email: 'must-stay-blocked@example.com',
+  }), env);
+  assert.equal(correct.status, 429,
+    'the correct word must not bypass an already-exhausted guess budget');
+  assert.equal((env.DB._dump().accounts || []).length, 0,
+    'an over-limit correct guess must not create an account');
+  assert.equal(env.DB._dump().invite_fail_log.length, 3,
+    'the rejected correct attempt must remove its provisional reservation');
+});
+
+test('a 40-word list cannot create an account when the real word is guess 37', async () => {
+  const env = makeEnv({ INVITE_FAIL_LIMIT: 3 });
+  const ip = '203.0.113.16';
+  const guesses = Array.from({ length: 40 }, (_, i) => `word-${i + 1}`);
+  guesses[36] = env.SIGNUP_CODE;
+  const statuses = [];
+
+  for (let i = 0; i < guesses.length; i++) {
+    const response = await worker.fetch(signupReq({
+      ip,
+      code: guesses[i],
+      email: `wordlist-${i}@example.com`,
+    }), env);
+    statuses.push(response.status);
+  }
+
+  assert.deepEqual(statuses.slice(0, 3), [403, 403, 403]);
+  assert.ok(statuses.slice(3).every((status) => status === 429),
+    `every guess after the budget is exhausted must be 429, got: ${statuses.join(', ')}`);
+  assert.equal((env.DB._dump().accounts || []).length, 0,
+    'the correct word at position 37 must not create an account');
+});
+
 test('the guess throttle is keyed per caller (IP), not shared globally', async () => {
   const env = makeEnv({ INVITE_FAIL_LIMIT: 3 });
   const attackerIp = '203.0.113.11';
@@ -95,6 +143,8 @@ test('a few real typos do not lock a family out of their own invite word', async
   assert.equal(res.status, 201, 'the account should be created once the correct word is typed');
   const body = await res.json();
   assert.ok(body.syncKey, 'a real signup should still return a syncKey');
+  assert.equal(env.DB._dump().invite_fail_log.length, 2,
+    'a successful attempt must remove its provisional row while retaining the two wrong guesses');
 });
 
 test('wrong invite-word guesses do not burn the account-creation IP/global caps', async () => {

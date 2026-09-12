@@ -137,27 +137,29 @@ async function handleSignup(req, env) {
   // script can try an entire wordlist for free, forever: never logged, never
   // slowed. Keyed by caller (IP hash, there's no account yet to key on),
   // generous for a family who fat-fingers it a few times, stingy for a
-  // script. Only WRONG guesses are logged here — a correct one never touches
-  // this table, so it can never lock out the person who already knows the
-  // word, and it must never share signup_log's success-only counter (that
-  // cap protects against a different thing: bulk *account* creation).
+  // script. Every attempt is provisionally reserved BEFORE the word is
+  // compared, so an exhausted caller gets no correctness oracle. A correct,
+  // in-budget attempt removes its reservation before continuing, leaving only
+  // WRONG guesses logged. This table must never share signup_log's success-only
+  // counter (that cap protects against a different thing: bulk account creation).
   await ivEnsureTable(env);
   const ivSince = Date.now() - INVITE_FAIL_WINDOW_MS;
+  const reservationId = randomHex(12);
+  const now = Date.now();
+  const [, countResult] = await env.DB.batch([
+    env.DB.prepare('INSERT INTO invite_fail_log (id, ip_hash, created_at) VALUES (?, ?, ?)')
+      .bind(reservationId, ipHash, now),
+    env.DB.prepare('SELECT COUNT(*) AS n FROM invite_fail_log WHERE ip_hash = ? AND created_at > ?')
+      .bind(ipHash, ivSince),
+  ]);
+  if (batchCount(countResult) > Number(env.INVITE_FAIL_LIMIT || 15)) {
+    await env.DB.prepare('DELETE FROM invite_fail_log WHERE id = ?').bind(reservationId).run();
+    return err('too many attempts — try again later', 429);
+  }
   if (!secretMatches(String((body.code || '')).trim(), env.SIGNUP_CODE)) {
-    const reservationId = randomHex(12);
-    const now = Date.now();
-    const [, countResult] = await env.DB.batch([
-      env.DB.prepare('INSERT INTO invite_fail_log (id, ip_hash, created_at) VALUES (?, ?, ?)')
-        .bind(reservationId, ipHash, now),
-      env.DB.prepare('SELECT COUNT(*) AS n FROM invite_fail_log WHERE ip_hash = ? AND created_at > ?')
-        .bind(ipHash, ivSince),
-    ]);
-    if (batchCount(countResult) > Number(env.INVITE_FAIL_LIMIT || 15)) {
-      await env.DB.prepare('DELETE FROM invite_fail_log WHERE id = ?').bind(reservationId).run();
-      return err('too many attempts — try again later', 429);
-    }
     return err('that invite word is not right', 403);
   }
+  await env.DB.prepare('DELETE FROM invite_fail_log WHERE id = ?').bind(reservationId).run();
 
   // Signup is open to anyone, and an account is the key to paid voice generation.
   // Two ceilings so a script cannot mint accounts in bulk. Both are deliberately

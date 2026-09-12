@@ -6,28 +6,27 @@ and are not repeated here; they are tracked in the app inbox. Each entry below w
 the CURRENT code (or an explicit, cited git history) before writing a verdict -- a verdict without
 reading the code is not a verdict (Testing Standard §3.5 / Deploy & Release Standard PART D6.7).
 
-All 23 HIGH entries below now have a real, code-verified decision. A FIXED verdict means the
+All 23 HIGH entries below require a real, code-verified decision. A FIXED verdict means the
 named commit and tests close the code finding; it does not claim that a separate Worker was
 deployed or that a live environment was verified.
 
 ---
 
 ### 1. HIGH — The new public-endpoint throttles are still easy to bypass and their log tables grow forever.
-**Verdict: FIXED** (implementation commit `e08f5b9`, independently reviewed at exact commit
-`e08f5b94a236be898e019951dcb30f3930ec2001`, PASS/no P1-P2). Wrong invite guesses now reserve a
-row and count inside one atomic D1 batch, so a concurrent burst cannot all observe the old count;
-over-limit reservations are removed. Sign-in reserves and checks both the existing (email, IP)
+**Verdict: PENDING — `e08f5b9` rejected by Claude security review.** Its invite-word reservation
+runs only after `secretMatches`, so an already-throttled caller can still submit the correct word
+and create an account; a 40-word list with the real word at position 37 reproduces the bypass.
+The repair must reserve and count atomically before comparing the word, remove over-limit and
+successful reservations, retain wrong-guess rows, and pass independent exact-commit review before
+this verdict returns to FIXED. Sign-in already reserves and checks both the existing (email, IP)
 budget and a separate IP-only budget before account lookup or PBKDF2, so rotating fake emails no
 longer buys unlimited hashes; a successful sign-in removes its provisional row. Missing/malformed
 D1 counts throw and return the existing generic 500 instead of failing open. The three throttle
 tables now have indexes matching their lookup and expiry paths, and both dev and production
-Worker configs schedule the cleanup handler every six hours. Red proof forced eight requests to
-read the same pre-insert count and reproduced eight admitted wrong guesses against a limit of
-three; final focused security checks pass 25/25, including rotating-email, successful-auth,
-fail-closed, cleanup and config-parity cases. Wrangler 4.131.1 local dry-runs passed for both
-configs. **Not live evidence:** applying the schema/deploying the dev Worker, verifying dev D1 and
-cron behavior, then separately deploying/verifying the production Worker remain manual rollout
-gates; this local commit did not touch either live Worker or its data.
+Worker configs schedule the cleanup handler every six hours. **Not live evidence:** applying the
+schema/deploying the dev Worker, verifying dev D1 and cron behavior, then separately
+deploying/verifying the production Worker remain manual rollout gates; no local repair changes
+either live Worker or its data.
 
 ### 2. HIGH — Production can still be deployed from the wrong clean branch without the required promotion confirmation.
 **Verdict: FIXED** (this session, commits `a77aabb`, `d2dd2c3`, `cef5157`). `deploy:prod-preview`
