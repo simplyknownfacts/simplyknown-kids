@@ -6,7 +6,7 @@ and are not repeated here; they are tracked in the app inbox. Each entry below w
 the CURRENT code (or an explicit, cited git history) before writing a verdict -- a verdict without
 reading the code is not a verdict (Testing Standard §3.5 / Deploy & Release Standard PART D6.7).
 
-All 23 HIGH entries below now have a real, code-verified decision. A FIXED verdict means the
+All 27 HIGH entries below now have a real, code-verified decision. A FIXED verdict means the
 named commit and tests close the code finding; it does not claim that a separate Worker was
 deployed or that a live environment was verified.
 
@@ -175,7 +175,7 @@ conversions in the section hubs). Confirmed in current code: `index.html`'s avat
 and `videos/index.html` also confirmed on real `<button>`s via their own dedicated a11y commits
 (`d91b447`, `0ba9069`).
 
-### 18. HIGH — The DEV-VERIFIED stamp does not prove BASE is running the commit it names (Codex 0903-2).
+### 18. HIGH — The DEV-VERIFIED stamp does not prove that the tested deployment contains the commit it names. (Codex 0903-2; heading retitled 2026-09-13 to Codex's exact wording so the gate's title match finds it — the verdict below is unchanged)
 **Verdict: FIXED** (commit `ebf599f`). `scripts/dev-verify.mjs` now fetches `js/version.js` live
 from `BASE` after the drive passes and requires its `APP_VERSION` to match `git show
 HEAD:js/version.js` for the commit being stamped -- extracted into
@@ -185,7 +185,7 @@ stamping the current commit as verified. Confirmed live today via `tests/version
 (7 cases: match, mismatch, non-OK response, unreachable BASE, unreadable version). `npm test`:
 140/140 at the time of the fix.
 
-### 19. HIGH — Production could still stage from the working tree instead of the reviewed commit (Codex 0903-3).
+### 19. HIGH — Files can still change after the final clean-tree check and ship outside Git. (Codex 0903-3; heading retitled 2026-09-13 to Codex's exact wording so the gate's title match finds it — the verdict below is unchanged)
 **Verdict: FIXED** (commit `457f984`). `scripts/promote.mjs` no longer runs `npm run stage`
 (`fs.copyFileSync` off disk) for the prod path -- it now calls `stageFromGitHead`
 (`scripts/lib/stage-from-git.mjs`), which reads every file's bytes straight out of git's object
@@ -199,7 +199,7 @@ file, dirties the same path on disk without committing, and asserts the staged o
 committed bytes, not the dirty ones) and a `tests/promote.test.mjs` source guard confirming
 `--commit-dirty=true` is gone from the prod deploy line. `npm test`: 144/144.
 
-### 20. HIGH — The new shared PIN lockout is missing from the offline app, so both protected doors fail open (Codex 0905-1).
+### 20. HIGH — The new shared PIN lockout is missing from the offline app, so both protected doors fail open. (Codex 0905-1)
 **Verdict: FIXED** (commit `6506690`). `js/pin-lockout.js` is loaded by both `home.html`'s
 exit dialog and `parent/settings.html`'s PIN gate, but was missing from `sw.js`'s `ASSETS`
 precache list -- confirmed by reading the array directly. After a service-worker update plus an
@@ -267,9 +267,57 @@ never written to the object database). Full file: 7/7 passing;
 
 ---
 
+### 24. HIGH — The new promotion gate does not control the site children actually use. (Codex 0903-1)
+**Verdict: FIXED** (commit `354870a`, 2026-09-13). Since that commit `scripts/promote.mjs` performs
+the `git push origin main` itself -- the push that IS the GitHub Pages release of kids.simplyknown.co
+-- as the first deploy step, only after the typed version and the full post-prompt re-check, and it
+refuses a checkout that is BEHIND origin/main. The door children actually use is therefore inside
+the gate now, not a hand command before it. Still open and separate: Scott's DNS cutover to the
+Cloudflare Pages project, which the gate reports plainly at step 8 on every run. Test coverage,
+honestly: `tests/promote.test.mjs` proves the BEHIND-refuses half (559/559 at `354870a`); the
+AHEAD-then-push half is code-read only (the deploy half of this script runs against a fake wrangler
+in tests but no test asserts the push step yet) -- a known gap, filed for a follow-up test, and
+exercised for real on the first bat run.
+
+### 25. HIGH — The production script still contains an explicit switch that re-enables every fake deploy and verification target. (Codex 0906-1)
+**Verdict: ACCEPTED RISK** -- decided by the master/CEO chat 2026-09-13 after reading
+`scripts/promote.mjs:130-147` and `promote-kids.bat`. The switch (`PROMOTE_ALLOW_OVERRIDES=1`)
+exists only so `tests/promote.test.mjs` can drive the post-approval half against a fake wrangler
+and a local mock; the one door (`promote-kids.bat`, Deploy & Release Standard D8) clears every
+`PROMOTE_*` variable before the script runs, so a real run never has any of them set. Reaching
+the switch takes a deliberate hand-typed opt-in plus hand-set fake targets on Scott's own machine
+by someone who already holds the Cloudflare token -- that person could deploy anything directly,
+so the switch adds no new capability. Re-evaluate if a second documented production entry point
+ever appears (there is none: `npm run promote` is what the bat calls).
+
+### 26. HIGH — A local-only test run can still create a stamp that production accepts as proof of the deployed dev site. (Codex 0906-2)
+**Verdict: ACCEPTED RISK** -- decided by the master/CEO chat 2026-09-13. True as described:
+`BASE=http://localhost:8790 npm run verify:dev` (a documented target in `docs/verify/VERIFYING.md`)
+writes the same stamp as a kids1 run. Accepted because the stamp's job is to prove that THIS EXACT
+COMMIT's bytes pass 559 unit tests and the 82-screen browser drive (the full-SHA `version.json`
+check binds the drive to the commit), and production then stages from the commit object itself
+(`stageFromGitHead`, finding #19), so which host served the drive cannot change what ships. The
+kids1 deploy remains the human look (Scott's phone) and the Access-gated demo, not the gate's
+evidence. Revisit if Scott wants the stamp bound to kids1 specifically (then the stamp should record
+the host and the gate should refuse localhost).
+
+### 27. HIGH — The new dev `version.json` can claim clean `HEAD` while the deployed bytes came from a dirty or changing worktree. (Codex 0906-3)
+**Verdict: ACCEPTED RISK** -- decided by the master/CEO chat 2026-09-13. Dev-only by design:
+`scripts/stage-site.mjs` + `scripts/deploy-dev1.mjs` deliberately allow dirty, fast dev deploys
+(Scott's rule 1: dev is free). The promotable stamp's exact-commit check is only as honest as the
+dev host that answers it, which is the same exposure as #26 and accepted for the same reason:
+production never stages from a working tree (finding #19 / #23), so a dev deploy that mislabels
+its bytes can only affect what was looked at on kids1, never what ships. Cheap hardening if wanted
+later: have `deploy-dev1.mjs` refuse to write `version.json` from a dirty tree unless an explicit
+`--dirty` flag is passed.
+
+---
+
 ## Summary
 
-23 of 23 HIGH findings on file have a real, code-verified decision. Finding #1's local Worker
+27 of 27 HIGH findings on file have a real, code-verified decision (2026-09-13: #18-#20 retitled
+to Codex's exact wording so the gate's exact-title match finds their existing verdicts; #24 FIXED
+by `354870a`; #25-#27 ACCEPTED RISK by the master/CEO chat with the reasons above). Finding #1's local Worker
 repair is independently reviewed; its manual dev/production Worker rollout and live verification
 remain separate gates and are not implied by this triage verdict.
 
