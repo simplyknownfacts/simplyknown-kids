@@ -260,19 +260,31 @@ test('promote refuses when the branch tracks something other than origin/main', 
   assert.match(res.stdout, /tracks "origin\/feature", not origin\/main/i);
 });
 
-test('promote refuses when local main has diverged from a freshly-fetched origin/main', () => {
+test('promote refuses when local main is BEHIND a freshly-fetched origin/main', () => {
   const { dir } = makeScratchRepo();
   scratchDirs.push(dir);
-  // Simulate "someone else pushed": commit locally WITHOUT pushing, so origin/main (the real
-  // bare repo this scratch tracks) still points at the earlier commit. HEAD now differs from
-  // what a fresh `git fetch origin main` reports, while staying on branch main tracking
-  // origin/main correctly -- a different failure than "wrong branch" or "no upstream".
-  writeFileSync(path.join(dir, 'js', 'version.js'), `const APP_VERSION = '1.0.1';\n`);
-  git(dir, ['commit', '-aqm', 'local-only change, never pushed']);
+  // 2026-09-13 (Scott: "the promote bat should do the push"): a checkout that is only AHEAD is
+  // allowed through the pre-checks -- the gate pushes main itself as the first deploy step,
+  // because for Kids that push IS the GitHub Pages release. BEHIND must still refuse: someone
+  // else pushed, and deploying now would ship OLDER code. Simulate that by pushing a commit to
+  // the bare origin from a second clone, so a fresh `git fetch origin main` moves past HEAD.
+  const other = mkdtempSync(path.join(tmpdir(), 'kids-promote-other-'));
+  scratchDirs.push(other);
+  const originUrl = git(dir, ['remote', 'get-url', 'origin']);
+  execFileSync('git', ['clone', '-q', originUrl, other], { encoding: 'utf8' });
+  git(other, ['config', 'user.email', 'test@example.com']);
+  git(other, ['config', 'user.name', 'test']);
+  git(other, ['fetch', '-q', 'origin', 'main']);
+  git(other, ['checkout', '-q', '-B', 'main', 'origin/main']);
+  writeFileSync(path.join(other, 'someone-else.txt'), 'pushed from another machine\n');
+  git(other, ['add', 'someone-else.txt']);
+  git(other, ['commit', '-qm', 'someone else pushed']);
+  git(other, ['push', '-q', 'origin', 'HEAD:main']);
   const res = runPromote(dir);
   assert.notEqual(res.status, 0);
   assert.match(res.stdout, /does not match origin\/main/i);
-  assert.match(res.stdout, /ahead/i);
+  assert.match(res.stdout, /behind/i);
+  assert.match(res.stdout, /git pull first/i);
 });
 
 test('promote refuses when no dev-verify stamp exists for this commit', () => {
@@ -476,7 +488,7 @@ test('promote runs the real post-approval path (fake wrangler, mock Cloudflare) 
     assert.match(res.stdout, /Done\. Kids .* is deployed and Cloudflare confirms it\./);
 
     const calls = readFileSync(callsFile, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
-    assert.equal(calls.length, 3, 'expected exactly 3 wrangler invocations (site, worker dev, worker prod): ' + JSON.stringify(calls));
+    assert.equal(calls.length, 5, 'expected exactly 5 wrangler invocations (site, d1 dev, worker dev, d1 prod, worker prod): ' + JSON.stringify(calls));
 
     const siteCall = calls.find((c) => c.includes('pages'));
     assert.ok(siteCall, 'no site (pages deploy) call found: ' + JSON.stringify(calls));
@@ -486,12 +498,14 @@ test('promote runs the real post-approval path (fake wrangler, mock Cloudflare) 
     assert.ok(!siteCall.some((a) => a.includes('--commit-dirty')),
       'the real site wrangler call must never receive --commit-dirty=true: ' + siteCall.join(' '));
 
+    // 2026-09-13: schema.sql (idempotent) is applied to each D1 before its Worker deploy, so one
+    // promote run makes 4 worker-side calls: d1 dev, deploy dev, d1 prod, deploy prod -- in that order.
     const workerCalls = calls.filter((c) => !c.includes('pages'));
-    assert.equal(workerCalls.length, 2, 'expected a dev worker deploy and a prod worker deploy: ' + JSON.stringify(workerCalls));
-    assert.ok(workerCalls.some((c) => c.includes('--config') && c.includes('wrangler.dev.toml')),
-      'expected one worker call using wrangler.dev.toml (dev-first): ' + JSON.stringify(workerCalls));
-    assert.ok(workerCalls.some((c) => !c.includes('--config')),
-      'expected one plain worker call (prod, default wrangler.toml): ' + JSON.stringify(workerCalls));
+    assert.equal(workerCalls.length, 4, 'expected d1 dev, deploy dev, d1 prod, deploy prod: ' + JSON.stringify(workerCalls));
+    assert.deepEqual(workerCalls.map((c) => c[0] + (c.includes('wrangler.dev.toml') ? ':dev' : ':prod')),
+      ['d1:dev', 'deploy:dev', 'd1:prod', 'deploy:prod'], 'worker calls out of order: ' + JSON.stringify(workerCalls));
+    assert.ok(workerCalls.filter((c) => c[0] === 'd1').every((c) => c.includes('--remote') && c.some((a) => a.includes('schema.sql'))),
+      'each d1 call must apply schema.sql remotely: ' + JSON.stringify(workerCalls));
 
     const releaseLog = readFileSync(path.join(dir, 'docs', 'releases.md'), 'utf8');
     assert.match(releaseLog, new RegExp(`\\|\\s*${version}\\s*\\|\\s*${headSha}\\s*\\|`),

@@ -166,13 +166,20 @@ catch { die('This branch has no upstream configured.', 'set it to track origin/m
 if (upstream !== 'origin/main') die(`This branch tracks "${upstream}", not origin/main.`, 'switch to main.');
 
 const remoteSha = sh('git rev-parse origin/main');
+// Scott 2026-09-13: "you do everything until the prod push, then the promote bat should do it."
+// For Kids the push to main IS the GitHub Pages release, so the gate no longer sends him away to
+// push by hand: a checkout that is only AHEAD is allowed through, and the push happens as the first
+// deploy step, after he types the version and every re-check passes. BEHIND still refuses.
+let pushPending = false;
 if (sh('git rev-parse HEAD') !== remoteSha) {
   const ahead = sh('git rev-list --count origin/main..HEAD');
   const behind = sh('git rev-list --count HEAD..origin/main');
-  die(`Local main does not match origin/main (${ahead} ahead, ${behind} behind).`,
-      Number(behind) > 0
-        ? 'git pull first — someone else pushed, and deploying now would ship OLDER code to production.'
-        : 'git push first — GitHub is the backup of truth.');
+  if (Number(behind) > 0) {
+    die(`Local main does not match origin/main (${ahead} ahead, ${behind} behind).`,
+        'git pull first — someone else pushed, and deploying now would ship OLDER code to production.');
+  }
+  pushPending = true;
+  say(`  ${Y}main is ${ahead} commit(s) ahead of GitHub — the gate will push it as the first deploy step (that push is the GitHub Pages release).${X}`);
 }
 
 // 3. Wrong branch.
@@ -348,7 +355,7 @@ if (sh('git rev-parse --short HEAD') !== headSha) {
 }
 try { execSync('git fetch --quiet origin main', { stdio: 'ignore' }); }
 catch { die('Lost contact with GitHub while the prompt was open.', 'nothing was deployed. Reconnect and start again.'); }
-if (sh('git rev-parse HEAD') !== sh('git rev-parse origin/main')) {
+if (sh('git rev-parse origin/main') !== remoteSha) {
   die('origin/main MOVED while the prompt was open — your machine no longer matches GitHub.',
       'nothing was deployed. Pull, re-run the dev pass, and start again.');
 }
@@ -379,6 +386,16 @@ checkCodexTriage(true); // Codex 0903-4 -- same check the pre-prompt pass ran, i
 // there is no window left for this to matter. --commit-dirty=true is DROPPED here on purpose: a
 // git-archive-style build owes wrangler no dirty-tree exception, because it was never built from
 // the (possibly dirty) working tree to begin with.
+if (pushPending) {
+  step('Pushing main to GitHub — for Kids this IS the GitHub Pages release');
+  try { execSync('git push origin main', { stdio: 'inherit' }); }
+  catch { die('git push failed — GitHub unchanged, nothing deployed to Cloudflare.', 'check the network/credentials and start again.'); }
+  if (sh('git rev-parse origin/main') !== sh('git rev-parse HEAD')) {
+    die('The push did not land — origin/main still differs from HEAD.', 'nothing deployed to Cloudflare. Start again.');
+  }
+  say(`  ${G}✓${X} origin/main = ${headSha} — kids.simplyknown.co (GitHub Pages) is now building ${version}`);
+}
+
 step('Staging (from git HEAD, not the working tree)');
 {
   const { files } = stageFromGitHead(process.cwd(), OUT_DIR, headSha, PUBLISH);

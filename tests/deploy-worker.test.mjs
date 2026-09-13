@@ -55,10 +55,13 @@ test('deploySyncWorker: deploys dev then prod, health-checks both, in that order
     assert.equal(prodHealthHits, 1, 'prod health must be checked exactly once');
 
     const calls = readFileSync(callsFile, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
-    assert.equal(calls.length, 2, 'expected exactly 2 wrangler invocations: ' + JSON.stringify(calls));
-    assert.ok(calls[0].argv.includes('--config') && calls[0].argv.some((a) => a.includes('wrangler.dev.toml')),
-      'first call must be the DEV deploy: ' + JSON.stringify(calls[0]));
-    assert.ok(!calls[1].argv.includes('--config'), 'second call must be the plain PROD deploy: ' + JSON.stringify(calls[1]));
+    // 2026-09-13: idempotent schema.sql is applied to each D1 right before its deploy.
+    assert.equal(calls.length, 4, 'expected d1 dev, deploy dev, d1 prod, deploy prod: ' + JSON.stringify(calls));
+    assert.deepEqual(calls.map((c) => c.argv[0] + (c.argv.includes('wrangler.dev.toml') ? ':dev' : ':prod')),
+      ['d1:dev', 'deploy:dev', 'd1:prod', 'deploy:prod'], 'calls out of order: ' + JSON.stringify(calls));
+    assert.ok(calls[1].argv.includes('--config') && calls[1].argv.some((a) => a.includes('wrangler.dev.toml')),
+      'the dev deploy must use wrangler.dev.toml: ' + JSON.stringify(calls[1]));
+    assert.ok(!calls[3].argv.includes('--config'), 'the prod deploy must be the plain default config: ' + JSON.stringify(calls[3]));
     assert.ok(calls.every((c) => c.cwd.endsWith(path.join('workers', 'sync'))),
       'both calls must run from workers/sync, not the repo root: ' + JSON.stringify(calls));
   } finally {
@@ -84,8 +87,9 @@ test('deploySyncWorker: never deploys prod if the dev health check fails', async
     await assert.rejects(() => deploySyncWorker({ cwd }), /DEV worker did not answer \/health/);
 
     const calls = readFileSync(callsFile, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
-    assert.equal(calls.length, 1, 'the PROD deploy must never run when the dev health check fails: ' + JSON.stringify(calls));
-    assert.ok(calls[0].argv.some((a) => a.includes('wrangler.dev.toml')), 'the one call made must be the dev deploy');
+    assert.equal(calls.length, 2, 'PROD must never be touched when the dev health check fails (only d1 dev + deploy dev): ' + JSON.stringify(calls));
+    assert.ok(calls.every((c) => c.argv.includes('wrangler.dev.toml')), 'every call made must target dev: ' + JSON.stringify(calls));
+    assert.equal(calls[1].argv[0], 'deploy', 'the second call must be the dev deploy');
   } finally {
     server.close();
     delete process.env.PROMOTE_WRANGLER_CMD;

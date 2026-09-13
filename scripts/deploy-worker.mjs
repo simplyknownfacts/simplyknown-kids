@@ -49,6 +49,10 @@ function say(s = '') { process.stdout.write(s + '\n'); }
 export async function deploySyncWorker({ cwd = process.cwd() } = {}) {
   const workerCwd = path.join(cwd, WORKER_DIR);
 
+  // schema.sql is idempotent (CREATE ... IF NOT EXISTS throughout), so applying it before every
+  // deploy is safe and means a Worker that expects a new table/index never meets a D1 without it.
+  say('  Applying schema.sql to the DEV database...');
+  runWrangler(['d1', 'execute', 'sync-dev', '--remote', '--file=schema.sql', '--config', 'wrangler.dev.toml'], workerCwd);
   say('  Deploying the DEV sync worker first (a safe test copy)...');
   runWrangler(['deploy', '--config', 'wrangler.dev.toml'], workerCwd);
   if (!(await checkHealth(DEV_HEALTH_URL))) {
@@ -56,6 +60,8 @@ export async function deploySyncWorker({ cwd = process.cwd() } = {}) {
   }
   say('  Dev worker OK.');
 
+  say('  Applying schema.sql to the LIVE database...');
+  runWrangler(['d1', 'execute', 'sync', '--remote', '--file=schema.sql'], workerCwd);
   say('  Deploying the LIVE sync worker...');
   runWrangler(['deploy'], workerCwd);
   if (!(await checkHealth(PROD_HEALTH_URL))) {
